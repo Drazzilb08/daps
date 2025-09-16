@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom';
 
 /**
  * Dedicated Error Page Component - Ported from Main UI
- * 
+ *
  * Professional error page for 404s, route errors, and other application-level errors.
  * Provides clear messaging, navigation options, and helpful recovery actions.
- * 
+ *
  * @param {Object} props - Component props
  * @param {number} [props.statusCode=404] - HTTP status code
  * @param {string} [props.title] - Custom error title
@@ -26,46 +26,49 @@ const ErrorPage = ({
     showHome = true,
     showBack = true,
     showRefresh = false,
-    suggestions = []
+    suggestions = [],
 }) => {
     // Default content based on status code
-    const getDefaultContent = (code) => {
+    const getDefaultContent = code => {
         switch (code) {
             case 404:
                 return {
                     title: 'Page Not Found',
                     message: 'The page you are looking for does not exist.',
-                    description: 'The URL you entered may be incorrect, or the page may have been moved or removed.',
+                    description:
+                        'The URL you entered may be incorrect, or the page may have been moved or removed.',
                     suggestions: [
                         'Check the URL for typos',
                         'Use the navigation to find what you need',
                         'Go back to the previous page',
-                        'Start over from the homepage'
-                    ]
+                        'Start over from the homepage',
+                    ],
                 };
             case 500:
                 return {
                     title: 'Server Error',
                     message: 'Something went wrong on our end.',
-                    description: 'We are experiencing technical difficulties. Please try again in a few moments.',
+                    description:
+                        'We are experiencing technical difficulties. Please try again in a few moments.',
                     suggestions: [
                         'Try refreshing the page',
                         'Wait a few minutes and try again',
                         'Go back to the previous page',
-                        'Contact support if the problem persists'
-                    ]
+                        'Contact support if the problem persists',
+                    ],
                 };
             case 403:
                 return {
                     title: 'Access Denied',
                     message: 'You do not have permission to view this page.',
-                    description: 'This content is restricted or requires different access permissions.',
+                    description:
+                        'This content is restricted or requires different access permissions.',
                     suggestions: [
                         'Check if you are logged in correctly',
                         'Contact an administrator for access',
                         'Go back to a page you have access to',
-                        'Return to the homepage'
-                    ]
+                        'Return to the homepage',
+                    ],
                 };
             default:
                 return {
@@ -75,8 +78,8 @@ const ErrorPage = ({
                     suggestions: [
                         'Try refreshing the page',
                         'Go back to the previous page',
-                        'Return to the homepage'
-                    ]
+                        'Return to the homepage',
+                    ],
                 };
         }
     };
@@ -87,7 +90,7 @@ const ErrorPage = ({
     const finalDescription = description || defaults.description;
     const finalSuggestions = suggestions.length > 0 ? suggestions : defaults.suggestions;
 
-    const getStatusIcon = (code) => {
+    const getStatusIcon = code => {
         switch (code) {
             case 404:
                 return '🔍';
@@ -116,15 +119,11 @@ const ErrorPage = ({
         <div className="page-error-boundary">
             <div className="page-error-boundary__container">
                 <div className="page-error-boundary__header">
-                    <div className="page-error-boundary__icon">
-                        {getStatusIcon(statusCode)}
-                    </div>
+                    <div className="page-error-boundary__icon">{getStatusIcon(statusCode)}</div>
                     <h1 className="page-error-boundary__title">
                         {statusCode} - {finalTitle}
                     </h1>
-                    <p className="page-error-boundary__subtitle">
-                        {finalMessage}
-                    </p>
+                    <p className="page-error-boundary__subtitle">{finalMessage}</p>
                 </div>
 
                 <div className="page-error-boundary__content">
@@ -171,9 +170,7 @@ const ErrorPage = ({
                     {finalSuggestions.length > 0 && (
                         <div className="page-error-boundary__help">
                             <div className="page-error-boundary__help-box">
-                                <h4 className="page-error-boundary__help-title">
-                                    What can I do?
-                                </h4>
+                                <h4 className="page-error-boundary__help-title">What can I do?</h4>
                                 <ul className="page-error-boundary__help-list">
                                     {finalSuggestions.map((suggestion, index) => (
                                         <li key={index}>{suggestion}</li>
@@ -186,10 +183,9 @@ const ErrorPage = ({
 
                 <div className="page-error-boundary__footer">
                     <p className="page-error-boundary__footer-text">
-                        {statusCode === 404 
+                        {statusCode === 404
                             ? 'If you believe this page should exist, please check the URL or contact support.'
-                            : 'If this error persists, please contact support for assistance.'
-                        }
+                            : 'If this error persists, please contact support for assistance.'}
                     </p>
                 </div>
             </div>
@@ -205,20 +201,16 @@ ErrorPage.propTypes = {
     showHome: PropTypes.bool,
     showBack: PropTypes.bool,
     showRefresh: PropTypes.bool,
-    suggestions: PropTypes.arrayOf(PropTypes.string)
+    suggestions: PropTypes.arrayOf(PropTypes.string),
 };
 
 export default ErrorPage;
 
 // Export convenience components for common error types
-export const NotFoundPage = (props) => (
-    <ErrorPage statusCode={404} {...props} />
-);
+export const NotFoundPage = props => <ErrorPage statusCode={404} {...props} />;
 
-export const ServerErrorPage = (props) => (
+export const ServerErrorPage = props => (
     <ErrorPage statusCode={500} showRefresh={true} {...props} />
 );
 
-export const ForbiddenPage = (props) => (
-    <ErrorPage statusCode={403} {...props} />
-);
+export const ForbiddenPage = props => <ErrorPage statusCode={403} {...props} />;

@@ -3,5 +3,5 @@
  * Central import file for all layout component styles
  */
 
-@import './layout.css';
-@import './page-layout.css';
+@import url('./layout.css');
+@import url('./page-layout.css');

@@ -19,65 +19,72 @@
  */
 import React, { useCallback } from 'react';
 
-export const SelectBase = React.memo(({
-  id,
-  name,
-  value,
-  onChange,
-  disabled = false,
-  required = false,
-  invalid = false,
-  options = [],
-  placeholder,
-  className = "",
-  ariaDescribedby,
-  ...rest
-}) => {
-  const handleChange = useCallback((e) => {
-    onChange(e);
-  }, [onChange]);
+export const SelectBase = React.memo(
+    ({
+        id,
+        name,
+        value,
+        onChange,
+        disabled = false,
+        required = false,
+        invalid = false,
+        options = [],
+        placeholder,
+        className = '',
+        ariaDescribedby,
+        ...rest
+    }) => {
+        const handleChange = useCallback(
+            e => {
+                onChange(e);
+            },
+            [onChange]
+        );
 
-  const selectClasses = [
-    'field-select',
-    'field-base',
-    'w-full',
-    'touch-target',
-    disabled ? 'state-disabled' : '',
-    invalid ? 'state-invalid' : '',
-    className
-  ].filter(Boolean).join(' ');
+        const selectClasses = [
+            'field-select',
+            'field-base',
+            'w-full',
+            'touch-target',
+            disabled ? 'state-disabled' : '',
+            invalid ? 'state-invalid' : '',
+            className,
+        ]
+            .filter(Boolean)
+            .join(' ');
 
-  return (
-    <div className="field-select-wrapper relative inline-block w-full">
-      <select
-        id={id}
-        name={name}
-        value={value || ''}
-        onChange={handleChange}
-        disabled={disabled}
-        required={required}
-        className={selectClasses}
-        aria-describedby={ariaDescribedby}
-        aria-invalid={invalid}
-        {...rest}
-      >
-        {placeholder && (
-          <option value="" disabled>
-            {placeholder}
-          </option>
-        )}
-        {options.map((option, index) => (
-          <option
-            key={option.value || index}
-            value={option.value}
-            disabled={option.disabled}
-          >
-            {option.label || option.value}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-});
+        return (
+            <div className="field-select-wrapper relative inline-block w-full">
+                <select
+                    id={id}
+                    name={name}
+                    value={value || ''}
+                    onChange={handleChange}
+                    disabled={disabled}
+                    required={required}
+                    className={selectClasses}
+                    aria-describedby={ariaDescribedby}
+                    aria-invalid={invalid}
+                    {...rest}
+                >
+                    {placeholder && (
+                        <option value="" disabled>
+                            {placeholder}
+                        </option>
+                    )}
+                    {options.map((option, index) => (
+                        <option
+                            key={option.value || index}
+                            value={option.value}
+                            disabled={option.disabled}
+                        >
+                            {option.label || option.value}
+                        </option>
+                    ))}
+                </select>
+            </div>
+        );
+    }
+);
 
 SelectBase.displayName = 'SelectBase';

@@ -7,138 +7,77 @@
  */
 
 @layer components {
-  
-  /* =============================================================================
-     COLOR PICKER PRIMITIVE - Native color input styling
-     ============================================================================= */
-  
-  .color-picker {
-    /* Touch-optimized sizing */
-    min-width: var(--touch-target-min);
-    min-height: var(--touch-target-min);
-    
-    /* Visual styling */
-    border: var(--input-border-width) solid var(--color-border);
-    border-radius: var(--radius-1);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    background: none;
-    padding: 0;
-    
-    /* Remove default browser styling */
-    -webkit-appearance: none;
-    appearance: none;
-  }
-
-  .color-picker:hover:not(:disabled) {
-    border-color: var(--color-primary);
-    transform: translateY(calc(-1 * var(--space-1)));
-    box-shadow: var(--shadow-sm);
-  }
-
-  .color-picker:focus {
-    outline: var(--focus-ring-width) solid var(--color-focus);
-    outline-offset: var(--focus-ring-offset);
-    border-color: var(--color-primary);
-  }
-
-  .color-picker:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-
-  .color-picker.invalid {
-    border-color: var(--color-error);
-  }
-
-  /* Native color input browser-specific styling */
-  .color-picker::-webkit-color-swatch-wrapper {
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-1);
-  }
-
-  .color-picker::-webkit-color-swatch {
-    border: none;
-    border-radius: var(--radius-1);
-  }
-
-  .color-picker::-moz-color-swatch {
-    border: none;
-    border-radius: var(--radius-1);
-  }
-  
-  /* =============================================================================
-     COLOR TEXT INPUT PRIMITIVE - Hex text input styling
-     ============================================================================= */
-  
-  .color-text-input {
-    /* Color input text styling - inherits base typography */
-  }
-  
-  /* =============================================================================
-     COLOR INPUT PAIR PRIMITIVE - Synchronized picker + text
-     ============================================================================= */
-  
-  .color-input-pair {
-    /* Utility classes applied: flex gap-2 items-stretch */
-  }
-
-  .color-input-pair .color-picker {
-    /* Color picker on left */
-    flex-shrink: 0;
-  }
-
-  .color-input-pair .color-text-input {
-    /* Text input on right, takes remaining space */
-    flex: 1;
-    min-width: 0; /* Allow input to shrink */
-  }
-  
-  /* =============================================================================
-     COLOR LIST PRIMITIVE - Multiple color management
-     ============================================================================= */
-  
-  .color-list {
-    /* Utility classes applied: flex flex-col gap-3 */
-  }
-
-  .color-array-items {
-    /* Utility classes applied: flex flex-col gap-4 */
-  }
-
-  .color-array-item {
-    /* Utility classes applied: flex gap-2 items-center */
-  }
-
-  .color-array-item-input {
-    flex: 1;
-    min-width: 0;
-  }
-
-  /* =============================================================================
-     COLOR ARRAY CONTROLS - Layout for add/remove controls
-     ============================================================================= */
-
-  .color-array-controls {
-    /* Layout handled by utilities: flex items-center gap-3 pt-5 mt-2 */
-    border-top: 1px solid var(--color-border);
-  }
-
-
-  
-  /* =============================================================================
-     RESPONSIVE BEHAVIOR - Mobile-first adjustments
-     ============================================================================= */
-
-  /* Mobile optimizations */
-  @media (max-width: 767px) {
-    /* Gap handled by responsive utilities: gap-1 sm:gap-2 */
-
     .color-picker {
-      min-width: var(--touch-target-comfortable);
-      min-height: var(--touch-target-comfortable);
+        min-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
+        border: var(--input-border-width) solid var(--color-border);
+        border-radius: var(--radius-1);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        background: none;
+        padding: 0;
+        appearance: none;
     }
-  }
 
+    .color-picker:focus {
+        outline: var(--focus-ring-width) solid var(--color-focus);
+        outline-offset: var(--focus-ring-offset);
+        border-color: var(--color-primary);
+    }
+
+    .color-picker:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .color-input-pair .color-picker {
+        flex-shrink: 0;
+    }
+
+    .color-picker:hover:not(:disabled) {
+        border-color: var(--color-primary);
+        transform: translateY(calc(-1 * var(--space-1)));
+        box-shadow: var(--shadow-sm);
+    }
+
+    .color-picker.invalid {
+        border-color: var(--color-error);
+    }
+
+    .color-picker::-webkit-color-swatch-wrapper {
+        padding: 0;
+        border: none;
+        border-radius: var(--radius-1);
+    }
+
+    .color-picker::-webkit-color-swatch {
+        border: none;
+        border-radius: var(--radius-1);
+    }
+
+    .color-picker::-moz-color-swatch {
+        border: none;
+        border-radius: var(--radius-1);
+    }
+
+    .color-input-pair .color-text-input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .color-array-item-input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .color-array-controls {
+        border-top: 1px solid var(--color-border);
+    }
+
+    @media (width <= 767px) {
+        .color-picker {
+            min-width: var(--touch-target-comfortable);
+            min-height: var(--touch-target-comfortable);
+        }
+    }
 }

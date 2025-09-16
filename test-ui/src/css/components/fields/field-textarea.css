@@ -6,101 +6,52 @@
  */
 
 @layer components {
-  /* Base textarea styling - now uses consolidated base classes */
-  .field-textarea {
-    /* Base styling handled by consolidated classes:
-     * - .field-input-base (background, border, box-shadow)
-     * - .field-input-typography (font-family, font-size, line-height, color)
-     * - .field-input-layout (width, box-sizing)
-     * - .field-focus-behavior (focus states)
-     * - .field-disabled-state (disabled states)
-     * - .field-readonly-state (readonly states)
-     * - .field-placeholder-styling (placeholder styling)
-     */
-    
-    /* Textarea-specific styling */
-    resize: vertical;
-    transition: none; /* Textarea uses different transition behavior */
-    /* Use utilities: min-h-input-2x py-input px-input */
-    /* Border radius inherited from .field-input-base for consistency */
-    
-    /* NOTE: Apply base classes in component:
-     * field-textarea field-input-base field-input-typography field-input-layout field-focus-behavior field-disabled-state field-readonly-state field-placeholder-styling
-     */
-  }
-
-  /* Theme styling now handled by field-input-base class composition */
-
-  /* Focus state now handled by base class:
-   * - .field-focus-behavior (with custom transition override for textarea)
-   */
-  
-  .field-textarea:focus {
-    /* Custom transition behavior for textarea */
-    transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-
-  /* Placeholder styling now handled by base class:
-   * - .field-placeholder-styling
-   */
-
-  /* Validation states now handled by .is-invalid and .is-valid utilities */
-
-  .field-textarea:disabled {
-    /* Base disabled styling handled by .field-disabled-state */
-    resize: none; /* Textarea-specific disabled enhancement */
-  }
-
-  .field-textarea:read-only {
-    /* Base readonly styling handled by .field-readonly-state */
-    resize: none; /* Textarea-specific readonly enhancement */
-  }
-
-  /* Size variants now handled by .input-sm and .input-lg utilities */
-  /* Component-specific size adjustments */
-  .field-textarea.input-sm {
-    min-height: var(--input-height);
-  }
-
-  /* Textarea variants moved to separate specialized components */
-
-  /* Character counter functionality moved to specialized components */
-
-  /* JSON textarea functionality moved to specialized JsonField component */
-
-
-  /* Scrollbar styling for webkit browsers */
-  .field-textarea::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .field-textarea::-webkit-scrollbar-track {
-    background: var(--color-input-bg);
-  }
-
-  .field-textarea::-webkit-scrollbar-thumb {
-    background: var(--color-input-border);
-    border-radius: var(--radius-1);
-  }
-
-
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    .field-textarea {
-      border-width: 2px;
-    }
-    
     .field-textarea:focus {
-      outline: 3px solid var(--color-primary);
-      outline-offset: 1px;
+        transition:
+            border-color var(--transition-fast),
+            background-color var(--transition-fast),
+            box-shadow var(--transition-fast);
     }
-  }
 
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    .field-textarea {
-      transition: none;
+    .field-textarea:disabled {
+        resize: none;
     }
-  }
+
+    .field-textarea:read-only {
+        resize: none;
+    }
+
+    .field-textarea.input-sm {
+        min-height: var(--input-height);
+    }
+
+    .field-textarea::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .field-textarea::-webkit-scrollbar-track {
+        background: var(--color-input-bg);
+    }
+
+    .field-textarea::-webkit-scrollbar-thumb {
+        background: var(--color-input-border);
+        border-radius: var(--radius-1);
+    }
+
+    @media (prefers-contrast: more) {
+        .field-textarea {
+            border-width: 2px;
+        }
+
+        .field-textarea:focus {
+            outline: 3px solid var(--color-primary);
+            outline-offset: 1px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .field-textarea {
+            transition: none;
+        }
+    }
 }

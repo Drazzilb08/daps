@@ -1,6 +1,6 @@
 /**
  * DAPS API Layer - Main Export Module
- * 
+ *
  * Centralized API client exports for the DAPS test-ui application.
  * Provides organized access to all domain-specific API modules.
  */
@@ -32,15 +32,15 @@ export { systemAPI };
  * All domain APIs accessible through a single object
  */
 export const api = {
-  core: apiCore,
-  config: configAPI,
-  modules: modulesAPI,
-  jobs: jobsAPI,
-  instances: instancesAPI,
-  media: mediaAPI,
-  posters: postersAPI,
-  logs: logsAPI,
-  system: systemAPI,
+    core: apiCore,
+    config: configAPI,
+    modules: modulesAPI,
+    jobs: jobsAPI,
+    instances: instancesAPI,
+    media: mediaAPI,
+    posters: postersAPI,
+    logs: logsAPI,
+    system: systemAPI,
 };
 
 /**

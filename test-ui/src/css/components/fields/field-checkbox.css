@@ -5,50 +5,50 @@
  */
 
 @layer components {
-  .checkbox-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+    .checkbox-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-  .checkbox-input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-  }
+    .checkbox-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+    }
 
-  .checkbox-box {
-    width: var(--size-checkbox);
-    height: var(--size-checkbox);
-    border: var(--border-width-medium) solid var(--color-border);
-    border-radius: var(--radius-1);
-    background: var(--color-input-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-fast);
-  }
+    .checkbox-box {
+        width: var(--size-checkbox);
+        height: var(--size-checkbox);
+        border: var(--border-width-medium) solid var(--color-border);
+        border-radius: var(--radius-1);
+        background: var(--color-input-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-fast);
+    }
 
-  .checkbox-input:checked + .checkbox-box {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-  }
+    .checkbox-field--disabled .checkbox-box {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 
-  .checkbox-input:checked + .checkbox-box svg {
-    stroke: white;
-    width: var(--size-checkbox-icon);
-    height: var(--size-checkbox-icon);
-  }
+    .checkbox-field:focus-within .checkbox-box {
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    }
 
-  .checkbox-field:focus-within .checkbox-box {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
+    .checkbox-input:checked + .checkbox-box {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+    }
 
-  .checkbox-field--disabled .checkbox-box {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+    .checkbox-input:checked + .checkbox-box svg {
+        stroke: white;
+        width: var(--size-checkbox-icon);
+        height: var(--size-checkbox-icon);
+    }
 }

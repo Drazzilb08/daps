@@ -1,16 +1,16 @@
 /**
  * RemoveButton Primitive Component
- * 
+ *
  * Truly atomic component for removing items from any collection.
  * Designed for maximum reusability across different contexts.
- * 
+ *
  * Use cases:
  * - Removing colors from arrays
  * - Removing any list item
  * - Closing modals, deleting entries
  * - Removing tags, filters, options
  * - Any "remove/delete item" scenario
- * 
+ *
  * Features:
  * - Touch-optimized (44px minimum target)
  * - Accessible with proper ARIA labels
@@ -24,7 +24,7 @@ import React from 'react';
 
 /**
  * Generic remove button for removing items from collections
- * 
+ *
  * @param {Object} props - Component props
  * @param {Function} props.onClick - Click handler
  * @param {boolean} props.disabled - Disabled state
@@ -38,67 +38,71 @@ import React from 'react';
  * @param {string} props.className - Additional CSS classes
  * @param {Object} props.ariaProps - Additional ARIA properties
  */
-export const RemoveButton = React.memo(({
-  onClick,
-  disabled = false,
-  itemName = '',
-  itemType = 'item',
-  text = 'Remove',
-  icon = '×',
-  iconOnly = true,
-  variant = 'default',
-  size = 'medium',
-  className = '',
-  ariaProps = {},
-  ...props
-}) => {
-  const handleClick = (e) => {
-    if (disabled) return;
-    onClick?.(e);
-  };
+export const RemoveButton = React.memo(
+    ({
+        onClick,
+        disabled = false,
+        itemName = '',
+        itemType = 'item',
+        text = 'Remove',
+        icon = '×',
+        iconOnly = true,
+        variant = 'default',
+        size = 'medium',
+        className = '',
+        ariaProps = {},
+        ...props
+    }) => {
+        const handleClick = e => {
+            if (disabled) return;
+            onClick?.(e);
+        };
 
-  // Generate accessible label
-  const ariaLabel = itemName 
-    ? `Remove ${itemName}`
-    : `Remove ${itemType}`;
+        // Generate accessible label
+        const ariaLabel = itemName ? `Remove ${itemName}` : `Remove ${itemType}`;
 
-  const buttonClasses = [
-    'btn',
-    'btn--remove',
-    'btn--icon-only',
-    'flex-center-both', // Icon-only buttons use flex-center-both
-    'text-lg',
-    'font-bold',
-    'p-0',
-    'rounded-md',
-    'cursor-pointer',
-    'transition-fast',
-    size === 'small' ? 'btn--small py-1 px-2 text-sm' : size === 'large' ? 'btn--large py-3 px-4 text-lg' : 'py-2 px-3',
-    disabled && 'state-disabled',
-    className
-  ].filter(Boolean).join(' ');
+        const buttonClasses = [
+            'btn',
+            'btn--remove',
+            'btn--icon-only',
+            'flex-center-both', // Icon-only buttons use flex-center-both
+            'text-lg',
+            'font-bold',
+            'p-0',
+            'rounded-md',
+            'cursor-pointer',
+            'transition-fast',
+            size === 'small'
+                ? 'btn--small py-1 px-2 text-sm'
+                : size === 'large'
+                  ? 'btn--large py-3 px-4 text-lg'
+                  : 'py-2 px-3',
+            disabled && 'state-disabled',
+            className,
+        ]
+            .filter(Boolean)
+            .join(' ');
 
-  return (
-    <button
-      type="button"
-      className={buttonClasses}
-      onClick={handleClick}
-      disabled={disabled}
-      aria-label={ariaLabel}
-      title={ariaLabel}
-      {...ariaProps}
-      {...props}
-    >
-      <span className="remove-button-icon" aria-hidden="true">{icon}</span>
-      {!iconOnly && (
-        <span className="remove-button-text">{text}</span>
-      )}
-      {iconOnly && (
-        <span className="sr-only">{text}</span>
-      )}
-    </button>
-  );
-});
+        return (
+            <button
+                type="button"
+                className={buttonClasses}
+                onClick={handleClick}
+                disabled={disabled}
+                aria-label={ariaLabel}
+                title={ariaLabel}
+                {...ariaProps}
+                {...props}
+            >
+                <span className="remove-button-icon" aria-hidden="true">
+                    {icon}
+                </span>
+                {!iconOnly && <span className="remove-button-text">{text}</span>}
+                {iconOnly && <span className="sr-only">{text}</span>}
+            </button>
+        );
+    }
+);
 
 RemoveButton.displayName = 'RemoveButton';
 

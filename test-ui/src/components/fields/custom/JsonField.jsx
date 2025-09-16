@@ -7,7 +7,7 @@ import { TextareaBase } from '../primitives/TextareaBase';
 
 /**
  * JSON editor with validation and formatting
- * 
+ *
  * @param {Object} props - Component props
  * @param {Object} props.field - Field configuration
  * @param {string|Object} props.value - Current JSON value
@@ -17,179 +17,179 @@ import { TextareaBase } from '../primitives/TextareaBase';
  * @param {string} [props.errorMessage] - Error message
  */
 export const JsonField = ({
-  field,
-  value,
-  onChange,
-  disabled = false,
-  highlightInvalid = false,
-  errorMessage,
-  ...fieldProps
+    field,
+    value,
+    onChange,
+    disabled = false,
+    highlightInvalid = false,
+    errorMessage,
+    ...fieldProps
 }) => {
-  const inputId = useId();
-  const [jsonError, setJsonError] = useState(null);
-  const [showFormatted, setShowFormatted] = useState(true);
-  
-  // Convert value to string representation
-  const getStringValue = useCallback(() => {
-    if (typeof value === 'string') {
-      return value;
-    } else if (typeof value === 'object' && value !== null) {
-      try {
-        return JSON.stringify(value, null, 2);
-      } catch (e) {
-        return String(value);
-      }
-    }
-    return value || '';
-  }, [value]);
+    const inputId = useId();
+    const [jsonError, setJsonError] = useState(null);
+    const [showFormatted, setShowFormatted] = useState(true);
 
-  const [textValue, setTextValue] = useState(() => getStringValue());
+    // Convert value to string representation
+    const getStringValue = useCallback(() => {
+        if (typeof value === 'string') {
+            return value;
+        } else if (typeof value === 'object' && value !== null) {
+            try {
+                return JSON.stringify(value, null, 2);
+            } catch (e) {
+                return String(value);
+            }
+        }
+        return value || '';
+    }, [value]);
 
-  // Update text value when prop value changes
-  useEffect(() => {
-    setTextValue(getStringValue());
-  }, [getStringValue]);
+    const [textValue, setTextValue] = useState(() => getStringValue());
 
-  // Validate JSON and update parent
-  const handleChange = useCallback((e) => {
-    const newTextValue = e.target.value;
-    setTextValue(newTextValue);
-    
-    // Clear previous JSON error
-    setJsonError(null);
-    
-    // If empty, just pass through
-    if (!newTextValue.trim()) {
-      onChange('');
-      return;
-    }
-    
-    // Try to parse as JSON
-    try {
-      const parsed = JSON.parse(newTextValue);
-      onChange(newTextValue); // Store as string for form handling
-      setJsonError(null);
-    } catch (error) {
-      // Still update the form value so user can keep typing
-      onChange(newTextValue);
-      setJsonError(`Invalid JSON: ${error.message}`);
-    }
-  }, [onChange]);
+    // Update text value when prop value changes
+    useEffect(() => {
+        setTextValue(getStringValue());
+    }, [getStringValue]);
 
-  // Format JSON
-  const formatJson = useCallback(() => {
-    try {
-      const parsed = JSON.parse(textValue);
-      const formatted = JSON.stringify(parsed, null, 2);
-      setTextValue(formatted);
-      onChange(formatted);
-      setJsonError(null);
-      setShowFormatted(true);
-    } catch (error) {
-      setJsonError(`Cannot format invalid JSON: ${error.message}`);
-    }
-  }, [textValue, onChange]);
+    // Validate JSON and update parent
+    const handleChange = useCallback(
+        e => {
+            const newTextValue = e.target.value;
+            setTextValue(newTextValue);
 
-  // Minify JSON
-  const minifyJson = useCallback(() => {
-    try {
-      const parsed = JSON.parse(textValue);
-      const minified = JSON.stringify(parsed);
-      setTextValue(minified);
-      onChange(minified);
-      setJsonError(null);
-      setShowFormatted(false);
-    } catch (error) {
-      setJsonError(`Cannot minify invalid JSON: ${error.message}`);
-    }
-  }, [textValue, onChange]);
+            // Clear previous JSON error
+            setJsonError(null);
 
-  const hasError = Boolean(errorMessage || jsonError);
-  const errorToShow = errorMessage || jsonError;
-  const minRows = field.minRows ?? 8;
-  const maxRows = field.maxRows ?? 20;
-  
-  // Calculate dynamic rows based on content
-  const rows = Math.max(minRows, Math.min(maxRows, (textValue.match(/\n/g) || []).length + 3));
-  
-  return (
-    <FieldWrapper 
-      invalid={highlightInvalid || hasError} 
-      className="json-field"
-    >
-      <div className="json-field-header">
-        <FieldLabel
-          htmlFor={inputId}
-          label={field.label}
-          required={field.required}
-        />
-        
-        <div className="json-field-controls">
-          <button
-            type="button"
-            onClick={formatJson}
-            disabled={disabled || !textValue.trim()}
-            className="json-field-btn json-field-btn--format"
-            title="Format JSON with indentation"
-            aria-label="Format JSON"
-          >
-            Format
-          </button>
-          <button
-            type="button"
-            onClick={minifyJson}
-            disabled={disabled || !textValue.trim()}
-            className="json-field-btn json-field-btn--minify"
-            title="Minify JSON to single line"
-            aria-label="Minify JSON"
-          >
-            Minify
-          </button>
-        </div>
-      </div>
-      
-      <div className="json-field-container">
-        <TextareaBase
-          id={inputId}
-          value={textValue}
-          onChange={handleChange}
-          placeholder={field.placeholder || '{\n  "key": "value"\n}'}
-          disabled={disabled}
-          required={field.required}
-          rows={rows}
-          className="json-field-textarea"
-          spellCheck={false}
-          aria-describedby={errorToShow ? `${inputId}-error` : field.description ? `${inputId}-desc` : undefined}
-          aria-invalid={hasError}
-          {...fieldProps}
-        />
-        
-        <div className="json-field-status" role="status" aria-live="polite">
-          {jsonError && (
-            <div className="json-validation-indicator json-validation-indicator--error">
-              <span className="json-validation-icon" aria-hidden="true">❌</span>
-              {jsonError}
+            // If empty, just pass through
+            if (!newTextValue.trim()) {
+                onChange('');
+                return;
+            }
+
+            // Try to parse as JSON
+            try {
+                const parsed = JSON.parse(newTextValue);
+                onChange(newTextValue); // Store as string for form handling
+                setJsonError(null);
+            } catch (error) {
+                // Still update the form value so user can keep typing
+                onChange(newTextValue);
+                setJsonError(`Invalid JSON: ${error.message}`);
+            }
+        },
+        [onChange]
+    );
+
+    // Format JSON
+    const formatJson = useCallback(() => {
+        try {
+            const parsed = JSON.parse(textValue);
+            const formatted = JSON.stringify(parsed, null, 2);
+            setTextValue(formatted);
+            onChange(formatted);
+            setJsonError(null);
+            setShowFormatted(true);
+        } catch (error) {
+            setJsonError(`Cannot format invalid JSON: ${error.message}`);
+        }
+    }, [textValue, onChange]);
+
+    // Minify JSON
+    const minifyJson = useCallback(() => {
+        try {
+            const parsed = JSON.parse(textValue);
+            const minified = JSON.stringify(parsed);
+            setTextValue(minified);
+            onChange(minified);
+            setJsonError(null);
+            setShowFormatted(false);
+        } catch (error) {
+            setJsonError(`Cannot minify invalid JSON: ${error.message}`);
+        }
+    }, [textValue, onChange]);
+
+    const hasError = Boolean(errorMessage || jsonError);
+    const errorToShow = errorMessage || jsonError;
+    const minRows = field.minRows ?? 8;
+    const maxRows = field.maxRows ?? 20;
+
+    // Calculate dynamic rows based on content
+    const rows = Math.max(minRows, Math.min(maxRows, (textValue.match(/\n/g) || []).length + 3));
+
+    return (
+        <FieldWrapper invalid={highlightInvalid || hasError} className="json-field">
+            <div className="json-field-header">
+                <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
+
+                <div className="json-field-controls">
+                    <button
+                        type="button"
+                        onClick={formatJson}
+                        disabled={disabled || !textValue.trim()}
+                        className="json-field-btn json-field-btn--format"
+                        title="Format JSON with indentation"
+                        aria-label="Format JSON"
+                    >
+                        Format
+                    </button>
+                    <button
+                        type="button"
+                        onClick={minifyJson}
+                        disabled={disabled || !textValue.trim()}
+                        className="json-field-btn json-field-btn--minify"
+                        title="Minify JSON to single line"
+                        aria-label="Minify JSON"
+                    >
+                        Minify
+                    </button>
+                </div>
             </div>
-          )}
-          
-          {!jsonError && textValue.trim() && (
-            <div className="json-validation-indicator json-validation-indicator--valid">
-              <span className="json-validation-icon" aria-hidden="true">✅</span>
-              Valid JSON
+
+            <div className="json-field-container">
+                <TextareaBase
+                    id={inputId}
+                    value={textValue}
+                    onChange={handleChange}
+                    placeholder={field.placeholder || '{\n  "key": "value"\n}'}
+                    disabled={disabled}
+                    required={field.required}
+                    rows={rows}
+                    className="json-field-textarea"
+                    spellCheck={false}
+                    aria-describedby={
+                        errorToShow
+                            ? `${inputId}-error`
+                            : field.description
+                              ? `${inputId}-desc`
+                              : undefined
+                    }
+                    aria-invalid={hasError}
+                    {...fieldProps}
+                />
+
+                <div className="json-field-status" role="status" aria-live="polite">
+                    {jsonError && (
+                        <div className="json-validation-indicator json-validation-indicator--error">
+                            <span className="json-validation-icon" aria-hidden="true">
+                                ❌
+                            </span>
+                            {jsonError}
+                        </div>
+                    )}
+
+                    {!jsonError && textValue.trim() && (
+                        <div className="json-validation-indicator json-validation-indicator--valid">
+                            <span className="json-validation-icon" aria-hidden="true">
+                                ✅
+                            </span>
+                            Valid JSON
+                        </div>
+                    )}
+                </div>
             </div>
-          )}
-        </div>
-      </div>
-      
-      <FieldDescription 
-        id={`${inputId}-desc`} 
-        description={field.description} 
-      />
-      
-      <FieldError 
-        id={`${inputId}-error`} 
-        message={errorToShow} 
-      />
-    </FieldWrapper>
-  );
+
+            <FieldDescription id={`${inputId}-desc`} description={field.description} />
+
+            <FieldError id={`${inputId}-error`} message={errorToShow} />
+        </FieldWrapper>
+    );
 };

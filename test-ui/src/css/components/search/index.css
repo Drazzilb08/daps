@@ -3,4 +3,4 @@
  * Central import file for all search component styles
  */
 
-@import './search-interface.css';
+@import url('./search-interface.css');

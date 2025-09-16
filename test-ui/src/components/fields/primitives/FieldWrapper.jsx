@@ -19,33 +19,31 @@
  * - "minimal": Minimal wrapper with no default spacing
  */
 export const FieldWrapper = ({
-  children,
-  invalid = false,
-  variant = "standard",
-  className = ""
+    children,
+    invalid = false,
+    variant = 'standard',
+    className = '',
 }) => {
-  // Base classes always applied
-  const baseClasses = ['field-wrapper'];
+    // Base classes always applied
+    const baseClasses = ['field-wrapper'];
 
-  // Variant-specific utility classes - using new field-wrapper utilities
-  const variantClasses = {
-    standard: ['field-wrapper-standard'],
-    'form-section': ['field-wrapper-form-section'],
-    checkbox: ['field-wrapper-checkbox'],
-    inline: ['field-wrapper-inline'],
-    minimal: ['field-wrapper-minimal']
-  };
+    // Variant-specific utility classes - using new field-wrapper utilities
+    const variantClasses = {
+        standard: ['field-wrapper-standard'],
+        'form-section': ['field-wrapper-form-section'],
+        checkbox: ['field-wrapper-checkbox'],
+        inline: ['field-wrapper-inline'],
+        minimal: ['field-wrapper-minimal'],
+    };
 
-  const wrapperClasses = [
-    ...baseClasses,
-    ...(variantClasses[variant] || variantClasses.standard),
-    invalid ? 'field-wrapper--invalid' : '',
-    className
-  ].filter(Boolean).join(' ');
+    const wrapperClasses = [
+        ...baseClasses,
+        ...(variantClasses[variant] || variantClasses.standard),
+        invalid ? 'field-wrapper--invalid' : '',
+        className,
+    ]
+        .filter(Boolean)
+        .join(' ');
 
-  return (
-    <div className={wrapperClasses}>
-      {children}
-    </div>
-  );
+    return <div className={wrapperClasses}>{children}</div>;
 };

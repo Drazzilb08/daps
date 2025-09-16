@@ -24,28 +24,24 @@ import React from 'react';
  * @param {React.ReactNode} props.children - Button content (icon, text, etc.)
  * @param {string} props.className - Additional CSS classes
  */
-export const FieldButton = React.memo(({
-  onClick,
-  disabled = false,
-  ariaLabel,
-  children,
-  className = ''
-}) => {
-  const buttonClasses = className;
+export const FieldButton = React.memo(
+    ({ onClick, disabled = false, ariaLabel, children, className = '' }) => {
+        const buttonClasses = className;
 
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={buttonClasses}
-      aria-label={ariaLabel}
-      tabIndex={disabled ? -1 : 0}
-    >
-      {children}
-    </button>
-  );
-});
+        return (
+            <button
+                type="button"
+                onClick={onClick}
+                disabled={disabled}
+                className={buttonClasses}
+                aria-label={ariaLabel}
+                tabIndex={disabled ? -1 : 0}
+            >
+                {children}
+            </button>
+        );
+    }
+);
 
 FieldButton.displayName = 'FieldButton';
 

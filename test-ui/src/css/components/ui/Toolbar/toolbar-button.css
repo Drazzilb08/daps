@@ -5,84 +5,79 @@
  */
 
 @layer components {
-  .page-toolbar-button {
-    /* Utilities: .flex .flex-col .items-center .justify-center .min-w-14 .w-auto .flex-shrink-0 .py-1 .px-2 .bg-transparent .border-none .text-primary .text-center .cursor-pointer .rounded-sm .transition-fast .touch-target */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-width: 56px;
-    width: auto;
-    flex-shrink: 0; /* Prevent button from shrinking below min-width */
-    padding: var(--space-1) var(--space-2);
-    background: transparent;
-    border: none;
-    color: var(--color-text-primary);
-    text-align: center;
-    cursor: pointer;
-    border-radius: var(--radius-1);
-    transition: color var(--transition-fast);
-    min-height: var(--touch-target-min);
-  }
+    .page-toolbar-button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 56px;
+        width: auto;
+        flex-shrink: 0;
+        padding: var(--space-1) var(--space-2);
+        background: transparent;
+        border: none;
+        color: var(--color-text-primary);
+        text-align: center;
+        cursor: pointer;
+        border-radius: var(--radius-1);
+        transition: color var(--transition-fast);
+        min-height: var(--touch-target-min);
+    }
 
-  .page-toolbar-button:hover {
-    /* Utilities: hover:text-primary hover:bg-surface-hover (need hover utilities) */
-    color: var(--color-primary);
-    background: var(--color-surface-hover);
-  }
+    .page-toolbar-button:hover {
+        color: var(--color-primary);
+        background: var(--color-surface-hover);
+    }
 
-  .page-toolbar-button:focus-visible {
-    /* Utilities: focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 */
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
+    .page-toolbar-button:focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
 
-  .page-toolbar-button--disabled {
-    /* Utilities: .text-disabled .cursor-not-allowed .pointer-events-none (need pointer-events) */
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-    pointer-events: none;
-  }
+    .page-toolbar-button--disabled {
+        color: var(--color-text-disabled);
+        cursor: not-allowed;
+        pointer-events: none;
+    }
 
-  .page-toolbar-button--spinning {
-    /* Utilities: .pointer-events-none */
-    pointer-events: none;
-  }
+    .page-toolbar-button--spinning {
+        pointer-events: none;
+    }
 
-  .page-toolbar-button-icon {
-    /* Utilities: .text-base .leading-none .mb-1 (need icon-size utility) */
-    font-size: var(--icon-size-base);
-    line-height: 1;
-    margin-bottom: var(--space-1);
-  }
+    .page-toolbar-button-icon {
+        font-size: var(--icon-size-base);
+        line-height: 1;
+        margin-bottom: var(--space-1);
+    }
 
-  .page-toolbar-button-icon.spinning {
-    /* Custom animation - keep unique */
-    animation: spin 1s linear infinite;
-  }
+    .page-toolbar-button-icon.spinning {
+        animation: spin 1s linear infinite;
+    }
 
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
 
-  .page-toolbar-button-label-container {
-    /* Utilities: .flex .items-center .justify-center .overflow-hidden .h-5 .w-full */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    height: 18px;
-    width: 100%;
-  }
+        to {
+            transform: rotate(360deg);
+        }
+    }
 
-  .page-toolbar-button-label {
-    /* Utilities: .px-1 .py-0 .text-inherit .text-xs .leading-none .whitespace-nowrap */
-    padding: 0 var(--space-1);
-    color: inherit;
-    font-size: var(--font-size-xs);
-    line-height: 1;
-    white-space: nowrap;
-  }
+    .page-toolbar-button-label-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        height: 18px;
+        width: 100%;
+    }
 
+    .page-toolbar-button-label {
+        padding: 0 var(--space-1);
+        color: inherit;
+        font-size: var(--font-size-xs);
+        line-height: 1;
+        white-space: nowrap;
+    }
 }

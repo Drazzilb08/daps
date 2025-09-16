@@ -4,153 +4,107 @@
  */
 
 :root,
-[data-theme="dark"] {
-  /* Base color palette */
-  --primary: #ff7300;
-  --accent: #3e7bfa;
-  --success: #32d74b;
-  --warning: #ff9f0a;
-  --error: #ff375f;
-  --focus: #ff9500;
-
-  /* Surface colors */
-  --bg: #23272b;
-  --surface: #262a30;
-  --surface-alt: #282c31;
-  --surface-elevated: #282c31;
-
-  /* Border & divider colors */
-  --border: #292c30;
-  --border-light: #2a2e34;
-  --sidebar-border: #292c30;
-
-  /* Text colors */
-  --text-primary: #e3e3e3;
-  --text-secondary: #b5b5b5;
-  --text-tertiary: #a9a9a9;
-  --text-disabled: #a9a9a9;
-
-  /* Component-specific colors */
-  --sidebar-bg: #191b1f;
-  --sidebar-hover: #262a30;
-  --header-bg: #191b1f;
-  --overlay: rgba(24, 25, 31, 0.64);
-  --overlay-strong: rgba(0, 0, 0, 0.8);
-
-  /* Semantic color system */
-
-  /* Primary colors */
-  --color-primary: var(--primary);
-  --color-primary-hover: var(--focus);
-  --color-primary-text: #ffffff;
-  --color-primary-opacity-10: rgba(255, 115, 0, 0.1);
-  --color-primary-opacity-20: rgba(255, 115, 0, 0.2);
-
-  /* Accent colors */
-  --color-accent: var(--accent);
-  --color-accent-text: #ffffff;
-
-  /* State colors */
-  --color-success: var(--success);
-  --color-success-text: #ffffff;
-  --color-success-opacity-20: rgba(50, 215, 75, 0.2);
-  --color-warning: var(--warning);
-  --color-warning-text: #ffffff;
-  --color-warning-opacity-20: rgba(255, 159, 10, 0.2);
-  --color-error: var(--error);
-  --color-error-text: #ffffff;
-  --color-error-opacity-20: rgba(255, 55, 95, 0.2);
-  --color-danger: var(--error);
-  --color-danger-surface: rgba(255, 55, 95, 0.1);
-
-  /* Text hierarchy */
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-tertiary: var(--text-tertiary);
-  --color-text-disabled: var(--text-disabled);
-  --color-text-muted: var(--text-tertiary);
-
-  /* Surface system */
-  --color-background: var(--bg);
-  --color-background-alt: var(--surface-alt);
-  --color-surface: var(--surface);
-  --color-surface-hover: var(--surface-alt);
-  --color-surface-active: var(--border-light);
-  --color-surface-elevated: var(--surface-elevated);
-
-  /* Border system */
-  --color-border: var(--border);
-  --color-border-light: var(--border-light);
-  --color-border-hover: var(--border-light);
-
-  /* Sidebar system */
-  --color-sidebar-bg: var(--sidebar-bg);
-  --color-sidebar-hover: var(--sidebar-hover);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-text: var(--text-primary);
-  --color-sidebar-text-secondary: var(--text-secondary);
-
-  /* Header system */
-  --color-header-bg: var(--header-bg);
-  --color-header-border: var(--sidebar-border);
-
-  /* Interactive elements */
-  --color-link: var(--accent);
-  --color-link-hover: #5a96ff;
-  --color-link-visited: #5a96ff;
-
-  /* Form input system */
-  --input-bg: #21242a;
-  --color-input-bg: var(--input-bg);
-  --color-input-bg-hover: #252830;
-  --color-input-bg-focus: var(--input-bg);
-  --color-input-bg-disabled: #1a1d22;
-  --color-input-bg-readonly: #23262c;
-  --color-input-border: var(--border);
-  --color-input-border-hover: var(--border-light);
-  --color-input-border-disabled: #202328;
-  --color-input-text: var(--text-primary);
-  --color-input-text-disabled: var(--text-disabled);
-  --color-input-placeholder: var(--text-tertiary);
-  --color-input-addon-bg: var(--surface-alt);
-  
-  /* Input addon theme styling */
-  --input-addon-border: none;
-  --input-addon-shadow: 0 1px 3px rgba(var(--shadow-color), var(--shadow-opacity-medium));
-  
-  /* Checkbox theme styling */
-  --checkbox-indicator-bg: var(--color-primary-text);
-  --checkbox-border: none;
-  --checkbox-shadow: 0 1px 3px rgba(var(--shadow-color), var(--shadow-opacity-medium));
-  
-  /* Field base theme styling */
-  --field-base-border: none;
-  --field-base-shadow: 0 1px 3px rgba(var(--shadow-color), var(--shadow-opacity-medium));
-
-  /* Focus system */
-  --color-focus-ring: var(--focus);
-  --color-focus-ring-offset: var(--bg);
-
-  /* Button system */
-  --color-button-primary: var(--primary);
-  --color-button-primary-text: #ffffff;
-
-  /* Utility colors */
-  --color-overlay: var(--overlay);
-
-  /* Shadow system */
-  --shadow-color: 0, 0, 0;
-  --shadow-opacity-light: 0.3;
-  --shadow-opacity-medium: 0.4;
-  --shadow-opacity-heavy: 0.5;
+[data-theme='dark'] {
+    --primary: #ff7300;
+    --accent: #3e7bfa;
+    --success: #32d74b;
+    --warning: #ff9f0a;
+    --error: #ff375f;
+    --focus: #ff9500;
+    --bg: #23272b;
+    --surface: #262a30;
+    --surface-alt: #282c31;
+    --surface-elevated: #282c31;
+    --border: #292c30;
+    --border-light: #2a2e34;
+    --sidebar-border: #292c30;
+    --text-primary: #e3e3e3;
+    --text-secondary: #b5b5b5;
+    --text-tertiary: #a9a9a9;
+    --text-disabled: #a9a9a9;
+    --sidebar-bg: #191b1f;
+    --sidebar-hover: #262a30;
+    --header-bg: #191b1f;
+    --overlay: rgb(24 25 31 / 64%);
+    --overlay-strong: rgb(0 0 0 / 80%);
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--focus);
+    --color-primary-text: #fff;
+    --color-primary-opacity-10: rgb(255 115 0 / 10%);
+    --color-primary-opacity-20: rgb(255 115 0 / 20%);
+    --color-accent: var(--accent);
+    --color-accent-text: #fff;
+    --color-success: var(--success);
+    --color-success-text: #fff;
+    --color-success-opacity-20: rgb(50 215 75 / 20%);
+    --color-warning: var(--warning);
+    --color-warning-text: #fff;
+    --color-warning-opacity-20: rgb(255 159 10 / 20%);
+    --color-error: var(--error);
+    --color-error-text: #fff;
+    --color-error-opacity-20: rgb(255 55 95 / 20%);
+    --color-danger: var(--error);
+    --color-danger-surface: rgb(255 55 95 / 10%);
+    --color-text-primary: var(--text-primary);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-tertiary: var(--text-tertiary);
+    --color-text-disabled: var(--text-disabled);
+    --color-text-muted: var(--text-tertiary);
+    --color-background: var(--bg);
+    --color-background-alt: var(--surface-alt);
+    --color-surface: var(--surface);
+    --color-surface-hover: var(--surface-alt);
+    --color-surface-active: var(--border-light);
+    --color-surface-elevated: var(--surface-elevated);
+    --color-border: var(--border);
+    --color-border-light: var(--border-light);
+    --color-border-hover: var(--border-light);
+    --color-sidebar-bg: var(--sidebar-bg);
+    --color-sidebar-hover: var(--sidebar-hover);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-text: var(--text-primary);
+    --color-sidebar-text-secondary: var(--text-secondary);
+    --color-header-bg: var(--header-bg);
+    --color-header-border: var(--sidebar-border);
+    --color-link: var(--accent);
+    --color-link-hover: #5a96ff;
+    --color-link-visited: #5a96ff;
+    --input-bg: #21242a;
+    --color-input-bg: var(--input-bg);
+    --color-input-bg-hover: #252830;
+    --color-input-bg-focus: var(--input-bg);
+    --color-input-bg-disabled: #1a1d22;
+    --color-input-bg-readonly: #23262c;
+    --color-input-border: var(--border);
+    --color-input-border-hover: var(--border-light);
+    --color-input-border-disabled: #202328;
+    --color-input-text: var(--text-primary);
+    --color-input-text-disabled: var(--text-disabled);
+    --color-input-placeholder: var(--text-tertiary);
+    --color-input-addon-bg: var(--surface-alt);
+    --input-addon-border: none;
+    --input-addon-shadow: 0 1px 3px rgb(var(--shadow-color), var(--shadow-opacity-medium));
+    --checkbox-indicator-bg: var(--color-primary-text);
+    --checkbox-border: none;
+    --checkbox-shadow: 0 1px 3px rgb(var(--shadow-color), var(--shadow-opacity-medium));
+    --field-base-border: none;
+    --field-base-shadow: 0 1px 3px rgb(var(--shadow-color), var(--shadow-opacity-medium));
+    --color-focus-ring: var(--focus);
+    --color-focus-ring-offset: var(--bg);
+    --color-button-primary: var(--primary);
+    --color-button-primary-text: #fff;
+    --color-overlay: var(--overlay);
+    --shadow-color: 0, 0, 0;
+    --shadow-opacity-light: 0.3;
+    --shadow-opacity-medium: 0.4;
+    --shadow-opacity-heavy: 0.5;
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  :root,
-  [data-theme="dark"] {
-    --color-border: #ffffff;
-    --color-text-primary: #ffffff;
-    --color-background: #000000;
-  }
+@media (prefers-contrast: more) {
+    :root,
+    [data-theme='dark'] {
+        --color-border: #fff;
+        --color-text-primary: #fff;
+        --color-background: #000;
+    }
 }

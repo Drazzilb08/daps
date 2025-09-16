@@ -17,52 +17,51 @@ import { ColorInputPair } from '../features/color/ColorInputPair';
  * @param {boolean} props.highlightInvalid - Show validation error state
  * @param {string} props.errorMessage - Error message to display
  */
-export const ColorField = React.memo(({
-  field,
-  value,
-  onChange,
-  disabled = false,
-  highlightInvalid = false,
-  errorMessage = null
-}) => {
-  const handleChange = useCallback((newValue) => {
-    onChange(newValue);
-  }, [onChange]);
+export const ColorField = React.memo(
+    ({
+        field,
+        value,
+        onChange,
+        disabled = false,
+        highlightInvalid = false,
+        errorMessage = null,
+    }) => {
+        const handleChange = useCallback(
+            newValue => {
+                onChange(newValue);
+            },
+            [onChange]
+        );
 
-  const inputId = `field-${field.key}`;
-  
-  return (
-    <FieldWrapper invalid={highlightInvalid}>
-      <FieldLabel 
-        id={`${inputId}-label`}
-        htmlFor={inputId} 
-        label={field.label} 
-        required={field.required} 
-      />
-      
-      <ColorInputPair
-        value={value}
-        onChange={handleChange}
-        disabled={disabled}
-        invalid={highlightInvalid}
-        baseId={inputId}
-        label={field.label}
-        placeholder={field.placeholder || '#000000'}
-        required={field.required}
-        aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
-      />
-      
-      <FieldDescription 
-        id={`${inputId}-desc`} 
-        description={field.description} 
-      />
-      <FieldError 
-        id={`${inputId}-error`} 
-        message={errorMessage} 
-      />
-    </FieldWrapper>
-  );
-});
+        const inputId = `field-${field.key}`;
+
+        return (
+            <FieldWrapper invalid={highlightInvalid}>
+                <FieldLabel
+                    id={`${inputId}-label`}
+                    htmlFor={inputId}
+                    label={field.label}
+                    required={field.required}
+                />
+
+                <ColorInputPair
+                    value={value}
+                    onChange={handleChange}
+                    disabled={disabled}
+                    invalid={highlightInvalid}
+                    baseId={inputId}
+                    label={field.label}
+                    placeholder={field.placeholder || '#000000'}
+                    required={field.required}
+                    aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+                />
+
+                <FieldDescription id={`${inputId}-desc`} description={field.description} />
+                <FieldError id={`${inputId}-error`} message={errorMessage} />
+            </FieldWrapper>
+        );
+    }
+);
 
 ColorField.displayName = 'ColorField';
 

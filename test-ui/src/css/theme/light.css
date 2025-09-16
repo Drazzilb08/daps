@@ -3,150 +3,104 @@
  * WCAG AA contrast compliant light theme for bright environments
  */
 
-[data-theme="light"] {
-  /* Base color palette */
-  --primary: #ff7300;           /* Orange - main brand color */
-  --accent: #246ddb;            /* Blue - secondary actions */
-  --success: #1cab40;           /* Green - success states */
-  --warning: #e6b500;           /* Yellow - warning states */
-  --error: #e11e39;             /* Red - error states */
-  --focus: #ff9500;             /* Orange variant - focus rings */
-
-  /* Surface colors */
-  --bg: #fafbfe;                /* Main background */
-  --surface: #fff;              /* Cards, panels */
-  --surface-alt: #f7f7fa;       /* Alternative surfaces */
-  --surface-elevated: #fff;     /* Modals, dropdowns */
-
-  /* Border & divider colors */
-  --border: #ececf2;            /* Default borders */
-  --border-light: #f0f0f4;      /* Light borders */
-  --sidebar-border: #e6e6ea;    /* Sidebar dividers */
-
-  /* Text colors */
-  --text-primary: #1a1a1a;      /* Primary text */
-  --text-secondary: #28292c;    /* Secondary text */
-  --text-tertiary: #5e5e5e;     /* Muted text */
-  --text-disabled: #5e5e5e;     /* Disabled text */
-
-  /* Component-specific colors */
-  --sidebar-bg: #f7f7fa;        /* Sidebar background */
-  --sidebar-hover: #f0f0f4;     /* Sidebar hover state */
-  --header-bg: #f5f5f8;         /* Header background */
-  --overlay: rgba(0, 0, 0, 0.1); /* Modal overlays */
-  --overlay-strong: rgba(0, 0, 0, 0.75); /* Critical modal overlays */
-
-  /* Semantic color system */
-
-  /* Primary colors */
-  --color-primary: var(--primary);
-  --color-primary-hover: var(--focus);
-  --color-primary-text: #ffffff;
-  --color-primary-opacity-10: rgba(255, 115, 0, 0.1);
-  --color-primary-opacity-20: rgba(255, 115, 0, 0.2);
-
-  /* Accent colors */
-  --color-accent: var(--accent);
-  --color-accent-text: #ffffff;
-
-  /* State colors */
-  --color-success: var(--success);
-  --color-success-text: #ffffff;
-  --color-success-opacity-20: rgba(28, 171, 64, 0.2);
-  --color-warning: var(--warning);
-  --color-warning-text: #ffffff;
-  --color-warning-opacity-20: rgba(230, 181, 0, 0.2);
-  --color-error: var(--error);
-  --color-error-text: #ffffff;
-  --color-error-opacity-20: rgba(225, 30, 57, 0.2);
-
-  /* Text hierarchy */
-  --color-text-primary: var(--text-primary);     /* 16 uses */
-  --color-text-secondary: var(--text-secondary); /* 11 uses */
-  --color-text-tertiary: var(--text-tertiary);   /* 2 uses */
-  --color-text-disabled: var(--text-disabled);   /* 1 use */
-  --color-text-muted: var(--text-tertiary);      /* 1 use */
-
-  /* Surface system */
-  --color-background: var(--bg);                 /* 2 uses */
-  --color-background-alt: var(--surface-alt);    /* 2 uses */
-  --color-surface: var(--surface);               /* 8 uses */
-  --color-surface-hover: var(--surface-alt);     /* 7 uses */
-  --color-surface-active: var(--border-light);   /* 1 use */
-  --color-surface-elevated: var(--surface-elevated); /* 2 uses */
-
-  /* Border system */
-  --color-border: var(--border);                 /* 15 uses */
-  --color-border-light: var(--border-light);     /* 2 uses */
-  --color-border-hover: var(--border-light);     /* 3 uses */
-
-  /* Sidebar system */
-  --color-sidebar-bg: var(--sidebar-bg);         /* 2 uses */
-  --color-sidebar-hover: var(--sidebar-hover);   /* 2 uses */
-  --color-sidebar-border: var(--sidebar-border); /* 3 uses */
-  --color-sidebar-text: var(--text-secondary);   /* 3 uses */
-  --color-sidebar-text-secondary: #737378;       /* 1 use */
-
-  /* Header system */
-  --color-header-bg: var(--header-bg);           /* 3 uses */
-  --color-header-border: var(--sidebar-border);  /* 2 uses */
-
-  /* Interactive elements */
-  --color-link: var(--accent);                   /* 1 use */
-  --color-link-hover: #4a85e8;                   /* 1 use */
-  --color-link-visited: #4a85e8;                 /* 1 use */
-
-  /* Form input system */
-  --input-bg: #ffffff;                          /* Input background */
-  --color-input-bg: var(--input-bg);
-  --color-input-bg-hover: #f8f9fa;              /* Input hover background */
-  --color-input-bg-focus: var(--input-bg);      /* Input focus background */
-  --color-input-bg-disabled: #f5f5f8;           /* Input disabled background */
-  --color-input-bg-readonly: #f7f7fa;           /* Input readonly background */
-  --color-input-border: var(--border);
-  --color-input-border-hover: var(--border-light);
-  --color-input-border-disabled: #e8e8ec;       /* Input disabled border */
-  --color-input-text: var(--text-primary);
-  --color-input-text-disabled: var(--text-disabled);
-  --color-input-placeholder: var(--text-tertiary);
-  --color-input-addon-bg: var(--surface-alt);   /* Input addon background */
-  
-  /* Input addon theme styling */
-  --input-addon-border: 1px solid var(--color-primary);
-  --input-addon-shadow: 0 1px 2px rgba(var(--shadow-color), var(--shadow-opacity-light));
-  
-  /* Checkbox theme styling */
-  --checkbox-indicator-bg: var(--color-input-bg);
-  --checkbox-border: 1px solid var(--color-text-secondary);
-  --checkbox-shadow: 0 1px 2px rgba(var(--shadow-color), var(--shadow-opacity-light));
-  
-  /* Field base theme styling */
-  --field-base-border: 1px solid var(--color-text-secondary);
-  --field-base-shadow: 0 1px 2px rgba(var(--shadow-color), var(--shadow-opacity-light));
-
-  /* Focus system */
-  --color-focus-ring: var(--focus);              /* 7 uses */
-  --color-focus-ring-offset: var(--bg);          /* 1 use */
-
-  /* Button system */
-  --color-button-primary: var(--primary);        /* 1 use */
-  --color-button-primary-text: #ffffff;          /* 1 use */
-
-  /* Utility colors */
-  --color-overlay: var(--overlay);               /* 1 use */
-
-  /* Shadow system */
-  --shadow-color: 0, 0, 0;
-  --shadow-opacity-light: 0.1;
-  --shadow-opacity-medium: 0.15;
-  --shadow-opacity-heavy: 0.25;
+[data-theme='light'] {
+    --primary: #ff7300;
+    --accent: #246ddb;
+    --success: #1cab40;
+    --warning: #e6b500;
+    --error: #e11e39;
+    --focus: #ff9500;
+    --bg: #fafbfe;
+    --surface: #fff;
+    --surface-alt: #f7f7fa;
+    --surface-elevated: #fff;
+    --border: #ececf2;
+    --border-light: #f0f0f4;
+    --sidebar-border: #e6e6ea;
+    --text-primary: #1a1a1a;
+    --text-secondary: #28292c;
+    --text-tertiary: #5e5e5e;
+    --text-disabled: #5e5e5e;
+    --sidebar-bg: #f7f7fa;
+    --sidebar-hover: #f0f0f4;
+    --header-bg: #f5f5f8;
+    --overlay: rgb(0 0 0 / 10%);
+    --overlay-strong: rgb(0 0 0 / 75%);
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--focus);
+    --color-primary-text: #fff;
+    --color-primary-opacity-10: rgb(255 115 0 / 10%);
+    --color-primary-opacity-20: rgb(255 115 0 / 20%);
+    --color-accent: var(--accent);
+    --color-accent-text: #fff;
+    --color-success: var(--success);
+    --color-success-text: #fff;
+    --color-success-opacity-20: rgb(28 171 64 / 20%);
+    --color-warning: var(--warning);
+    --color-warning-text: #fff;
+    --color-warning-opacity-20: rgb(230 181 0 / 20%);
+    --color-error: var(--error);
+    --color-error-text: #fff;
+    --color-error-opacity-20: rgb(225 30 57 / 20%);
+    --color-text-primary: var(--text-primary);
+    --color-text-secondary: var(--text-secondary);
+    --color-text-tertiary: var(--text-tertiary);
+    --color-text-disabled: var(--text-disabled);
+    --color-text-muted: var(--text-tertiary);
+    --color-background: var(--bg);
+    --color-background-alt: var(--surface-alt);
+    --color-surface: var(--surface);
+    --color-surface-hover: var(--surface-alt);
+    --color-surface-active: var(--border-light);
+    --color-surface-elevated: var(--surface-elevated);
+    --color-border: var(--border);
+    --color-border-light: var(--border-light);
+    --color-border-hover: var(--border-light);
+    --color-sidebar-bg: var(--sidebar-bg);
+    --color-sidebar-hover: var(--sidebar-hover);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-text: var(--text-secondary);
+    --color-sidebar-text-secondary: #737378;
+    --color-header-bg: var(--header-bg);
+    --color-header-border: var(--sidebar-border);
+    --color-link: var(--accent);
+    --color-link-hover: #4a85e8;
+    --color-link-visited: #4a85e8;
+    --input-bg: #fff;
+    --color-input-bg: var(--input-bg);
+    --color-input-bg-hover: #f8f9fa;
+    --color-input-bg-focus: var(--input-bg);
+    --color-input-bg-disabled: #f5f5f8;
+    --color-input-bg-readonly: #f7f7fa;
+    --color-input-border: var(--border);
+    --color-input-border-hover: var(--border-light);
+    --color-input-border-disabled: #e8e8ec;
+    --color-input-text: var(--text-primary);
+    --color-input-text-disabled: var(--text-disabled);
+    --color-input-placeholder: var(--text-tertiary);
+    --color-input-addon-bg: var(--surface-alt);
+    --input-addon-border: 1px solid var(--color-primary);
+    --input-addon-shadow: 0 1px 2px rgb(var(--shadow-color), var(--shadow-opacity-light));
+    --checkbox-indicator-bg: var(--color-input-bg);
+    --checkbox-border: 1px solid var(--color-text-secondary);
+    --checkbox-shadow: 0 1px 2px rgb(var(--shadow-color), var(--shadow-opacity-light));
+    --field-base-border: 1px solid var(--color-text-secondary);
+    --field-base-shadow: 0 1px 2px rgb(var(--shadow-color), var(--shadow-opacity-light));
+    --color-focus-ring: var(--focus);
+    --color-focus-ring-offset: var(--bg);
+    --color-button-primary: var(--primary);
+    --color-button-primary-text: #fff;
+    --color-overlay: var(--overlay);
+    --shadow-color: 0, 0, 0;
+    --shadow-opacity-light: 0.1;
+    --shadow-opacity-medium: 0.15;
+    --shadow-opacity-heavy: 0.25;
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  [data-theme="light"] {
-    --color-border: #000000;
-    --color-text-primary: #000000;
-    --color-background: #ffffff;
-  }
+@media (prefers-contrast: more) {
+    [data-theme='light'] {
+        --color-border: #000;
+        --color-text-primary: #000;
+        --color-background: #fff;
+    }
 }

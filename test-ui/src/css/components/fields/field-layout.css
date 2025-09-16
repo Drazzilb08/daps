@@ -6,178 +6,107 @@
  */
 
 @layer components {
-  /* Form container */
-  .form {
-    max-width: var(--form-max-width);
-    margin: 0 auto;
-  }
-
-  .form--full-width {
-    max-width: none;
-  }
-
-  .form--narrow {
-    max-width: 400px;
-  }
-
-  .form--wide {
-    max-width: 800px;
-  }
-
-  /* Form sections - use utility classes instead of duplicating styles */
-  .form-section {
-    /* REPLACED: Use .mb-8 utility class instead */
-  }
-
-  .form-section:last-child {
-    /* REPLACED: Use .mb-0 utility class instead */
-  }
-
-  .form-section__header {
-    /* REPLACED: Use .mb-4 .pb-2 .border-b utilities instead */
-  }
-
-  .form-section__title {
-    /* REPLACED: Use .text-lg .font-semibold .text-primary .mb-1 utilities instead */
-  }
-
-  .form-section__description {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin: 0;
-    line-height: var(--line-height-normal);
-  }
-
-  /* Fieldset styling removed - not used in current forms */
-
-  /* Form groups */
-  .form-group {
-    margin-bottom: var(--space-6);
-  }
-
-  .form-group:last-child {
-    margin-bottom: 0;
-  }
-
-  .form-group--compact {
-    margin-bottom: var(--space-4);
-  }
-
-  .form-group--spacious {
-    margin-bottom: var(--space-8);
-  }
-
-  /* Multi-column form layouts removed - not implemented */
-
-  /* 12-column grid system removed - not implemented in current form renderer */
-
-  /* Form actions */
-  .form-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    margin-top: var(--space-6);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-border);
-  }
-
-  .form-actions--center {
-    justify-content: center;
-  }
-
-  .form-actions--right {
-    /* REPLACED: Use .justify-end utility class instead */
-  }
-
-  .form-actions--between {
-    /* REPLACED: Use .justify-between utility class instead */
-  }
-
-  .form-actions--wrap {
-    /* REPLACED: Use .flex-wrap utility class instead */
-  }
-
-  /* Form buttons use unified .btn system - no additional styling needed */
-
-  /* Loading state */
-  .form--loading {
-    pointer-events: none;
-    opacity: 0.7;
-  }
-
-  .form--loading .form-button {
-    cursor: wait;
-  }
-
-  /* Form validation summary */
-  .form-validation-summary {
-    background: var(--color-error-bg);
-    border: 1px solid var(--color-error);
-    border-radius: var(--radius-2);
-    padding: var(--space-3);
-    margin-bottom: var(--space-4);
-  }
-
-  .form-validation-summary__title {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-error);
-    margin: 0 0 var(--space-2) 0;
-  }
-
-  .form-validation-summary__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .form-validation-summary__item {
-    font-size: var(--font-size-sm);
-    color: var(--color-error);
-    margin-bottom: var(--space-1);
-  }
-
-  .form-validation-summary__item:last-child {
-    margin-bottom: 0;
-  }
-
-  .form-validation-summary__item::before {
-    content: "•";
-    margin-right: var(--space-1);
-  }
-
-  /* Progress indicator moved to form-renderer.css with updated naming */
-
-  /* Responsive behavior */
-  @media (max-width: 767px) {
     .form {
-      padding: 0 var(--container-padding-mobile);
+        max-width: var(--form-max-width);
     }
-    
-    /* Form row/column responsive removed with grid system */
-    
+
+    .form--full-width {
+        max-width: none;
+    }
+
+    .form--narrow {
+        max-width: 400px;
+    }
+
+    .form--wide {
+        max-width: 800px;
+    }
+
+    .form-section__description {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        line-height: var(--line-height-normal);
+    }
+
     .form-actions {
-      flex-direction: column;
-      align-items: stretch;
+        margin-top: var(--space-6);
+        padding-top: var(--space-4);
+        border-top: 1px solid var(--color-border);
     }
-    
-    .form-actions--between {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    
-    .form-button {
-      width: 100%;
-      text-align: center;
-    }
-  }
 
-  /* Tablet form-col responsive rules removed with grid system */
-
-  /* Dark theme adjustments */
-  @media (prefers-color-scheme: dark) {
-    .form-section__header {
-      border-bottom-color: var(--color-border-dark);
+    .form-actions--center {
+        justify-content: center;
     }
-  }
+
+    .form--loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .form--loading .form-button {
+        cursor: wait;
+    }
+
+    .form-validation-summary {
+        background: var(--color-error-bg);
+        border: 1px solid var(--color-error);
+        border-radius: var(--radius-2);
+        padding: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+
+    .form-validation-summary__title {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-error);
+        margin: 0 0 var(--space-2) 0;
+    }
+
+    .form-validation-summary__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .form-validation-summary__item {
+        font-size: var(--font-size-sm);
+        color: var(--color-error);
+        margin-bottom: var(--space-1);
+    }
+
+    .form-validation-summary__item:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-validation-summary__item::before {
+        content: '•';
+        margin-right: var(--space-1);
+    }
+
+    @media (width <= 767px) {
+        .form {
+            padding: 0 var(--container-padding-mobile);
+        }
+
+        .form-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-actions--between {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .form-button {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .form-section__header {
+            border-bottom-color: var(--color-border-dark);
+        }
+    }
 }

@@ -12,32 +12,20 @@ import PropTypes from 'prop-types';
  * @param {string} [props.className] - Additional CSS classes
  * @param {string} [props.ariaLabel] - ARIA label for the menu
  */
-const Menu = ({
-  children,
-  className = '',
-  ariaLabel = 'Menu'
-}) => {
-  const menuClassName = [
-    'menu',
-    'flex flex-col gap-0',
-    className
-  ].filter(Boolean).join(' ');
+const Menu = ({ children, className = '', ariaLabel = 'Menu' }) => {
+    const menuClassName = ['menu', 'flex flex-col gap-0', className].filter(Boolean).join(' ');
 
-  return (
-    <div
-      className={menuClassName}
-      role="menu"
-      aria-label={ariaLabel}
-    >
-      {children}
-    </div>
-  );
+    return (
+        <div className={menuClassName} role="menu" aria-label={ariaLabel}>
+            {children}
+        </div>
+    );
 };
 
 Menu.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-  ariaLabel: PropTypes.string
+    children: PropTypes.node.isRequired,
+    className: PropTypes.string,
+    ariaLabel: PropTypes.string,
 };
 
 export default Menu;

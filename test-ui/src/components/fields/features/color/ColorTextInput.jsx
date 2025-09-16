@@ -1,10 +1,10 @@
 /**
  * ColorTextInput Primitive Component
- * 
+ *
  * Text input specialized for hex color values with validation and formatting.
  * Uses monospace font for precise hex editing and includes pattern validation.
  * Designed for composition into color field types following "write once, use everywhere" philosophy.
- * 
+ *
  * Features:
  * - Monospace font for precise hex editing
  * - Real-time hex validation (pattern matching)
@@ -19,7 +19,7 @@ import { InputBase } from '../../primitives/InputBase';
 
 /**
  * ColorTextInput component for hex color text editing
- * 
+ *
  * @param {Object} props - Component props
  * @param {string} props.value - Current color value (hex format)
  * @param {Function} props.onChange - Color change handler: (color: string) => void
@@ -30,46 +30,51 @@ import { InputBase } from '../../primitives/InputBase';
  * @param {string} props.className - Additional CSS classes
  * @param {boolean} props.required - Required field indicator
  */
-export const ColorTextInput = React.memo(({
-  value = '',
-  onChange,
-  disabled = false,
-  invalid = false,
-  id,
-  placeholder = '#000000',
-  className = '',
-  required = false,
-  ...props
-}) => {
-  const handleChange = useCallback((e) => {
-    const newValue = e.target.value;
-    onChange?.(newValue);
-  }, [onChange]);
+export const ColorTextInput = React.memo(
+    ({
+        value = '',
+        onChange,
+        disabled = false,
+        invalid = false,
+        id,
+        placeholder = '#000000',
+        className = '',
+        required = false,
+        ...props
+    }) => {
+        const handleChange = useCallback(
+            e => {
+                const newValue = e.target.value;
+                onChange?.(newValue);
+            },
+            [onChange]
+        );
 
-  // Display value (show what user typed)
-  const displayValue = useMemo(() => {
-    return value || '';
-  }, [value]);
+        // Display value (show what user typed)
+        const displayValue = useMemo(() => {
+            return value || '';
+        }, [value]);
 
-  return (
-    <InputBase
-      id={id}
-      type="text"
-      value={displayValue}
-      onChange={handleChange}
-      disabled={disabled}
-      invalid={invalid}
-      placeholder={placeholder}
-      required={required}
-      pattern="^#?[0-9A-Fa-f]{6}$"
-      maxLength={7}
-      className={`color-text-input ${className}`.trim()}
-      aria-describedby={`${id}-format-hint`}
-      title="Enter hex color (e.g. #ff0000 or ff0000)"
-      {...props}
-    />
-  );
-});
+        return (
+            <InputBase
+                id={id}
+                type="text"
+                value={displayValue}
+                onChange={handleChange}
+                disabled={disabled}
+                invalid={invalid}
+                placeholder={placeholder}
+                required={required}
+                pattern="^#?[0-9A-Fa-f]{6}$"
+                maxLength={7}
+                className={`color-text-input ${className}`.trim()}
+                aria-describedby={`${id}-format-hint`}
+                title="Enter hex color (e.g. #ff0000 or ff0000)"
+                {...props}
+            />
+        );
+    }
+);
 
 ColorTextInput.displayName = 'ColorTextInput';
 

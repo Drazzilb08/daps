@@ -12,184 +12,192 @@ import * as ColorFields from './color';
  * Field type to component mapping
  * Each field component must implement the standard interface:
  * - field: Field configuration object
- * - value: Current field value  
+ * - value: Current field value
  * - onChange: Value change handler (value) => void
  * - disabled: Boolean disabled state
  * - highlightInvalid: Boolean validation error state
  * - errorMessage: String error message to display
  */
 const FIELD_COMPONENTS = {
-  // Basic
-  text: BasicFields.TextField,
-  password: BasicFields.PasswordField,
-  number: BasicFields.NumberField,
-  textarea: BasicFields.TextareaField,
-  float: BasicFields.FloatField,
-  hidden: BasicFields.HiddenField,
-  check_box: SelectFields.CheckboxField,
-  dropdown: SelectFields.DropdownField,
-  json: CustomFields.JsonField,
+    // Basic
+    text: BasicFields.TextField,
+    password: BasicFields.PasswordField,
+    number: BasicFields.NumberField,
+    textarea: BasicFields.TextareaField,
+    float: BasicFields.FloatField,
+    hidden: BasicFields.HiddenField,
+    check_box: SelectFields.CheckboxField,
+    dropdown: SelectFields.DropdownField,
+    json: CustomFields.JsonField,
 
-  // Color
-  color: ColorFields.ColorField,
-  color_list: ColorFields.ColorListField,
-  color_list_poster: ColorFields.ColorListPosterField,
+    // Color
+    color: ColorFields.ColorField,
+    color_list: ColorFields.ColorListField,
+    color_list_poster: ColorFields.ColorListPosterField,
 
-  // Dir
-  dir: CustomFields.DirField,
-  dirlist: CustomFields.DirListField,
-  dirlist_dragdrop: CustomFields.DirListDragDropField,
-  dirlist_options: CustomFields.DirListOptionsField,
+    // Dir
+    dir: CustomFields.DirField,
+    dirlist: CustomFields.DirListField,
+    dirlist_dragdrop: CustomFields.DirListDragDropField,
+    dirlist_options: CustomFields.DirListOptionsField,
 
-  
-  // Placeholders from DAPS settings schema
-  holiday_schedule: CustomFields.HolidayScheduleField,
-  holiday_presets: CustomFields.HolidayPresetsField,
+    // Placeholders from DAPS settings schema
+    holiday_schedule: CustomFields.HolidayScheduleField,
+    holiday_presets: CustomFields.HolidayPresetsField,
 
-  gdrive_custom: CustomFields.GDriveCustomField,
-  gdrive_presets: CustomFields.GDrivePresetsField,
-  
-  replacerr_custom: CustomFields.ReplacerCustomField,
-  upgradinatorr_custom: CustomFields.UpgradinatorCustomField,
-  labelarr_custom: CustomFields.LabelarrCustomField,
-  instances: CustomFields.InstancesField,
-  instance_dropdown: CustomFields.InstanceDropdownField,
-  schedule: CustomFields.ScheduleField,
-  tag_select: CustomFields.TagSelectField,
-  tag_display: CustomFields.TagDisplayField,
-  tag_multiselect: CustomFields.TagMultiSelectField,
-  media_info_display: CustomFields.MediaInfoDisplayField,
-  media_display: CustomFields.MediaDisplayField,
-  dir_picker: CustomFields.DirPickerField,
-  poster: CustomFields.PosterField,
+    gdrive_custom: CustomFields.GDriveCustomField,
+    gdrive_presets: CustomFields.GDrivePresetsField,
+
+    replacerr_custom: CustomFields.ReplacerCustomField,
+    upgradinatorr_custom: CustomFields.UpgradinatorCustomField,
+    labelarr_custom: CustomFields.LabelarrCustomField,
+    instances: CustomFields.InstancesField,
+    instance_dropdown: CustomFields.InstanceDropdownField,
+    schedule: CustomFields.ScheduleField,
+    tag_select: CustomFields.TagSelectField,
+    tag_display: CustomFields.TagDisplayField,
+    tag_multiselect: CustomFields.TagMultiSelectField,
+    media_info_display: CustomFields.MediaInfoDisplayField,
+    media_display: CustomFields.MediaDisplayField,
+    dir_picker: CustomFields.DirPickerField,
+    poster: CustomFields.PosterField,
 };
 
 /**
  * Fallback component for truly unknown field types (not in registry at all)
  */
 const UnknownFieldType = ({ field }) => {
-  const inputId = `field-${field.key}`;
-  
-  return (
-    <>
-      <label htmlFor={inputId} className="field-label">
-        {field.label}
-        {field.required && <span className="required-indicator">*</span>}
-      </label>
-      
-      <div className="field-unknown">
-        <div style={{
-          padding: 'var(--space-4)',
-          background: 'var(--color-error-bg)',
-          border: '1px solid var(--color-error)',
-          borderRadius: 'var(--radius-2)',
-          textAlign: 'center',
-          color: 'var(--color-error-text)',
-          fontSize: 'var(--font-size-sm)'
-        }}>
-          <strong>Unknown field type "{field.type}"</strong>
-          <br />
-          <small>This field type is not recognized by the system</small>
-        </div>
-      </div>
-      
-      {field.description && (
-        <div id={`${inputId}-description`} className="field-description">
-          {field.description}
-        </div>
-      )}
-    </>
-  );
+    const inputId = `field-${field.key}`;
+
+    return (
+        <>
+            <label htmlFor={inputId} className="field-label">
+                {field.label}
+                {field.required && <span className="required-indicator">*</span>}
+            </label>
+
+            <div className="field-unknown">
+                <div
+                    style={{
+                        padding: 'var(--space-4)',
+                        background: 'var(--color-error-bg)',
+                        border: '1px solid var(--color-error)',
+                        borderRadius: 'var(--radius-2)',
+                        textAlign: 'center',
+                        color: 'var(--color-error-text)',
+                        fontSize: 'var(--font-size-sm)',
+                    }}
+                >
+                    <strong>Unknown field type "{field.type}"</strong>
+                    <br />
+                    <small>This field type is not recognized by the system</small>
+                </div>
+            </div>
+
+            {field.description && (
+                <div id={`${inputId}-description`} className="field-description">
+                    {field.description}
+                </div>
+            )}
+        </>
+    );
 };
 
 // Define which field types are IMPLEMENTED
 const IMPLEMENTED_FIELD_TYPES = new Set([
-  'text', 'password', 'number', 'textarea',
-  'float', 'hidden',
-  'check_box', 'dropdown',
-  'json',
-  'color', 'color_list', 'color_list_poster'
+    'text',
+    'password',
+    'number',
+    'textarea',
+    'float',
+    'hidden',
+    'check_box',
+    'dropdown',
+    'json',
+    'color',
+    'color_list',
+    'color_list_poster',
 ]);
 
 /**
  * FieldRegistry class provides methods to register, retrieve, and manage field components
  */
 export class FieldRegistry {
-  /**
-   * Get a field component by type
-   * @param {string} fieldType - The field type string
-   * @returns {React.Component} The field component or UnknownFieldType fallback
-   */
-  static getField(fieldType) {
-    const component = FIELD_COMPONENTS[fieldType];
-    if (!component) {
-      console.warn(`[FieldRegistry] Unknown field type: ${fieldType}`);
-      return UnknownFieldType;
+    /**
+     * Get a field component by type
+     * @param {string} fieldType - The field type string
+     * @returns {React.Component} The field component or UnknownFieldType fallback
+     */
+    static getField(fieldType) {
+        const component = FIELD_COMPONENTS[fieldType];
+        if (!component) {
+            console.warn(`[FieldRegistry] Unknown field type: ${fieldType}`);
+            return UnknownFieldType;
+        }
+        return component;
     }
-    return component;
-  }
-  
-  /**
-   * Register a new field component
-   * @param {string} fieldType - The field type string
-   * @param {React.Component} component - The React component to register
-   */
-  static register(fieldType, component) {
-    if (FIELD_COMPONENTS[fieldType]) {
-      console.warn(`[FieldRegistry] Overriding existing field type: ${fieldType}`);
+
+    /**
+     * Register a new field component
+     * @param {string} fieldType - The field type string
+     * @param {React.Component} component - The React component to register
+     */
+    static register(fieldType, component) {
+        if (FIELD_COMPONENTS[fieldType]) {
+            console.warn(`[FieldRegistry] Overriding existing field type: ${fieldType}`);
+        }
+        FIELD_COMPONENTS[fieldType] = component;
     }
-    FIELD_COMPONENTS[fieldType] = component;
-  }
-  
-  /**
-   * Check if a field type is registered
-   * @param {string} fieldType - The field type string
-   * @returns {boolean} True if field type exists
-   */
-  static hasField(fieldType) {
-    return fieldType in FIELD_COMPONENTS;
-  }
-  
-  /**
-   * Get all registered field types (including placeholders)
-   * @returns {string[]} Array of all field type strings
-   */
-  static getFieldTypes() {
-    return Object.keys(FIELD_COMPONENTS);
-  }
-  
-  /**
-   * Get only implemented field types (excludes placeholders)
-   * @returns {string[]} Array of implemented field type strings
-   */
-  static getWorkingFieldTypes() {
-    return Array.from(IMPLEMENTED_FIELD_TYPES);
-  }
-  
-  /**
-   * Get only placeholder field types  
-   * @returns {string[]} Array of placeholder field type strings
-   */
-  static getPlaceholderFieldTypes() {
-    return Object.keys(FIELD_COMPONENTS).filter(type => !IMPLEMENTED_FIELD_TYPES.has(type));
-  }
-  
-  /**
-   * Check if a field type is implemented (not a placeholder)
-   * @param {string} fieldType - The field type string  
-   * @returns {boolean} True if field type is implemented
-   */
-  static isWorkingFieldType(fieldType) {
-    return IMPLEMENTED_FIELD_TYPES.has(fieldType);
-  }
-  
-  /**
-   * Remove a field type from the registry
-   * @param {string} fieldType - The field type string
-   */
-  static unregister(fieldType) {
-    delete FIELD_COMPONENTS[fieldType];
-  }
+
+    /**
+     * Check if a field type is registered
+     * @param {string} fieldType - The field type string
+     * @returns {boolean} True if field type exists
+     */
+    static hasField(fieldType) {
+        return fieldType in FIELD_COMPONENTS;
+    }
+
+    /**
+     * Get all registered field types (including placeholders)
+     * @returns {string[]} Array of all field type strings
+     */
+    static getFieldTypes() {
+        return Object.keys(FIELD_COMPONENTS);
+    }
+
+    /**
+     * Get only implemented field types (excludes placeholders)
+     * @returns {string[]} Array of implemented field type strings
+     */
+    static getWorkingFieldTypes() {
+        return Array.from(IMPLEMENTED_FIELD_TYPES);
+    }
+
+    /**
+     * Get only placeholder field types
+     * @returns {string[]} Array of placeholder field type strings
+     */
+    static getPlaceholderFieldTypes() {
+        return Object.keys(FIELD_COMPONENTS).filter(type => !IMPLEMENTED_FIELD_TYPES.has(type));
+    }
+
+    /**
+     * Check if a field type is implemented (not a placeholder)
+     * @param {string} fieldType - The field type string
+     * @returns {boolean} True if field type is implemented
+     */
+    static isWorkingFieldType(fieldType) {
+        return IMPLEMENTED_FIELD_TYPES.has(fieldType);
+    }
+
+    /**
+     * Remove a field type from the registry
+     * @param {string} fieldType - The field type string
+     */
+    static unregister(fieldType) {
+        delete FIELD_COMPONENTS[fieldType];
+    }
 }
 
 /**
@@ -198,7 +206,7 @@ export class FieldRegistry {
  * @returns {React.Component|null} The field component or null if not found
  */
 export function useFieldComponent(fieldType) {
-  return FieldRegistry.getField(fieldType);
+    return FieldRegistry.getField(fieldType);
 }
 
 /**

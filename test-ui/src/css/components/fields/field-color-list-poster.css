@@ -6,258 +6,202 @@
  */
 
 @layer components {
-  .color-list-poster-field {
-    /* Layout handled by utilities: flex flex-col gap-4 */
-  }
-
-  /* .color-poster-empty-state removed - unused dead code */
-
-  /* .color-poster-empty-message removed - unused dead code */
-
-  .color-poster-empty-title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-primary);
-    margin: 0;
-  }
-
-  .color-poster-empty-subtitle {
-    color: var(--color-text-secondary);
-    margin: 0;
-    /* Font styling inherited from base typography */
-  }
-
-  .color-poster-empty-add-button {
-    min-height: var(--touch-target-min);
-  }
-
-  .color-poster-grid {
-    /* Layout fully handled by utilities: grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 */
-  }
-
-  .color-poster-item {
-    /* Layout handled by utilities: flex flex-col gap-2 */
-  }
-
-  .color-poster-preview {
-    /* Layout handled by utilities: flex justify-center items-center flex-shrink-0 */
-  }
-
-  .color-poster-image {
-    width: var(--poster-width-standard);
-    height: var(--poster-height-standard);
-    object-fit: cover;
-    border-radius: var(--radius-2);
-    box-shadow: var(--shadow-md);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-  .color-poster-image:hover {
-    transform: scale(1.02);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .color-poster-placeholder {
-    width: var(--poster-width-standard);
-    height: var(--poster-height-standard);
-    background: var(--color-surface-dim);
-    border: 2px dashed var(--color-border);
-    border-radius: var(--radius-2);
-    /* Layout handled by utilities: flex items-center justify-center flex-col gap-2 */
-  }
-
-  .color-poster-placeholder-text {
-    color: var(--color-input-placeholder);
-    text-align: center;
-    /* Font styling inherited from base typography */
-  }
-
-  .color-poster-controls {
-    /* Layout handled by utilities: flex items-center gap-2 justify-center */
-  }
-
-  .color-poster-controls .color-picker {
-    width: var(--touch-target-min);
-    height: var(--touch-target-min);
-    transition: transform var(--transition-fast);
-  }
-
-  .color-poster-controls .color-picker:hover {
-    transform: scale(1.05);
-  }
-
-  .color-poster-controls .color-picker:focus {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
-
-  .color-poster-controls .color-picker.invalid {
-    outline: 2px solid var(--color-error);
-    outline-offset: 2px;
-  }
-
-  .color-poster-remove-button {
-    min-width: var(--touch-target-min);
-    min-height: var(--touch-target-min);
-    flex-shrink: 0;
-  }
-
-  .color-poster-status-text {
-    color: var(--color-text-secondary);
-    font-style: italic;
-    text-align: center;
-    /* Font styling inherited from base typography */
-  }
-
-  .color-poster-bottom-controls {
-    /* Layout handled by utilities: flex items-center justify-between gap-3 mt-3 */
-  }
-
-  .color-poster-add-button {
-    min-height: var(--touch-target-min);
-  }
-
-  .color-poster-counter {
-    /* Layout handled by utilities: flex flex-col items-end gap-1 */
-  }
-
-  .color-poster-counter-text {
-    color: var(--color-text-secondary);
-    /* Font styling inherited from base typography */
-  }
-
-  .color-poster-counter-warning {
-    color: var(--color-warning-text);
-    font-style: italic;
-    /* Font styling inherited from base typography */
-  }
-
-  .color-poster-status {
-    /* Layout handled by utilities: flex flex-col gap-2 */
-  }
-
-  .color-poster-warning {
-    /* Padding handled by utilities: py-2 px-3 */
-    background: var(--color-warning-bg);
-    border: 1px solid var(--color-warning);
-  }
-
-  .color-poster-warning-text {
-    color: var(--color-warning-text);
-    font-style: italic;
-    /* Font styling inherited from base typography */
-  }
-
-  .color-poster-loading {
-    /* Padding handled by utilities: py-2 px-3 */
-    background: var(--color-info-bg);
-    border: 1px solid var(--color-info);
-  }
-
-  .color-poster-loading-text {
-    color: var(--color-info-text);
-    font-style: italic;
-    /* Font styling inherited from base typography */
-  }
-
-  @media (max-width: var(--breakpoint-mobile-lg)) {
-    .color-poster-image,
-    .color-poster-placeholder {
-      width: var(--poster-width-mobile);
-      height: var(--poster-height-mobile);
+    .color-poster-empty-title {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-primary);
+        margin: 0;
     }
 
-    .color-poster-controls {
-      /* Gap handled by responsive utilities: gap-1 sm:gap-2 */
+    .color-poster-empty-subtitle {
+        color: var(--color-text-secondary);
+        margin: 0;
     }
 
-    .color-poster-bottom-controls {
-      /* Layout handled by responsive utilities: flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between */
+    .color-poster-empty-add-button {
+        min-height: var(--touch-target-min);
     }
 
-    .color-poster-counter {
-      /* Alignment handled by responsive utilities: items-center text-center md:items-end md:text-right */
+    .color-poster-image {
+        width: var(--poster-width-standard);
+        height: var(--poster-height-standard);
+        object-fit: cover;
+        border-radius: var(--radius-2);
+        box-shadow: var(--shadow-md);
+        transition:
+            transform var(--transition-fast),
+            box-shadow var(--transition-fast);
     }
-  }
 
-  /* Grid layout now fully handled by responsive utilities */
-  @media (min-width: 481px) and (max-width: 768px) {
-    .color-poster-image,
-    .color-poster-placeholder {
-      width: var(--poster-width-tablet);
-      height: var(--poster-height-tablet);
-    }
-  }
-
-  @media (hover: none) and (pointer: coarse) {
     .color-poster-image:hover {
-      transform: none;
+        transform: scale(1.02);
+        box-shadow: var(--shadow-lg);
     }
 
-    .color-poster-controls .color-picker:hover {
-      transform: none;
-    }
-
-    .color-poster-controls .color-picker {
-      width: var(--touch-target-comfortable);
-      height: var(--touch-target-comfortable);
-    }
-  }
-
-  /* Theme styling handled by standard CSS variables - no theme-specific overrides needed */
-
-
-  @media (prefers-contrast: high) {
     .color-poster-placeholder {
-      border-width: 3px;
-      border-style: solid;
+        width: var(--poster-width-standard);
+        height: var(--poster-height-standard);
+        background: var(--color-surface-dim);
+        border: 2px dashed var(--color-border);
+        border-radius: var(--radius-2);
     }
 
-  }
+    .color-poster-placeholder-text {
+        color: var(--color-input-placeholder);
+        text-align: center;
+    }
 
-  @media (prefers-reduced-motion: reduce) {
-    .color-poster-image,
     .color-poster-controls .color-picker {
-      transition: none;
+        width: var(--touch-target-min);
+        height: var(--touch-target-min);
+        transition: transform var(--transition-fast);
     }
 
-    .color-poster-image:hover,
     .color-poster-controls .color-picker:hover {
-      transform: none;
+        transform: scale(1.05);
     }
-  }
 
-  .color-poster-loading-text::after {
-    content: "";
-    display: inline-block;
-    width: var(--space-2);
-    height: var(--space-2);
-    margin-left: var(--space-1);
-    border: 2px solid var(--color-info-text);
-    border-top: 2px solid transparent;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
+    .color-poster-controls .color-picker:focus {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
 
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
+    .color-poster-controls .color-picker.invalid {
+        outline: 2px solid var(--color-error);
+        outline-offset: 2px;
+    }
 
-  .color-poster-item:focus-within {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-    border-radius: var(--radius-1);
-  }
+    .color-poster-remove-button {
+        min-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
+        flex-shrink: 0;
+    }
 
-  .color-poster-image:focus {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
+    .color-poster-status-text {
+        color: var(--color-text-secondary);
+        font-style: italic;
+        text-align: center;
+    }
 
-  .color-poster-controls:focus-within {
-    outline: 1px solid var(--color-focus);
-    outline-offset: 2px;
-    border-radius: var(--radius-1);
-  }
+    .color-poster-add-button {
+        min-height: var(--touch-target-min);
+    }
+
+    .color-poster-counter-text {
+        color: var(--color-text-secondary);
+    }
+
+    .color-poster-counter-warning {
+        color: var(--color-warning-text);
+        font-style: italic;
+    }
+
+    .color-poster-warning {
+        background: var(--color-warning-bg);
+        border: 1px solid var(--color-warning);
+    }
+
+    .color-poster-warning-text {
+        color: var(--color-warning-text);
+        font-style: italic;
+    }
+
+    .color-poster-loading {
+        background: var(--color-info-bg);
+        border: 1px solid var(--color-info);
+    }
+
+    .color-poster-loading-text {
+        color: var(--color-info-text);
+        font-style: italic;
+    }
+
+    @media (width <= 425px) {
+        .color-poster-image,
+        .color-poster-placeholder {
+            width: var(--poster-width-mobile);
+            height: var(--poster-height-mobile);
+        }
+    }
+
+    @media (width >= 481px) and (width <= 768px) {
+        .color-poster-image,
+        .color-poster-placeholder {
+            width: var(--poster-width-tablet);
+            height: var(--poster-height-tablet);
+        }
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+        .color-poster-image:hover {
+            transform: none;
+        }
+
+        .color-poster-controls .color-picker {
+            width: var(--touch-target-comfortable);
+            height: var(--touch-target-comfortable);
+        }
+
+        .color-poster-controls .color-picker:hover {
+            transform: none;
+        }
+    }
+
+    @media (prefers-contrast: more) {
+        .color-poster-placeholder {
+            border-width: 3px;
+            border-style: solid;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .color-poster-image,
+        .color-poster-controls .color-picker {
+            transition: none;
+        }
+
+        .color-poster-image:hover,
+        .color-poster-controls .color-picker:hover {
+            transform: none;
+        }
+    }
+
+    .color-poster-loading-text::after {
+        content: '';
+        display: inline-block;
+        width: var(--space-2);
+        height: var(--space-2);
+        margin-left: var(--space-1);
+        border: 2px solid var(--color-info-text);
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .color-poster-item:focus-within {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+        border-radius: var(--radius-1);
+    }
+
+    .color-poster-image:focus {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    .color-poster-controls:focus-within {
+        outline: 1px solid var(--color-focus);
+        outline-offset: 2px;
+        border-radius: var(--radius-1);
+    }
 }

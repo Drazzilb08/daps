@@ -12,10 +12,10 @@ export function useToast() {
 
 // Export toast types for backward compatibility
 export const TOAST_TYPES = {
-  SUCCESS: 'success',
-  ERROR: 'error',
-  WARNING: 'warning',
-  INFO: 'info'
+    SUCCESS: 'success',
+    ERROR: 'error',
+    WARNING: 'warning',
+    INFO: 'info',
 };
 
 // Simple toast component that just shows the message
@@ -25,11 +25,11 @@ function Toast({ id, message, type, onClose }) {
     React.useEffect(() => {
         // Show animation
         const showTimer = setTimeout(() => setVisible(true), 10);
-        
+
         // Auto-hide after timeout
         const timeout = type === 'error' ? 5000 : 3000;
         const hideTimer = setTimeout(() => setVisible(false), timeout);
-        
+
         // Remove from DOM after animation
         const removeTimer = setTimeout(() => onClose(id), timeout + 500);
 
@@ -46,7 +46,7 @@ function Toast({ id, message, type, onClose }) {
     };
 
     return (
-        <div 
+        <div
             className={`toast p-3 pl-4 pr-4 rounded-md text-base font-medium cursor-pointer relative overflow-hidden ${type} ${visible ? 'show' : ''}`}
             onClick={handleClick}
             role="alert"
@@ -65,28 +65,27 @@ export function ToastProvider({ children }) {
         setToasts(prev => [...prev, { id, message, type }]);
     }, []);
 
-    const removeToast = useCallback((id) => {
+    const removeToast = useCallback(id => {
         setToasts(prev => prev.filter(toast => toast.id !== id));
     }, []);
 
-    const toastMethods = React.useMemo(() => ({
-        success: (message) => showToast(message, 'success'),
-        error: (message) => showToast(message, 'error'),
-        info: (message) => showToast(message, 'info'),
-        warning: (message) => showToast(message, 'warning'),
-        showToast
-    }), [showToast]);
+    const toastMethods = React.useMemo(
+        () => ({
+            success: message => showToast(message, 'success'),
+            error: message => showToast(message, 'error'),
+            info: message => showToast(message, 'info'),
+            warning: message => showToast(message, 'warning'),
+            showToast,
+        }),
+        [showToast]
+    );
 
     return (
         <ToastContext.Provider value={toastMethods}>
             {children}
             <div className="toast-container fixed bottom-4 right-4 flex flex-col gap-2">
                 {toasts.map(toast => (
-                    <Toast 
-                        key={toast.id} 
-                        {...toast} 
-                        onClose={removeToast} 
-                    />
+                    <Toast key={toast.id} {...toast} onClose={removeToast} />
                 ))}
             </div>
         </ToastContext.Provider>

@@ -2,86 +2,69 @@
  * Input Field Styles
  *
  * Styles for text, password, number, and other input-based fields.
- * RELOCATED: Core input and number field styling moved from utilities.css
  */
 
 @layer components {
-  /* =============================================================================
-     BASIC INPUT STYLING - Core input element styling
-     ============================================================================= */
-
-  .input {
-    width: 100%;
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-normal);
-    color: var(--color-input-text);
-    background: var(--color-input-bg);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-2);
-    transition: all var(--transition-fast);
-  }
-
-  .input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
-
-  .input:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-
-  /* =============================================================================
-     NUMBER FIELD DISPLAY - Specialized number field display styling
-     ============================================================================= */
-
-  .number-field-display {
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-    cursor: default;
-  }
-
-  .number-field-display:focus {
-    outline: none;
-    box-shadow: none;
-  }
-
-  /* Number field wrapper and suffix styling */
-  .number-field-input-wrapper .number-field-display {
-    /* COMPONENT-SPECIFIC: Keep padding for % suffix display */
-    padding-right: var(--space-6); /* Space for % suffix - component-specific, cannot be utility */
-  }
-
-  /* =============================================================================
-     LEGACY COMPATIBILITY AND HIGH CONTRAST SUPPORT
-     ============================================================================= */
-
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    .field-input,
     .input {
-      border-width: var(--border-width-medium);
+        width: 100%;
+        min-height: var(--touch-target-min);
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--font-size-base);
+        line-height: var(--line-height-normal);
+        color: var(--color-input-text);
+        background: var(--color-input-bg);
+        border: var(--border-width-thin) solid var(--color-border);
+        border-radius: var(--radius-2);
+        transition: all var(--transition-fast);
     }
 
-    .field-input:focus,
     .input:focus {
-      outline: var(--border-width-thick) solid var(--color-primary);
-      outline-offset: var(--border-width-thin);
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
     }
-  }
 
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    .field-input,
-    .field-input-base,
-    .input {
-      transition: none;
+    .input:disabled {
+        background: var(--color-input-bg-disabled);
+        color: var(--color-input-text-disabled);
+        border-color: var(--color-input-border-disabled);
+        cursor: not-allowed;
+        opacity: 0.6;
     }
-  }
+
+    .number-field-display {
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        cursor: default;
+    }
+
+    .number-field-display:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    .number-field-input-wrapper .number-field-display {
+        padding-right: var(--space-6);
+    }
+
+    @media (prefers-contrast: more) {
+        .field-input,
+        .input {
+            border-width: var(--border-width-medium);
+        }
+
+        .field-input:focus,
+        .input:focus {
+            outline: var(--border-width-thick) solid var(--color-primary);
+            outline-offset: var(--border-width-thin);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .field-input,
+        .field-input-base,
+        .input {
+            transition: none;
+        }
+    }
 }

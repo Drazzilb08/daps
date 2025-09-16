@@ -5,21 +5,19 @@
  */
 
 @layer components {
-  /* Placeholder Field Styles */
-  .field-placeholder {
-    padding: var(--space-4);
-    border: 2px dashed var(--color-border);
-    border-radius: var(--radius-2);
-    text-align: center;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    background: var(--color-surface-secondary);
-  }
+    .field-placeholder {
+        padding: var(--space-4);
+        border: 2px dashed var(--color-border);
+        border-radius: var(--radius-2);
+        text-align: center;
+        color: var(--color-text-secondary);
+        font-style: italic;
+        background: var(--color-surface-secondary);
+    }
 
-  .field-placeholder code {
-    background: var(--color-surface);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-1);
-    /* Font styling inherited from base typography */
-  }
+    .field-placeholder code {
+        background: var(--color-surface);
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-1);
+    }
 }

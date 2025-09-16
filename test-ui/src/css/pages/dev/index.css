@@ -3,6 +3,6 @@
  * Central import file for all development page styles
  */
 
-@import './api-test.css';
-@import './field-test.css';
-@import './error-test.css';
+@import url('./api-test.css');
+@import url('./field-test.css');
+@import url('./error-test.css');

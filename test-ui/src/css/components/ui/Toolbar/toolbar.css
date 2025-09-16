@@ -6,10 +6,6 @@
  */
 
 /* Main toolbar container styles */
-@import './toolbar-main.css';
-
-/* Toolbar button styles */
-@import './toolbar-button.css';
-
-/* Toolbar separator styles */
-@import './toolbar-separator.css';
+@import url('./toolbar-main.css');
+@import url('./toolbar-button.css');
+@import url('./toolbar-separator.css');

@@ -12,252 +12,178 @@
  */
 
 @layer components {
-  /* Base button */
-  .btn {
-    /* USE UTILITIES IN REACT: inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast */
-
-    /* Component-specific styling that cannot be utilities */
-    min-height: var(--touch-target-min);
-    line-height: 1;
-    text-decoration: none;
-    white-space: nowrap;
-    border: 1px solid transparent;
-    user-select: none;
-  }
-
-  /* Focus state - accessible */
-  .btn:focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-focus-ring);
-    outline-offset: var(--focus-ring-offset);
-  }
-
-  /* Universal click effect for all buttons */
-  button:active:not(:disabled),
-  [role="button"]:active:not(:disabled),
-  input[type="button"]:active:not(:disabled),
-  input[type="submit"]:active:not(:disabled),
-  input[type="reset"]:active:not(:disabled) {
-    transform: scale(0.98) !important;
-    transition: transform 0.1s ease !important;
-  }
-
-  /* Disabled state handled by .state-disabled utility class */
-  /* USE IN REACT: Add "state-disabled" class when button is disabled */
-
-  /* =============================================================================
-     BUTTON VARIANTS - Semantic color variations
-     ============================================================================= */
-  
-  /* Primary button - main actions */
-  .btn--primary {
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-    border-color: var(--color-primary);
-  }
-
-  .btn--primary:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    border-color: var(--color-primary-hover);
-  }
-
-  /* Secondary button - secondary actions */
-  .btn--secondary {
-    background: var(--color-accent);
-    color: var(--color-accent-text);
-    border-color: var(--color-accent);
-  }
-
-  /* USE IN REACT: Add "state-hover-dim" class for hover behavior */
-
-  /* Success button - confirmation actions */
-  .btn--success {
-    background: var(--color-success);
-    color: var(--color-success-text);
-    border-color: var(--color-success);
-  }
-
-  /* Warning button - caution actions */
-  .btn--warning {
-    background: var(--color-warning);
-    color: var(--color-warning-text);
-    border-color: var(--color-warning);
-  }
-
-  /* Danger/Error button - destructive actions */
-  .btn--danger,
-  .btn--error {
-    background: var(--color-error);
-    color: var(--color-error-text);
-    border-color: var(--color-error);
-  }
-
-  /* NOTE: All secondary, success, warning, and danger/error variants use .state-hover-dim */
-  /* USE IN REACT: Add "state-hover-dim" class for hover behavior on these variants */
-
-  /* Info button - informational actions */
-  .btn--info {
-    background: var(--color-accent);
-    color: var(--color-accent-text);
-    border-color: var(--color-accent);
-  }
-
-  /* Ghost button - subtle actions */
-  .btn--ghost {
-    background: transparent;
-    color: var(--color-text-primary);
-    border-color: var(--color-border);
-  }
-
-  .btn--ghost:hover:not(:disabled) {
-    background: var(--color-surface-hover);
-  }
-
-  /* Remove button - color utility only */
-  .btn--remove {
-    background: transparent;
-    color: var(--color-error);
-    border-color: var(--color-error);
-  }
-
-  .btn--remove:hover:not(:disabled) {
-    background: var(--color-error);
-    color: var(--color-error-text);
-  }
-
-  /* Add button - color utility only */
-  .btn--add {
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-    border-color: var(--color-primary);
-  }
-
-  .btn--add:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    border-color: var(--color-primary-hover);
-  }
-
-  /* =============================================================================
-     BUTTON SIZES - Composable size variations
-     ============================================================================= */
-  
-  /* Small button */
-  .btn--small {
-    /* USE UTILITIES IN REACT: py-1 px-2 text-sm */
-    min-height: var(--touch-target-min);
-  }
-
-  /* Large button */
-  .btn--large {
-    /* USE UTILITIES IN REACT: py-3 px-4 text-lg */
-    min-height: var(--touch-target-comfortable);
-  }
-
-  /* =============================================================================
-     BUTTON MODIFIERS - Additional behavior classes
-     ============================================================================= */
-  
-
-  /* Icon-only button */
-  .btn--icon-only {
-    /* USE UTILITIES IN REACT: flex-center-both text-lg font-bold p-0 */
-
-    /* Component-specific sizing for icon buttons */
-    min-width: var(--touch-target-min);
-    width: var(--touch-target-min);
-    height: var(--touch-target-min);
-    aspect-ratio: 1;
-  }
-
-  /* =============================================================================
-     NUMBER FIELD BUTTON MODIFIERS - For input field controls
-     ============================================================================= */
-  
-  /* Number field button styling - elevated surface for input controls */
-  .btn--number-field {
-    /* USE UTILITIES IN REACT: py-2 px-3 */
-
-    /* Component-specific styling for number field integration */
-    background: var(--color-surface-elevated);
-    color: var(--color-primary);
-    border-color: transparent;
-    min-width: calc(var(--touch-target-min) + var(--space-2));
-    box-shadow: none;
-  }
-
-  .btn--number-field:hover:not(:disabled) {
-    background: var(--color-surface-hover);
-    color: var(--color-primary);
-    border-color: transparent;
-    box-shadow: none;
-  }
-
-  /* Position modifiers for attached number field buttons */
-  .btn--number-field-left {
-    border-radius: var(--radius-2) 0 0 var(--radius-2);
-  }
-
-  .btn--number-field-right {
-    border-radius: 0 var(--radius-2) var(--radius-2) 0;
-  }
-
-  /* =============================================================================
-     MOBILE OPTIMIZATIONS
-     ============================================================================= */
-  
-  @media (max-width: 768px) {
-    /* Larger touch targets on mobile */
     .btn {
-      /* USE UTILITIES IN REACT: py-3 px-4 (on mobile) */
-      min-height: var(--touch-target-comfortable);
+        min-height: var(--touch-target-min);
+        line-height: 1;
+        text-decoration: none;
+        white-space: nowrap;
+        border: 1px solid transparent;
+        user-select: none;
+    }
+
+    .btn:focus-visible {
+        outline: var(--focus-ring-width) solid var(--color-focus-ring);
+        outline-offset: var(--focus-ring-offset);
+    }
+
+    button:active:not(:disabled),
+    [role='button']:active:not(:disabled),
+    input[type='button']:active:not(:disabled),
+    input[type='submit']:active:not(:disabled),
+    input[type='reset']:active:not(:disabled) {
+        transform: scale(0.98) !important;
+        transition: transform 0.1s ease !important;
+    }
+
+    .btn--primary {
+        background: var(--color-primary);
+        color: var(--color-primary-text);
+        border-color: var(--color-primary);
+    }
+
+    .btn--primary:hover:not(:disabled) {
+        background: var(--color-primary-hover);
+        border-color: var(--color-primary-hover);
+    }
+
+    .btn--secondary {
+        background: var(--color-accent);
+        color: var(--color-accent-text);
+        border-color: var(--color-accent);
+    }
+
+    .btn--success {
+        background: var(--color-success);
+        color: var(--color-success-text);
+        border-color: var(--color-success);
+    }
+
+    .btn--warning {
+        background: var(--color-warning);
+        color: var(--color-warning-text);
+        border-color: var(--color-warning);
+    }
+
+    .btn--danger,
+    .btn--error {
+        background: var(--color-error);
+        color: var(--color-error-text);
+        border-color: var(--color-error);
+    }
+
+    .btn--info {
+        background: var(--color-accent);
+        color: var(--color-accent-text);
+        border-color: var(--color-accent);
+    }
+
+    .btn--ghost {
+        background: transparent;
+        color: var(--color-text-primary);
+        border-color: var(--color-border);
+    }
+
+    .btn--ghost:hover:not(:disabled) {
+        background: var(--color-surface-hover);
+    }
+
+    .btn--remove {
+        background: transparent;
+        color: var(--color-error);
+        border-color: var(--color-error);
+    }
+
+    .btn--remove:hover:not(:disabled) {
+        background: var(--color-error);
+        color: var(--color-error-text);
+    }
+
+    .btn--add {
+        background: var(--color-primary);
+        color: var(--color-primary-text);
+        border-color: var(--color-primary);
+    }
+
+    .btn--add:hover:not(:disabled) {
+        background: var(--color-primary-hover);
+        border-color: var(--color-primary-hover);
     }
 
     .btn--small {
-      min-height: var(--touch-target-min);
+        min-height: var(--touch-target-min);
     }
 
-    /* Stack button groups vertically on mobile */
-    .btn-group {
-      /* USE UTILITIES IN REACT: flex-col w-full (on mobile) */
+    .btn--large {
+        min-height: var(--touch-target-comfortable);
     }
 
-    .btn-group .btn {
-      /* USE UTILITIES IN REACT: w-full (on mobile) */
+    .btn--icon-only {
+        min-width: var(--touch-target-min);
+        width: var(--touch-target-min);
+        height: var(--touch-target-min);
+        aspect-ratio: 1;
     }
-  }
 
-  /* =============================================================================
-     ACCESSIBILITY ENHANCEMENTS
-     ============================================================================= */
-  
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    .btn {
-      border-width: 2px;
+    .btn--number-field {
+        background: var(--color-surface-elevated);
+        color: var(--color-primary);
+        border-color: transparent;
+        min-width: calc(var(--touch-target-min) + var(--space-2));
+        box-shadow: none;
     }
-    
-    .btn:focus-visible {
-      outline-width: 3px;
-      outline-offset: 1px;
-    }
-  }
 
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    .btn {
-      transition: none;
+    .btn--number-field:hover:not(:disabled) {
+        background: var(--color-surface-hover);
+        color: var(--color-primary);
+        border-color: transparent;
+        box-shadow: none;
     }
-    
-    /* Disable button click transforms for reduced motion */
-    button:active:not(:disabled),
-    [role="button"]:active:not(:disabled),
-    input[type="button"]:active:not(:disabled),
-    input[type="submit"]:active:not(:disabled),
-    input[type="reset"]:active:not(:disabled) {
-      transform: none !important;
+
+    .btn--number-field-left {
+        border-radius: var(--radius-2) 0 0 var(--radius-2);
     }
-    
-    .btn--loading::after {
-      animation: none;
+
+    .btn--number-field-right {
+        border-radius: 0 var(--radius-2) var(--radius-2) 0;
     }
-  }
+
+    @media (width <= 768px) {
+        .btn {
+            min-height: var(--touch-target-comfortable);
+        }
+
+        .btn--small {
+            min-height: var(--touch-target-min);
+        }
+
+    }
+
+    @media (prefers-contrast: more) {
+        .btn {
+            border-width: 2px;
+        }
+
+        .btn:focus-visible {
+            outline-width: 3px;
+            outline-offset: 1px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .btn {
+            transition: none;
+        }
+
+        button:active:not(:disabled),
+        [role='button']:active:not(:disabled),
+        input[type='button']:active:not(:disabled),
+        input[type='submit']:active:not(:disabled),
+        input[type='reset']:active:not(:disabled) {
+            transform: none !important;
+        }
+
+        .btn--loading::after {
+            animation: none;
+        }
+    }
 }

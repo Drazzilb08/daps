@@ -4,111 +4,86 @@
  */
 
 @layer components {
-  /* Toast container positioning */
-  .toast-container {
-    pointer-events: none;
-    /* Use utilities: fixed bottom-4 right-4 flex flex-col gap-2 z-toast max-w-toast */
-  }
-
-  /* Base toast styles */
-  .toast {
-    color: white;
-    pointer-events: auto;
-    opacity: 0;
-    transition: all 0.3s ease-out;
-    /* Use utilities: p-3 px-4 rounded-md text-base font-medium cursor-pointer relative overflow-hidden min-w-toast shadow-lg translate-x-full backdrop-filter-none */
-  }
-
-  .toast.show {
-    opacity: 1;
-    /* Use utilities: translate-x-0 */
-  }
-
-  /* Toast type colors - SOLID backgrounds only, no transparency */
-  .toast.success {
-    background: var(--color-success); /* Green 600 - solid */
-    border-left: var(--space-1) solid var(--color-success-dark); /* Green 700 */
-    color: var(--color-success-text);
-  }
-
-  .toast.error {
-    background: var(--color-error); /* Red 600 - solid */
-    border-left: var(--space-1) solid var(--color-error-dark); /* Red 700 */
-    color: var(--color-error-text);
-  }
-
-  .toast.warning {
-    background: var(--color-warning); /* Amber 600 - solid */
-    border-left: var(--space-1) solid var(--color-warning-dark); /* Amber 700 */
-    color: var(--color-warning-text);
-  }
-
-  .toast.info {
-    background: var(--color-accent); /* Blue 600 - solid */
-    border-left: var(--space-1) solid var(--color-accent-dark); /* Blue 700 */
-    color: var(--color-accent-text);
-  }
-
-  /* Subtle progress bar */
-  .toast::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    width: 0;
-    background: rgba(255, 255, 255, var(--opacity-50));
-    transition: width 3s linear;
-  }
-
-  .toast.show::before {
-    width: 100%;
-  }
-
-  /* Hover effects */
-  .toast:hover {
-    /* Use utilities: translate-x-negative-1 shadow-xl */
-  }
-
-  /* Mobile responsive */
-  @media (max-width: 768px) {
     .toast-container {
-      top: auto;
-      max-width: none;
-      /* Use utilities: bottom-4 left-3 right-3 */
+        pointer-events: none;
     }
 
     .toast {
-      min-width: auto;
-      /* Use utilities: translate-y-full */
+        color: white;
+        pointer-events: auto;
+        opacity: 0;
+        transition: all 0.3s ease-out;
     }
 
     .toast.show {
-      /* Use utilities: translate-y-0 */
+        opacity: 1;
     }
 
-    .toast:hover {
-      /* Use utilities: translate-y-negative-1 */
+    .toast.success {
+        background: var(--color-success);
+        border-left: var(--space-1) solid var(--color-success-dark);
+        color: var(--color-success-text);
     }
-  }
 
-
-
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    .toast {
-      transition: opacity 0.2s ease;
+    .toast.error {
+        background: var(--color-error);
+        border-left: var(--space-1) solid var(--color-error-dark);
+        color: var(--color-error-text);
     }
-    
-    .toast,
-    .toast.show,
-    .toast:hover {
-      transform: none;
+
+    .toast.warning {
+        background: var(--color-warning);
+        border-left: var(--space-1) solid var(--color-warning-dark);
+        color: var(--color-warning-text);
+    }
+
+    .toast.info {
+        background: var(--color-accent);
+        border-left: var(--space-1) solid var(--color-accent-dark);
+        color: var(--color-accent-text);
     }
 
     .toast::before {
-      transition: none;
-      width: 100%;
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        width: 0;
+        background: rgb(255 255 255 / var(--opacity-50));
+        transition: width 3s linear;
     }
-  }
+
+    .toast.show::before {
+        width: 100%;
+    }
+
+    @media (width <= 768px) {
+        .toast-container {
+            top: auto;
+            max-width: none;
+        }
+
+        .toast {
+            min-width: auto;
+        }
+
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .toast {
+            transition: opacity 0.2s ease;
+        }
+
+        .toast,
+        .toast.show,
+        .toast:hover {
+            transform: none;
+        }
+
+        .toast::before {
+            transition: none;
+            width: 100%;
+        }
+    }
 }

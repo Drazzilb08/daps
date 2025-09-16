@@ -4,271 +4,239 @@
  */
 
 @layer components {
-  /* Error overlay covering full viewport */
-  .global-error-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--overlay-strong);
-    backdrop-filter: blur(var(--space-1));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1001; /* Above toasts */
-    padding: var(--space-4);
-  }
-
-  /* Error modal */
-  .global-error-modal {
-    max-width: var(--grid-min-width-2xl);
-    width: 100%;
-    border-radius: var(--radius-3);
-    border: var(--border-width-medium) solid;
-    box-shadow: var(--shadow-2xl);
-    animation: errorModalIn 0.3s ease-out;
-  }
-
-  /* Modal header */
-  .global-error-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    border-bottom: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-20));
-  }
-
-  /* Error icon */
-  .global-error-icon {
-    font-size: var(--font-size-xl);
-    flex-shrink: 0;
-  }
-
-  /* Error title */
-  .global-error-title {
-    flex: 1;
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    color: white;
-  }
-
-  /* Close button */
-  .global-error-close {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: var(--font-size-lg);
-    cursor: pointer;
-    padding: var(--space-1);
-    border-radius: var(--radius-1);
-    transition: background-color 0.2s ease;
-    width: var(--size-icon-xl);
-    height: var(--size-icon-xl);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .global-error-close:hover {
-    background-color: rgba(255, 255, 255, var(--opacity-20));
-  }
-
-  .global-error-close:focus {
-    outline: none;
-    background-color: rgba(255, 255, 255, var(--opacity-30));
-    box-shadow: 0 0 0 var(--border-width-medium) rgba(255, 255, 255, var(--opacity-50));
-  }
-
-  /* Modal content */
-  .global-error-content {
-    padding: var(--space-4);
-  }
-
-  /* Error message */
-  .global-error-message {
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-relaxed);
-    color: white;
-    margin: 0 0 var(--space-3) 0;
-  }
-
-  /* Technical details (dev only) */
-  .global-error-details {
-    margin-top: var(--space-3);
-    border: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-30));
-    border-radius: var(--radius-2);
-  }
-
-  .global-error-details summary {
-    padding: var(--space-2);
-    cursor: pointer;
-    font-size: var(--font-size-sm);
-    color: rgba(255, 255, 255, var(--opacity-80));
-    background-color: rgba(255, 255, 255, var(--opacity-10));
-    border-radius: var(--radius-2);
-  }
-
-  .global-error-details summary:hover {
-    background-color: rgba(255, 255, 255, var(--opacity-15));
-  }
-
-  .global-error-stack {
-    padding: var(--space-3);
-    font-family: var(--font-family-mono);
-    font-size: var(--font-size-xs);
-    line-height: var(--line-height-normal);
-    color: rgba(255, 255, 255, var(--opacity-90));
-    background-color: rgba(0, 0, 0, var(--opacity-30));
-    margin: 0;
-    border-radius: 0 0 var(--radius-2) var(--radius-2);
-    overflow-x: auto;
-    max-height: var(--grid-min-width-sm);
-    overflow-y: auto;
-  }
-
-  /* Modal actions */
-  .global-error-actions {
-    display: flex;
-    gap: var(--space-3);
-    padding: var(--space-4);
-    border-top: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-20));
-    justify-content: flex-end;
-  }
-
-  /* Action buttons */
-  .global-error-retry,
-  .global-error-dismiss {
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-height: 44px;
-    min-width: 80px;
-  }
-
-  .global-error-retry {
-    background-color: rgba(255, 255, 255, var(--opacity-20));
-    border: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-40));
-    color: white;
-  }
-
-  .global-error-retry:hover:not(:disabled) {
-    background-color: rgba(255, 255, 255, var(--opacity-30));
-  }
-
-  .global-error-retry:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .global-error-dismiss {
-    background-color: transparent;
-    border: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-60));
-    color: white;
-  }
-
-  .global-error-dismiss:hover {
-    background-color: rgba(255, 255, 255, var(--opacity-10));
-  }
-
-  /* Error boundary fallback */
-  .error-boundary-fallback {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 300px;
-    padding: var(--space-6);
-    text-align: center;
-    background: var(--color-surface);
-    border: 2px solid var(--color-error);
-    border-radius: var(--radius-3);
-    margin: var(--space-4);
-  }
-
-  .error-boundary-fallback h2 {
-    color: var(--color-error);
-    margin-bottom: var(--space-3);
-    font-size: var(--font-size-xl);
-  }
-
-  .error-boundary-fallback p {
-    color: var(--color-text-secondary);
-    margin-bottom: var(--space-4);
-    max-width: 400px;
-  }
-
-  .error-boundary-fallback button {
-    background: var(--color-button-primary);
-    color: var(--color-button-primary-text);
-    border: none;
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-base);
-    font-weight: 500;
-    cursor: pointer;
-    min-height: 44px;
-    transition: background-color 0.2s ease;
-  }
-
-  .error-boundary-fallback button:hover {
-    background: var(--color-primary-hover);
-  }
-
-  /* Animations */
-  @keyframes errorModalIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9) translateY(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
-
-  /* Mobile responsive */
-  @media (max-width: 480px) {
     .global-error-overlay {
-      padding: var(--space-3);
+        position: fixed;
+        inset: 0;
+        background-color: var(--overlay-strong);
+        backdrop-filter: blur(var(--space-1));
+        z-index: 1001;
+        padding: var(--space-4);
+    }
+
+    .global-error-modal {
+        max-width: var(--grid-min-width-2xl);
+        width: 100%;
+        border-radius: var(--radius-3);
+        border: var(--border-width-medium) solid;
+        box-shadow: var(--shadow-2xl);
+        animation: error-modal-in 0.3s ease-out;
+    }
+
+    .global-error-header {
+        gap: var(--space-3);
+        padding: var(--space-4);
+        border-bottom: var(--border-width-thin) solid rgb(255 255 255 / var(--opacity-20));
+    }
+
+    .global-error-icon {
+        font-size: var(--font-size-xl);
+        flex-shrink: 0;
+    }
+
+    .global-error-title {
+        flex: 1;
+        font-size: var(--font-size-lg);
+        font-weight: 600;
+        color: white;
+    }
+
+    .global-error-close {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: var(--font-size-lg);
+        cursor: pointer;
+        padding: var(--space-1);
+        border-radius: var(--radius-1);
+        transition: background-color 0.2s ease;
+        width: var(--size-icon-xl);
+        height: var(--size-icon-xl);
+    }
+
+    .global-error-close:hover {
+        background-color: rgb(255 255 255 / var(--opacity-20));
+    }
+
+    .global-error-close:focus {
+        outline: none;
+        background-color: rgb(255 255 255 / var(--opacity-30));
+        box-shadow: 0 0 0 var(--border-width-medium) rgb(255 255 255 / var(--opacity-50));
+    }
+
+    .global-error-content {
+        padding: var(--space-4);
+    }
+
+    .global-error-message {
+        font-size: var(--font-size-base);
+        line-height: var(--line-height-relaxed);
+        color: white;
+        margin: 0 0 var(--space-3) 0;
+    }
+
+    .global-error-details {
+        margin-top: var(--space-3);
+        border: var(--border-width-thin) solid rgb(255 255 255 / var(--opacity-30));
+        border-radius: var(--radius-2);
+    }
+
+    .global-error-details summary {
+        padding: var(--space-2);
+        cursor: pointer;
+        font-size: var(--font-size-sm);
+        color: rgb(255 255 255 / var(--opacity-80));
+        background-color: rgb(255 255 255 / var(--opacity-10));
+        border-radius: var(--radius-2);
+    }
+
+    .global-error-details summary:hover {
+        background-color: rgb(255 255 255 / var(--opacity-15));
+    }
+
+    .global-error-stack {
+        padding: var(--space-3);
+        font-family: var(--font-family-mono);
+        font-size: var(--font-size-xs);
+        line-height: var(--line-height-normal);
+        color: rgb(255 255 255 / var(--opacity-90));
+        background-color: rgb(0 0 0 / var(--opacity-30));
+        margin: 0;
+        border-radius: 0 0 var(--radius-2) var(--radius-2);
+        overflow: auto;
+        max-height: var(--grid-min-width-sm);
     }
 
     .global-error-actions {
-      flex-direction: column;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        border-top: var(--border-width-thin) solid rgb(255 255 255 / var(--opacity-20));
     }
 
     .global-error-retry,
     .global-error-dismiss {
-      width: 100%;
-    }
-  }
-
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .global-error-modal {
-      animation: none;
-    }
-
-    @keyframes errorModalIn {
-      from, to {
-        opacity: 1;
-        transform: none;
-      }
-    }
-  }
-
-  /* High contrast mode */
-  @media (prefers-contrast: high) {
-    .global-error-modal {
-      border-width: 3px;
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--radius-2);
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-height: 44px;
+        min-width: 80px;
     }
 
-    .global-error-retry,
+    .global-error-retry {
+        background-color: rgb(255 255 255 / var(--opacity-20));
+        border: var(--border-width-thin) solid rgb(255 255 255 / var(--opacity-40));
+        color: white;
+    }
+
+    .global-error-retry:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .global-error-retry:hover:not(:disabled) {
+        background-color: rgb(255 255 255 / var(--opacity-30));
+    }
+
     .global-error-dismiss {
-      border-width: 2px;
+        background-color: transparent;
+        border: var(--border-width-thin) solid rgb(255 255 255 / var(--opacity-60));
+        color: white;
     }
-  }
+
+    .global-error-dismiss:hover {
+        background-color: rgb(255 255 255 / var(--opacity-10));
+    }
+
+    .error-boundary-fallback {
+        min-height: 300px;
+        padding: var(--space-6);
+        text-align: center;
+        background: var(--color-surface);
+        border: 2px solid var(--color-error);
+        border-radius: var(--radius-3);
+        margin: var(--space-4);
+    }
+
+    .error-boundary-fallback h2 {
+        color: var(--color-error);
+        margin-bottom: var(--space-3);
+        font-size: var(--font-size-xl);
+    }
+
+    .error-boundary-fallback p {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-4);
+        max-width: 400px;
+    }
+
+    .error-boundary-fallback button {
+        background: var(--color-button-primary);
+        color: var(--color-button-primary-text);
+        border: none;
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--radius-2);
+        font-size: var(--font-size-base);
+        font-weight: 500;
+        cursor: pointer;
+        min-height: 44px;
+        transition: background-color 0.2s ease;
+    }
+
+    .error-boundary-fallback button:hover {
+        background: var(--color-primary-hover);
+    }
+
+    @keyframes error-modal-in {
+        from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @media (width <= 480px) {
+        .global-error-overlay {
+            padding: var(--space-3);
+        }
+
+        .global-error-actions {
+            flex-direction: column;
+        }
+
+        .global-error-retry,
+        .global-error-dismiss {
+            width: 100%;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .global-error-modal {
+            animation: none;
+        }
+
+        @keyframes error-modal-in {
+            from,
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+    }
+
+    @media (prefers-contrast: more) {
+        .global-error-modal {
+            border-width: 3px;
+        }
+
+        .global-error-retry,
+        .global-error-dismiss {
+            border-width: 2px;
+        }
+    }
 }

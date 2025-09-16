@@ -1,22 +1,22 @@
 /**
  * FormRenderer - Renders forms from JSON schema
- * 
+ *
  * Creates forms from JSON schemas with validation and state management.
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { FieldRegistry } from '../fields/FieldRegistry';
 import { FormValidator, useFieldValidation } from './FormValidator';
-import { 
-  parseFormSchema, 
-  generateDefaultFormData,
-  groupFieldsBySections,
-  validateSchema 
+import {
+    parseFormSchema,
+    generateDefaultFormData,
+    groupFieldsBySections,
+    validateSchema,
 } from '../../utils/forms/schemaUtils';
 
 /**
  * Renders individual field from schema
- * 
+ *
  * @param {Object} props - Component props
  * @param {Object} props.field - Field schema
  * @param {*} props.value - Current value
@@ -24,40 +24,43 @@ import {
  * @param {boolean} props.disabled - Disabled state
  */
 const FieldRenderer = React.memo(({ field, value, onChange, disabled }) => {
-  const { error, hasError, markTouched } = useFieldValidation(field.key);
-  
-  // Get field component from registry
-  const FieldComponent = FieldRegistry.getField(field.type);
-  
-  const handleChange = useCallback((newValue) => {
-    markTouched();
-    onChange(field.key, newValue);
-  }, [field.key, onChange, markTouched]);
-  
-  const handleFocus = useCallback(() => {
-    markTouched();
-  }, [markTouched]);
+    const { error, hasError, markTouched } = useFieldValidation(field.key);
 
-  return (
-    <div className="form-field" data-field-type={field.type} data-field-key={field.key}>
-      <FieldComponent
-        field={field}
-        value={value}
-        onChange={handleChange}
-        onFocus={handleFocus}
-        disabled={disabled || field.disabled}
-        highlightInvalid={hasError}
-        errorMessage={error}
-      />
-    </div>
-  );
+    // Get field component from registry
+    const FieldComponent = FieldRegistry.getField(field.type);
+
+    const handleChange = useCallback(
+        newValue => {
+            markTouched();
+            onChange(field.key, newValue);
+        },
+        [field.key, onChange, markTouched]
+    );
+
+    const handleFocus = useCallback(() => {
+        markTouched();
+    }, [markTouched]);
+
+    return (
+        <div className="form-field" data-field-type={field.type} data-field-key={field.key}>
+            <FieldComponent
+                field={field}
+                value={value}
+                onChange={handleChange}
+                onFocus={handleFocus}
+                disabled={disabled || field.disabled}
+                highlightInvalid={hasError}
+                errorMessage={error}
+            />
+        </div>
+    );
 });
 
 FieldRenderer.displayName = 'FieldRenderer';
 
 /**
  * Renders form section with grouped fields
- * 
+ *
  * @param {Object} props - Component props
  * @param {Object} props.section - Section config
  * @param {Object} props.formData - Form data
@@ -65,64 +68,65 @@ FieldRenderer.displayName = 'FieldRenderer';
  * @param {boolean} props.disabled - Disabled state
  */
 const FormSection = React.memo(({ section, formData, onFieldChange, disabled }) => {
-  const [collapsed, setCollapsed] = useState(section.collapsed || false);
-  
-  const toggleCollapsed = useCallback(() => {
-    setCollapsed(prev => !prev);
-  }, []);
+    const [collapsed, setCollapsed] = useState(section.collapsed || false);
 
-  if (!section.fields || section.fields.length === 0) {
-    return null;
-  }
+    const toggleCollapsed = useCallback(() => {
+        setCollapsed(prev => !prev);
+    }, []);
 
-  return (
-    <div className="form-section" data-section-collapsible={section.collapsible}>
-      {section.title && (
-        <div className="form-section-header">
-          {section.collapsible ? (
-            <button 
-              type="button"
-              className="form-section-toggle"
-              onClick={toggleCollapsed}
-              aria-expanded={!collapsed}
-            >
-              <span className={`form-section-toggle-icon ${collapsed ? 'collapsed' : 'expanded'}`}>
-                ▼
-              </span>
-              <h3 className="form-section-title">{section.title}</h3>
-            </button>
-          ) : (
-            <h3 className="form-section-title">{section.title}</h3>
-          )}
-          {section.description && (
-            <p className="form-section-description">{section.description}</p>
-          )}
+    if (!section.fields || section.fields.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="form-section" data-section-collapsible={section.collapsible}>
+            {section.title && (
+                <div className="form-section-header">
+                    {section.collapsible ? (
+                        <button
+                            type="button"
+                            className="form-section-toggle"
+                            onClick={toggleCollapsed}
+                            aria-expanded={!collapsed}
+                        >
+                            <span
+                                className={`form-section-toggle-icon ${collapsed ? 'collapsed' : 'expanded'}`}
+                            >
+                                ▼
+                            </span>
+                            <h3 className="form-section-title">{section.title}</h3>
+                        </button>
+                    ) : (
+                        <h3 className="form-section-title">{section.title}</h3>
+                    )}
+                    {section.description && (
+                        <p className="form-section-description">{section.description}</p>
+                    )}
+                </div>
+            )}
+
+            {(!section.collapsible || !collapsed) && (
+                <div className="form-section-fields">
+                    {section.fields.map(field => (
+                        <FieldRenderer
+                            key={field.key}
+                            field={field}
+                            value={formData[field.key]}
+                            onChange={onFieldChange}
+                            disabled={disabled}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
-      )}
-      
-      {(!section.collapsible || !collapsed) && (
-        <div className="form-section-fields">
-          {section.fields.map((field) => (
-            <FieldRenderer
-              key={field.key}
-              field={field}
-              value={formData[field.key]}
-              onChange={onFieldChange}
-              disabled={disabled}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+    );
 });
 
 FormSection.displayName = 'FormSection';
 
-
 /**
  * Main form component that renders from schema
- * 
+ *
  * @param {Object} props - Component props
  * @param {Object} props.schema - Form schema
  * @param {Object} props.initialData - Initial data
@@ -134,241 +138,249 @@ FormSection.displayName = 'FormSection';
  * @param {Object} props.options - Rendering options
  * @param {string} props.className - CSS classes
  */
-export const FormRenderer = React.memo(({
-  schema: rawSchema,
-  initialData = {},
-  onSubmit,
-  onFieldChange,
-  onValidationChange,
-  validation = {},
-  disabled = false,
-  options = {},
-  className = ''
-}) => {
-  // Parse and validate schema
-  const schema = useMemo(() => {
-    try {
-      const parsed = parseFormSchema(rawSchema);
-      const validation = validateSchema(parsed);
-      
-      if (!validation.isValid) {
-        console.error('[FormRenderer] Schema validation failed:', validation.errors);
-        throw new Error(`Invalid schema: ${validation.errors.join(', ')}`);
-      }
-      
-      return parsed;
-    } catch (error) {
-      console.error('[FormRenderer] Schema parsing failed:', error);
-      throw error;
-    }
-  }, [rawSchema]);
+export const FormRenderer = React.memo(
+    ({
+        schema: rawSchema,
+        initialData = {},
+        onSubmit,
+        onFieldChange,
+        onValidationChange,
+        validation = {},
+        disabled = false,
+        options = {},
+        className = '',
+    }) => {
+        // Parse and validate schema
+        const schema = useMemo(() => {
+            try {
+                const parsed = parseFormSchema(rawSchema);
+                const validation = validateSchema(parsed);
 
-  // Initialize form data
-  const [formData, setFormData] = useState(() => {
-    const defaultData = generateDefaultFormData(schema);
-    return { ...defaultData, ...initialData };
-  });
+                if (!validation.isValid) {
+                    console.error('[FormRenderer] Schema validation failed:', validation.errors);
+                    throw new Error(`Invalid schema: ${validation.errors.join(', ')}`);
+                }
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState(null);
+                return parsed;
+            } catch (error) {
+                console.error('[FormRenderer] Schema parsing failed:', error);
+                throw error;
+            }
+        }, [rawSchema]);
 
-  // Form options with defaults
-  const formOptions = {
-    validateOnChange: true,
-    mobileOptimized: true,
-    ...options
-  };
+        // Initialize form data
+        const [formData, setFormData] = useState(() => {
+            const defaultData = generateDefaultFormData(schema);
+            return { ...defaultData, ...initialData };
+        });
 
-  // Handle field value changes
-  const handleFieldChange = useCallback((fieldKey, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [fieldKey]: value
-    }));
-    
-    if (onFieldChange) {
-      onFieldChange(fieldKey, value);
-    }
-  }, [onFieldChange]);
+        const [isSubmitting, setIsSubmitting] = useState(false);
+        const [submitError, setSubmitError] = useState(null);
 
-  // Handle form submission
-  const handleSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    
-    if (disabled || isSubmitting) {
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setSubmitError(null);
-    
-    try {
-      if (onSubmit) {
-        await onSubmit(formData);
-      }
-    } catch (error) {
-      console.error('[FormRenderer] Form submission failed:', error);
-      setSubmitError(error.message || 'Form submission failed');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [formData, onSubmit, disabled, isSubmitting]);
+        // Form options with defaults
+        const formOptions = {
+            validateOnChange: true,
+            mobileOptimized: true,
+            ...options,
+        };
 
+        // Handle field value changes
+        const handleFieldChange = useCallback(
+            (fieldKey, value) => {
+                setFormData(prev => ({
+                    ...prev,
+                    [fieldKey]: value,
+                }));
 
-  // Group fields by sections
-  const sections = useMemo(() => {
-    return groupFieldsBySections(schema, formData);
-  }, [schema, formData]);
+                if (onFieldChange) {
+                    onFieldChange(fieldKey, value);
+                }
+            },
+            [onFieldChange]
+        );
 
-  // Form CSS classes
-  const formClasses = [
-    'form-renderer',
-    `form-layout-${schema.layout || 'vertical'}`,
-    formOptions.mobileOptimized ? 'mobile-optimized' : '',
-    disabled ? 'disabled' : '',
-    isSubmitting ? 'submitting' : '',
-    className
-  ].filter(Boolean).join(' ');
+        // Handle form submission
+        const handleSubmit = useCallback(
+            async e => {
+                e.preventDefault();
 
-  // Reset form data when initialData changes
-  useEffect(() => {
-    const defaultData = generateDefaultFormData(schema);
-    setFormData({ ...defaultData, ...initialData });
-  }, [initialData, schema]);
+                if (disabled || isSubmitting) {
+                    return;
+                }
 
-  if (!schema) {
-    return (
-      <div className="form-renderer-error">
-        <h3>Form Configuration Error</h3>
-        <p>The form schema is invalid or missing. Please check the configuration.</p>
-      </div>
-    );
-  }
-
-  return (
-    <FormValidator
-      schema={schema}
-      formData={formData}
-      onValidationChange={onValidationChange}
-      validateOnChange={formOptions.validateOnChange}
-      customValidators={validation}
-    >
-      <form className={formClasses} onSubmit={handleSubmit} noValidate>
-        {/* Form header */}
-        {schema.title && (
-          <div className="form-header">
-            <h2 className="form-title">{schema.title}</h2>
-            {schema.description && (
-              <p className="form-description">{schema.description}</p>
-            )}
-          </div>
-        )}
-
-
-        {/* Form sections and fields */}
-        <div className="form-content">
-          {sections.map((section, index) => (
-            <FormSection
-              key={index}
-              section={section}
-              formData={formData}
-              onFieldChange={handleFieldChange}
-              disabled={disabled}
-            />
-          ))}
-        </div>
-
-        {/* Submit error display */}
-        {submitError && (
-          <div className="form-submit-error" role="alert">
-            <strong>Submission Error:</strong> {submitError}
-          </div>
-        )}
-
-        {/* Form actions */}
-        <div className="form-actions">
-          {onSubmit && (
-            <button
-              type="submit"
-              className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
-              disabled={disabled || isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : (schema.submitLabel || 'Submit')}
-            </button>
-          )}
-          
-          {schema.cancelLabel && (
-            <button
-              type="button"
-              className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
-              disabled={isSubmitting}
-              onClick={() => {
-                // Reset to initial data
-                const defaultData = generateDefaultFormData(schema);
-                setFormData({ ...defaultData, ...initialData });
+                setIsSubmitting(true);
                 setSubmitError(null);
-              }}
+
+                try {
+                    if (onSubmit) {
+                        await onSubmit(formData);
+                    }
+                } catch (error) {
+                    console.error('[FormRenderer] Form submission failed:', error);
+                    setSubmitError(error.message || 'Form submission failed');
+                } finally {
+                    setIsSubmitting(false);
+                }
+            },
+            [formData, onSubmit, disabled, isSubmitting]
+        );
+
+        // Group fields by sections
+        const sections = useMemo(() => {
+            return groupFieldsBySections(schema, formData);
+        }, [schema, formData]);
+
+        // Form CSS classes
+        const formClasses = [
+            'form-renderer',
+            `form-layout-${schema.layout || 'vertical'}`,
+            formOptions.mobileOptimized ? 'mobile-optimized' : '',
+            disabled ? 'disabled' : '',
+            isSubmitting ? 'submitting' : '',
+            className,
+        ]
+            .filter(Boolean)
+            .join(' ');
+
+        // Reset form data when initialData changes
+        useEffect(() => {
+            const defaultData = generateDefaultFormData(schema);
+            setFormData({ ...defaultData, ...initialData });
+        }, [initialData, schema]);
+
+        if (!schema) {
+            return (
+                <div className="form-renderer-error">
+                    <h3>Form Configuration Error</h3>
+                    <p>The form schema is invalid or missing. Please check the configuration.</p>
+                </div>
+            );
+        }
+
+        return (
+            <FormValidator
+                schema={schema}
+                formData={formData}
+                onValidationChange={onValidationChange}
+                validateOnChange={formOptions.validateOnChange}
+                customValidators={validation}
             >
-              {schema.cancelLabel}
-            </button>
-          )}
-        </div>
-      </form>
-    </FormValidator>
-  );
-});
+                <form className={formClasses} onSubmit={handleSubmit} noValidate>
+                    {/* Form header */}
+                    {schema.title && (
+                        <div className="form-header">
+                            <h2 className="form-title">{schema.title}</h2>
+                            {schema.description && (
+                                <p className="form-description">{schema.description}</p>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Form sections and fields */}
+                    <div className="form-content">
+                        {sections.map((section, index) => (
+                            <FormSection
+                                key={index}
+                                section={section}
+                                formData={formData}
+                                onFieldChange={handleFieldChange}
+                                disabled={disabled}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Submit error display */}
+                    {submitError && (
+                        <div className="form-submit-error" role="alert">
+                            <strong>Submission Error:</strong> {submitError}
+                        </div>
+                    )}
+
+                    {/* Form actions */}
+                    <div className="form-actions flex items-center gap-3">
+                        {onSubmit && (
+                            <button
+                                type="submit"
+                                className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                                disabled={disabled || isSubmitting}
+                            >
+                                {isSubmitting ? 'Submitting...' : schema.submitLabel || 'Submit'}
+                            </button>
+                        )}
+
+                        {schema.cancelLabel && (
+                            <button
+                                type="button"
+                                className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                                disabled={isSubmitting}
+                                onClick={() => {
+                                    // Reset to initial data
+                                    const defaultData = generateDefaultFormData(schema);
+                                    setFormData({ ...defaultData, ...initialData });
+                                    setSubmitError(null);
+                                }}
+                            >
+                                {schema.cancelLabel}
+                            </button>
+                        )}
+                    </div>
+                </form>
+            </FormValidator>
+        );
+    }
+);
 
 FormRenderer.displayName = 'FormRenderer';
 
 /**
  * Hook for form state management
- * 
+ *
  * @param {Object} schema - Form schema
  * @param {Object} initialData - Initial data
  * @returns {Object} Form state and handlers
  */
 export const useFormRenderer = (schema, initialData = {}) => {
-  const [formData, setFormData] = useState(() => {
-    if (!schema) return initialData;
-    const defaultData = generateDefaultFormData(parseFormSchema(schema));
-    return { ...defaultData, ...initialData };
-  });
-  
-  const [isValid, setIsValid] = useState(true);
-  const [errors, setErrors] = useState({});
+    const [formData, setFormData] = useState(() => {
+        if (!schema) return initialData;
+        const defaultData = generateDefaultFormData(parseFormSchema(schema));
+        return { ...defaultData, ...initialData };
+    });
 
-  const handleFieldChange = useCallback((fieldKey, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [fieldKey]: value
-    }));
-  }, []);
+    const [isValid, setIsValid] = useState(true);
+    const [errors, setErrors] = useState({});
 
-  const handleValidationChange = useCallback((validation) => {
-    setIsValid(validation.isValid);
-    setErrors(validation.errors);
-  }, []);
+    const handleFieldChange = useCallback((fieldKey, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [fieldKey]: value,
+        }));
+    }, []);
 
-  const reset = useCallback(() => {
-    if (schema) {
-      const defaultData = generateDefaultFormData(parseFormSchema(schema));
-      setFormData({ ...defaultData, ...initialData });
-    } else {
-      setFormData(initialData);
-    }
-    setIsValid(true);
-    setErrors({});
-  }, [schema, initialData]);
+    const handleValidationChange = useCallback(validation => {
+        setIsValid(validation.isValid);
+        setErrors(validation.errors);
+    }, []);
 
-  return {
-    formData,
-    isValid,
-    errors,
-    handleFieldChange,
-    handleValidationChange,
-    reset,
-    setFormData
-  };
+    const reset = useCallback(() => {
+        if (schema) {
+            const defaultData = generateDefaultFormData(parseFormSchema(schema));
+            setFormData({ ...defaultData, ...initialData });
+        } else {
+            setFormData(initialData);
+        }
+        setIsValid(true);
+        setErrors({});
+    }, [schema, initialData]);
+
+    return {
+        formData,
+        isValid,
+        errors,
+        handleFieldChange,
+        handleValidationChange,
+        reset,
+        setFormData,
+    };
 };
 
 export default FormRenderer;

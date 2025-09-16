@@ -1,6 +1,6 @@
 /**
  * Form Components Index
- * 
+ *
  * Exports all form-related components for easy importing.
  */
 
@@ -14,7 +14,7 @@ export * from './primitives';
 
 // Field implementations by category
 export * from './basic';
-export * from './select';  
+export * from './select';
 export * from './color';
 export * from './dir';
 export * from './custom';

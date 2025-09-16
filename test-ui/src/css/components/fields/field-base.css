@@ -5,67 +5,21 @@
  */
 
 @layer components {
-  /* UTILITY MIGRATION: Use .field-base utility class for core styling */
-  .field-input-base {
-    /* MOVED TO UTILITY: Core field styling now handled by .field-base utility class */
-    /* Components should use: class="field-base w-full touch-target" */
-  }
+    .field-input-base.is-invalid {
+        border-color: var(--color-error);
+    }
 
-  /* UTILITY MIGRATION: Layout patterns moved to utilities */
-  .field-input-layout {
-    /* MOVED TO UTILITY: Use .field-base utility class which includes:
-     * - min-height: var(--input-height)
-     * - padding: var(--input-padding-y) var(--input-padding-x)
-     * - box-sizing: border-box
-     */
-  }
-  /* UTILITY MIGRATION: Read-only, placeholder, and transitions moved to .field-base utility */
-  .field-readonly-state:read-only {
-    /* MOVED TO UTILITY: Read-only styling now in .field-base utility */
-  }
+    .field-input-base.is-invalid:focus,
+    .field-input-base.is-invalid:focus-within {
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+    }
 
-  .field-input-base::placeholder {
-    /* MOVED TO UTILITY: Placeholder styling now in .field-base utility */
-  }
+    .field-input-base.is-valid {
+        border-color: var(--color-success);
+    }
 
-  .field-transition-behavior {
-    /* MOVED TO UTILITY: Transitions now in .field-base utility */
-  }
-
-  /* COMPATIBILITY LAYER: Legacy class names for backward compatibility */
-  /* MIGRATE TO: .field-base .state-invalid and .field-base .state-valid utilities */
-
-  .field-input-base:focus {
-    /* MOVED TO UTILITY: Focus styling now in .field-base utility */
-  }
-
-  .field-input-base:focus-within {
-    /* MOVED TO UTILITY: Focus-within styling now in .input-group utility */
-  }
-
-  .field-input-base.is-invalid {
-    /* MOVED TO UTILITY: Use .field-base.state-invalid instead */
-    border-color: var(--color-error);
-  }
-
-  .field-input-base.is-invalid:focus,
-  .field-input-base.is-invalid:focus-within {
-    /* MOVED TO UTILITY: Use .field-base.state-invalid instead */
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
-  }
-
-  .field-input-base.is-valid {
-    /* MOVED TO UTILITY: Use .field-base.state-valid instead */
-    border-color: var(--color-success);
-  }
-
-  .field-input-base.is-valid:focus,
-  .field-input-base.is-valid:focus-within {
-    /* MOVED TO UTILITY: Use .field-base.state-valid instead */
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
-  }
-
-  .field-input-base:disabled {
-    /* MOVED TO UTILITY: Disabled styling now in .field-base utility */
-  }
+    .field-input-base.is-valid:focus,
+    .field-input-base.is-valid:focus-within {
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+    }
 }

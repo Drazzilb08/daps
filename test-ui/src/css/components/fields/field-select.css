@@ -5,128 +5,78 @@
  */
 
 @layer components {
-  /* =============================================================================
-     BASIC SELECT STYLING - Core select element styling
-     ============================================================================= */
+    .select {
+        width: 100%;
+        min-height: var(--touch-target-min);
+        padding: var(--space-2) calc(var(--space-3) + var(--space-6)) var(--space-2) var(--space-3);
+        font-size: var(--font-size-base);
+        line-height: var(--line-height-normal);
+        color: var(--color-input-text);
+        background: var(--color-input-bg);
+        border: var(--border-width-thin) solid var(--color-border);
+        border-radius: var(--radius-2);
+        appearance: none;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
 
-  .select {
-    width: 100%;
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) calc(var(--space-3) + var(--space-6)) var(--space-2) var(--space-3);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-normal);
-    color: var(--color-input-text);
-    background: var(--color-input-bg);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-2);
-    appearance: none;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
+    .select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    }
 
-  .select:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
+    .select:disabled {
+        background: var(--color-input-bg-disabled);
+        color: var(--color-input-text-disabled);
+        border-color: var(--color-input-border-disabled);
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
 
-  .select:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
+    .field-select {
+        padding: var(--input-padding-y) calc(var(--input-padding-x) + var(--space-6))
+            var(--input-padding-y) var(--input-padding-x);
+        appearance: none;
+        cursor: pointer;
+    }
 
-  /* =============================================================================
-     FIELD-SPECIFIC SELECT STYLING - Component-specific select styling
-     ============================================================================= */
+    .field-select-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: var(--input-padding-x);
+        width: var(--size-icon-sm);
+        height: 12px;
+        background-color: var(--color-primary);
+        mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='black' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+        mask-repeat: no-repeat;
+        mask-size: contain;
+        transform: translateY(-50%);
+        transition: background-color var(--transition-fast);
+        pointer-events: none;
+    }
 
-  .field-select {
-    /* Basic layout and sizing now handled by base classes */
-    /* Typography handled by base class - .field-input-typography */
-    /* Sizing handled by base class - .field-input-sizing (with override for right padding) */
-    /* Layout handled by base class - .field-input-layout */
-    /* Transitions handled by base class - .field-transition-behavior */
-    
-    /* Select-specific styling */
-    padding: var(--input-padding-y) calc(var(--input-padding-x) + var(--space-6)) var(--input-padding-y) var(--input-padding-x);
-    appearance: none;
-    cursor: pointer;
-    /* Border radius inherited from .field-input-base for consistency */
-    
-    /* NOTE: Apply base classes in component:
-     * field-select field-input-base field-input-typography field-input-layout field-focus-behavior field-disabled-state field-transition-behavior
-     */
-  }
+    .field-select:disabled {
+        opacity: 0.6;
+    }
 
-  /* Theme styling now handled by field-input-base class composition */
+    .field-select option {
+        background: var(--color-input-bg);
+        color: var(--color-input-text);
+    }
 
-  /* Select wrapper for custom arrow */
-  .field-select-wrapper {
-    /* Use utilities: relative inline-block w-full */
-  }
+    .field-select option:disabled {
+        color: var(--color-input-text-disabled);
+    }
 
-  /* Remove default arrow background from select */
-  .field-select {
-    /* Use utilities: w-full */
-  }
+    .field-select[multiple] {
+        background-image: none;
+    }
 
-  /* Custom arrow using pseudo-element with mask */
-  .field-select-wrapper::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: var(--input-padding-x);
-    width: var(--size-icon-sm);
-    height: 12px;
-    background-color: var(--color-primary);
-    mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='black' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-    mask-repeat: no-repeat;
-    mask-size: contain;
-    -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='black' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: contain;
-    transform: translateY(-50%);
-    transition: background-color var(--transition-fast);
-    pointer-events: none;
-  }
 
-  /* Focus state now handled by base class:
-   * - .field-focus-behavior
-   */
-
-  /* No hover states - removed per requirements to match input and textarea fields */
-
-  .field-select:disabled {
-    /* Base disabled styling handled by .field-disabled-state */
-    opacity: 0.6; /* Select-specific disabled enhancement */
-  }
-
-  /* Validation states now handled by .is-invalid and .is-valid utilities */
-
-  .field-select option {
-    background: var(--color-input-bg);
-    color: var(--color-input-text);
-    /* Use utilities: p-2 */
-  }
-
-  .field-select option:disabled {
-    color: var(--color-input-text-disabled);
-  }
-
-  /* Multiple select */
-  .field-select[multiple] {
-    background-image: none;
-    /* Use utilities: p-2 min-h-input-3x */
-  }
-
-  .field-select[multiple] option {
-    /* Use utilities: py-1 px-2 rounded mb-1 */
-  }
-
-  .field-select[multiple] option:checked {
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-  }
+    .field-select[multiple] option:checked {
+        background: var(--color-primary);
+        color: var(--color-primary-text);
+    }
 }

@@ -3,5 +3,5 @@
  * Central import file for all error handling component styles
  */
 
-@import './error-boundary.css';
-@import './global-error.css';
+@import url('./error-boundary.css');
+@import url('./global-error.css');

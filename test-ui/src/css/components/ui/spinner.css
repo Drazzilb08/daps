@@ -11,19 +11,12 @@
  */
 
 @layer components {
-  /* Spinner base - only keeps unique animation properties */
-  .spinner-circle {
-    border: 2px solid var(--color-surface-variant);
-    border-top-color: var(--color-primary);
-    /* Use utilities: rounded-full animate-spin */
-  }
+    .spinner-circle {
+        border: 2px solid var(--color-surface-variant);
+        border-top-color: var(--color-primary);
+    }
 
-  /* Centered spinner for Suspense fallbacks */
-  .spinner-center {
-    min-height: 200px;
-    /* Use utilities: flex items-center justify-center p-4 */
-  }
-
-  /* Animation is now available as .animate-spin utility class */
-  /* Theme support handled by CSS variables - no theme-specific overrides needed */
+    .spinner-center {
+        min-height: 200px;
+    }
 }

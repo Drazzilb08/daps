@@ -111,12 +111,12 @@ class FeatureErrorBoundaryBase extends Component {
 
     handleSkip = () => {
         const { critical = false } = this.props;
-        
+
         // Critical features cannot be skipped
         if (critical) {
             return;
         }
-        
+
         // For non-critical features, clear the error state and show fallback
         this.setState({
             hasError: false,
@@ -140,54 +140,54 @@ class FeatureErrorBoundaryBase extends Component {
             feature: {
                 name: featureName,
                 description: featureDescription,
-                retryCount: retryCount
+                retryCount: retryCount,
             },
             error: {
                 message: error?.message || 'Unknown error',
                 name: error?.name || 'Error',
-                stack: error?.stack || 'No stack trace available'
+                stack: error?.stack || 'No stack trace available',
             },
             errorInfo: {
-                componentStack: errorInfo?.componentStack || 'No component stack available'
+                componentStack: errorInfo?.componentStack || 'No component stack available',
             },
             environment: {
                 userAgent: navigator.userAgent,
                 url: window.location.href,
                 viewport: `${window.innerWidth}x${window.innerHeight}`,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
             },
             context: {
                 boundaryType: 'FeatureErrorBoundary',
                 errorBoundaryVersion: '1.0',
                 recoveryAttempts: retryCount,
                 reportTitle: `${featureName} Error Report`,
-                instructions: 'Share this error report with developers for debugging assistance'
-            }
+                instructions: 'Share this error report with developers for debugging assistance',
+            },
         };
 
         try {
             await navigator.clipboard.writeText(JSON.stringify(errorDetails, null, 2));
-            
+
             // Show success state
             this.setState({ copying: false, copySuccess: true });
-            
+
             // Reset after 2 seconds
             setTimeout(() => {
                 this.setState({ copySuccess: false });
             }, 2000);
-            
+
             console.log('Error details copied to clipboard');
         } catch (clipboardError) {
             console.error('Failed to copy error details:', clipboardError);
-            
+
             // Show error state
             this.setState({ copying: false, copyError: true });
-            
+
             // Reset after 3 seconds
             setTimeout(() => {
                 this.setState({ copyError: false });
             }, 3000);
-            
+
             // Fallback to console output for manual copying
             console.group('🚨 FEATURE ERROR DETAILS (Manual Copy)');
             console.log('Copy the following error details:');
@@ -204,7 +204,7 @@ class FeatureErrorBoundaryBase extends Component {
         // If feature was skipped, show skipped state
         if (this.state.skipped) {
             const { featureName } = this.props;
-            
+
             return (
                 <div className="feature-error-boundary feature-error-boundary--skipped">
                     <div className="feature-error-boundary__skipped-notice">
@@ -214,7 +214,7 @@ class FeatureErrorBoundaryBase extends Component {
                         </span>
                         <button
                             onClick={this.handleRetry}
-                            className="btn btn--ghost btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
+                            className="btn btn--ghost btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                             type="button"
                             title="Try to load this feature again"
                         >
@@ -231,7 +231,7 @@ class FeatureErrorBoundaryBase extends Component {
                 featureName,
                 featureDescription,
                 critical = false,
-                fallback: FallbackComponent
+                fallback: FallbackComponent,
             } = this.props;
 
             const { error, errorInfo, retryCount, errorTimestamp } = this.state;
@@ -251,41 +251,57 @@ class FeatureErrorBoundaryBase extends Component {
                                     Critical Feature Error
                                 </h2>
                                 <p className="feature-error-boundary__overlay-message">
-                                    The {featureName} feature is required for the application to function properly.
+                                    The {featureName} feature is required for the application to
+                                    function properly.
                                 </p>
                                 <div className="feature-error-boundary__overlay-actions">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                                        className="btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
-                                        <span className="feature-error-boundary__button-icon">🔄</span>
+                                        <span className="feature-error-boundary__button-icon">
+                                            🔄
+                                        </span>
                                         Retry
                                     </button>
                                     <button
                                         onClick={this.handleCopyError}
                                         className={`btn ${
-                                            this.state.copySuccess ? 'btn--success' : 
-                                            this.state.copyError ? 'btn--error state-hover-dim' : 'btn--info state-hover-dim'
+                                            this.state.copySuccess
+                                                ? 'btn--success'
+                                                : this.state.copyError
+                                                  ? 'btn--error state-hover-dim'
+                                                  : 'btn--info state-hover-dim'
                                         }`}
                                         type="button"
                                         disabled={this.state.copying}
                                     >
                                         <span className="feature-error-boundary__button-icon">
-                                            {this.state.copying ? '⏳' : 
-                                             this.state.copySuccess ? '✅' : 
-                                             this.state.copyError ? '❌' : '📋'}
+                                            {this.state.copying
+                                                ? '⏳'
+                                                : this.state.copySuccess
+                                                  ? '✅'
+                                                  : this.state.copyError
+                                                    ? '❌'
+                                                    : '📋'}
                                         </span>
-                                        {this.state.copying ? 'Copying...' :
-                                         this.state.copySuccess ? 'Copied!' :
-                                         this.state.copyError ? 'Failed' : 'Copy Error'}
+                                        {this.state.copying
+                                            ? 'Copying...'
+                                            : this.state.copySuccess
+                                              ? 'Copied!'
+                                              : this.state.copyError
+                                                ? 'Failed'
+                                                : 'Copy Error'}
                                     </button>
                                     <button
                                         onClick={this.handleReload}
-                                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                                        className="btn btn--secondary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
                                         type="button"
                                     >
-                                        <span className="feature-error-boundary__button-icon">🔄</span>
+                                        <span className="feature-error-boundary__button-icon">
+                                            🔄
+                                        </span>
                                         Reload App
                                     </button>
                                 </div>
@@ -320,13 +336,11 @@ class FeatureErrorBoundaryBase extends Component {
                             ⚠️ {featureName} temporarily unavailable
                         </div>
                     </div>
-                    
+
                     <div className="feature-error-boundary feature-error-boundary--inline">
                         <div className="feature-error-boundary__container">
                             <div className="feature-error-boundary__header">
-                                <span className="feature-error-boundary__icon">
-                                    ⚠️
-                                </span>
+                                <span className="feature-error-boundary__icon">⚠️</span>
                                 <div className="feature-error-boundary__title-group">
                                     <h3 className="feature-error-boundary__title">
                                         {featureName} Error
@@ -341,10 +355,12 @@ class FeatureErrorBoundaryBase extends Component {
 
                             <div className="feature-error-boundary__content">
                                 <div className="feature-error-boundary__error-summary">
-                                    <strong>Error:</strong> {error?.message || 'Component failed to render'}
+                                    <strong>Error:</strong>{' '}
+                                    {error?.message || 'Component failed to render'}
                                     {retryCount > 0 && (
                                         <span className="feature-error-boundary__attempt-count">
-                                            {' '}(Attempt {retryCount + 1})
+                                            {' '}
+                                            (Attempt {retryCount + 1})
                                         </span>
                                     )}
                                 </div>
@@ -352,7 +368,7 @@ class FeatureErrorBoundaryBase extends Component {
                                 <div className="feature-error-boundary__actions">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="btn btn--primary btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
+                                        className="btn btn--primary btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">
@@ -364,7 +380,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     {!critical && (
                                         <button
                                             onClick={this.handleSkip}
-                                            className="btn btn--secondary btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast state-hover-dim"
+                                            className="btn btn--secondary btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast state-hover-dim"
                                             type="button"
                                         >
                                             <span className="feature-error-boundary__button-icon">
@@ -376,26 +392,37 @@ class FeatureErrorBoundaryBase extends Component {
 
                                     <button
                                         onClick={this.handleCopyError}
-                                        className={`btn btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast ${
-                                            this.state.copySuccess ? 'btn--success state-hover-dim' : 
-                                            this.state.copyError ? 'btn--error state-hover-dim' : 'btn--info state-hover-dim'
+                                        className={`btn btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast ${
+                                            this.state.copySuccess
+                                                ? 'btn--success state-hover-dim'
+                                                : this.state.copyError
+                                                  ? 'btn--error state-hover-dim'
+                                                  : 'btn--info state-hover-dim'
                                         }`}
                                         type="button"
                                         disabled={this.state.copying}
                                     >
                                         <span className="feature-error-boundary__button-icon">
-                                            {this.state.copying ? '⏳' : 
-                                             this.state.copySuccess ? '✅' : 
-                                             this.state.copyError ? '❌' : '📋'}
+                                            {this.state.copying
+                                                ? '⏳'
+                                                : this.state.copySuccess
+                                                  ? '✅'
+                                                  : this.state.copyError
+                                                    ? '❌'
+                                                    : '📋'}
                                         </span>
-                                        {this.state.copying ? 'Copying...' :
-                                         this.state.copySuccess ? 'Copied!' :
-                                         this.state.copyError ? 'Failed' : 'Copy Error'}
+                                        {this.state.copying
+                                            ? 'Copying...'
+                                            : this.state.copySuccess
+                                              ? 'Copied!'
+                                              : this.state.copyError
+                                                ? 'Failed'
+                                                : 'Copy Error'}
                                     </button>
 
                                     <button
                                         onClick={this.handleReload}
-                                        className="btn btn--ghost btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
+                                        className="btn btn--ghost btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">
@@ -409,10 +436,13 @@ class FeatureErrorBoundaryBase extends Component {
                                     <div className="feature-error-boundary__critical-notice">
                                         <div className="feature-error-boundary__critical-box">
                                             <strong>Repeated Errors Detected</strong>
-                                            <p>This feature has failed multiple times. Consider reloading the application.</p>
+                                            <p>
+                                                This feature has failed multiple times. Consider
+                                                reloading the application.
+                                            </p>
                                             <button
                                                 onClick={this.handleReload}
-                                                className="btn btn--primary btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
+                                                className="btn btn--primary btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                                                 type="button"
                                             >
                                                 Reload Application
@@ -439,7 +469,7 @@ FeatureErrorBoundaryBase.propTypes = {
     onError: PropTypes.func,
     fallback: PropTypes.elementType,
     reportError: PropTypes.func,
-    showToast: PropTypes.func
+    showToast: PropTypes.func,
 };
 
 /**
@@ -448,10 +478,10 @@ FeatureErrorBoundaryBase.propTypes = {
 function FeatureErrorBoundary(props) {
     const globalErrorContext = useGlobalError();
     const toastContext = useToast();
-    
+
     return (
-        <FeatureErrorBoundaryBase 
-            {...props} 
+        <FeatureErrorBoundaryBase
+            {...props}
             reportError={globalErrorContext?.setError}
             showToast={toastContext?.success}
         />

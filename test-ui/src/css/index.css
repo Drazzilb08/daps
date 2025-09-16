@@ -4,29 +4,15 @@
  */
 
 /* Design tokens */
-@import './tokens.css';
-
-/* Base styles */
-@import './base.css';
-
-/* Layout system */
-@import './layout.css';
-
-/* Theme colors */
-@import './theme/dark.css';  /* Default theme */
-@import './theme/light.css'; /* Alternative theme via data-theme="light" */
-
-/* Utility classes */
-@import './utilities.css';
-
-/* Component styles - organized by category */
-@import './components/ui/index.css';
-@import './components/layout/index.css';
-@import './components/search/index.css';
-@import './components/error/index.css';
-@import './components/fields/index.css';
-
-/* Page styles */
-@import './pages/dev/index.css';
-
-
+@import url('./tokens.css');
+@import url('./base.css');
+@import url('./layout.css');
+@import url('./theme/dark.css');
+@import url('./theme/light.css');
+@import url('./utilities.css');
+@import url('./components/ui/index.css');
+@import url('./components/layout/index.css');
+@import url('./components/search/index.css');
+@import url('./components/error/index.css');
+@import url('./components/fields/index.css');
+@import url('./pages/dev/index.css');

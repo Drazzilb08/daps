@@ -4,20 +4,13 @@
  */
 
 @layer components {
-    /* ========== GENERIC ERROR BOUNDARY ========== */
     .error-boundary {
         min-height: 200px;
         font-family: var(--font-family, system-ui, -apple-system, sans-serif);
-        /* Use utilities: flex items-center justify-center p-4 */
     }
 
     .error-boundary__container {
         max-width: 500px;
-        /* Use utilities: w-full bg-surface border-error rounded-lg p-5 shadow-lg */
-    }
-
-    .error-boundary__header {
-        /* Use utilities: flex items-center gap-3 mb-4 */
     }
 
     .error-boundary__icon {
@@ -29,14 +22,12 @@
         color: var(--color-error);
         font-size: var(--font-size-xl);
         font-weight: var(--font-weight-semibold);
-        margin: 0;
         line-height: var(--line-height-tight);
     }
 
     .error-boundary__content {
         color: var(--color-text-primary);
     }
-
 
     .error-boundary__error-details {
         background: var(--color-surface-alt);
@@ -50,13 +41,6 @@
         overflow-wrap: break-word;
     }
 
-    .error-boundary__actions {
-        /* Use utilities: flex gap-3 flex-wrap justify-center */
-    }
-
-    /* Error boundary buttons use unified button system */
-
-
     .error-boundary__button-icon {
         display: inline-block;
         font-style: normal;
@@ -68,12 +52,7 @@
         border-top: 1px solid var(--color-border);
     }
 
-
-    /* ========== PAGE ERROR BOUNDARY ========== */
     .page-error-boundary {
-        display: flex;
-        align-items: center;
-        justify-content: center;
         min-height: 60vh;
         padding: var(--space-4);
         font-family: var(--font-family, system-ui, -apple-system, sans-serif);
@@ -111,7 +90,6 @@
     .page-error-boundary__subtitle {
         color: var(--color-text-secondary);
         font-size: var(--font-size-lg);
-        margin: 0;
         line-height: var(--line-height-relaxed);
     }
 
@@ -127,7 +105,6 @@
     }
 
     .page-error-boundary__description p {
-        margin: 0;
         font-size: var(--font-size-base);
         line-height: var(--line-height-relaxed);
     }
@@ -163,15 +140,8 @@
     }
 
     .page-error-boundary__actions {
-        display: flex;
-        gap: var(--space-3);
-        flex-wrap: wrap;
-        justify-content: center;
         margin-bottom: var(--space-5);
     }
-
-    /* Page error boundary buttons use unified button system */
-
 
     .page-error-boundary__button-icon {
         display: inline-block;
@@ -222,12 +192,10 @@
         line-height: var(--line-height-relaxed);
     }
 
-    /* ========== FEATURE ERROR BOUNDARY ========== */
     .feature-error-boundary {
         font-family: var(--font-family, system-ui, -apple-system, sans-serif);
     }
 
-    /* Inline mode (default) */
     .feature-error-boundary--inline {
         background: var(--color-surface);
         border: 1px solid var(--color-error);
@@ -240,9 +208,6 @@
     }
 
     .feature-error-boundary__header {
-        display: flex;
-        align-items: flex-start;
-        gap: var(--space-3);
         margin-bottom: var(--space-4);
     }
 
@@ -268,7 +233,6 @@
     .feature-error-boundary__description {
         color: var(--color-text-secondary);
         font-size: var(--font-size-sm);
-        margin: 0;
         line-height: var(--line-height-relaxed);
     }
 
@@ -291,16 +255,6 @@
         font-weight: var(--font-weight-normal);
     }
 
-    .feature-error-boundary__actions {
-        display: flex;
-        gap: var(--space-2);
-        flex-wrap: wrap;
-    }
-
-    /* Feature error boundary buttons use unified button system */
-
-
-    /* Skipped state styling */
     .feature-error-boundary--skipped {
         background: var(--color-surface-alt);
         border: 1px solid var(--color-warning);
@@ -309,9 +263,6 @@
     }
 
     .feature-error-boundary__skipped-notice {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
         padding: var(--space-3);
         font-size: var(--font-size-sm);
         color: var(--color-text-secondary);
@@ -332,28 +283,18 @@
         font-style: normal;
     }
 
-    /* Critical/Overlay mode - Full screen modal */
     .feature-error-boundary--overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        inset: 0;
         z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgb(0 0 0 / 80%);
         backdrop-filter: blur(4px);
     }
 
     .feature-error-boundary__overlay-backdrop {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
+        inset: 0;
+        background: rgb(0 0 0 / 60%);
     }
 
     .feature-error-boundary__overlay-content {
@@ -388,16 +329,6 @@
         line-height: var(--line-height-relaxed);
     }
 
-    .feature-error-boundary__overlay-actions {
-        display: flex;
-        gap: var(--space-3);
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    /* Overlay buttons inherit from unified button system, no custom styling needed */
-
-    /* Disabled state styling */
     .feature-error-boundary--disabled {
         background: var(--color-surface-alt);
         border: 1px solid var(--color-text-disabled);
@@ -407,9 +338,6 @@
     }
 
     .feature-error-boundary__disabled-notice {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
         padding: var(--space-3);
         font-size: var(--font-size-sm);
         color: var(--color-text-disabled);
@@ -425,7 +353,6 @@
         font-weight: var(--font-weight-medium);
     }
 
-    /* Degraded notice styling */
     .feature-error-boundary--degraded {
         background: var(--color-warning-opacity-20);
         border: 1px solid var(--color-warning);
@@ -445,9 +372,6 @@
         color: inherit;
     }
 
-    /* ========== MOBILE-FIRST RESPONSIVE DESIGN ========== */
-
-    /* Mobile adjustments (375px baseline) */
     @media (width <= 767px) {
         .error-boundary__container,
         .page-error-boundary__container {
@@ -506,7 +430,6 @@
         }
     }
 
-    /* Tablet and larger screens */
     @media (width >= 768px) {
         .error-boundary__button,
         .page-error-boundary__button {
@@ -515,7 +438,6 @@
         }
     }
 
-    /* Touch accessibility */
     @media (hover: none) and (pointer: coarse) {
         .error-boundary__button,
         .page-error-boundary__button,
@@ -525,8 +447,7 @@
         }
     }
 
-    /* High contrast mode support */
-    @media (prefers-contrast: high) {
+    @media (prefers-contrast: more) {
         .error-boundary__container,
         .page-error-boundary__container,
         .feature-error-boundary--inline {
@@ -541,7 +462,6 @@
         }
     }
 
-    /* Reduced motion support */
     @media (prefers-reduced-motion: reduce) {
         .error-boundary__button,
         .page-error-boundary__button,
@@ -555,4 +475,4 @@
             transform: none;
         }
     }
-} /* end @layer components */
+}

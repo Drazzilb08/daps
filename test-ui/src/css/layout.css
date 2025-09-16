@@ -7,322 +7,287 @@
 
 /* Container System */
 @layer components {
-  .container {
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: var(--container-padding-mobile);
-    padding-right: var(--container-padding-mobile);
-  }
-
-  /* Progressive enhancement for larger screens */
-  @media (min-width: var(--breakpoint-tablet)) {
     .container {
-      padding-left: var(--container-padding);
-      padding-right: var(--container-padding);
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: var(--container-padding-mobile);
+        padding-right: var(--container-padding-mobile);
     }
-  }
 
-  @media (min-width: var(--breakpoint-desktop)) {
-    .container {
-      max-width: var(--content-max-width);
+    @media (width >= 768px) {
+        .container {
+            padding-left: var(--container-padding);
+            padding-right: var(--container-padding);
+        }
     }
-  }
 
-  /* Specialized containers */
-  .container-form {
-    max-width: var(--form-max-width);
-  }
+    @media (width >= 1024px) {
+        .container {
+            max-width: var(--content-max-width);
+        }
+    }
 
+    .container-form {
+        max-width: var(--form-max-width);
+    }
 }
 
-/* Grid System */
 @layer components {
-  /* Base grid */
-  .grid {
-    display: grid;
-    gap: var(--content-gap-mobile);
-  }
-
-  @media (min-width: var(--breakpoint-tablet)) {
     .grid {
-      gap: var(--content-gap);
+        display: grid;
+        gap: var(--content-gap-mobile);
     }
-  }
 
-  /* Media grid for media content display */
-  .media-grid {
-    display: grid;
-    gap: var(--space-4);
-    grid-template-columns: 1fr;
-  }
+    @media (width >= 768px) {
+        .grid {
+            gap: var(--content-gap);
+        }
+    }
 
-  /* Progressive enhancement for media grid */
-  @media (min-width: var(--breakpoint-mobile-lg)) {
     .media-grid {
-      grid-template-columns: repeat(2, 1fr);
+        display: grid;
+        gap: var(--space-4);
+        grid-template-columns: 1fr;
     }
-  }
 
-  @media (min-width: var(--breakpoint-tablet)) {
-    .media-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: var(--space-6);
+    @media (width >= 425px) {
+        .media-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
-  }
 
-  @media (min-width: var(--breakpoint-desktop)) {
-    .media-grid {
-      grid-template-columns: repeat(4, 1fr);
+    @media (width >= 768px) {
+        .media-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-6);
+        }
     }
-  }
 
-  @media (min-width: var(--breakpoint-desktop-xl)) {
-    .media-grid {
-      grid-template-columns: repeat(5, 1fr);
+    @media (width >= 1024px) {
+        .media-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
     }
-  }
 
-  /* Form grid for settings and configuration forms */
-  .form-grid {
-    display: grid;
-    gap: var(--space-6);
-    grid-template-columns: 1fr;
-  }
+    @media (width >= 1440px) {
+        .media-grid {
+            grid-template-columns: repeat(5, 1fr);
+        }
+    }
 
-  @media (min-width: var(--breakpoint-tablet)) {
     .form-grid {
-      grid-template-columns: repeat(2, 1fr);
+        display: grid;
+        gap: var(--space-6);
+        grid-template-columns: 1fr;
     }
-  }
 
-  /* Dashboard grid for overview layouts */
-  .dashboard-grid {
-    display: grid;
-    gap: var(--space-6);
-    grid-template-columns: 1fr;
-  }
+    @media (width >= 768px) {
+        .form-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
 
-  @media (min-width: var(--breakpoint-tablet)) {
     .dashboard-grid {
-      grid-template-columns: repeat(2, 1fr);
+        display: grid;
+        gap: var(--space-6);
+        grid-template-columns: 1fr;
     }
-  }
 
-  @media (min-width: var(--breakpoint-desktop)) {
-    .dashboard-grid {
-      grid-template-columns: repeat(3, 1fr);
+    @media (width >= 768px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
-  }
 
-  /* Auto-fit grid for flexible layouts */
-  .grid-auto-fit {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-md), 1fr));
-    gap: var(--space-6);
-  }
+    @media (width >= 1024px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
 
-  /* Auto-fill grid for consistent sizing */
-  .grid-auto-fill {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-width-md), 1fr));
-    gap: var(--space-6);
-  }
+    .grid-auto-fit {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-md), 1fr));
+        gap: var(--space-6);
+    }
+
+    .grid-auto-fill {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-width-md), 1fr));
+        gap: var(--space-6);
+    }
 }
 
-/* Flexbox utilities are in utilities.css */
-
-/* Responsive Layout Patterns */
 @layer components {
-
-  /* Content layout patterns */
-  .content-layout {
-    display: grid;
-    gap: var(--section-spacing-mobile);
-    max-width: 100%;
-  }
-
-  @media (min-width: var(--breakpoint-tablet)) {
     .content-layout {
-      gap: var(--section-spacing);
+        display: grid;
+        gap: var(--section-spacing-mobile);
+        max-width: 100%;
     }
-  }
 
-  /* Two-column content layout */
-  .content-two-column {
-    display: grid;
-    gap: var(--space-8);
-    grid-template-columns: 1fr;
-  }
+    @media (width >= 768px) {
+        .content-layout {
+            gap: var(--section-spacing);
+        }
+    }
 
-  @media (min-width: var(--breakpoint-desktop)) {
     .content-two-column {
-      grid-template-columns: 2fr 1fr;
+        display: grid;
+        gap: var(--space-8);
+        grid-template-columns: 1fr;
     }
-  }
 
-  /* Three-column content layout */
-  .content-three-column {
-    display: grid;
-    gap: var(--space-6);
-    grid-template-columns: 1fr;
-  }
+    @media (width >= 1024px) {
+        .content-two-column {
+            grid-template-columns: 2fr 1fr;
+        }
+    }
 
-  @media (min-width: var(--breakpoint-tablet)) {
     .content-three-column {
-      grid-template-columns: repeat(2, 1fr);
+        display: grid;
+        gap: var(--space-6);
+        grid-template-columns: 1fr;
     }
-  }
 
-  @media (min-width: var(--breakpoint-desktop)) {
-    .content-three-column {
-      grid-template-columns: repeat(3, 1fr);
+    @media (width >= 768px) {
+        .content-three-column {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
-  }
+
+    @media (width >= 1024px) {
+        .content-three-column {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
 }
 
-/* Modal and Overlay Layouts */
 @layer components {
-  /* Modal backdrop - use: fixed inset-0 flex-center p-4 + background/z-index */
-  .modal-backdrop {
-    background: var(--color-overlay);
-    backdrop-filter: blur(var(--space-1));
-    z-index: var(--z-modal-backdrop);
-  }
+    .modal-backdrop {
+        background: var(--color-overlay);
+        backdrop-filter: blur(var(--space-1));
+        z-index: var(--z-modal-backdrop);
+    }
 
-  /* Modal container */
-  .modal-container {
-    background: var(--color-surface);
-    border-radius: var(--radius-3);
-    box-shadow: var(--shadow-xl);
-    max-width: var(--modal-max-width);
-    max-height: 90vh;
-    width: 100%;
-    overflow-y: auto;
-    z-index: var(--z-modal);
-  }
+    .modal-container {
+        background: var(--color-surface);
+        border-radius: var(--radius-3);
+        box-shadow: var(--shadow-xl);
+        max-width: var(--modal-max-width);
+        max-height: 90vh;
+        width: 100%;
+        overflow-y: auto;
+        z-index: var(--z-modal);
+    }
 
-  /* Modal header - use: flex-between border-b + padding/border-color */
-  .modal-header {
-    padding: var(--space-6) var(--space-6) var(--space-3) var(--space-6);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-  }
+    .modal-header {
+        padding: var(--space-6) var(--space-6) var(--space-3) var(--space-6);
+        border-bottom: var(--border-width-thin) solid var(--color-border);
+    }
 
-  /* Modal body */
-  .modal-body {
-    padding: var(--space-6);
-  }
+    .modal-body {
+        padding: var(--space-6);
+    }
 
-  /* Modal footer */
-  .modal-footer {
-    padding: var(--space-3) var(--space-6) var(--space-6) var(--space-6);
-    border-top: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--space-3);
-  }
+    .modal-footer {
+        padding: var(--space-3) var(--space-6) var(--space-6) var(--space-6);
+        border-top: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: var(--space-3);
+    }
 }
 
-/* Card Layouts */
 @layer components {
-  /* Base card */
-  .card {
-    background: var(--color-surface);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-2);
-    overflow: hidden;
-    transition: 
-      border-color var(--transition-fast),
-      box-shadow var(--transition-fast),
-      transform var(--transition-fast);
-  }
+    .card {
+        background: var(--color-surface);
+        border: var(--border-width-thin) solid var(--color-border);
+        border-radius: var(--radius-2);
+        overflow: hidden;
+        transition:
+            border-color var(--transition-fast),
+            box-shadow var(--transition-fast),
+            transform var(--transition-fast);
+    }
 
-  .card:hover {
-    border-color: var(--color-border-hover);
-    box-shadow: var(--shadow-md);
-    transform: translateY(var(--transform-offset-xs));
-  }
+    .card:hover {
+        border-color: var(--color-border-hover);
+        box-shadow: var(--shadow-md);
+        transform: translateY(var(--transform-offset-xs));
+    }
 
-  /* Card header */
-  .card-header {
-    padding: var(--space-4) var(--space-4) var(--space-3) var(--space-4);
-    border-bottom: var(--border-width-thin) solid var(--color-border);
-  }
+    .card-header {
+        padding: var(--space-4) var(--space-4) var(--space-3) var(--space-4);
+        border-bottom: var(--border-width-thin) solid var(--color-border);
+    }
 
-  /* Card body */
-  .card-body {
-    padding: var(--space-4);
-  }
+    .card-body {
+        padding: var(--space-4);
+    }
 
-  /* Card footer */
-  .card-footer {
-    padding: var(--space-3) var(--space-4) var(--space-4) var(--space-4);
-    border-top: 1px solid var(--color-border);
-    background: var(--color-background-alt);
-  }
+    .card-footer {
+        padding: var(--space-3) var(--space-4) var(--space-4) var(--space-4);
+        border-top: 1px solid var(--color-border);
+        background: var(--color-background-alt);
+    }
 
-  /* Media card specific layout */
-  .media-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
+    .media-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
 
-  .media-card-image {
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    background: var(--color-background-alt);
-  }
+    .media-card-image {
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        background: var(--color-background-alt);
+    }
 
-  .media-card-content {
-    padding: var(--space-4);
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
+    .media-card-content {
+        padding: var(--space-4);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
 
-  .media-card-actions {
-    margin-top: auto;
-    padding-top: var(--space-3);
-    display: flex;
-    gap: var(--space-2);
-  }
+    .media-card-actions {
+        margin-top: auto;
+        padding-top: var(--space-3);
+        display: flex;
+        gap: var(--space-2);
+    }
 }
 
-/* Responsive Utilities */
 @layer utilities {
-
-  /* Show only on mobile */
-  .mobile-only {
-    display: initial;
-  }
-
-  @media (min-width: var(--breakpoint-tablet)) {
     .mobile-only {
-      display: none;
+        display: initial;
     }
-  }
 
-  /* Show only on tablet */
-  .tablet-only {
-    display: none;
-  }
+    @media (width >= 768px) {
+        .mobile-only {
+            display: none;
+        }
+    }
 
-  @media (min-width: var(--breakpoint-tablet)) and (max-width: calc(var(--breakpoint-desktop) - 1px)) {
     .tablet-only {
-      display: initial;
+        display: none;
     }
-  }
 
-  /* Show only on desktop */
-  .desktop-only {
-    display: none;
-  }
+    @media (width >= 768px) and (width <= 1023px) {
+        .tablet-only {
+            display: initial;
+        }
+    }
 
-  @media (min-width: var(--breakpoint-desktop)) {
     .desktop-only {
-      display: initial;
+        display: none;
     }
-  }
+
+    @media (width >= 1024px) {
+        .desktop-only {
+            display: initial;
+        }
+    }
 }

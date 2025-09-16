@@ -5,52 +5,42 @@
  */
 
 @layer components {
-  .page-toolbar {
-    display: flex;
-    justify-content: space-between;
-    flex: 0 0 auto;
-    padding: 0 var(--space-4);
-    height: var(--header-height);
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    line-height: var(--header-height);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .page-toolbar-section {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-width: 0; /* Allow flex shrinking below content width */
-    overflow: hidden; /* Prevent content from breaking out */
-  }
-
-  /* page-toolbar-section alignment classes replaced with utility classes:
-     - left: justify-start flex-1
-     - center: justify-center flex-1  
-     - right: justify-end (no flex growth)
-  */
-
-  .page-toolbar-section-buttons {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    flex: 1;
-    min-width: 0; /* Allow flex container to shrink */
-    overflow: hidden; /* Clip content that exceeds container */
-  }
-
-  /* Toolbar-specific dropdown adjustments */
-  .toolbar-overflow-dropdown {
-    max-width: var(--dropdown-width-max);
-  }
-
-
-
-  /* Mobile responsive adjustments */
-  @media (max-width: calc(var(--breakpoint-tablet) - 1px)) {
     .page-toolbar {
-      padding: 0 var(--space-2);
+        display: flex;
+        justify-content: space-between;
+        flex: 0 0 auto;
+        padding: 0 var(--space-4);
+        height: var(--header-height);
+        background-color: var(--color-surface);
+        color: var(--color-text-primary);
+        line-height: var(--header-height);
+        border-bottom: 1px solid var(--color-border);
     }
-  }
+
+    .page-toolbar-section {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1);
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .page-toolbar-section-buttons {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1);
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .toolbar-overflow-dropdown {
+        max-width: var(--dropdown-width-max);
+    }
+
+    @media (width <= calc(var(--breakpoint-tablet) - 1px)) {
+        .page-toolbar {
+            padding: 0 var(--space-2);
+        }
+    }
 }

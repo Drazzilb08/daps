@@ -5,229 +5,169 @@
  */
 
 :root {
-  /* Spacing scale - Progressive spacing in 0.25rem (4px) increments */
-  --space-0: 0;
-  --space-1: 0.25rem;    /* 4px */
-  --space-2: 0.5rem;     /* 8px */
-  --space-3: 0.75rem;    /* 12px */
-  --space-4: 1rem;       /* 16px */
-  --space-5: 1.25rem;    /* 20px */
-  --space-6: 1.5rem;     /* 24px */
-  --space-7: 1.75rem;    /* 28px */
-  --space-8: 2rem;       /* 32px */
-  --space-9: 2.25rem;    /* 36px */
-  --space-10: 2.5rem;    /* 40px */
-  --space-12: 3rem;      /* 48px */
-  --space-14: 3.5rem;    /* 56px */
-  --space-16: 4rem;      /* 64px */
-  --space-20: 5rem;      /* 80px */
-  --space-24: 6rem;      /* 96px */
-  --space-32: 8rem;      /* 128px */
-
-  /* Layout measurements */
-  --sidebar-width: 210px;
-  --sidebar-collapsed: 72px;
-  --header-height: 64px;
-  --footer-height: 48px;
-  --content-max-width: 1200px;
-  --form-max-width: 600px;
-  --modal-max-width: 800px;
-  --card-max-width: 400px;
-
-  /* Typography scale - Progressive font sizes with consistent scaling ratio (~1.25) */
-  --font-size-xs: 0.75rem;    /* 12px */
-  --font-size-sm: 0.875rem;   /* 14px */
-  --font-size-base: 1rem;     /* 16px - MINIMUM for accessibility */
-  --font-size-lg: 1.125rem;   /* 18px */
-  --font-size-xl: 1.25rem;    /* 20px */
-  --font-size-2xl: 1.5rem;    /* 24px */
-  --font-size-3xl: 1.875rem;  /* 30px */
-  --font-size-4xl: 2.25rem;   /* 36px */
-  --font-size-5xl: 3rem;      /* 48px */
-  --font-size-6xl: 3.75rem;   /* 60px */
-
-  /* Font families */
-  --font-family-sans: 'Roboto', 'Open Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-  --font-family-serif: Georgia, 'Times New Roman', serif;
-
-  /* Font weights */
-  --font-weight-light: 300;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-
-  /* Line heights */
-  --line-height-tight: 1.25;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
-
-  /* Letter spacing */
-  --letter-spacing-tight: -0.025em;
-  --letter-spacing-normal: 0;
-  --letter-spacing-wide: 0.025em;
-
-  /* Border radii */
-  --radius-none: 0;
-  --radius-1: 0.25rem;   /* 4px - Small elements */
-  --radius-2: 0.5rem;    /* 8px - Cards, buttons */
-  --radius-3: 0.75rem;   /* 12px - Larger components */
-  --radius-full: 9999px; /* Pills, badges */
-
-  /* Responsive breakpoints - Mobile-first breakpoint system */
-  --breakpoint-mobile: 375px;   /* Small phones */
-  --breakpoint-mobile-lg: 425px; /* Large phones */
-  --breakpoint-tablet: 768px;   /* Tablets */
-  --breakpoint-desktop: 1024px; /* Small desktops */
-  --breakpoint-desktop-lg: 1200px; /* Large desktops */
-  --breakpoint-desktop-xl: 1440px; /* Extra large screens */
-
-  /* Touch targets & accessibility */
-  --touch-target-min: 44px;    /* WCAG minimum touch target */
-  --touch-target-comfortable: 48px; /* Comfortable touch target */
-  --focus-ring-width: 2px;     /* Focus indicator width */
-  --focus-ring-offset: 2px;    /* Focus indicator offset */
-
-  /* Shadows & elevation */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-
-  /* Animation & transitions */
-  --transition-fast: 150ms ease-in-out;
-  --transition-normal: 250ms ease-in-out;
-  --transition-slow: 350ms ease-in-out;
-  --duration-extra-slow: 500ms;
-  
-  /* Specialized transitions */
-  --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  --transition-spring: 500ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* Z-index scale */
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
-  --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
-  --z-toast: 1080;
-
-  /* Grid & layout */
-  --grid-columns: 12;
-  --container-padding: var(--space-4);
-  --container-padding-mobile: var(--space-3);
-  --section-spacing: var(--space-16);
-  --section-spacing-mobile: var(--space-12);
-
-  /* Form elements */
-  --input-height: var(--touch-target-min);
-  --input-padding-x: var(--space-3);
-  --input-padding-y: var(--space-2);
-  --input-border-width: 1px;
-  
-  --button-height: var(--touch-target-min);
-  --button-padding-x: var(--space-4);
-  --button-padding-y: var(--space-2);
-  --button-border-width: 1px;
-
-  /* Media & poster elements */
-  --poster-width-standard: 156px;      /* Standard poster preview width */
-  --poster-height-standard: 234px;     /* Standard poster preview height (3:2 ratio) */
-  --poster-width-mobile: 120px;        /* Mobile poster preview width */
-  --poster-height-mobile: 180px;       /* Mobile poster preview height */
-  --poster-width-tablet: 130px;        /* Tablet poster preview width */
-  --poster-height-tablet: 195px;       /* Tablet poster preview height */
-  --poster-border-thickness: 0.3125rem;  /* 5px - Poster border thickness */
-  --poster-grid-min-width: 180px;      /* Minimum column width for poster grid */
-  --poster-grid-min-width-lg: 200px;   /* Larger minimum column width for desktop */
-
-  /* Content spacing */
-  --content-gap: var(--space-6);
-  --content-gap-mobile: var(--space-4);
-  --paragraph-spacing: var(--space-4);
-  --list-spacing: var(--space-2);
-
-  /* Border widths */
-  --border-width-thin: 1px;        /* Standard border thickness */
-  --border-width-medium: 2px;      /* Emphasis borders */
-  --border-width-thick: 3px;       /* Strong emphasis */
-
-  /* Component dimensions */
-  --size-icon-xs: 12px;            /* Extra small icons */
-  --size-icon-sm: 16px;            /* Small icons */
-  --size-icon-md: 20px;            /* Medium icons */
-  --size-icon-lg: 24px;            /* Large icons */
-  --size-icon-xl: 32px;            /* Extra large icons */
-  --size-icon-2xl: 40px;           /* 2x extra large icons */
-
-  /* Form component dimensions */
-  --size-checkbox: 22px;           /* Checkbox indicator size */
-  --size-checkbox-icon: 22px;      /* Checkbox checkmark icon size */
-
-  --size-avatar-sm: 32px;          /* Small avatar */
-  --size-avatar-md: 40px;          /* Medium avatar */
-  --size-avatar-lg: 56px;          /* Large avatar */
-  --size-avatar-xl: 64px;          /* Extra large avatar */
-
-  /* Component minimum widths */
-  --min-width-button: 80px;        /* Minimum button width */
-  --min-width-input: 120px;        /* Minimum input width */
-  --min-width-select: 140px;       /* Minimum select width */
-
-  /* Dropdown dimensions */
-  --dropdown-width-min: 7.5rem;    /* 120px - Minimum dropdown width */
-  --dropdown-width-max: 10rem;     /* 160px - Maximum dropdown width mobile */
-  --dropdown-width-desktop: 20rem; /* 320px - Maximum dropdown width desktop */
-
-  /* Component maximum heights */
-  --max-height-dropdown: 300px;    /* Maximum dropdown height */
-  --max-height-textarea: 400px;    /* Maximum textarea height */
-  --max-height-modal: 80vh;        /* Maximum modal height */
-
-  /* Grid and layout minimum sizes */
-  --grid-min-width-xs: 160px;      /* Extra small grid column minimum */
-  --grid-min-width-sm: 200px;      /* Small grid column minimum */
-  --grid-min-width-md: 280px;      /* Medium grid column minimum */
-  --grid-min-width-lg: 320px;      /* Large grid column minimum */
-  --grid-min-width-xl: 400px;      /* Extra large grid column minimum */
-  --grid-min-width-2xl: 500px;     /* 2x extra large grid column minimum */
-
-  /* Large container dimensions */
-  --container-width-xl: 1400px;    /* Extra large container */
-  --container-width-2xl: 1600px;   /* 2x extra large container */
-  --container-width-3xl: 1800px;   /* 3x extra large container */
-
-  /* Transform values */
-  --transform-offset-xs: -1px;     /* Micro movement */
-  --transform-offset-sm: -2px;     /* Small movement */
-  --transform-offset-md: -4px;     /* Medium movement */
-  --transform-offset-lg: -6px;     /* Large movement */
-  --transform-offset-xl: -8px;     /* Extra large movement */
-
-  /* Positive transforms */
-  --transform-lift-xs: 1px;        /* Micro lift */
-  --transform-lift-sm: 2px;        /* Small lift */
-  --transform-lift-md: 4px;        /* Medium lift */
-  --transform-lift-lg: 6px;        /* Large lift */
-  --transform-lift-xl: 8px;        /* Extra large lift */
-
-  /* Opacity values */
-  --opacity-10: 0.1;               /* Subtle transparency */
-  --opacity-15: 0.15;              /* Light transparency */
-  --opacity-20: 0.2;               /* Mild transparency */
-  --opacity-30: 0.3;               /* Moderate transparency */
-  --opacity-40: 0.4;               /* Medium transparency */
-  --opacity-50: 0.5;               /* Half transparency */
-  --opacity-60: 0.6;               /* Strong transparency */
-  --opacity-75: 0.75;              /* Very strong transparency */
-  --opacity-80: 0.8;               /* Heavy transparency */
-  --opacity-90: 0.9;               /* Almost transparent */
+    --space-0: 0;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-7: 1.75rem;
+    --space-8: 2rem;
+    --space-9: 2.25rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-14: 3.5rem;
+    --space-16: 4rem;
+    --space-20: 5rem;
+    --space-24: 6rem;
+    --space-32: 8rem;
+    --sidebar-width: 210px;
+    --sidebar-collapsed: 72px;
+    --header-height: 64px;
+    --footer-height: 48px;
+    --content-max-width: 1200px;
+    --form-max-width: 600px;
+    --modal-max-width: 800px;
+    --card-max-width: 400px;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
+    --font-size-5xl: 3rem;
+    --font-size-6xl: 3.75rem;
+    --font-family-sans: 'Roboto', 'Open Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    --font-family-mono: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', consolas, monospace;
+    --font-family-serif: georgia, 'Times New Roman', serif;
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    --letter-spacing-tight: -0.025em;
+    --letter-spacing-normal: 0;
+    --letter-spacing-wide: 0.025em;
+    --radius-none: 0;
+    --radius-1: 0.25rem;
+    --radius-2: 0.5rem;
+    --radius-3: 0.75rem;
+    --radius-full: 9999px;
+    --breakpoint-mobile: 375px;
+    --breakpoint-mobile-lg: 425px;
+    --breakpoint-tablet: 768px;
+    --breakpoint-desktop: 1024px;
+    --breakpoint-desktop-lg: 1200px;
+    --breakpoint-desktop-xl: 1440px;
+    --touch-target-min: 44px;
+    --touch-target-comfortable: 48px;
+    --focus-ring-width: 2px;
+    --focus-ring-offset: 2px;
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 5%);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%);
+    --transition-fast: 150ms ease-in-out;
+    --transition-normal: 250ms ease-in-out;
+    --transition-slow: 350ms ease-in-out;
+    --duration-extra-slow: 500ms;
+    --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-spring: 500ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+    --z-toast: 1080;
+    --grid-columns: 12;
+    --container-padding: var(--space-4);
+    --container-padding-mobile: var(--space-3);
+    --section-spacing: var(--space-16);
+    --section-spacing-mobile: var(--space-12);
+    --input-height: var(--touch-target-min);
+    --input-padding-x: var(--space-3);
+    --input-padding-y: var(--space-2);
+    --input-border-width: 1px;
+    --button-height: var(--touch-target-min);
+    --button-padding-x: var(--space-4);
+    --button-padding-y: var(--space-2);
+    --button-border-width: 1px;
+    --poster-width-standard: 156px;
+    --poster-height-standard: 234px;
+    --poster-width-mobile: 120px;
+    --poster-height-mobile: 180px;
+    --poster-width-tablet: 130px;
+    --poster-height-tablet: 195px;
+    --poster-border-thickness: 0.3125rem;
+    --poster-grid-min-width: 180px;
+    --poster-grid-min-width-lg: 200px;
+    --content-gap: var(--space-6);
+    --content-gap-mobile: var(--space-4);
+    --paragraph-spacing: var(--space-4);
+    --list-spacing: var(--space-2);
+    --border-width-thin: 1px;
+    --border-width-medium: 2px;
+    --border-width-thick: 3px;
+    --size-icon-xs: 12px;
+    --size-icon-sm: 16px;
+    --size-icon-md: 20px;
+    --size-icon-lg: 24px;
+    --size-icon-xl: 32px;
+    --size-icon-2xl: 40px;
+    --size-checkbox: 22px;
+    --size-checkbox-icon: 22px;
+    --size-avatar-sm: 32px;
+    --size-avatar-md: 40px;
+    --size-avatar-lg: 56px;
+    --size-avatar-xl: 64px;
+    --min-width-button: 80px;
+    --min-width-input: 120px;
+    --min-width-select: 140px;
+    --dropdown-width-min: 7.5rem;
+    --dropdown-width-max: 10rem;
+    --dropdown-width-desktop: 20rem;
+    --max-height-dropdown: 300px;
+    --max-height-textarea: 400px;
+    --max-height-modal: 80vh;
+    --grid-min-width-xs: 160px;
+    --grid-min-width-sm: 200px;
+    --grid-min-width-md: 280px;
+    --grid-min-width-lg: 320px;
+    --grid-min-width-xl: 400px;
+    --grid-min-width-2xl: 500px;
+    --container-width-xl: 1400px;
+    --container-width-2xl: 1600px;
+    --container-width-3xl: 1800px;
+    --transform-offset-xs: -1px;
+    --transform-offset-sm: -2px;
+    --transform-offset-md: -4px;
+    --transform-offset-lg: -6px;
+    --transform-offset-xl: -8px;
+    --transform-lift-xs: 1px;
+    --transform-lift-sm: 2px;
+    --transform-lift-md: 4px;
+    --transform-lift-lg: 6px;
+    --transform-lift-xl: 8px;
+    --opacity-10: 0.1;
+    --opacity-15: 0.15;
+    --opacity-20: 0.2;
+    --opacity-30: 0.3;
+    --opacity-40: 0.4;
+    --opacity-50: 0.5;
+    --opacity-60: 0.6;
+    --opacity-75: 0.75;
+    --opacity-80: 0.8;
+    --opacity-90: 0.9;
 }

@@ -7,284 +7,147 @@
  */
 
 @layer components {
-  /* =============================================================================
-     FIELD WRAPPER - Universal container for ALL field types
-     ============================================================================= */
-
-  .field-wrapper {
-    /* Base wrapper class - minimal base styling */
-  }
-
-  /* Field wrapper variants - component-level styling for different layouts */
-  .field-wrapper-standard {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    margin-bottom: var(--space-4);
-    width: 100%;
-  }
-
-  .field-wrapper-form-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    margin-bottom: var(--space-4);
-    width: 100%;
-  }
-
-  .field-wrapper-checkbox {
-    margin-bottom: var(--space-4);
-    width: 100%;
-  }
-
-  .field-wrapper-inline {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-4);
-    width: 100%;
-  }
-
-  .field-wrapper-minimal {
-    width: 100%;
-  }
-  
-  /* =============================================================================
-     FIELD LABEL - Universal labeling for ALL field types
-     ============================================================================= */
-
-  .field-label {
-    /* UTILITY MIGRATION: Typography handled by utility classes */
-    /* Use: .leading-tight if different line-height needed */
-  }
-
-  .required-indicator {
-    /* UTILITY MIGRATION: Spacing and weight moved to utilities (.ml-1 .font-semibold) */
-    color: var(--color-error); /* Component-specific color */
-  }
-  
-  /* =============================================================================
-     INPUT BASE - References consolidated field-base.css patterns
-     ============================================================================= */
-
-  .field-input {
-    /* UTILITY MIGRATION: Core styling moved to .field-base utility class */
-    /* Use: .field-base .w-full .touch-target for complete input styling */
-    /* Components should combine utilities instead of this class */
-
-    /* LEGACY OVERRIDE: Background for specific field contexts */
-    background: var(--color-surface); /* May differ from standard input background */
-  }
-  
-  /* NOTE: Placeholder, focus, validation, and disabled states now consolidated in field-base.css */
-  /* Apply consolidated classes: .field-placeholder-styling .field-focus-behavior .field-validation-invalid .field-disabled-state */
-  
-  /* =============================================================================
-     TEXTAREA BASE - References consolidated field-base.css patterns
-     ============================================================================= */
-
-  .field-textarea {
-    /* UTILITY MIGRATION: Core styling moved to .field-base utility class */
-    /* Use: .field-base .w-full .touch-target for complete textarea styling */
-
-    /* COMPONENT-SPECIFIC: Textarea-only properties */
-    background: var(--color-surface); /* May differ from standard input background */
-    resize: vertical; /* Textarea-specific behavior */
-    min-height: calc(var(--touch-target-min) * 2); /* Minimum 2 lines visible */
-  }
-
-  .field-textarea:disabled {
-    /* COMPONENT-SPECIFIC: Textarea disabled state */
-    resize: none; /* Disable resize when disabled */
-  }
-  
-  /* NOTE: Placeholder, focus, validation states now consolidated in field-base.css */
-  /* Apply consolidated classes: .field-placeholder-styling .field-focus-behavior .field-validation-invalid .field-disabled-state */
-  
-  /* =============================================================================
-     FIELD DESCRIPTION - Universal help text for ALL field types
-     ============================================================================= */
-
-  .field-description {
-    /* UTILITY MIGRATION: Typography handled by utility classes */
-    /* Use: .leading-normal if different line-height needed */
-  }
-
-  /* =============================================================================
-     FIELD ERROR - Universal error display for ALL field types
-     ============================================================================= */
-
-  .field-error {
-    /* UTILITY MIGRATION: Typography moved to utilities (.text-sm .font-medium) */
-    color: var(--color-error); /* Component-specific error color */
-  }
-  
-  /* =============================================================================
-     RESPONSIVE BEHAVIOR - Mobile-first progressive enhancement
-     ============================================================================= */
-  
-  /* REMOVED: Responsive padding handled by utility classes in React components:
-   * Mobile: .p-2 (for < 375px)
-   * Default: .py-2 .px-3 (375px - 767px)
-   * Tablet+: .py-3 .px-4 (768px+)
-   */
-  
-  /* Desktop */
-  @media (min-width: 1024px) {
-    .field-wrapper {
-      max-width: var(--form-max-width); /* Constrain width on large screens */
+    .field-wrapper-standard {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        margin-bottom: var(--space-4);
+        width: 100%;
     }
-  }
-  
-  /* =============================================================================
-     COMPOSITION PATTERNS - Reusable patterns for complex field types
-     ============================================================================= */
 
-  /* UTILITY MIGRATION: Horizontal field layout moved to utilities */
-  .field-wrapper--horizontal {
-    /* MOVED TO UTILITY: Use .flex-row .items-start .gap-3 utility classes */
-  }
+    .field-wrapper-form-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        margin-bottom: var(--space-4);
+        width: 100%;
+    }
 
-  .field-wrapper--horizontal .field-label {
-    /* MOVED TO UTILITY: Use .mb-0 .flex-1 utility classes */
-  }
+    .field-wrapper-checkbox {
+        margin-bottom: var(--space-4);
+        width: 100%;
+    }
 
-  /* UTILITY MIGRATION: Compact field layout moved to utilities */
-  .field-wrapper--compact {
-    /* MOVED TO UTILITY: Use .mb-2 .gap-1 utility classes */
-  }
+    .field-wrapper-inline {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-4);
+        width: 100%;
+    }
 
-  .field-wrapper--compact .field-label {
-    /* MOVED TO UTILITY: Use .text-xs .mb-0 utility classes */
-  }
+    .field-wrapper-minimal {
+        width: 100%;
+    }
 
-  /* Component-specific state class preserved */
-  .field-wrapper--invalid {
-    /* Component-specific invalid state styling if needed */
-  }
+    .field-base {
+        background: var(--color-input-bg);
+        border: var(--field-base-border, 1px solid var(--color-text-secondary));
+        box-shadow: var(--field-base-shadow, 0 1px 2px rgb(0 0 0 / 5%));
+        border-radius: var(--radius-2);
+        transition: all var(--transition-fast);
+        min-height: var(--input-height);
+        padding: var(--input-padding-y) var(--input-padding-x);
+        box-sizing: border-box;
+    }
 
-  /* =============================================================================
-     FIELD BASE - Universal base styling for ALL field types
-     ============================================================================= */
+    .field-base:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        background: var(--color-input-bg-focus);
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    }
 
-  .field-base {
-    background: var(--color-input-bg);
-    border: var(--field-base-border, 1px solid var(--color-text-secondary));
-    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
-    border-radius: var(--radius-2);
-    transition: all var(--transition-fast);
-    min-height: var(--input-height);
-    padding: var(--input-padding-y) var(--input-padding-x);
-    box-sizing: border-box;
-  }
+    .field-base:read-only {
+        background: var(--color-input-bg-readonly);
+        cursor: default;
+    }
 
-  .field-base:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
+    .field-base:disabled {
+        background: var(--color-input-bg-disabled);
+        color: var(--color-input-text-disabled);
+        border-color: var(--color-input-border-disabled);
+        cursor: not-allowed;
+    }
 
-  .field-base:read-only {
-    background: var(--color-input-bg-readonly);
-    cursor: default;
-  }
+    .field-base::placeholder {
+        color: var(--color-input-placeholder);
+        opacity: 1;
+    }
 
-  .field-base:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-  }
+    .field-base.state-invalid {
+        border-color: var(--color-error);
+    }
 
-  .field-base::placeholder {
-    color: var(--color-input-placeholder);
-    opacity: 1;
-  }
+    .field-base.state-invalid:focus {
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+    }
 
-  /* Field base with validation states */
-  .field-base.state-invalid {
-    border-color: var(--color-error);
-  }
+    .field-base.state-valid {
+        border-color: var(--color-success);
+    }
 
-  .field-base.state-invalid:focus {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
-  }
+    .field-base.state-valid:focus {
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+    }
 
-  .field-base.state-valid {
-    border-color: var(--color-success);
-  }
+    .input-group {
+        display: flex;
+        align-items: stretch;
+        border-radius: var(--radius-2);
+        overflow: hidden;
+        background: var(--color-input-bg);
+        border: var(--field-base-border, 1px solid var(--color-text-secondary));
+        box-shadow: var(--field-base-shadow, 0 1px 2px rgb(0 0 0 / 5%));
+        transition: all var(--transition-fast);
+    }
 
-  .field-base.state-valid:focus {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
-  }
+    .input-group:focus-within {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    }
 
-  /* =============================================================================
-     INPUT GROUP - Compound input container styling
-     ============================================================================= */
+    .input-group.state-invalid {
+        border-color: var(--color-error);
+    }
 
-  .input-group {
-    display: flex;
-    align-items: stretch;
-    border-radius: var(--radius-2);
-    overflow: hidden;
-    background: var(--color-input-bg);
-    border: var(--field-base-border, 1px solid var(--color-text-secondary));
-    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
-    transition: all var(--transition-fast);
-  }
+    .input-group.state-invalid:focus-within {
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+    }
 
-  .input-group:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
+    .input-group.state-valid {
+        border-color: var(--color-success);
+    }
 
-  .input-group.state-invalid {
-    border-color: var(--color-error);
-  }
+    .input-group.state-valid:focus-within {
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+    }
 
-  .input-group.state-invalid:focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
-  }
+    .input-group-child {
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+    }
 
-  .input-group.state-valid {
-    border-color: var(--color-success);
-  }
+    .input-group .input-group-child:focus {
+        border-color: transparent;
+        box-shadow: none;
+        outline: none;
+    }
 
-  .input-group.state-valid:focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
-  }
+    .input-addon {
+        background: var(--color-input-addon-bg);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: var(--touch-target-min);
+        transition: all var(--transition-fast);
+    }
 
-  /* Input group child - for inputs inside compound groups */
-  .input-group-child {
-    border: none;
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-  }
-
-  .input-group .input-group-child:focus {
-    border-color: transparent;
-    box-shadow: none;
-    outline: none;
-  }
-
-  /* =============================================================================
-     INPUT ADDON - Button/icon addons for input groups
-     ============================================================================= */
-
-  .input-addon {
-    background: var(--color-input-addon-bg);
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: var(--touch-target-min);
-    transition: all var(--transition-fast);
-  }
-
-  .input-addon:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+    .input-addon:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 }

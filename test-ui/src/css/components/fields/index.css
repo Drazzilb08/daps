@@ -3,19 +3,17 @@
  * Central import file for all field component styles and form composition
  */
 
-@import './field-primitives.css';
-@import './field-base.css';
-@import './field-input.css';
-@import './field-select.css';
-@import './field-checkbox.css';
-@import './field-textarea.css';
-@import './field-color.css';
-@import './field-directory.css';
-@import './field-color-list.css';
-@import './field-color-list-poster.css';
-@import './field-json.css';
-@import './field-placeholder.css';
-
-/* Field composition and layout - consolidated and renamed */
-@import './field-layout.css';
-@import './field-renderer.css';
+@import url('./field-primitives.css');
+@import url('./field-base.css');
+@import url('./field-input.css');
+@import url('./field-select.css');
+@import url('./field-checkbox.css');
+@import url('./field-textarea.css');
+@import url('./field-color.css');
+@import url('./field-directory.css');
+@import url('./field-color-list.css');
+@import url('./field-color-list-poster.css');
+@import url('./field-json.css');
+@import url('./field-placeholder.css');
+@import url('./field-layout.css');
+@import url('./field-renderer.css');

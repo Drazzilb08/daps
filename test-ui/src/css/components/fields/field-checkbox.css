@@ -1,132 +1,54 @@
 /**
  * Checkbox Field Styles
- * 
- * Clean, professional checkbox with clickable wrapper.
- * Uses consolidated focus patterns where applicable for consistency.
- * Custom indicator uses checkbox-specific styling for unique behavior.
+ *
+ * Clean, simple checkbox with proper visual appearance
  */
 
 @layer components {
-  /* Checkbox field wrapper - provides the clickable area */
-  .checkbox-field {
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    /* Use utilities: flex items-start gap-3 p-3 rounded min-h-touch-comfortable */
+  .checkbox-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .checkbox-field--disabled {
+  .checkbox-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .checkbox-box {
+    width: var(--size-checkbox);
+    height: var(--size-checkbox);
+    border: var(--border-width-medium) solid var(--color-border);
+    border-radius: var(--radius-1);
+    background: var(--color-input-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+  }
+
+  .checkbox-input:checked + .checkbox-box {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .checkbox-input:checked + .checkbox-box svg {
+    stroke: white;
+    width: var(--size-checkbox-icon);
+    height: var(--size-checkbox-icon);
+  }
+
+  .checkbox-field:focus-within .checkbox-box {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .checkbox-field--disabled .checkbox-box {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-
-  /* Invalid state handled by component-specific classes */
-
-  /* Checkbox input container */
-  .checkbox-field__input {
-    margin-top: 2px;
-    /* Use utilities: relative flex-shrink-0 */
-  }
-
-  /* Hide the actual checkbox */
-  .checkbox-field__input input[type="checkbox"] {
-    /* Use utilities: absolute opacity-0 w-0 h-0 */
-  }
-
-  /* Custom checkbox indicator */
-  .checkbox-field__indicator {
-    width: 18px;
-    height: 18px;
-    transition: all var(--transition-fast);
-    /* Use utilities: rounded-sm flex items-center justify-center */
-  }
-
-  /* Theme-specific indicator background handled by CSS variables */
-  .checkbox-field__indicator {
-    background: var(--checkbox-indicator-bg, var(--color-input-bg));
-    /* Could use .field-input-base for border and shadow consistency */
-  }
-
-  /* Checked state */
-  .checkbox-field:not(.checkbox-field--disabled) .checkbox-field__input input:checked + .checkbox-field__indicator {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-primary-text);
-  }
-
-  /* Checkmark */
-  .checkbox-field:not(.checkbox-field--disabled) .checkbox-field__input input:checked + .checkbox-field__indicator::after {
-    font-size: var(--font-size-xs);
-    font-weight: bold;
-    color: var(--color-primary-text);
-  }
-
-  /* Focus state - uses same focus ring pattern as consolidated .field-focus-behavior */
-  .checkbox-field:focus-within .checkbox-field__indicator {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-    /* Matches pattern from .field-focus-behavior for consistency */
-  }
-
-  /* Content area */
-  .checkbox-field__content {
-    /* Use utilities: flex-1 min-w-0 */
-  }
-
-  /* Label */
-  .checkbox-field__label {
-    cursor: inherit;
-    /* Use utilities: block text-primary leading-normal mb-1 */
-    /* Font styling inherited from .field-input-typography */
-  }
-
-  .checkbox-field--disabled .checkbox-field__label {
-    color: var(--color-text-disabled);
-  }
-
-  /* Description */
-  .checkbox-field__description {
-    /* Use utilities: text-secondary leading-relaxed mt-1 */
-    /* Font sizing handled by .field-input-typography base */
-  }
-
-  /* Basic checkbox styling for direct usage */
-  input[type="checkbox"] {
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: var(--radius-1);
-    cursor: pointer;
-    position: relative;
-    transition: all var(--transition-fast);
-    margin-right: var(--space-2);
-    flex-shrink: 0;
-    background: var(--color-input-bg);
-  }
-
-  /* Basic checkbox theme styling handled by CSS variables */
-  input[type="checkbox"] {
-    border: var(--checkbox-border, 1px solid var(--color-text-secondary));
-    box-shadow: var(--checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
-  }
-
-  /* Checked state for basic checkbox */
-  input[type="checkbox"]:checked {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-  }
-
-  /* Checkmark for basic checkbox */
-  input[type="checkbox"]:checked::after {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: var(--color-primary-text);
-    /* Font styling inherited from design tokens */
-  }
-
-  /* Focus state for basic checkbox - matches consolidated focus behavior */
-  input[type="checkbox"]:focus {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-    /* Uses same focus ring pattern as .field-focus-behavior */
   }
 }

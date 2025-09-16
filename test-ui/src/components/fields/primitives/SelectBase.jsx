@@ -48,7 +48,7 @@ export const SelectBase = React.memo(({
   ].filter(Boolean).join(' ');
 
   return (
-    <div className="field-select-wrapper">
+    <div className="field-select-wrapper relative inline-block w-full">
       <select
         id={id}
         name={name}

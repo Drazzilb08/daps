@@ -1,6 +1,6 @@
 /**
  * CheckboxField Component
- * 
+ *
  * Checkbox field using primitive composition with large clickable area.
  * The entire wrapper including label is clickable.
  */
@@ -10,7 +10,7 @@ import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primi
 
 /**
  * CheckboxField component for boolean input
- * 
+ *
  * @param {Object} props - Component props
  * @param {Object} props.field - Field configuration object
  * @param {boolean} props.value - Current field value
@@ -36,12 +36,12 @@ export const CheckboxField = React.memo(({
   const isChecked = Boolean(value);
 
   return (
-    <FieldWrapper variant="checkbox" invalid={highlightInvalid}>
+    <FieldWrapper invalid={highlightInvalid}>
       <div
-        className={`checkbox-field flex items-start gap-3 p-3 rounded min-h-touch-comfortable ${disabled ? 'checkbox-field--disabled' : ''} ${highlightInvalid ? 'checkbox-field--invalid' : ''}`}
+        className={`checkbox-field flex items-start gap-3 p-3 rounded min-h-touch-comfortable cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${highlightInvalid ? 'border-red-500' : ''}`}
         onClick={handleClick}
       >
-        <div className="checkbox-field__input relative flex-shrink-0">
+        <div className="checkbox-container">
           <input
             id={inputId}
             type="checkbox"
@@ -50,32 +50,29 @@ export const CheckboxField = React.memo(({
             disabled={disabled}
             required={field.required}
             onChange={() => {}} // Controlled by wrapper click
-            tabIndex={-1} // Use wrapper for keyboard navigation
-            aria-hidden="true" // Screen readers use the wrapper
-            className="absolute opacity-0 w-0 h-0"
+            className="checkbox-input"
           />
-          <div className="checkbox-field__indicator field-base" aria-hidden="true">
+          <div className="checkbox-box">
             {isChecked && (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="20,6 9,17 4,12"/>
               </svg>
             )}
           </div>
         </div>
 
-        <div className="checkbox-field__content flex-1 min-w-0">
+        <div className="flex-1 min-w-0">
           <FieldLabel
             htmlFor={inputId}
             label={field.label}
             required={field.required}
-            className="checkbox-field__label"
+            className="cursor-pointer"
             onClick={(e) => e.preventDefault()} // Prevent double firing
           />
 
           <FieldDescription
             id={`${inputId}-desc`}
             description={field.description}
-            className="checkbox-field__description"
           />
 
           <FieldError

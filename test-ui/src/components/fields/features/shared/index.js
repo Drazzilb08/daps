@@ -26,3 +26,4 @@ export { RemoveButton } from './RemoveButton';
 export { ItemCounter } from './ItemCounter';
 export { EmptyState } from './EmptyState';
 export { StatusMessage } from './StatusMessage';
+export { FieldButton } from './FieldButton';

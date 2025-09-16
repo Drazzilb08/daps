@@ -7,6 +7,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
+import { FieldButton } from '../features/shared';
 
 /**
  * PasswordField component for password input
@@ -67,13 +68,11 @@ export const PasswordField = React.memo(({
           className="input-group-child flex-1"
         />
         
-        <button
-          type="button"
+        <FieldButton
           onClick={togglePasswordVisibility}
           disabled={disabled}
-          className="input-addon cursor-pointer"
-          aria-label={showPassword ? 'Hide password' : 'Show password'}
-          tabIndex={0}
+          ariaLabel={showPassword ? 'Hide password' : 'Show password'}
+          className="btn btn--password-toggle btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
         >
           {showPassword ? (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2">
@@ -86,7 +85,7 @@ export const PasswordField = React.memo(({
               <circle cx="12" cy="12" r="3"/>
             </svg>
           )}
-        </button>
+        </FieldButton>
       </div>
       
       <FieldDescription 

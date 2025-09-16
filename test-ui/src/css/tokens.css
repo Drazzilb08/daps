@@ -168,6 +168,10 @@
   --size-icon-xl: 32px;            /* Extra large icons */
   --size-icon-2xl: 40px;           /* 2x extra large icons */
 
+  /* Form component dimensions */
+  --size-checkbox: 22px;           /* Checkbox indicator size */
+  --size-checkbox-icon: 22px;      /* Checkbox checkmark icon size */
+
   --size-avatar-sm: 32px;          /* Small avatar */
   --size-avatar-md: 40px;          /* Medium avatar */
   --size-avatar-lg: 56px;          /* Large avatar */

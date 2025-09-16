@@ -603,127 +603,11 @@
      FIELD COMPOSITION UTILITIES - Evidence-based utilities for field system
      ============================================================================= */
 
-  /* Input group container - Used in PasswordField, NumberField, and other compound inputs */
-  .input-group {
-    display: flex;
-    align-items: stretch;
-    border-radius: var(--radius-2);
-    overflow: hidden;
-    background: var(--color-input-bg);
-    border: var(--field-base-border, 1px solid var(--color-text-secondary));
-    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
-    transition: all var(--transition-fast);
-  }
+  /* MOVED TO COMPONENT: Input group styling moved to field-primitives.css */
 
-  .input-group:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
+  /* MOVED TO COMPONENT: .input styles moved to field-input.css */
 
-  .input-group.state-invalid {
-    border-color: var(--color-error);
-  }
-
-  .input-group.state-invalid:focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
-  }
-
-  .input-group.state-valid {
-    border-color: var(--color-success);
-  }
-
-  .input-group.state-valid:focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
-  }
-
-  /* Input group child - for inputs inside compound groups */
-  .input-group-child {
-    border: none;
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-  }
-
-  .input-group-child:focus {
-    border-color: transparent;
-    box-shadow: none;
-  }
-
-  /* Input addon - for buttons/icons attached to inputs */
-  .input-addon {
-    background: var(--color-input-addon-bg);
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: var(--touch-target-min);
-    transition: all var(--transition-fast);
-  }
-
-  .input-addon:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Basic input styling utility */
-  .input {
-    width: 100%;
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--font-size-base);
-    /* Font styling inherited from base typography */
-    line-height: var(--line-height-normal);
-    color: var(--color-input-text);
-    background: var(--color-input-bg);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-2);
-    transition: all var(--transition-fast);
-  }
-  
-  .input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
-  
-  .input:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-  
-  /* Basic select styling utility */
-  .select {
-    width: 100%;
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) calc(var(--space-3) + var(--space-6)) var(--space-2) var(--space-3);
-    font-size: var(--font-size-base);
-    /* Font styling inherited from base typography */
-    line-height: var(--line-height-normal);
-    color: var(--color-input-text);
-    background: var(--color-input-bg);
-    border: var(--border-width-thin) solid var(--color-border);
-    border-radius: var(--radius-2);
-    appearance: none;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-  
-  .select:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
-  
-  .select:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
+  /* MOVED TO COMPONENT: .select styles moved to field-select.css */
   
   /* Responsive image/icon utilities */
   
@@ -806,70 +690,9 @@
      FIELD STATE COMPOSITION UTILITIES - Field-specific state combinations
      ============================================================================= */
 
-  /* Field base styling - combines background, border, padding, and transitions */
-  .field-base {
-    background: var(--color-input-bg);
-    border: var(--field-base-border, 1px solid var(--color-text-secondary));
-    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
-    border-radius: var(--radius-2);
-    transition: all var(--transition-fast);
-    min-height: var(--input-height);
-    padding: var(--input-padding-y) var(--input-padding-x);
-    box-sizing: border-box;
-  }
+  /* MOVED TO COMPONENT: Field base styling moved to field-primitives.css */
 
-  .field-base:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
-
-  .field-base:read-only {
-    background: var(--color-input-bg-readonly);
-    cursor: default;
-  }
-
-  .field-base:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-  }
-
-  .field-base::placeholder {
-    color: var(--color-input-placeholder);
-    opacity: 1;
-  }
-
-  /* Field base with validation states */
-  .field-base.state-invalid {
-    border-color: var(--color-error);
-  }
-
-  .field-base.state-invalid:focus {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
-  }
-
-  .field-base.state-valid {
-    border-color: var(--color-success);
-  }
-
-  .field-base.state-valid:focus {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
-  }
-
-  /* Number field display utility - for read-only number displays */
-  .number-field-display {
-    text-align: center;
-    font-variant-numeric: tabular-nums;
-    cursor: default;
-  }
-
-  .number-field-display:focus {
-    outline: none;
-    box-shadow: none;
-  }
+  /* MOVED TO COMPONENT: Number field display moved to field-input.css */
 
   /* =============================================================================
      SEMANTIC STATE UTILITIES - Single source of truth for component states
@@ -1004,39 +827,7 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
   }
 
-  /* Field wrapper variant utilities */
-  .field-wrapper-standard {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    margin-bottom: var(--space-4);
-    width: 100%;
-  }
-
-  .field-wrapper-form-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    margin-bottom: var(--space-4);
-    width: 100%;
-  }
-
-  .field-wrapper-checkbox {
-    margin-bottom: var(--space-4);
-    width: 100%;
-  }
-
-  .field-wrapper-inline {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-4);
-    width: 100%;
-  }
-
-  .field-wrapper-minimal {
-    width: 100%;
-  }
+  /* MOVED TO COMPONENT: Field wrapper variants moved to field-primitives.css */
 }
 
 /* Development helpers */

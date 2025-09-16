@@ -2,91 +2,85 @@
  * Input Field Styles
  *
  * Styles for text, password, number, and other input-based fields.
- * REFACTORED: Core patterns moved to utilities, input group patterns centralized.
+ * RELOCATED: Core input and number field styling moved from utilities.css
  */
 
 @layer components {
-  /* UTILITY MIGRATION: Size variants handled by utility classes */
-  /* Use: .input-sm .input-lg utilities for different sizes */
+  /* =============================================================================
+     BASIC INPUT STYLING - Core input element styling
+     ============================================================================= */
 
-  /* UTILITY MIGRATION: Input group styling now uses .input-group utility */
-  /* Use: .input-group for compound input containers */
-
-  .field-input-base:focus-within {
-    /* MOVED TO UTILITY: Focus-within styling now in .input-group utility */
+  .input {
+    width: 100%;
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--color-input-text);
+    background: var(--color-input-bg);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-2);
+    transition: all var(--transition-fast);
   }
 
-  .field-input-base .field-input {
-    /* UTILITY MIGRATION: Use .input-group-child .flex-1 utility classes in React component */
-    /* Transparent styling moved to .input-group-child utility */
+  .input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
-  .field-input-base .field-input:focus {
-    /* MOVED TO UTILITY: Focus clearing now in .input-group-child utility */
+  .input:disabled {
+    background: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
-  /* UTILITY MIGRATION: Password toggle styling moved to .input-addon utility */
-  .field-input-toggle {
-    /* MOVED TO UTILITY: Use .input-addon utility class which includes:
-     * - background: var(--color-input-addon-bg)
-     * - min-width: var(--touch-target-min)
-     * - proper flex centering
-     * - transition effects
-     */
-  }
-
-  .field-input-toggle:disabled {
-    /* MOVED TO UTILITY: Use .input-addon (includes disabled styling) */
-  }
-
-  /* UTILITY MIGRATION: Input wrapper positioning */
-  .field-input-wrapper {
-    /* UTILITY MIGRATION: Use .relative utility class instead */
-  }
-
-
-
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    .field-input {
-      border-width: var(--border-width-medium);
-    }
-    
-    .field-input:focus {
-      outline: var(--border-width-thick) solid var(--color-primary);
-      outline-offset: var(--border-width-thin);
-    }
-  }
-
-  /* Number field container styling now uses utility classes in React components */
-
-  /* No hover states for number field container */
-
-  /* Number field buttons now use unified button system */
-  /* Use: .btn .btn--number-field .btn--number-field-left/.btn--number-field-right */
+  /* =============================================================================
+     NUMBER FIELD DISPLAY - Specialized number field display styling
+     ============================================================================= */
 
   .number-field-display {
-    /* UTILITY MIGRATION: Use .input-group-child .flex-1 .number-field-display utility classes */
-    /* Transparent input styling moved to .input-group-child utility */
-    /* Text centering moved to .number-field-display utility */
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    cursor: default;
   }
 
   .number-field-display:focus {
-    /* MOVED TO UTILITY: Focus behavior now in .number-field-display utility */
+    outline: none;
+    box-shadow: none;
   }
 
-
-  /* Number field wrapper and suffix styling now uses utility classes in React components */
-
+  /* Number field wrapper and suffix styling */
   .number-field-input-wrapper .number-field-display {
     /* COMPONENT-SPECIFIC: Keep padding for % suffix display */
     padding-right: var(--space-6); /* Space for % suffix - component-specific, cannot be utility */
   }
 
+  /* =============================================================================
+     LEGACY COMPATIBILITY AND HIGH CONTRAST SUPPORT
+     ============================================================================= */
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .field-input,
+    .input {
+      border-width: var(--border-width-medium);
+    }
+
+    .field-input:focus,
+    .input:focus {
+      outline: var(--border-width-thick) solid var(--color-primary);
+      outline-offset: var(--border-width-thin);
+    }
+  }
+
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     .field-input,
-    .field-input-base {
+    .field-input-base,
+    .input {
       transition: none;
     }
   }

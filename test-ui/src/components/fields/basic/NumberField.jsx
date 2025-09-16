@@ -7,6 +7,7 @@
 
 import React, { useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
+import { FieldButton } from '../features/shared';
 
 export const NumberField = React.memo(({
   field,
@@ -66,17 +67,15 @@ export const NumberField = React.memo(({
       />
       
       <div className="input-group">
-        <button
-          type="button"
+        <FieldButton
           onClick={handleDecrement}
           disabled={decrementDisabled}
-          className="input-addon cursor-pointer"
-          aria-label={`Decrease ${field.label}`}
-          tabIndex={disabled ? -1 : 0}
+          ariaLabel={`Decrease ${field.label}`}
+          className="btn btn--number-field btn--number-field-left btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
         >
           −
-        </button>
-        
+        </FieldButton>
+
         <InputBase
           id={inputId}
           type="text"
@@ -91,17 +90,15 @@ export const NumberField = React.memo(({
           aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
           aria-invalid={highlightInvalid}
         />
-        
-        <button
-          type="button"
+
+        <FieldButton
           onClick={handleIncrement}
           disabled={incrementDisabled}
-          className="input-addon cursor-pointer"
-          aria-label={`Increase ${field.label}`}
-          tabIndex={disabled ? -1 : 0}
+          ariaLabel={`Increase ${field.label}`}
+          className="btn btn--number-field btn--number-field-right btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
         >
           +
-        </button>
+        </FieldButton>
       </div>
       
       <FieldDescription 

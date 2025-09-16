@@ -11,15 +11,42 @@
      FIELD WRAPPER - Universal container for ALL field types
      ============================================================================= */
 
-  /* UTILITY MIGRATION: Field wrapper styling moved to utility classes */
-  /* Use: .field-wrapper-standard, .field-wrapper-form-section, etc. */
-  /* Invalid state handled by .field-wrapper--invalid component class */
-
-  /* UTILITY MIGRATION: Responsive spacing handled by utility classes */
-  /* Mobile: .mb-3, Tablet+: .mb-5 */
-
   .field-wrapper {
-    /* Base wrapper class - composition handled by utilities */
+    /* Base wrapper class - minimal base styling */
+  }
+
+  /* Field wrapper variants - component-level styling for different layouts */
+  .field-wrapper-standard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-bottom: var(--space-4);
+    width: 100%;
+  }
+
+  .field-wrapper-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+    width: 100%;
+  }
+
+  .field-wrapper-checkbox {
+    margin-bottom: var(--space-4);
+    width: 100%;
+  }
+
+  .field-wrapper-inline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    width: 100%;
+  }
+
+  .field-wrapper-minimal {
+    width: 100%;
   }
   
   /* =============================================================================
@@ -134,5 +161,130 @@
   /* Component-specific state class preserved */
   .field-wrapper--invalid {
     /* Component-specific invalid state styling if needed */
+  }
+
+  /* =============================================================================
+     FIELD BASE - Universal base styling for ALL field types
+     ============================================================================= */
+
+  .field-base {
+    background: var(--color-input-bg);
+    border: var(--field-base-border, 1px solid var(--color-text-secondary));
+    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
+    border-radius: var(--radius-2);
+    transition: all var(--transition-fast);
+    min-height: var(--input-height);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    box-sizing: border-box;
+  }
+
+  .field-base:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-input-bg-focus);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .field-base:read-only {
+    background: var(--color-input-bg-readonly);
+    cursor: default;
+  }
+
+  .field-base:disabled {
+    background: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+    cursor: not-allowed;
+  }
+
+  .field-base::placeholder {
+    color: var(--color-input-placeholder);
+    opacity: 1;
+  }
+
+  /* Field base with validation states */
+  .field-base.state-invalid {
+    border-color: var(--color-error);
+  }
+
+  .field-base.state-invalid:focus {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+  }
+
+  .field-base.state-valid {
+    border-color: var(--color-success);
+  }
+
+  .field-base.state-valid:focus {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+  }
+
+  /* =============================================================================
+     INPUT GROUP - Compound input container styling
+     ============================================================================= */
+
+  .input-group {
+    display: flex;
+    align-items: stretch;
+    border-radius: var(--radius-2);
+    overflow: hidden;
+    background: var(--color-input-bg);
+    border: var(--field-base-border, 1px solid var(--color-text-secondary));
+    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
+    transition: all var(--transition-fast);
+  }
+
+  .input-group:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .input-group.state-invalid {
+    border-color: var(--color-error);
+  }
+
+  .input-group.state-invalid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+  }
+
+  .input-group.state-valid {
+    border-color: var(--color-success);
+  }
+
+  .input-group.state-valid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+  }
+
+  /* Input group child - for inputs inside compound groups */
+  .input-group-child {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .input-group .input-group-child:focus {
+    border-color: transparent;
+    box-shadow: none;
+    outline: none;
+  }
+
+  /* =============================================================================
+     INPUT ADDON - Button/icon addons for input groups
+     ============================================================================= */
+
+  .input-addon {
+    background: var(--color-input-addon-bg);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--touch-target-min);
+    transition: all var(--transition-fast);
+  }
+
+  .input-addon:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }

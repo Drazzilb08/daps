@@ -5,6 +5,43 @@
  */
 
 @layer components {
+  /* =============================================================================
+     BASIC SELECT STYLING - Core select element styling
+     ============================================================================= */
+
+  .select {
+    width: 100%;
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) calc(var(--space-3) + var(--space-6)) var(--space-2) var(--space-3);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--color-input-text);
+    background: var(--color-input-bg);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius-2);
+    appearance: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .select:disabled {
+    background: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* =============================================================================
+     FIELD-SPECIFIC SELECT STYLING - Component-specific select styling
+     ============================================================================= */
+
   .field-select {
     /* Basic layout and sizing now handled by base classes */
     /* Typography handled by base class - .field-input-typography */
@@ -38,6 +75,8 @@
   /* Custom arrow using pseudo-element with mask */
   .field-select-wrapper::after {
     content: '';
+    position: absolute;
+    top: 50%;
     right: var(--input-padding-x);
     width: var(--size-icon-sm);
     height: 12px;
@@ -50,7 +89,7 @@
     -webkit-mask-size: contain;
     transform: translateY(-50%);
     transition: background-color var(--transition-fast);
-    /* Use utilities: absolute top-1/2 pointer-events-none */
+    pointer-events: none;
   }
 
   /* Focus state now handled by base class:

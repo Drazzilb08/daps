@@ -9,11 +9,7 @@
 @layer components {
   /* Checkbox field wrapper - provides the clickable area */
   .checkbox-field {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-3);
-    padding: var(--space-3);
-    border-radius: var(--radius-2);
+    /* Layout handled by utilities: flex items-start gap-3 p-3 rounded-2 */
     cursor: pointer;
     min-height: var(--touch-target-comfortable);
     transition: all var(--transition-fast);
@@ -88,10 +84,10 @@
   .checkbox-field__label {
     display: block;
     color: var(--color-primary);
-    font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
     margin-bottom: var(--space-1);
     cursor: inherit;
+    /* Font styling inherited from .field-input-typography */
   }
 
   .checkbox-field--disabled .checkbox-field__label {
@@ -100,10 +96,10 @@
 
   /* Description */
   .checkbox-field__description {
-    font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
     line-height: var(--line-height-relaxed);
     margin-top: var(--space-1);
+    /* Font sizing handled by .field-input-typography base */
   }
 
   /* Basic checkbox styling for direct usage */
@@ -139,8 +135,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     color: var(--color-primary-text);
-    font-size: var(--font-size-xs);
-    font-weight: bold;
+    /* Font styling inherited from design tokens */
   }
 
   /* Focus state for basic checkbox - matches consolidated focus behavior */

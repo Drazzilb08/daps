@@ -1,0 +1,7 @@
+/**
+ * Layout Components Index CSS
+ * Central import file for all layout component styles
+ */
+
+@import './layout.css';
+@import './page-layout.css';

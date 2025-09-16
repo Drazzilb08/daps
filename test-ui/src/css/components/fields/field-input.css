@@ -12,50 +12,30 @@
   /* Component-specific input group styling handled by field-input-group */
 
 
-  /* Password input group container */
-  .field-input-group {
-    display: flex;
-    align-items: stretch;
-    border-radius: var(--radius-2);
-    overflow: hidden;
-    transition: all var(--transition-fast);
-  }
-
-  /* Input group now uses field-input-base for consistent theme styling */
-
-  .field-input-group:focus-within {
+  /* Input group focus states - applied when using .flex utility classes */
+  .field-input-base:focus-within {
     border-color: var(--color-primary);
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
-  .field-input-group .field-input {
+  .field-input-base .field-input {
     flex: 1;
     border: none;
     background: transparent;
-    border-radius: 0;
+    /* Border radius inherited from .field-input-base */
   }
 
-  .field-input-group .field-input:focus {
+  .field-input-base .field-input:focus {
     box-shadow: none;
     border-color: transparent;
   }
 
-  /* Password toggle button - now uses btn utility base */
+  /* Password toggle button styling */
   .field-input-toggle {
     background: var(--color-input-addon-bg);
-    border: none;
-    border-radius: 0;
     padding: var(--input-padding-y) var(--input-padding-x);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    min-width: var(--touch-target-min);
-    min-height: var(--touch-target-min);
     width: var(--touch-target-min);
-    height: var(--touch-target-min);
     height: var(--input-height);
-    transition: all var(--transition-fast);
   }
 
   .field-input-toggle:disabled {
@@ -82,21 +62,7 @@
     }
   }
 
-  /* Number field container with +/- buttons */
-  .number-field-container {
-    display: flex;
-    align-items: stretch;
-    border-radius: var(--radius-2);
-    overflow: hidden;
-    transition: all var(--transition-fast);
-  }
-
-  /* Number field container now uses field-input-base for consistent theme styling */
-
-  .number-field-container:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
+  /* Number field container styling now uses utility classes in React components */
 
   /* No hover states for number field container */
 
@@ -106,12 +72,12 @@
   .number-field-display {
     flex: 1;
     border: none;
-    border-radius: 0 !important;
     background: transparent;
     text-align: center;
     font-variant-numeric: tabular-nums;
-    font-weight: var(--font-weight-medium);
     cursor: default;
+    /* Border radius inherited from .field-input-base */
+    /* Font styling inherited from .field-input-typography */
   }
 
   .number-field-display:focus {
@@ -120,34 +86,17 @@
   }
 
 
-  /* Percentage field support - wrapper for input with suffix */
-  .number-field-input-wrapper {
-    flex: 1;
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
+  /* Number field wrapper and suffix styling now uses utility classes in React components */
 
   .number-field-input-wrapper .number-field-display {
-    padding-right: var(--space-6); /* Space for % suffix */
-  }
-
-  .number-field-suffix {
-    position: absolute;
-    right: var(--space-2);
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    pointer-events: none;
-    user-select: none;
+    padding-right: var(--space-6); /* Space for % suffix - keep for specific styling */
   }
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     .field-input,
-    .number-field-container {
+    .field-input-base {
       transition: none;
     }
-    
   }
 }

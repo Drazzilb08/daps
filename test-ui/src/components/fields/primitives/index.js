@@ -32,3 +32,5 @@ export { FieldDescription } from './FieldDescription';
 export { FieldWrapper } from './FieldWrapper';
 export { InputBase } from './InputBase';
 export { TextareaBase } from './TextareaBase';
+export { SelectBase } from './SelectBase';
+export { CheckboxBase } from './CheckboxBase';

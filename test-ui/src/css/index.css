@@ -19,48 +19,14 @@
 /* Utility classes */
 @import './utilities.css';
 
-/* Component styles */
+/* Component styles - organized by category */
+@import './components/ui/index.css';
+@import './components/layout/index.css';
+@import './components/search/index.css';
+@import './components/error/index.css';
+@import './components/fields/index.css';
 
-/* UI Components */
-@import './components/ui/button.css';
-@import './components/ui/spinner.css';
-@import './components/ui/toast.css';
-
-/* Layout Components */
-@import './components/layout/layout.css';
-@import './components/layout/page-layout.css';
-
-/* Search Components */
-@import './components/search/search-interface.css';
-
-/* Error & Testing Components */
-@import './components/error/error-boundary.css';
-@import './components/error/global-error.css';
-
-/* UI Components - reusable UI elements */
-@import './components/ui/dropdown.css';
-@import './components/ui/menu.css';
-@import './components/ui/Toolbar/toolbar.css';
-
-/* Form system styles */
-@import './components/forms/field-primitives.css';
-@import './components/forms/field-base.css';
-@import './components/forms/field-input.css';
-@import './components/forms/field-select.css';
-@import './components/forms/field-checkbox.css';
-@import './components/forms/field-textarea.css';
-@import './components/forms/field-color.css';
-@import './components/forms/field-directory.css';
-@import './components/forms/field-color-list.css';
-@import './components/forms/field-color-list-poster.css';
-@import './components/forms/field-json.css';
-@import './components/forms/field-placeholder.css';
-@import './components/forms/form-layout.css';
-@import './components/forms/form-renderer.css';
-
-/* Dev page styles */
-@import './pages/dev/api-test.css';
-@import './pages/dev/field-test.css';
-@import './pages/dev/error-test.css';
+/* Page styles */
+@import './pages/dev/index.css';
 
 

@@ -73,10 +73,7 @@
      ============================================================================= */
   
   .color-text-input {
-    /* Monospace font for hex editing */
-    font-family: var(--font-family-mono);
-    letter-spacing: var(--letter-spacing-wide);
-    text-transform: uppercase;
+    /* Color input text styling - inherits base typography */
   }
   
   /* =============================================================================
@@ -84,9 +81,7 @@
      ============================================================================= */
   
   .color-input-pair {
-    display: flex;
-    gap: var(--space-2);
-    align-items: stretch;
+    /* Utility classes applied: flex gap-2 items-stretch */
   }
 
   .color-input-pair .color-picker {
@@ -105,21 +100,15 @@
      ============================================================================= */
   
   .color-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
+    /* Utility classes applied: flex flex-col gap-3 */
   }
 
   .color-array-items {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
+    /* Utility classes applied: flex flex-col gap-4 */
   }
 
   .color-array-item {
-    display: flex;
-    gap: var(--space-2);
-    align-items: center;
+    /* Utility classes applied: flex gap-2 items-center */
   }
 
   .color-array-item-input {
@@ -132,12 +121,8 @@
      ============================================================================= */
 
   .color-array-controls {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding-top: var(--space-5);
+    /* Layout handled by utilities: flex items-center gap-3 pt-5 mt-2 */
     border-top: 1px solid var(--color-border);
-    margin-top: var(--space-2);
   }
 
 
@@ -148,15 +133,12 @@
 
   /* Mobile optimizations */
   @media (max-width: 767px) {
-    .color-input-pair {
-      gap: var(--space-1);
-    }
-    
+    /* Gap handled by responsive utilities: gap-1 sm:gap-2 */
+
     .color-picker {
       min-width: var(--touch-target-comfortable);
       min-height: var(--touch-target-comfortable);
     }
-    
   }
 
 }

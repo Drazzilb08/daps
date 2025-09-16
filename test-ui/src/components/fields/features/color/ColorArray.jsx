@@ -82,14 +82,14 @@ export const ColorArray = React.memo(({
   const canRemoveColor = (index) => colors.length > minColors && !disabled;
 
   return (
-    <div 
-      className={`color-array ${className}`.trim()}
+    <div
+      className={`color-array flex flex-col gap-3 ${className}`.trim()}
       role="group"
       aria-label={`${label} list`}
       {...props}
     >
       {/* Color Items */}
-      <div className="color-array-items">
+      <div className="color-array-items flex flex-col gap-4">
         {colors.length === 0 ? (
           <EmptyState 
             message={emptyMessage}
@@ -109,7 +109,7 @@ export const ColorArray = React.memo(({
           </EmptyState>
         ) : (
           colors.map((color, index) => (
-            <div key={index} className="color-array-item">
+            <div key={index} className="color-array-item flex gap-2 items-center">
               <div className="color-array-item-input">
                 <ColorInputPair
                   value={color}

@@ -17,10 +17,9 @@
   }
 
   .field-placeholder code {
-    font-family: var(--font-family-mono);
     background: var(--color-surface);
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-1);
-    font-size: var(--font-size-sm);
+    /* Font styling inherited from base typography */
   }
 }

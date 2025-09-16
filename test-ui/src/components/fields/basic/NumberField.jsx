@@ -65,7 +65,7 @@ export const NumberField = React.memo(({
         required={field.required} 
       />
       
-      <div className="number-field-container field-input-base">
+      <div className="flex items-stretch rounded overflow-hidden transition-fast field-input-base">
         <button
           type="button"
           onClick={handleDecrement}

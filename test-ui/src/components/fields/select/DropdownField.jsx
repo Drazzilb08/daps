@@ -5,8 +5,8 @@
  * Supports validation states, accessibility features, and custom styling.
  */
 
-import React, { useCallback } from 'react';
-import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primitives';
+import React, { useCallback, useMemo } from 'react';
+import { FieldWrapper, FieldLabel, FieldError, FieldDescription, SelectBase } from '../primitives';
 
 /**
  * DropdownField component for select input
@@ -33,51 +33,50 @@ export const DropdownField = React.memo(({
 
   const inputId = `field-${field.key}`;
   const inputValue = value || '';
-  
+
+  // Transform options to SelectBase format
+  const options = useMemo(() => {
+    if (!field.options) return [];
+    return field.options.map((option, index) => {
+      if (typeof option === 'string') {
+        return { value: option, label: option };
+      }
+      return {
+        value: option.value,
+        label: option.label || option.value,
+        disabled: option.disabled
+      };
+    });
+  }, [field.options]);
+
   return (
     <FieldWrapper invalid={highlightInvalid}>
-      <FieldLabel 
-        htmlFor={inputId} 
-        label={field.label} 
-        required={field.required} 
+      <FieldLabel
+        htmlFor={inputId}
+        label={field.label}
+        required={field.required}
       />
-      
-      <div className="field-select-wrapper">
-        <select
-          id={inputId}
-          name={field.key}
-          value={inputValue}
-          disabled={disabled}
-          required={field.required}
-          onChange={handleChange}
-          className={`field-select field-input-base w-full touch-target ${highlightInvalid ? 'is-invalid' : ''} ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
-          aria-describedby={
-            (field.description || errorMessage) 
-              ? `${inputId}-desc ${inputId}-error`.trim() 
-              : undefined
-          }
-          aria-invalid={highlightInvalid}
-        >
-          {!field.required && <option value="">Select an option...</option>}
-          {field.options && field.options.map((option, index) => {
-            const optionValue = typeof option === 'string' ? option : option.value;
-            const optionLabel = typeof option === 'string' ? option : option.label;
-            return (
-              <option key={optionValue || index} value={optionValue}>
-                {optionLabel}
-              </option>
-            );
-          })}
-        </select>
-      </div>
-      
-      <FieldDescription 
-        id={`${inputId}-desc`} 
-        description={field.description} 
+
+      <SelectBase
+        id={inputId}
+        name={field.key}
+        value={inputValue}
+        onChange={handleChange}
+        disabled={disabled}
+        required={field.required}
+        invalid={highlightInvalid}
+        options={options}
+        placeholder={!field.required ? "Select an option..." : undefined}
+        ariaDescribedby={`${inputId}-desc ${inputId}-error`.trim()}
       />
-      <FieldError 
-        id={`${inputId}-error`} 
-        message={errorMessage} 
+
+      <FieldDescription
+        id={`${inputId}-desc`}
+        description={field.description}
+      />
+      <FieldError
+        id={`${inputId}-error`}
+        message={errorMessage}
       />
     </FieldWrapper>
   );

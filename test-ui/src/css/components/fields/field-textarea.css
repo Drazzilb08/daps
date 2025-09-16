@@ -21,9 +21,9 @@
     /* Textarea-specific styling */
     min-height: calc(var(--input-height) * 2);
     padding: var(--input-padding-y) var(--input-padding-x);
-    border-radius: var(--radius-2);
     resize: vertical;
     transition: none; /* Textarea uses different transition behavior */
+    /* Border radius inherited from .field-input-base for consistency */
     
     /* NOTE: Apply base classes in component:
      * field-textarea field-input-base field-input-typography field-input-layout field-focus-behavior field-disabled-state field-readonly-state field-placeholder-styling

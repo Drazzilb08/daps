@@ -103,7 +103,7 @@ const App = () => {
                           <ErrorTestPage />
                         </PageErrorBoundary>
                       } />
-                      <Route path="dev/forms" element={
+                      <Route path="dev/field" element={
                         <PageErrorBoundary pageName="DAPS Settings" pageDescription="Real DAPS configuration settings page">
                           <FieldTestPage />
                         </PageErrorBoundary>

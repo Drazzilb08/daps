@@ -7,19 +7,15 @@
 @layer components {
   /* Form container */
   .form-renderer {
-    width: 100%;
+    /* Layout handled by utilities: w-full mx-auto p-4 */
     max-width: var(--form-max-width, 600px);
-    margin: 0 auto;
-    padding: var(--space-4);
     background: var(--color-surface);
     border-radius: var(--radius-3);
     box-shadow: var(--shadow-sm);
   }
 
   .form-renderer.mobile-optimized {
-    padding: var(--space-3);
-    margin: var(--space-2);
-    max-width: none;
+    /* Layout handled by utilities: p-3 m-2 max-w-none */
   }
 
   .form-renderer.disabled {
@@ -134,9 +130,7 @@
   }
 
   .form-section-toggle {
-    display: flex;
-    align-items: center;
-    width: 100%;
+    /* Layout handled by utilities: flex items-center w-full */
     background: none;
     border: none;
     padding: 0;
@@ -186,18 +180,12 @@
   }
 
   .form-section-fields {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
+    /* Layout handled by utilities: flex flex-col gap-4 */
   }
 
   /* Form actions */
   .form-actions {
-    display: flex;
-    gap: var(--space-3);
-    justify-content: flex-end;
-    align-items: center;
-    padding-top: var(--space-4);
+    /* Layout handled by utilities: flex gap-3 justify-end items-center pt-4 */
     border-top: 1px solid var(--color-border);
   }
 
@@ -284,8 +272,9 @@
       display: none;
     }
 
-    .form-section[data-section-collapsible] .form-section-fields {
-      display: block !important;
+    /* Ensure all form sections are visible for printing */
+    .form-renderer .form-section[data-section-collapsible] .form-section-fields {
+      display: block;
     }
   }
 

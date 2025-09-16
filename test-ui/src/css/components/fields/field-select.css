@@ -16,6 +16,7 @@
     padding: var(--input-padding-y) calc(var(--input-padding-x) + var(--space-6)) var(--input-padding-y) var(--input-padding-x);
     appearance: none;
     cursor: pointer;
+    /* Border radius inherited from .field-input-base for consistency */
     
     /* NOTE: Apply base classes in component:
      * field-select field-input-base field-input-typography field-input-layout field-focus-behavior field-disabled-state field-transition-behavior
@@ -72,7 +73,7 @@
   .field-select option {
     background: var(--color-input-bg);
     color: var(--color-input-text);
-    padding: var(--space-2);
+    /* Padding handled by utilities: p-2 */
   }
 
   .field-select option:disabled {
@@ -81,15 +82,13 @@
 
   /* Multiple select */
   .field-select[multiple] {
-    padding: var(--space-2);
+    /* Padding handled by utilities: p-2 */
     min-height: calc(var(--input-height) * 3);
     background-image: none;
   }
 
   .field-select[multiple] option {
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-1);
-    margin-bottom: var(--space-1);
+    /* Padding and spacing handled by utilities: py-1 px-2 rounded mb-1 */
   }
 
   .field-select[multiple] option:checked {

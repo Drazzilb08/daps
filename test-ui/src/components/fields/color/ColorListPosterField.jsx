@@ -334,19 +334,19 @@ export const ColorListPosterField = React.memo(({
   const canRemoveColor = (index) => colorsArray.length > minColors && !disabled;
   
   return (
-    <div className="color-list-poster-field">
-      <FieldLabel 
+    <FieldWrapper variant="form-section" invalid={highlightInvalid} className="color-list-poster-field">
+      <FieldLabel
         id={`${inputId}-label`}
-        htmlFor={inputId} 
-        label={label} 
-        required={field.required} 
+        htmlFor={inputId}
+        label={label}
+        required={field.required}
       />
       
-      <div className="color-poster-grid">
+      <div className="color-poster-grid grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {colorsArray.length === 0 ? (
           previews[0] && (
-            <div className="color-poster-item">
-              <div className="color-poster-preview">
+            <div className="color-poster-item flex flex-col gap-2">
+              <div className="color-poster-preview flex justify-center items-center flex-shrink-0">
                 <img
                   className="color-poster-image"
                   src={previews[0]}
@@ -365,10 +365,10 @@ export const ColorListPosterField = React.memo(({
           colorsArray.map((color, index) => {
             const previewUrl = previews[index];
             const poster = getPosterByIndex(posterAssets, index);
-            
+
             return (
-              <div key={index} className="color-poster-item">
-                <div className="color-poster-preview">
+              <div key={index} className="color-poster-item flex flex-col gap-2">
+                <div className="color-poster-preview flex justify-center items-center flex-shrink-0">
                   {previewUrl ? (
                     <img
                       className="color-poster-image"
@@ -385,7 +385,7 @@ export const ColorListPosterField = React.memo(({
                   )}
                 </div>
 
-                <div className="color-poster-controls">
+                <div className="color-poster-controls flex items-center gap-2 justify-center">
                   <ColorPicker
                     value={color}
                     onChange={(newColor) => handleColorChange(index, newColor)}
@@ -410,7 +410,7 @@ export const ColorListPosterField = React.memo(({
         )}
       </div>
 
-      <div className="color-poster-bottom-controls">
+      <div className="color-poster-bottom-controls flex items-center justify-between gap-3 mt-3">
         <AddButton
           onClick={handleAddColor}
           disabled={!canAddColor}
@@ -432,7 +432,7 @@ export const ColorListPosterField = React.memo(({
       </div>
 
       {(posterAssets.length === 0 || loadingPreviews) && (
-        <div className="color-poster-status">
+        <div className="color-poster-status flex flex-col gap-2">
           {posterAssets.length === 0 && (
             <div className="color-poster-warning rounded">
               <span className="color-poster-warning-text">
@@ -450,15 +450,15 @@ export const ColorListPosterField = React.memo(({
         </div>
       )}
       
-      <FieldDescription 
-        id={`${inputId}-desc`} 
-        description={field.description} 
+      <FieldDescription
+        id={`${inputId}-desc`}
+        description={field.description}
       />
-      <FieldError 
-        id={`${inputId}-error`} 
-        message={errorMessage} 
+      <FieldError
+        id={`${inputId}-error`}
+        message={errorMessage}
       />
-    </div>
+    </FieldWrapper>
   );
 });
 

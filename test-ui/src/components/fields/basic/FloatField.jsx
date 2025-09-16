@@ -77,7 +77,7 @@ export const FloatField = React.memo(({
         required={field.required} 
       />
       
-      <div className="number-field-container field-input-base">
+      <div className="flex items-stretch rounded overflow-hidden transition-fast field-input-base">
         <button
           type="button"
           onClick={handleDecrement}
@@ -89,23 +89,20 @@ export const FloatField = React.memo(({
           −
         </button>
         
-        <div className="number-field-input-wrapper">
-          <InputBase
-            id={inputId}
-            type="text"
-            name={field.key}
-            value={typeof value === 'string' ? value : (percentageValue || '')}
-            onChange={handleInputChange}
-            disabled={disabled}
-            required={field.required}
-            placeholder={field.placeholder}
-            invalid={highlightInvalid}
-            className="number-field-display"
-            aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
-            aria-invalid={highlightInvalid}
-          />
-          <span className="number-field-suffix">%</span>
-        </div>
+        <InputBase
+          id={inputId}
+          type="text"
+          name={field.key}
+          value={typeof value === 'string' ? value : (percentageValue || '')}
+          onChange={handleInputChange}
+          disabled={disabled}
+          required={field.required}
+          placeholder={field.placeholder}
+          invalid={highlightInvalid}
+          className="number-field-display"
+          aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+          aria-invalid={highlightInvalid}
+        />
         
         <button
           type="button"

@@ -189,15 +189,15 @@
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-primary);
-    letter-spacing: var(--letter-spacing-wide);
+    /* Letter spacing inherited from base typography */
   }
 
   .page-header-subtitle {
     font-size: var(--font-size-xs);
     color: var(--color-text-secondary);
     font-weight: var(--font-weight-medium);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
+    /* Text transform removed - keep it simple */
+    /* Letter spacing inherited from base typography */
   }
 
   /* Header Spacer for Future Search */

@@ -1,0 +1,7 @@
+/**
+ * Error Components Index CSS
+ * Central import file for all error handling component styles
+ */
+
+@import './error-boundary.css';
+@import './global-error.css';

@@ -58,8 +58,8 @@ export const ColorInputPair = React.memo(({
   const textAriaLabel = `Hex color input for ${label}`;
 
   return (
-    <div 
-      className={`color-input-pair ${className}`.trim()}
+    <div
+      className={`color-input-pair flex gap-2 items-stretch ${className}`.trim()}
       role="group"
       aria-labelledby={`${baseId}-label`}
       {...props}

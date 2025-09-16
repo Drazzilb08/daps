@@ -130,8 +130,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-1);
     padding: var(--space-3);
-    font-family: var(--font-family-mono);
-    font-size: var(--font-size-sm);
+    /* Font styling inherited from base typography */
     color: var(--color-text-primary);
     overflow-x: auto;
     white-space: pre-wrap;

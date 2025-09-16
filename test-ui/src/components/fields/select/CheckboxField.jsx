@@ -6,7 +6,7 @@
  */
 
 import React, { useCallback } from 'react';
-import { FieldWrapper, FieldError, FieldDescription } from '../primitives';
+import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primitives';
 
 /**
  * CheckboxField component for boolean input
@@ -34,11 +34,11 @@ export const CheckboxField = React.memo(({
 
   const inputId = `field-${field.key}`;
   const isChecked = Boolean(value);
-  
+
   return (
-    <FieldWrapper invalid={highlightInvalid}>
-      <div 
-        className={`checkbox-field ${disabled ? 'checkbox-field--disabled' : ''} ${highlightInvalid ? 'checkbox-field--invalid' : ''}`}
+    <FieldWrapper variant="checkbox" invalid={highlightInvalid}>
+      <div
+        className={`flex items-start gap-3 p-3 rounded-2 checkbox-field ${disabled ? 'checkbox-field--disabled' : ''} ${highlightInvalid ? 'checkbox-field--invalid' : ''}`}
         onClick={handleClick}
       >
         <div className="checkbox-field__input">
@@ -61,25 +61,24 @@ export const CheckboxField = React.memo(({
             )}
           </div>
         </div>
-        
+
         <div className="checkbox-field__content">
-          <label 
-            htmlFor={inputId} 
+          <FieldLabel
+            htmlFor={inputId}
+            label={field.label}
+            required={field.required}
             className="checkbox-field__label"
             onClick={(e) => e.preventDefault()} // Prevent double firing
-          >
-            {field.label}
-            {field.required && <span className="required-indicator">*</span>}
-          </label>
-          
-          <FieldDescription 
-            id={`${inputId}-desc`} 
-            description={field.description}
-            className="checkbox-field__description" 
           />
-          
-          <FieldError 
-            id={`${inputId}-error`} 
+
+          <FieldDescription
+            id={`${inputId}-desc`}
+            description={field.description}
+            className="checkbox-field__description"
+          />
+
+          <FieldError
+            id={`${inputId}-error`}
             message={errorMessage}
             className="checkbox-field__error"
           />

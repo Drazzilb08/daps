@@ -130,7 +130,7 @@
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-1);
     font-size: var(--font-size-sm);
-    font-family: var(--font-family-mono);
+    /* Font styling inherited from base typography */
     border: 1px solid;
   }
   
@@ -256,7 +256,7 @@
   }
 
   .field-type-name {
-    font-family: var(--font-family-mono);
+    /* Font styling inherited from base typography */
   }
 
   .field-type-count {
@@ -281,11 +281,9 @@
 
 /* Visual status indicators using proper design tokens */
 .summary-status {
-  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   margin-bottom: var(--space-1);
+  /* Typography styling kept simple */
 }
 
 .summary-card--approved {
@@ -711,10 +709,8 @@
 .status-badge {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-1);
-  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  /* Typography styling kept simple */
 }
 
 .status-badge--placeholder {

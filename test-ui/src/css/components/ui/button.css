@@ -12,9 +12,7 @@
     justify-content: center;
     min-height: var(--touch-target-min);
     padding: var(--space-2) var(--space-3);
-    font-family: var(--font-family-sans);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
+    /* Font styling inherited from base typography */
     line-height: 1;
     text-decoration: none;
     white-space: nowrap;

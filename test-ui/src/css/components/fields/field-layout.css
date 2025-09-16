@@ -24,30 +24,21 @@
     max-width: 800px;
   }
 
-  /* Form sections */
+  /* Form sections - use utility classes instead of duplicating styles */
   .form-section {
-    /* Using utility class: mb-8 */
-    margin-bottom: var(--space-8);
+    /* REPLACED: Use .mb-8 utility class instead */
   }
 
   .form-section:last-child {
-    /* Using utility class: mb-0 */
-    margin-bottom: 0;
+    /* REPLACED: Use .mb-0 utility class instead */
   }
 
   .form-section__header {
-    /* Using utility classes: mb-4 pb-2 border-b */
-    margin-bottom: var(--space-4);
-    padding-bottom: var(--space-2);
-    border-bottom: 1px solid var(--color-border);
+    /* REPLACED: Use .mb-4 .pb-2 .border-b utilities instead */
   }
 
   .form-section__title {
-    /* Using utility classes: text-lg font-semibold text-primary mb-1 */
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin: 0 0 var(--space-1) 0;
+    /* REPLACED: Use .text-lg .font-semibold .text-primary .mb-1 utilities instead */
   }
 
   .form-section__description {
@@ -95,15 +86,15 @@
   }
 
   .form-actions--right {
-    justify-content: flex-end;
+    /* REPLACED: Use .justify-end utility class instead */
   }
 
   .form-actions--between {
-    justify-content: space-between;
+    /* REPLACED: Use .justify-between utility class instead */
   }
 
   .form-actions--wrap {
-    flex-wrap: wrap;
+    /* REPLACED: Use .flex-wrap utility class instead */
   }
 
   /* Form buttons use unified .btn system - no additional styling needed */

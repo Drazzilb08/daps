@@ -1,0 +1,21 @@
+/**
+ * Field Components Index CSS
+ * Central import file for all field component styles and form composition
+ */
+
+@import './field-primitives.css';
+@import './field-base.css';
+@import './field-input.css';
+@import './field-select.css';
+@import './field-checkbox.css';
+@import './field-textarea.css';
+@import './field-color.css';
+@import './field-directory.css';
+@import './field-color-list.css';
+@import './field-color-list-poster.css';
+@import './field-json.css';
+@import './field-placeholder.css';
+
+/* Field composition and layout - consolidated and renamed */
+@import './field-layout.css';
+@import './field-renderer.css';

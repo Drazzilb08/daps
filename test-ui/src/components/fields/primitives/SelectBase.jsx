@@ -40,7 +40,6 @@ export const SelectBase = React.memo(({
   const selectClasses = [
     'field-select',
     'field-input-base',
-    'field-input-typography',
     'field-input-layout',
     'field-focus-behavior',
     'field-transition-behavior',

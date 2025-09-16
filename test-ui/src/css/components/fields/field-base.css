@@ -12,17 +12,12 @@
     border-radius: var(--radius-2); /* Consistent 8px radius for all field inputs */
   }
 
-  /* Typography and sizing */
-  .field-input-typography {
-    font-family: var(--font-family-sans);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-normal);
-    color: var(--color-input-text);
-  }
+  /* Typography inheritance: font-family, font-size, line-height inherited from body */
+  /* color handled by theme variables on specific elements */
 
   /* Layout and sizing */
   .field-input-layout {
-    width: 100%;
+    /* width: 100% removed - use .w-full utility class instead */
     min-height: var(--input-height);
     padding: var(--input-padding-y) var(--input-padding-x);
     box-sizing: border-box;

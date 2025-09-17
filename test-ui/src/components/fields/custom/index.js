@@ -7,6 +7,7 @@
 
 // Working implementations
 export { JsonField } from './JsonField.jsx';
+export { GDrivePresetsField } from './GDrivePresetsField.jsx';
 
 // Placeholder implementations
 export {
@@ -17,7 +18,6 @@ export {
     ReplacerCustomField,
     UpgradinatorCustomField,
     LabelarrCustomField,
-    GDrivePresetsField,
     HolidayPresetsField,
     HolidayScheduleField,
     DirListDragDropField,

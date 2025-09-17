@@ -122,6 +122,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'dirlist',
     'dirlist_dragdrop',
     'dirlist_options',
+    'gdrive_presets',
 ]);
 
 /**

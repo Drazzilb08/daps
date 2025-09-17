@@ -1,0 +1,111 @@
+/**
+ * Card Component Styles
+ *
+ * Generic card component for displaying structured data in key-value pairs.
+ * Provides multiple variants for different use cases.
+ */
+
+@layer components {
+    /* Base card styles */
+    .card {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        background: var(--color-surface);
+        border-radius: var(--radius-2);
+        margin-top: var(--space-3);
+    }
+
+    /* Card variants */
+    .card--standard {
+        /* Default styling - already applied in base */
+    }
+
+    .card--compact {
+        gap: var(--space-1);
+        padding: var(--space-2);
+        font-size: var(--font-size-sm);
+    }
+
+    .card--bordered {
+        border: var(--border-width-1) solid var(--color-border);
+    }
+
+    .card--minimal {
+        background: transparent;
+        padding: var(--space-2) 0;
+        border-radius: 0;
+    }
+
+    /* Card row styles */
+    .card-row {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+    }
+
+    @media (min-width: 480px) {
+        .card-row {
+            flex-direction: row;
+            align-items: flex-start;
+        }
+    }
+
+    /* Card label styles */
+    .card-label {
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-secondary);
+        min-width: 80px;
+        flex-shrink: 0;
+    }
+
+    /* Card value styles */
+    .card-value {
+        color: var(--color-text-primary);
+        flex: 1;
+        word-break: break-word;
+    }
+
+    .card-value-text {
+        /* Default text value styling */
+    }
+
+    .card-value-list {
+        margin: 0;
+        padding-left: var(--space-4);
+        list-style-type: disc;
+    }
+
+    .card-value-list-item {
+        margin-bottom: var(--space-1);
+    }
+
+    .card-value-object {
+        background: var(--color-bg-secondary);
+        border: var(--border-width-1) solid var(--color-border);
+        border-radius: var(--radius-1);
+        padding: var(--space-2);
+        margin: 0;
+        font-family: var(--font-family-mono);
+        font-size: var(--font-size-sm);
+        overflow-x: auto;
+        white-space: pre-wrap;
+    }
+
+    /* Specific styling for preset details card */
+    .preset-details-card {
+        margin-top: var(--space-3);
+        border: var(--border-width-1) solid var(--color-border-subtle);
+        background: var(--color-surface-elevated);
+    }
+
+    .preset-details-card .card-label {
+        color: var(--color-text-tertiary);
+        font-size: var(--font-size-sm);
+    }
+
+    .preset-details-card .card-value {
+        color: var(--color-text-primary);
+    }
+}

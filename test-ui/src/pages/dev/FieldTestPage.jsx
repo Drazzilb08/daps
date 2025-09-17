@@ -121,6 +121,24 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                 'Testing dropdown field with sample options (mix of objects and strings)';
         }
 
+        // Add sample mode options for dirlist_options fields
+        if (fieldType === 'dirlist_options') {
+            baseConfig.mode_options = [
+                { value: 'copy', label: 'Copy' },
+                { value: 'move', label: 'Move' },
+                { value: 'link', label: 'Link' },
+                { value: 'hardlink', label: 'Hard Link' },
+                { value: 'symlink', label: 'Symbolic Link' },
+            ];
+            baseConfig.placeholder = 'Click to select directory...';
+            baseConfig.description =
+                'Testing directory list field with mode selection dropdowns';
+            baseConfig.add_button_text = 'Add Directory';
+            baseConfig.remove_button_text = 'Remove';
+            baseConfig.max_directories = 10;
+            baseConfig.min_directories = 1;
+        }
+
         return baseConfig;
     });
 
@@ -152,6 +170,24 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
             baseConfig.placeholder = 'Select an option from the dropdown...';
             baseConfig.description =
                 'Testing dropdown field with sample options (mix of objects and strings)';
+        }
+
+        // Add sample mode options for dirlist_options fields
+        if (fieldType === 'dirlist_options') {
+            baseConfig.mode_options = [
+                { value: 'copy', label: 'Copy' },
+                { value: 'move', label: 'Move' },
+                { value: 'link', label: 'Link' },
+                { value: 'hardlink', label: 'Hard Link' },
+                { value: 'symlink', label: 'Symbolic Link' },
+            ];
+            baseConfig.placeholder = 'Click to select directory...';
+            baseConfig.description =
+                'Testing directory list field with mode selection dropdowns';
+            baseConfig.add_button_text = 'Add Directory';
+            baseConfig.remove_button_text = 'Remove';
+            baseConfig.max_directories = 10;
+            baseConfig.min_directories = 1;
         }
 
         setTestConfig(baseConfig);

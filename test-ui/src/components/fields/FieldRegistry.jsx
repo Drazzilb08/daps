@@ -40,7 +40,7 @@ const FIELD_COMPONENTS = {
     dir: DirFields.DirField,
     dirlist: DirFields.DirListField,
     dirlist_dragdrop: DirFields.DirListDragDropField,
-    dirlist_options: CustomFields.DirListOptionsField,
+    dirlist_options: DirFields.DirListOptionsField,
 
     // Placeholders from DAPS settings schema
     holiday_schedule: CustomFields.HolidayScheduleField,
@@ -121,6 +121,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'dir',
     'dirlist',
     'dirlist_dragdrop',
+    'dirlist_options',
 ]);
 
 /**

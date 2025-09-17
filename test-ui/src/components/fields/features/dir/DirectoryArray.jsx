@@ -20,7 +20,7 @@
 import React, { useCallback } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { InputBase } from '../../primitives';
+import { InputBase, SelectBase } from '../../primitives';
 import { AddButton, RemoveButton, ItemCounter, EmptyState, FieldButton } from '../shared';
 
 /**
@@ -46,7 +46,11 @@ const SortableDirectoryItem = React.memo(({
     placeholder,
     label,
     baseId,
-    removeButtonText
+    removeButtonText,
+    // Mode selection props
+    mode,
+    modeOptions,
+    onModeChange
 }) => {
     const {
         attributes,
@@ -88,20 +92,38 @@ const SortableDirectoryItem = React.memo(({
                 </FieldButton>
             )}
 
-            <InputBase
-                id={itemId}
-                type="text"
-                name={`${baseId}-${index}`}
-                value={directory || ''}
-                placeholder={placeholder}
-                disabled={disabled}
-                readOnly={true}
-                onClick={() => onClick(index)}
-                invalid={invalid}
-                aria-label={`${label} ${index + 1}`}
-                className="dir-field-display dir-field-clickable"
-                style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
-            />
+            <div className="dir-list-item-content">
+                <InputBase
+                    id={itemId}
+                    type="text"
+                    name={`${baseId}-${index}`}
+                    value={directory || ''}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    readOnly={true}
+                    onClick={() => onClick(index)}
+                    invalid={invalid}
+                    aria-label={`${label} ${index + 1}`}
+                    className="dir-field-display dir-field-clickable"
+                    style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                />
+
+                {/* Mode selection - only show if modeOptions provided */}
+                {modeOptions && (
+                    <SelectBase
+                        id={`${itemId}-mode`}
+                        name={`${baseId}-mode-${index}`}
+                        value={mode || ''}
+                        onChange={(e) => onModeChange?.(index, e.target.value)}
+                        disabled={disabled}
+                        invalid={invalid}
+                        options={modeOptions}
+                        placeholder="Select mode..."
+                        className="dir-mode-select"
+                        aria-label={`Mode for ${label} ${index + 1}`}
+                    />
+                )}
+            </div>
 
             {/* Mobile: Down Button (right side) */}
             {enableReordering && (
@@ -150,24 +172,46 @@ const DirectoryItem = React.memo(({
     placeholder,
     label,
     baseId,
-    removeButtonText
+    removeButtonText,
+    // Mode selection props
+    mode,
+    modeOptions,
+    onModeChange
 }) => {
     return (
         <div className="dir-list-item">
-            <InputBase
-                id={itemId}
-                type="text"
-                name={`${baseId}-${index}`}
-                value={directory || ''}
-                placeholder={placeholder}
-                disabled={disabled}
-                readOnly={true}
-                onClick={() => onClick(index)}
-                invalid={invalid}
-                aria-label={`${label} ${index + 1}`}
-                className="dir-field-display dir-field-clickable"
-                style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
-            />
+            <div className="dir-list-item-content">
+                <InputBase
+                    id={itemId}
+                    type="text"
+                    name={`${baseId}-${index}`}
+                    value={directory || ''}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    readOnly={true}
+                    onClick={() => onClick(index)}
+                    invalid={invalid}
+                    aria-label={`${label} ${index + 1}`}
+                    className="dir-field-display dir-field-clickable"
+                    style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                />
+
+                {/* Mode selection - only show if modeOptions provided */}
+                {modeOptions && (
+                    <SelectBase
+                        id={`${itemId}-mode`}
+                        name={`${baseId}-mode-${index}`}
+                        value={mode || ''}
+                        onChange={(e) => onModeChange?.(index, e.target.value)}
+                        disabled={disabled}
+                        invalid={invalid}
+                        options={modeOptions}
+                        placeholder="Select mode..."
+                        className="dir-mode-select"
+                        aria-label={`Mode for ${label} ${index + 1}`}
+                    />
+                )}
+            </div>
 
             <div className="dir-list-item-actions">
                 <RemoveButton
@@ -209,6 +253,9 @@ DirectoryItem.displayName = 'DirectoryItem';
  * @param {Function} props.onMoveUp - Move item up handler: (index: number) => void
  * @param {Function} props.onMoveDown - Move item down handler: (index: number) => void
  * @param {Object} props.dragHandleProps - Drag handle props for dnd-kit (optional)
+ * @param {Array} props.modeOptions - Array of mode options for mode selection: [{value, label}] (optional)
+ * @param {Array} props.modes - Array of mode values corresponding to directories (optional)
+ * @param {Function} props.onModeChange - Mode change handler: (index: number, mode: string) => void (optional)
  */
 export const DirectoryArray = React.memo(
     ({
@@ -230,6 +277,10 @@ export const DirectoryArray = React.memo(
         onMoveUp = null,
         onMoveDown = null,
         dragHandleProps = null,
+        // Mode selection props
+        modeOptions = null,
+        modes = [],
+        onModeChange = null,
         ...props
     }) => {
         // Handle adding a new directory
@@ -308,6 +359,9 @@ export const DirectoryArray = React.memo(
                             const canMoveUp = enableReordering && index > 0 && !disabled;
                             const canMoveDown = enableReordering && index < directories.length - 1 && !disabled;
 
+                            // Get mode for this directory index
+                            const itemMode = modes[index] || '';
+
                             // Use SortableDirectoryItem for drag and drop, regular DirectoryItem otherwise
                             if (enableReordering) {
                                 return (
@@ -332,6 +386,10 @@ export const DirectoryArray = React.memo(
                                         label={label}
                                         baseId={baseId}
                                         removeButtonText={removeButtonText}
+                                        // Mode selection props
+                                        mode={itemMode}
+                                        modeOptions={modeOptions}
+                                        onModeChange={onModeChange}
                                     />
                                 );
                             } else {
@@ -351,6 +409,10 @@ export const DirectoryArray = React.memo(
                                         label={label}
                                         baseId={baseId}
                                         removeButtonText={removeButtonText}
+                                        // Mode selection props
+                                        mode={itemMode}
+                                        modeOptions={modeOptions}
+                                        onModeChange={onModeChange}
                                     />
                                 );
                             }

@@ -48,8 +48,21 @@
         gap: var(--space-2);
     }
 
+    /* Directory list item content container - holds directory input and optional mode select */
+    .dir-list-item-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        flex: 1;
+    }
+
     /* Directory list item input */
     .dir-list-item .dir-field-display {
+        width: 100%;
+    }
+
+    /* Mode selection dropdown in directory list */
+    .dir-mode-select {
         width: 100%;
     }
 
@@ -75,8 +88,26 @@
             gap: var(--space-3);
         }
 
-        .dir-list-item .dir-field-display {
+        /* Desktop layout for directory list item content */
+        .dir-list-item-content {
+            flex-direction: row;
+            gap: var(--space-3);
             flex: 1;
+        }
+
+        /* Target the direct input element */
+        .dir-list-item-content .dir-field-display {
+            flex: 2 1 0% !important; /* Take up 2/3 of the space */
+            width: auto !important; /* Override w-full utility */
+            min-width: 120px !important; /* Reasonable minimum for directory paths */
+        }
+
+        /* Target the wrapper for the dropdown */
+        .dir-list-item-content .field-select-wrapper {
+            flex: 1 1 0% !important; /* Take up 1/3 of the space */
+            width: auto !important; /* Override w-full utility */
+            min-width: 100px !important; /* Smaller minimum for dropdown */
+            max-width: 150px !important; /* Reasonable maximum for dropdown */
         }
 
         .dir-list-item-actions {

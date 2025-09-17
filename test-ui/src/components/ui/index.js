@@ -7,6 +7,6 @@
  */
 
 export { Card, CardRow } from './Card';
-export { Dropdown } from './Dropdown';
-export { Menu } from './Menu';
-export { MenuItem } from './MenuItem';
+export { default as Dropdown } from './Dropdown';
+export { default as Menu } from './Menu';
+export { default as MenuItem } from './MenuItem';

@@ -67,8 +67,11 @@ const SortableDirectoryItem = React.memo(({
         opacity: isDragging ? 0.5 : 1,
     };
 
+    // Apply semantic class when mode options are present (dirlist_options variant)
+    const itemClasses = `dir-list-item${modeOptions ? ' dir-list-item--with-options' : ''}`;
+
     return (
-        <div className="dir-list-item" ref={setNodeRef} style={style}>
+        <div className={itemClasses} ref={setNodeRef} style={style}>
             {/* Desktop: Drag Handle (left side) */}
             {enableReordering && (
                 <div
@@ -178,8 +181,11 @@ const DirectoryItem = React.memo(({
     modeOptions,
     onModeChange
 }) => {
+    // Apply semantic class when mode options are present (dirlist_options variant)
+    const itemClasses = `dir-list-item${modeOptions ? ' dir-list-item--with-options' : ''}`;
+
     return (
-        <div className="dir-list-item">
+        <div className={itemClasses}>
             <div className="dir-list-item-content">
                 <InputBase
                     id={itemId}

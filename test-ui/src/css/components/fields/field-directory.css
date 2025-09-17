@@ -6,47 +6,28 @@
  */
 
 @layer components {
-    /* Directory field input - Uses input-group utility from field-primitives.css */
+    /* Directory field input - Clickable read-only input */
     .dir-field-display {
-        /* Input uses input-group-child class for integration with input-group */
         flex: 1;
         min-width: 0; /* Allow input to shrink */
     }
 
-    /* Directory browse button variant - matches number field pattern */
-    .btn--dir-field {
-        background: var(--color-surface-elevated);
-        color: var(--color-primary);
-        border-color: transparent;
-        min-width: calc(var(--touch-target-min) + var(--space-4));
-        box-shadow: none;
-        border-radius: 0 var(--radius-2) var(--radius-2) 0;
-        white-space: nowrap;
-        font-size: var(--font-size-sm)
+    /* Clickable directory field styling */
+    .dir-field-clickable {
+        cursor: pointer;
+        background: var(--color-input-bg);
+        transition: background var(--duration-fast) var(--easing);
     }
 
-    .btn--dir-field:hover:not(:disabled) {
+    .dir-field-clickable:hover:not(:disabled) {
         background: var(--color-surface-hover);
-        color: var(--color-primary);
-        border-color: transparent;
-        box-shadow: none;
     }
 
-    .btn--dir-field:disabled {
-        background: var(--color-surface);
-        color: var(--color-text-disabled);
-        border-color: transparent;
-        box-shadow: none;
+    .dir-field-clickable:disabled {
+        cursor: not-allowed;
         opacity: 0.6;
     }
 
-    /* High contrast mode adjustments */
-    @media (prefers-contrast: high) {
-        .btn--dir-field {
-            border-color: var(--color-border);
-            border-width: var(--border-width-1);
-        }
-    }
 
     /* Directory List Field Components */
     .dir-list-header {
@@ -63,76 +44,54 @@
         gap: var(--space-3);
     }
 
+    /* Mobile-first directory list item layout */
     .dir-list-item {
-        /* Each directory item container */
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
     }
 
-    .dir-list-item .input-group {
-        /* Extend input-group pattern for three buttons */
-        gap: 0;
+    /* Directory list item input */
+    .dir-list-item .dir-field-display {
+        width: 100%;
     }
 
-    .dir-list-item .input-group .btn {
-        /* Buttons in directory list items */
-        border-radius: 0;
-        border-left: none;
+    /* Directory list item actions container */
+    .dir-list-item-actions {
+        display: flex;
+        justify-content: flex-start;
     }
 
-    .dir-list-item .input-group .btn:last-child {
-        /* Last button gets right border radius */
-        border-radius: 0 var(--radius-2) var(--radius-2) 0;
+    /* Remove button in directory list - full width on mobile */
+    .dir-list-item-actions .btn {
+        width: 100%;
+        justify-content: center;
+        min-height: var(--touch-target-min);
+        border-radius: var(--radius-2);
     }
 
-    .dir-list-item .input-group .btn:nth-last-child(2) {
-        /* Middle button (Browse) when Remove is present */
-        border-radius: 0;
-    }
-
-    /* Remove button specific styling */
-    .dir-list-item .btn--danger {
-        background: var(--color-error-subtle);
-        color: var(--color-error);
-        border-color: transparent;
-        min-width: auto;
-        padding: var(--space-2) var(--space-3);
-    }
-
-    .dir-list-item .btn--danger:hover:not(:disabled) {
-        background: var(--color-error);
-        color: var(--color-error-text);
-        border-color: transparent;
-    }
-
-    .dir-list-item .btn--danger:disabled {
-        background: var(--color-surface);
-        color: var(--color-text-disabled);
-        border-color: transparent;
-        opacity: 0.6;
-    }
-
-    /* Mobile responsiveness for directory lists */
-    @media (max-width: 768px) {
-        .dir-list-header {
-            flex-direction: column;
-            align-items: stretch;
-            gap: var(--space-2);
+    /* Desktop layout for directory list items */
+    @media (min-width: 768px) {
+        .dir-list-item {
+            flex-direction: row;
+            align-items: center;
+            gap: var(--space-3);
         }
 
-        .dir-list-item .input-group {
-            flex-wrap: wrap;
+        .dir-list-item .dir-field-display {
+            flex: 1;
         }
 
-        .dir-list-item .btn {
-            /* Ensure buttons maintain minimum touch target on mobile */
-            min-height: var(--touch-target-min);
-            border-radius: var(--radius-2);
-            margin-top: var(--space-1);
+        .dir-list-item-actions {
+            flex-shrink: 0;
         }
 
-        .dir-list-item .input-group .btn:not(:first-child) {
-            margin-left: var(--space-2);
-            border-left: var(--border-width-1) solid var(--color-border);
+        .dir-list-item-actions .btn {
+            width: auto;
+            min-width: calc(var(--touch-target-min) + var(--space-4));
+            padding: var(--space-2) var(--space-3);
         }
     }
+
 }
 

@@ -242,7 +242,7 @@ const App = () => {
                                                 }
                                             />
                                             <Route
-                                                path="dev/field"
+                                                path="dev/fields"
                                                 element={
                                                     <PageErrorBoundary
                                                         pageName="DAPS Settings"

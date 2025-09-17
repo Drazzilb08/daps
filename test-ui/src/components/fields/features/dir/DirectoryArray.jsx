@@ -9,8 +9,7 @@
  * - RemoveButton: Generic remove functionality
  * - ItemCounter: Generic count display
  * - EmptyState: Generic empty collection display
- * - DirectoryBrowse: Directory-specific placeholder browsing functionality
- * - InputBase: Basic input primitive
+ * - InputBase: Basic input primitive (read-only, clickable for directory browsing)
  *
  * This demonstrates proper "write once, use everywhere" philosophy where:
  * - Atomic primitives handle single responsibilities
@@ -21,7 +20,6 @@
 import React, { useCallback } from 'react';
 import { InputBase } from '../../primitives';
 import { AddButton, RemoveButton, ItemCounter, EmptyState } from '../shared';
-import { DirectoryBrowse } from '../shared/DirectoryBrowse';
 
 /**
  * DirectoryArray component for managing multiple directories using atomic primitives
@@ -37,7 +35,6 @@ import { DirectoryBrowse } from '../shared/DirectoryBrowse';
  * @param {number} props.minDirectories - Minimum number of directories required
  * @param {string} props.addButtonText - Text for add button
  * @param {string} props.removeButtonText - Text for remove button
- * @param {string} props.browseButtonText - Text for browse button
  * @param {string} props.emptyMessage - Message shown when no directories
  * @param {string} props.emptySecondaryMessage - Secondary empty state message
  * @param {string} props.placeholder - Placeholder text for directory inputs
@@ -55,10 +52,9 @@ export const DirectoryArray = React.memo(
         minDirectories = 0,
         addButtonText = 'Add Directory',
         removeButtonText = 'Remove',
-        browseButtonText = 'Browse...',
         emptyMessage = 'No directories added yet.',
         emptySecondaryMessage = 'Click "Add Directory" to get started.',
-        placeholder = 'Enter directory path or click Browse...',
+        placeholder = 'Click to select directory...',
         className = '',
         ...props
     }) => {
@@ -89,6 +85,17 @@ export const DirectoryArray = React.memo(
                 onChange?.(newDirectories);
             },
             [directories, onChange]
+        );
+
+        // Handle clicking on directory input to open modal
+        const handleDirectoryClick = useCallback(
+            (index) => {
+                // Placeholder functionality - show info about future modal implementation
+                alert(
+                    '🚧 Directory Browser Modal\n\nThis will open a modal to browse and select a directory when the modal system is implemented.'
+                );
+            },
+            []
         );
 
 
@@ -125,42 +132,34 @@ export const DirectoryArray = React.memo(
                             const isLastItem = directories.length === 1;
 
                             return (
-                                <div key={index} className="flex gap-2 items-center">
-                                    <div className="flex-1">
-                                        <div className="input-group">
-                                            <InputBase
-                                                id={itemId}
-                                                type="text"
-                                                name={`${baseId}-${index}`}
-                                                value={directory || ''}
-                                                placeholder={placeholder}
-                                                disabled={disabled}
-                                                onChange={(e) => handleDirectoryChange(index, e.target.value)}
-                                                invalid={invalid}
-                                                aria-label={`${label} ${index + 1}`}
-                                                className="input-group-child dir-field-display"
-                                            />
-
-                                            <DirectoryBrowse
-                                                disabled={disabled}
-                                                ariaLabel={`Browse for directory ${index + 1}`}
-                                                buttonText={browseButtonText}
-                                                className="btn btn--dir-field btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
-                                                multiple={true}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <RemoveButton
-                                        onClick={() => handleRemoveDirectory(index)}
-                                        disabled={!canRemoveDirectory(index)}
-                                        itemName={`${label} ${index + 1}`}
-                                        itemType="directory"
-                                        text={removeButtonText}
-                                        variant="default"
-                                        size="medium"
-                                        title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
+                                <div key={index} className="dir-list-item">
+                                    <InputBase
+                                        id={itemId}
+                                        type="text"
+                                        name={`${baseId}-${index}`}
+                                        value={directory || ''}
+                                        placeholder={placeholder}
+                                        disabled={disabled}
+                                        readOnly={true}
+                                        onClick={() => handleDirectoryClick(index)}
+                                        invalid={invalid}
+                                        aria-label={`${label} ${index + 1}`}
+                                        className="dir-field-display dir-field-clickable"
+                                        style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
                                     />
+
+                                    <div className="dir-list-item-actions">
+                                        <RemoveButton
+                                            onClick={() => handleRemoveDirectory(index)}
+                                            disabled={!canRemoveDirectory(index)}
+                                            itemName={`${label} ${index + 1}`}
+                                            itemType="directory"
+                                            text={removeButtonText}
+                                            variant="default"
+                                            size="medium"
+                                            title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
+                                        />
+                                    </div>
                                 </div>
                             );
                         })

@@ -2,13 +2,12 @@
  * DirField Component
  *
  * Directory selection input field component using primitive composition.
- * Provides a text input with a browse button for directory selection.
+ * Provides a clickable read-only text input for directory selection.
  * Supports placeholder text, validation states, and accessibility features.
  */
 
 import React, { useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
-import { DirectoryBrowse } from '../features/shared';
 
 /**
  * DirField component for directory path input
@@ -30,19 +29,14 @@ export const DirField = React.memo(
         highlightInvalid = false,
         errorMessage = null,
     }) => {
-        const handleChange = useCallback(
-            e => {
-                onChange(e.target.value);
-            },
-            [onChange]
-        );
-
-        const handleDirectorySelect = useCallback(
-            dirPath => {
-                onChange(dirPath);
-            },
-            [onChange]
-        );
+        const handleInputClick = useCallback(() => {
+            if (!disabled) {
+                // Placeholder functionality - show info about future modal implementation
+                alert(
+                    '🚧 Directory Browser Modal\n\nThis will open a modal to browse and select a directory when the modal system is implemented.'
+                );
+            }
+        }, [disabled]);
 
         const inputId = `field-${field.key}`;
 
@@ -50,31 +44,22 @@ export const DirField = React.memo(
             <FieldWrapper invalid={highlightInvalid}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
 
-                <div className="input-group">
-                    <InputBase
-                        id={inputId}
-                        type="text"
-                        name={field.key}
-                        value={value || ''}
-                        placeholder={field.placeholder || 'Enter directory path or click Browse...'}
-                        disabled={disabled}
-                        required={field.required}
-                        onChange={handleChange}
-                        invalid={highlightInvalid}
-                        aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
-                        aria-invalid={highlightInvalid}
-                        className="input-group-child dir-field-display"
-                    />
-
-                    <DirectoryBrowse
-                        onDirectorySelect={handleDirectorySelect}
-                        disabled={disabled}
-                        ariaLabel="Browse for directory"
-                        buttonText="Browse..."
-                        className="btn btn--dir-field btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
-                        multiple={false}
-                    />
-                </div>
+                <InputBase
+                    id={inputId}
+                    type="text"
+                    name={field.key}
+                    value={value || ''}
+                    placeholder={field.placeholder || 'Click to select directory...'}
+                    disabled={disabled}
+                    required={field.required}
+                    readOnly={true}
+                    onClick={handleInputClick}
+                    invalid={highlightInvalid}
+                    aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+                    aria-invalid={highlightInvalid}
+                    className="dir-field-display dir-field-clickable"
+                    style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                />
 
                 <FieldDescription id={`${inputId}-desc`} description={field.description} />
                 <FieldError id={`${inputId}-error`} message={errorMessage} />

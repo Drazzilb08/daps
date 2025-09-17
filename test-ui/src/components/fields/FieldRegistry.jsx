@@ -38,7 +38,7 @@ const FIELD_COMPONENTS = {
 
     // Dir
     dir: DirFields.DirField,
-    dirlist: CustomFields.DirListField,
+    dirlist: DirFields.DirListField,
     dirlist_dragdrop: CustomFields.DirListDragDropField,
     dirlist_options: CustomFields.DirListOptionsField,
 
@@ -119,6 +119,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'color_list',
     'color_list_poster',
     'dir',
+    'dirlist',
 ]);
 
 /**

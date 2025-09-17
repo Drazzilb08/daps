@@ -47,5 +47,92 @@
             border-width: var(--border-width-1);
         }
     }
+
+    /* Directory List Field Components */
+    .dir-list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        margin-bottom: var(--space-2);
+    }
+
+    .dir-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .dir-list-item {
+        /* Each directory item container */
+    }
+
+    .dir-list-item .input-group {
+        /* Extend input-group pattern for three buttons */
+        gap: 0;
+    }
+
+    .dir-list-item .input-group .btn {
+        /* Buttons in directory list items */
+        border-radius: 0;
+        border-left: none;
+    }
+
+    .dir-list-item .input-group .btn:last-child {
+        /* Last button gets right border radius */
+        border-radius: 0 var(--radius-2) var(--radius-2) 0;
+    }
+
+    .dir-list-item .input-group .btn:nth-last-child(2) {
+        /* Middle button (Browse) when Remove is present */
+        border-radius: 0;
+    }
+
+    /* Remove button specific styling */
+    .dir-list-item .btn--danger {
+        background: var(--color-error-subtle);
+        color: var(--color-error);
+        border-color: transparent;
+        min-width: auto;
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .dir-list-item .btn--danger:hover:not(:disabled) {
+        background: var(--color-error);
+        color: var(--color-error-text);
+        border-color: transparent;
+    }
+
+    .dir-list-item .btn--danger:disabled {
+        background: var(--color-surface);
+        color: var(--color-text-disabled);
+        border-color: transparent;
+        opacity: 0.6;
+    }
+
+    /* Mobile responsiveness for directory lists */
+    @media (max-width: 768px) {
+        .dir-list-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--space-2);
+        }
+
+        .dir-list-item .input-group {
+            flex-wrap: wrap;
+        }
+
+        .dir-list-item .btn {
+            /* Ensure buttons maintain minimum touch target on mobile */
+            min-height: var(--touch-target-min);
+            border-radius: var(--radius-2);
+            margin-top: var(--space-1);
+        }
+
+        .dir-list-item .input-group .btn:not(:first-child) {
+            margin-left: var(--space-2);
+            border-left: var(--border-width-1) solid var(--color-border);
+        }
+    }
 }
 

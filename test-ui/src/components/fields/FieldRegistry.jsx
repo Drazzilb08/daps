@@ -39,7 +39,7 @@ const FIELD_COMPONENTS = {
     // Dir
     dir: DirFields.DirField,
     dirlist: DirFields.DirListField,
-    dirlist_dragdrop: CustomFields.DirListDragDropField,
+    dirlist_dragdrop: DirFields.DirListDragDropField,
     dirlist_options: CustomFields.DirListOptionsField,
 
     // Placeholders from DAPS settings schema
@@ -120,6 +120,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'color_list_poster',
     'dir',
     'dirlist',
+    'dirlist_dragdrop',
 ]);
 
 /**

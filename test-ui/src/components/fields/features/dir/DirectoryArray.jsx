@@ -18,8 +18,174 @@
  */
 
 import React, { useCallback } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { InputBase } from '../../primitives';
-import { AddButton, RemoveButton, ItemCounter, EmptyState } from '../shared';
+import { AddButton, RemoveButton, ItemCounter, EmptyState, FieldButton } from '../shared';
+
+/**
+ * SortableDirectoryItem - Directory item with drag and drop support
+ * Handles reordering controls when enabled
+ */
+const SortableDirectoryItem = React.memo(({
+    id,
+    index,
+    directory,
+    isLastItem,
+    itemId,
+    canMoveUp,
+    canMoveDown,
+    canRemoveDirectory,
+    enableReordering,
+    onMoveUp,
+    onMoveDown,
+    onRemove,
+    onClick,
+    disabled,
+    invalid,
+    placeholder,
+    label,
+    baseId,
+    removeButtonText
+}) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <div className="dir-list-item" ref={setNodeRef} style={style}>
+            {/* Desktop: Drag Handle (left side) */}
+            {enableReordering && (
+                <div
+                    className="dir-drag-handle"
+                    {...attributes}
+                    {...listeners}
+                >
+                    ≡
+                </div>
+            )}
+
+            {/* Mobile: Up Button (left side) */}
+            {enableReordering && (
+                <FieldButton
+                    onClick={() => onMoveUp && onMoveUp(index)}
+                    disabled={!canMoveUp}
+                    ariaLabel={`Move ${directory || 'directory'} up`}
+                    className="dir-reorder-button dir-reorder-up"
+                >
+                    ↑
+                </FieldButton>
+            )}
+
+            <InputBase
+                id={itemId}
+                type="text"
+                name={`${baseId}-${index}`}
+                value={directory || ''}
+                placeholder={placeholder}
+                disabled={disabled}
+                readOnly={true}
+                onClick={() => onClick(index)}
+                invalid={invalid}
+                aria-label={`${label} ${index + 1}`}
+                className="dir-field-display dir-field-clickable"
+                style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+            />
+
+            {/* Mobile: Down Button (right side) */}
+            {enableReordering && (
+                <FieldButton
+                    onClick={() => onMoveDown && onMoveDown(index)}
+                    disabled={!canMoveDown}
+                    ariaLabel={`Move ${directory || 'directory'} down`}
+                    className="dir-reorder-button dir-reorder-down"
+                >
+                    ↓
+                </FieldButton>
+            )}
+
+            <div className="dir-list-item-actions">
+                <RemoveButton
+                    onClick={() => onRemove(index)}
+                    disabled={!canRemoveDirectory}
+                    itemName={`${label} ${index + 1}`}
+                    itemType="directory"
+                    text={removeButtonText}
+                    variant="default"
+                    size="medium"
+                    title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
+                />
+            </div>
+        </div>
+    );
+});
+
+SortableDirectoryItem.displayName = 'SortableDirectoryItem';
+
+/**
+ * DirectoryItem - Regular directory item without drag and drop
+ * For use in non-sortable directory lists
+ */
+const DirectoryItem = React.memo(({
+    index,
+    directory,
+    isLastItem,
+    itemId,
+    canRemoveDirectory,
+    onRemove,
+    onClick,
+    disabled,
+    invalid,
+    placeholder,
+    label,
+    baseId,
+    removeButtonText
+}) => {
+    return (
+        <div className="dir-list-item">
+            <InputBase
+                id={itemId}
+                type="text"
+                name={`${baseId}-${index}`}
+                value={directory || ''}
+                placeholder={placeholder}
+                disabled={disabled}
+                readOnly={true}
+                onClick={() => onClick(index)}
+                invalid={invalid}
+                aria-label={`${label} ${index + 1}`}
+                className="dir-field-display dir-field-clickable"
+                style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+            />
+
+            <div className="dir-list-item-actions">
+                <RemoveButton
+                    onClick={() => onRemove(index)}
+                    disabled={!canRemoveDirectory}
+                    itemName={`${label} ${index + 1}`}
+                    itemType="directory"
+                    text={removeButtonText}
+                    variant="default"
+                    size="medium"
+                    title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
+                />
+            </div>
+        </div>
+    );
+});
+
+DirectoryItem.displayName = 'DirectoryItem';
 
 /**
  * DirectoryArray component for managing multiple directories using atomic primitives
@@ -39,6 +205,10 @@ import { AddButton, RemoveButton, ItemCounter, EmptyState } from '../shared';
  * @param {string} props.emptySecondaryMessage - Secondary empty state message
  * @param {string} props.placeholder - Placeholder text for directory inputs
  * @param {string} props.className - Additional CSS classes
+ * @param {boolean} props.enableReordering - Enable drag-drop reordering (optional)
+ * @param {Function} props.onMoveUp - Move item up handler: (index: number) => void
+ * @param {Function} props.onMoveDown - Move item down handler: (index: number) => void
+ * @param {Object} props.dragHandleProps - Drag handle props for dnd-kit (optional)
  */
 export const DirectoryArray = React.memo(
     ({
@@ -56,6 +226,10 @@ export const DirectoryArray = React.memo(
         emptySecondaryMessage = 'Click "Add Directory" to get started.',
         placeholder = 'Click to select directory...',
         className = '',
+        enableReordering = false,
+        onMoveUp = null,
+        onMoveDown = null,
+        dragHandleProps = null,
         ...props
     }) => {
         // Handle adding a new directory
@@ -131,37 +305,55 @@ export const DirectoryArray = React.memo(
                             const itemId = `${baseId}-dir-${index}`;
                             const isLastItem = directories.length === 1;
 
-                            return (
-                                <div key={index} className="dir-list-item">
-                                    <InputBase
-                                        id={itemId}
-                                        type="text"
-                                        name={`${baseId}-${index}`}
-                                        value={directory || ''}
-                                        placeholder={placeholder}
-                                        disabled={disabled}
-                                        readOnly={true}
-                                        onClick={() => handleDirectoryClick(index)}
-                                        invalid={invalid}
-                                        aria-label={`${label} ${index + 1}`}
-                                        className="dir-field-display dir-field-clickable"
-                                        style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
-                                    />
+                            const canMoveUp = enableReordering && index > 0 && !disabled;
+                            const canMoveDown = enableReordering && index < directories.length - 1 && !disabled;
 
-                                    <div className="dir-list-item-actions">
-                                        <RemoveButton
-                                            onClick={() => handleRemoveDirectory(index)}
-                                            disabled={!canRemoveDirectory(index)}
-                                            itemName={`${label} ${index + 1}`}
-                                            itemType="directory"
-                                            text={removeButtonText}
-                                            variant="default"
-                                            size="medium"
-                                            title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
-                                        />
-                                    </div>
-                                </div>
-                            );
+                            // Use SortableDirectoryItem for drag and drop, regular DirectoryItem otherwise
+                            if (enableReordering) {
+                                return (
+                                    <SortableDirectoryItem
+                                        key={index}
+                                        id={index.toString()}
+                                        index={index}
+                                        directory={directory}
+                                        isLastItem={isLastItem}
+                                        itemId={itemId}
+                                        canMoveUp={canMoveUp}
+                                        canMoveDown={canMoveDown}
+                                        canRemoveDirectory={canRemoveDirectory(index)}
+                                        enableReordering={enableReordering}
+                                        onMoveUp={onMoveUp}
+                                        onMoveDown={onMoveDown}
+                                        onRemove={handleRemoveDirectory}
+                                        onClick={handleDirectoryClick}
+                                        disabled={disabled}
+                                        invalid={invalid}
+                                        placeholder={placeholder}
+                                        label={label}
+                                        baseId={baseId}
+                                        removeButtonText={removeButtonText}
+                                    />
+                                );
+                            } else {
+                                return (
+                                    <DirectoryItem
+                                        key={index}
+                                        index={index}
+                                        directory={directory}
+                                        isLastItem={isLastItem}
+                                        itemId={itemId}
+                                        canRemoveDirectory={canRemoveDirectory(index)}
+                                        onRemove={handleRemoveDirectory}
+                                        onClick={handleDirectoryClick}
+                                        disabled={disabled}
+                                        invalid={invalid}
+                                        placeholder={placeholder}
+                                        label={label}
+                                        baseId={baseId}
+                                        removeButtonText={removeButtonText}
+                                    />
+                                );
+                            }
                         })
                     )}
                 </div>

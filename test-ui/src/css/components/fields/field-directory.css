@@ -19,9 +19,6 @@
         transition: background var(--duration-fast) var(--easing);
     }
 
-    .dir-field-clickable:hover:not(:disabled) {
-        background: var(--color-surface-hover);
-    }
 
     .dir-field-clickable:disabled {
         cursor: not-allowed;

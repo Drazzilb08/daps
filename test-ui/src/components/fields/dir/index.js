@@ -7,3 +7,4 @@
 
 export { DirField } from './DirField.jsx';
 export { DirListField } from './DirListField.jsx';
+export { DirListDragDropField } from './DirListDragDropField.jsx';

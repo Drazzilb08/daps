@@ -1,0 +1,104 @@
+/**
+ * Directory List Reordering Styles
+ *
+ * Minimal CSS additions for drag-drop reordering in DirectoryArray.
+ * Uses existing dir-list-item layout with responsive mobile/desktop controls.
+ */
+
+@layer components {
+    /* Mobile reorder buttons - primary color arrows */
+    .dir-reorder-button {
+        min-width: var(--control-min-height);
+        min-height: var(--control-min-height);
+        padding: var(--space-2);
+        background: transparent;
+        color: var(--primary);
+        border: none;
+        border-radius: var(--radius-1);
+        font-size: var(--font-size-3);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: opacity var(--duration-fast) var(--easing);
+    }
+
+    .dir-reorder-button:disabled {
+        opacity: var(--opacity-disabled);
+        cursor: not-allowed;
+        color: var(--color-text-disabled);
+    }
+
+    .dir-reorder-button:focus-visible {
+        outline: var(--focus-ring-size) solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    /* Desktop drag handle - subtle */
+    .dir-drag-handle {
+        min-width: var(--control-min-height);
+        min-height: var(--control-min-height);
+        padding: var(--space-2);
+        background: transparent;
+        color: var(--color-text-tertiary);
+        border: none;
+        border-radius: var(--radius-1);
+        font-size: var(--font-size-2);
+        font-weight: var(--font-weight-regular);
+        cursor: grab;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        flex-shrink: 0;
+        opacity: 0.6;
+        transition: opacity var(--duration-fast) var(--easing);
+    }
+
+    .dir-drag-handle:active {
+        cursor: grabbing;
+        opacity: 1;
+    }
+
+    /* Responsive behavior - Desktop (fine pointer OR wide viewport) */
+    @media (pointer: fine) and (min-width: 768px) {
+        .dir-reorder-button {
+            display: none;
+        }
+
+        .dir-drag-handle {
+            display: flex;
+        }
+    }
+
+    /* Responsive behavior - Mobile/Touch (coarse pointer OR narrow viewport) */
+    @media (pointer: coarse), (max-width: 767px) {
+        .dir-reorder-button {
+            display: flex;
+        }
+
+        .dir-drag-handle {
+            display: none;
+        }
+    }
+
+
+    /* Focus states for accessibility */
+    .dir-drag-handle:focus-visible {
+        outline: var(--focus-ring-size) solid var(--color-focus);
+        outline-offset: 2px;
+        opacity: 1;
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+        .dir-reorder-button,
+        .dir-drag-handle {
+            transition: none;
+        }
+    }
+}

@@ -5,5 +5,5 @@
  * for clean imports and organization.
  */
 
-// export { DirField } from './DirField.jsx';
+export { DirField } from './DirField.jsx';
 // export { DirListField } from './DirListField.jsx';

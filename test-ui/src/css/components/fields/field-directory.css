@@ -1,7 +1,51 @@
 /**
- * Directory Field Components - Placeholder for future implementation
- * 
- * Currently contains no styles as the directory field components
- * are not yet implemented and use UnavailableField placeholders.
+ * Directory Field Components
+ *
+ * Styling for directory picker and related field components.
+ * Uses design tokens and theme-aware colors for consistency.
  */
+
+@layer components {
+    /* Directory field input - Uses input-group utility from field-primitives.css */
+    .dir-field-display {
+        /* Input uses input-group-child class for integration with input-group */
+        flex: 1;
+        min-width: 0; /* Allow input to shrink */
+    }
+
+    /* Directory browse button variant - matches number field pattern */
+    .btn--dir-field {
+        background: var(--color-surface-elevated);
+        color: var(--color-primary);
+        border-color: transparent;
+        min-width: calc(var(--touch-target-min) + var(--space-4));
+        box-shadow: none;
+        border-radius: 0 var(--radius-2) var(--radius-2) 0;
+        white-space: nowrap;
+        font-size: var(--font-size-sm)
+    }
+
+    .btn--dir-field:hover:not(:disabled) {
+        background: var(--color-surface-hover);
+        color: var(--color-primary);
+        border-color: transparent;
+        box-shadow: none;
+    }
+
+    .btn--dir-field:disabled {
+        background: var(--color-surface);
+        color: var(--color-text-disabled);
+        border-color: transparent;
+        box-shadow: none;
+        opacity: 0.6;
+    }
+
+    /* High contrast mode adjustments */
+    @media (prefers-contrast: high) {
+        .btn--dir-field {
+            border-color: var(--color-border);
+            border-width: var(--border-width-1);
+        }
+    }
+}
 

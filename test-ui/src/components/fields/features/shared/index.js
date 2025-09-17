@@ -27,3 +27,4 @@ export { ItemCounter } from './ItemCounter';
 export { EmptyState } from './EmptyState';
 export { StatusMessage } from './StatusMessage';
 export { FieldButton } from './FieldButton';
+export { DirectoryBrowse } from './DirectoryBrowse';

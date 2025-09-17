@@ -10,7 +10,6 @@ export { JsonField } from './JsonField.jsx';
 
 // Placeholder implementations
 export {
-    DirField,
     DirListField,
     InstanceDropdownField,
     InstancesField,

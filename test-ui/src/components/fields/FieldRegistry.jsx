@@ -7,6 +7,7 @@ import * as BasicFields from './basic';
 import * as SelectFields from './select';
 import * as CustomFields from './custom';
 import * as ColorFields from './color';
+import * as DirFields from './dir';
 
 /**
  * Field type to component mapping
@@ -36,7 +37,7 @@ const FIELD_COMPONENTS = {
     color_list_poster: ColorFields.ColorListPosterField,
 
     // Dir
-    dir: CustomFields.DirField,
+    dir: DirFields.DirField,
     dirlist: CustomFields.DirListField,
     dirlist_dragdrop: CustomFields.DirListDragDropField,
     dirlist_options: CustomFields.DirListOptionsField,
@@ -117,6 +118,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'color',
     'color_list',
     'color_list_poster',
+    'dir',
 ]);
 
 /**

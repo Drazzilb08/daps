@@ -10,7 +10,7 @@
         display: flex;
         flex-direction: column;
         gap: var(--space-3);
-        margin-left: var(--space-8);
+
         margin-top: var(--space-3);
         padding: var(--space-4);
         background: var(--surface-elevated);
@@ -55,22 +55,17 @@
         border-bottom: 1px solid var(--border-color);
     }
 
+    /* Mobile: Hide desktop libraries list (chips used instead) */
     .libraries-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2);
-        max-height: 200px;
-        overflow-y: auto;
-        padding: var(--space-1);
+        display: none;
     }
 
+    /* Desktop library items (initially hidden on mobile) */
     .library-item {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
+        display: block;
+        width: 100%;
         padding: var(--space-2);
         background: var(--surface);
-        border: 1px solid var(--border-color);
         border-radius: var(--border-radius-sm);
         transition: all var(--transition-duration) var(--transition-timing);
         min-height: var(--touch-target-min);
@@ -78,7 +73,6 @@
 
     .library-item:hover {
         background: var(--surface-hover);
-        border-color: var(--border-color-hover);
         transform: translateY(-1px);
         box-shadow: var(--shadow-sm);
     }
@@ -165,12 +159,33 @@
     /* Responsive adjustments for libraries */
     @media (min-width: 768px) {
         .plex-options {
-            margin-left: var(--space-10);
             padding: var(--space-5);
         }
 
+        /* Desktop: Show grid libraries, hide mobile chips */
         .libraries-list {
-            max-height: 240px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-3);
+            padding: var(--space-1);
+        }
+
+        .library-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .libraries-list {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .libraries-list {
+            grid-template-columns: repeat(4, 1fr);
         }
     }
 
@@ -181,7 +196,7 @@
         }
 
         .libraries-list {
-            max-height: 160px;
+            /* No max-height restriction on mobile */
         }
     }
 

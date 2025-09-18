@@ -70,19 +70,43 @@ const SimpleInstanceSelector = React.memo(({
 
                 return (
                     <div key={instance.name} className="instance-item">
-                        <CheckboxBase
-                            id={inputId}
-                            name={`${serviceType}-instances`}
-                            checked={isSelected}
-                            onChange={(e) => handleInstanceToggle(instance.name, e.target.checked)}
-                            disabled={disabled}
-                        />
-                        <label htmlFor={inputId} className="instance-label">
-                            <span className="instance-name">{instance.name}</span>
-                            {instance.url && (
-                                <span className="instance-url">{instance.url}</span>
-                            )}
-                        </label>
+                        <div
+                            className="checkbox-field-container"
+                            onClick={(e) => {
+                                // Don't handle click if it came from the label or checkbox input
+                                if (disabled) return;
+                                if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+                                handleInstanceToggle(instance.name, !isSelected);
+                            }}
+                            role="button"
+                            tabIndex={disabled ? -1 : 0}
+                            onKeyDown={(e) => {
+                                if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
+                                    e.preventDefault();
+                                    handleInstanceToggle(instance.name, !isSelected);
+                                }
+                            }}
+                            aria-pressed={isSelected}
+                            aria-disabled={disabled}
+                        >
+                            <CheckboxBase
+                                id={inputId}
+                                name={`${serviceType}-instances`}
+                                checked={isSelected}
+                                onChange={(e) => handleInstanceToggle(instance.name, e.target.checked)}
+                                disabled={disabled}
+                            />
+                            <div className="checkbox-content">
+                                <FieldLabel
+                                    htmlFor={inputId}
+                                    label={humanize(instance.name)}
+                                    className="checkbox-label"
+                                />
+                                {instance.url && (
+                                    <div className="instance-url">{instance.url}</div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 );
             })}
@@ -163,26 +187,74 @@ const PlexLibrarySelector = React.memo(({
     return (
         <div className="libraries-selection">
             <div className="libraries-title">Select Libraries:</div>
-            <div className="libraries-list">
-                {libraries.map(library => {
-                    const isSelected = selectedLibraries.includes(library);
-                    const libraryId = `library-${instanceName}-${library}`;
 
-                    return (
-                        <div key={library} className="library-item">
-                            <CheckboxBase
-                                id={libraryId}
-                                name={`${instanceName}-libraries`}
-                                checked={isSelected}
-                                onChange={(e) => handleLibraryToggle(library, e.target.checked)}
+            {/* Mobile: Compact chip-style selection */}
+            <div className="libraries-mobile">
+                <div className="libraries-chips">
+                    {libraries.map(library => {
+                        const isSelected = selectedLibraries.includes(library);
+                        return (
+                            <button
+                                key={library}
+                                type="button"
+                                className={`library-chip ${isSelected ? 'library-chip--selected' : ''}`}
+                                onClick={() => handleLibraryToggle(library, !isSelected)}
                                 disabled={disabled}
-                            />
-                            <label htmlFor={libraryId} className="library-label">
+                            >
                                 {library}
-                            </label>
-                        </div>
-                    );
-                })}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Desktop: Grid layout with checkboxes */}
+            <div className="libraries-desktop">
+                <div className="libraries-list">
+                    {libraries.map(library => {
+                        const isSelected = selectedLibraries.includes(library);
+                        const libraryId = `library-${instanceName}-${library}`;
+
+                        return (
+                            <div key={library} className="library-item">
+                                <div
+                                    className="checkbox-field-container"
+                                    onClick={(e) => {
+                                        // Don't handle click if it came from the label or checkbox input
+                                        if (disabled) return;
+                                        if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+                                        handleLibraryToggle(library, !isSelected);
+                                    }}
+                                    role="button"
+                                    tabIndex={disabled ? -1 : 0}
+                                    onKeyDown={(e) => {
+                                        if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
+                                            e.preventDefault();
+                                            handleLibraryToggle(library, !isSelected);
+                                        }
+                                    }}
+                                    aria-pressed={isSelected}
+                                    aria-disabled={disabled}
+                                >
+                                    <CheckboxBase
+                                        id={libraryId}
+                                        name={`${instanceName}-libraries`}
+                                        checked={isSelected}
+                                        onChange={(e) => handleLibraryToggle(library, e.target.checked)}
+                                        disabled={disabled}
+                                    />
+                                    <div className="checkbox-content">
+                                        <FieldLabel
+                                            htmlFor={libraryId}
+                                            label={library}
+                                            className="checkbox-label"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );
@@ -288,7 +360,25 @@ const PlexInstanceSelector = React.memo(({
 
                 return (
                     <div key={instance.name} className="instance-item plex-instance-item">
-                        <div className="instance-selection">
+                        <div
+                            className="checkbox-field-container"
+                            onClick={(e) => {
+                                // Don't handle click if it came from the label or checkbox input
+                                if (disabled) return;
+                                if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+                                handleInstanceToggle(instance.name, !isSelected);
+                            }}
+                            role="button"
+                            tabIndex={disabled ? -1 : 0}
+                            onKeyDown={(e) => {
+                                if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
+                                    e.preventDefault();
+                                    handleInstanceToggle(instance.name, !isSelected);
+                                }
+                            }}
+                            aria-pressed={isSelected}
+                            aria-disabled={disabled}
+                        >
                             <CheckboxBase
                                 id={instanceId}
                                 name="plex-instances"
@@ -296,12 +386,16 @@ const PlexInstanceSelector = React.memo(({
                                 onChange={(e) => handleInstanceToggle(instance.name, e.target.checked)}
                                 disabled={disabled}
                             />
-                            <label htmlFor={instanceId} className="instance-label">
-                                <span className="instance-name">{instance.name}</span>
+                            <div className="checkbox-content">
+                                <FieldLabel
+                                    htmlFor={instanceId}
+                                    label={humanize(instance.name)}
+                                    className="checkbox-label"
+                                />
                                 {instance.url && (
-                                    <span className="instance-url">{instance.url}</span>
+                                    <div className="instance-url">{instance.url}</div>
                                 )}
-                            </label>
+                            </div>
                         </div>
 
                         {isSelected && (
@@ -309,16 +403,40 @@ const PlexInstanceSelector = React.memo(({
                                 {/* Poster upload option */}
                                 {showPosterOption && (
                                     <div className="poster-upload-option">
-                                        <CheckboxBase
-                                            id={uploadId}
-                                            name={`upload-${instance.name}`}
-                                            checked={uploadPosters}
-                                            onChange={(e) => handlePosterUploadToggle(instance.name, e.target.checked)}
-                                            disabled={disabled}
-                                        />
-                                        <label htmlFor={uploadId} className="upload-label">
-                                            Upload posters to this Plex instance
-                                        </label>
+                                        <div
+                                            className="checkbox-field-container"
+                                            onClick={(e) => {
+                                                // Don't handle click if it came from the label or checkbox input
+                                                if (disabled) return;
+                                                if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+                                                handlePosterUploadToggle(instance.name, !uploadPosters);
+                                            }}
+                                            role="button"
+                                            tabIndex={disabled ? -1 : 0}
+                                            onKeyDown={(e) => {
+                                                if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
+                                                    e.preventDefault();
+                                                    handlePosterUploadToggle(instance.name, !uploadPosters);
+                                                }
+                                            }}
+                                            aria-pressed={uploadPosters}
+                                            aria-disabled={disabled}
+                                        >
+                                            <CheckboxBase
+                                                id={uploadId}
+                                                name={`upload-${instance.name}`}
+                                                checked={uploadPosters}
+                                                onChange={(e) => handlePosterUploadToggle(instance.name, e.target.checked)}
+                                                disabled={disabled}
+                                            />
+                                            <div className="checkbox-content">
+                                                <FieldLabel
+                                                    htmlFor={uploadId}
+                                                    label="Upload posters to this Plex instance"
+                                                    className="checkbox-label"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
 

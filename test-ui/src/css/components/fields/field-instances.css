@@ -1,36 +1,45 @@
 /**
- * Instances Field Styling - Professional UX Implementation
+ * InstancesField - Complete Rebuild for Mobile and Desktop
  *
- * Mobile-first responsive design with proper DAPS design system integration.
- * Features enhanced visual hierarchy, improved spacing, and better interaction patterns.
+ * REBUILT FROM SCRATCH: Mobile usability + Desktop library columns
+ * Mobile: Horizontal layout for maximum space efficiency
+ * Desktop: Multi-column libraries for horizontal space utilization
  */
 
 @layer components {
-    /* Main instances field container with improved spacing */
+    /* ===========================================
+       MOBILE-OPTIMIZED FOUNDATION (375px)
+       =========================================== */
+
+    /* Main field container - compact horizontal layout */
     .instances-field-content {
         display: flex;
         flex-direction: column;
-        gap: var(--space-5);
-        min-height: var(--space-16); /* Prevent layout shift during loading */
+        gap: var(--space-2); /* 8px - compact mobile spacing */
+        width: 100%;
+        min-width: 0;
     }
 
-    /* Enhanced loading state with better visual feedback */
+    /* Loading state - mobile optimized */
     .instances-loading {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: var(--space-3);
-        padding: var(--space-6);
+        padding: var(--space-6); /* 24px - comfortable mobile padding */
         background: var(--surface);
         border: 2px solid var(--border-color);
         border-radius: var(--border-radius-lg);
         color: var(--text-secondary);
-        min-height: var(--space-20);
+        min-height: var(--space-24); /* 96px - appropriate mobile height */
+        text-align: center;
     }
 
+    /* Loading spinner */
     .loading-spinner {
-        width: 20px;
-        height: 20px;
+        width: 24px; /* Larger for mobile visibility */
+        height: 24px;
         border: 3px solid var(--border-color);
         border-top: 3px solid var(--primary);
         border-radius: 50%;
@@ -42,373 +51,525 @@
         100% { transform: rotate(360deg); }
     }
 
-    /* Enhanced error state with better visual hierarchy */
+    /* Error state - mobile optimized */
     .instances-error {
         display: flex;
-        align-items: flex-start;
+        flex-direction: column;
+        align-items: center;
         gap: var(--space-3);
-        padding: var(--space-4);
+        padding: var(--space-5); /* 20px - mobile-appropriate */
         background: var(--error-bg);
         border: 2px solid var(--error);
         border-radius: var(--border-radius-lg);
         color: var(--error-text);
-        min-height: var(--space-16);
+        text-align: center;
     }
 
     .error-icon {
-        flex-shrink: 0;
-        font-size: var(--font-size-lg);
-        margin-top: var(--space-1);
+        font-size: var(--font-size-xl); /* 24px - visible on mobile */
+        margin-bottom: var(--space-2);
     }
 
     .error-content {
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
-        flex: 1;
+        width: 100%;
     }
 
     .error-title {
         font-weight: var(--font-weight-semibold);
-        font-size: var(--font-size-base);
+        font-size: var(--font-size-base); /* 16px - readable */
         margin: 0;
     }
 
     .error-message {
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-sm); /* 14px - acceptable on mobile */
         opacity: 0.9;
         line-height: var(--line-height-relaxed);
         margin: 0;
     }
 
-    /* Service sections with enhanced visual hierarchy */
-    .single-service-selector,
+    /* ===========================================
+       SERVICE CONTAINERS - MOBILE DESIGN
+       =========================================== */
+
+    /* Single service type container */
+    .single-service-selector {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4); /* 16px gap between elements */
+        width: 100%;
+    }
+
+    /* Multiple service types - compact vertical stack on mobile */
     .multi-service-selector {
         display: flex;
         flex-direction: column;
-        gap: var(--space-5);
+        gap: var(--space-3); /* 12px - compact spacing for mobile */
+        width: 100%;
     }
 
+    /* Individual service sections - mobile compact */
     .service-section {
         display: flex;
         flex-direction: column;
-        gap: var(--space-3);
+        gap: var(--space-2); /* 8px - compact mobile gap */
         background: var(--surface);
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius-lg);
-        padding: var(--space-4);
+        padding: var(--space-3); /* 12px - compact mobile padding */
+        width: 100%;
         transition: border-color var(--transition-duration) var(--transition-timing);
     }
 
-    .service-section:hover {
-        border-color: var(--border-color-hover);
+    .service-section:active {
+        border-color: var(--border-color-hover); /* Touch feedback */
     }
 
+    /* Service titles - compact mobile hierarchy */
     .service-title {
-        margin: 0 0 var(--space-3) 0;
-        font-size: var(--font-size-lg);
+        margin: 0 0 var(--space-2) 0; /* 8px bottom margin */
+        font-size: var(--font-size-base); /* 16px - compact mobile size */
         font-weight: var(--font-weight-semibold);
         color: var(--text-primary);
-        padding-bottom: var(--space-2);
-        border-bottom: 2px solid var(--border-color);
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
+        padding-bottom: var(--space-1); /* 4px */
+        border-bottom: 1px solid var(--border-color);
     }
 
-    /* Instance selection lists with improved spacing */
+    /* ===========================================
+       INSTANCE ITEMS - MOBILE TOUCH DESIGN
+       =========================================== */
+
+    /* Instance selection list - compact mobile layout */
     .instance-selection-list {
         display: flex;
         flex-direction: column;
-        gap: var(--space-3);
+        gap: var(--space-2); /* 8px - compact mobile spacing */
+        width: 100%;
     }
 
-    /* Enhanced instance items with better visual feedback */
+    /* Individual instance items - mobile touch targets */
     .instance-item {
+        width: 100%;
+        min-width: 0; /* Allow text wrapping */
+    }
+
+    /* Checkbox containers - HORIZONTAL LAYOUT FOR MOBILE */
+    .instance-item .checkbox-field-container {
+        width: 100%;
+        min-height: var(--touch-target-min); /* 44px minimum touch target */
+        padding: var(--space-2); /* 8px - compact mobile padding */
+        gap: var(--space-2); /* 8px - compact space between checkbox and content */
+        display: flex;
+        align-items: center; /* Center align for horizontal layout */
+        background: var(--surface-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        transition: all var(--transition-duration) var(--transition-timing);
+        cursor: pointer;
+    }
+
+    .instance-item .checkbox-field-container:hover {
+        background: var(--surface-hover);
+        border-color: var(--border-color-hover);
+    }
+
+    .instance-item .checkbox-field-container:active {
+        background: var(--surface-pressed);
+        transform: scale(0.98); /* Subtle touch feedback */
+    }
+
+    /* Checkbox content area - horizontal mobile layout */
+    .instance-item .checkbox-content {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column; /* Keep name and URL stacked */
+        gap: 2px; /* Very tight spacing */
+    }
+
+    /* Instance names - compact mobile typography */
+    .instance-item .checkbox-label {
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-primary);
+        font-size: var(--font-size-sm); /* 14px - compact mobile */
+        line-height: var(--line-height-tight);
+        margin: 0;
+        cursor: pointer;
+    }
+
+    /* Instance URLs - very compact mobile */
+    .instance-item .instance-url {
+        font-size: var(--font-size-xs); /* 12px - very compact for mobile */
+        color: var(--color-text-secondary);
+        word-break: break-word;
+        hyphens: auto;
+        opacity: 0.7;
+        line-height: 1.2;
+        margin: 0;
+    }
+
+    /* ===========================================
+       PLEX SPECIFIC - MOBILE DESIGN
+       =========================================== */
+
+    /* Plex instance items - no special treatment on mobile */
+    .plex-instance-item {
+        /* Same as regular instance items on mobile */
+    }
+
+    /* Plex options container - integrated mobile design */
+    .plex-options {
+        width: 100%;
+        margin-top: var(--space-4); /* 16px separation */
+        padding: var(--space-3);
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
         display: flex;
         flex-direction: column;
-        gap: var(--space-2);
-        padding: var(--space-3);
+        gap: var(--space-4); /* 16px between options */
+    }
+
+    /* Poster upload option - integrated design */
+    .poster-upload-option {
+        width: 100%;
+        padding: 0; /* Remove extra padding - container handles it */
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
+
+    .poster-upload-option .checkbox-field-container {
+        min-height: var(--touch-target-min); /* 44px touch target */
+        padding: var(--space-3); /* 12px - comfortable padding */
         background: var(--surface-elevated);
         border: 2px solid var(--border-color);
         border-radius: var(--border-radius-md);
         transition: all var(--transition-duration) var(--transition-timing);
-        position: relative;
     }
 
-    .instance-item:hover {
+    .poster-upload-option .checkbox-field-container:hover {
+        border-color: var(--border-color-hover);
+        background: var(--surface-hover);
+    }
+
+    /* Library selection - integrated mobile layout */
+    .libraries-selection {
+        width: 100%;
+        margin-top: 0; /* No extra margin - container handles spacing */
+    }
+
+    .libraries-title {
+        font-size: var(--font-size-base); /* 16px - readable */
+        font-weight: var(--font-weight-semibold);
+        color: var(--text-primary);
+        margin-bottom: var(--space-3); /* 12px */
+        padding-bottom: var(--space-2);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    /* MOBILE: Hide desktop grid, show chips */
+    .libraries-mobile {
+        display: block;
+    }
+
+    .libraries-desktop {
+        display: none;
+    }
+
+    /* Mobile: Organized chip-style library selection */
+    .libraries-chips {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: var(--space-2); /* 8px gap between chips */
+        width: 100%;
+    }
+
+    .library-chip {
+        padding: var(--space-2) var(--space-3); /* 8px 12px */
+        background: var(--surface-elevated);
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        font-size: var(--font-size-sm); /* 14px - readable */
+        font-weight: var(--font-weight-medium);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all var(--transition-duration) var(--transition-timing);
+        min-height: var(--touch-target-min); /* 44px for touch */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        position: relative;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .library-chip:hover {
         background: var(--surface-hover);
         border-color: var(--border-color-hover);
         transform: translateY(-1px);
-        box-shadow: var(--shadow-md);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .instance-item:focus-within {
+    .library-chip--selected {
+        background: var(--primary-surface);
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px var(--primary-bg);
-        outline: none;
+        color: var(--primary-text);
+        font-weight: var(--font-weight-semibold);
+        box-shadow: 0 0 0 1px var(--primary), 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
-    /* Enhanced instance selection row */
-    .instance-selection {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        min-height: var(--touch-target-min);
-        padding: var(--space-1);
+    .library-chip--selected::after {
+        content: '✓';
+        position: absolute;
+        top: 2px;
+        right: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        color: var(--primary-text);
     }
 
-    .instance-label {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-1);
-        cursor: pointer;
-        flex: 1;
-        min-height: var(--touch-target-min);
-        justify-content: center;
-        padding: var(--space-1);
-        border-radius: var(--border-radius-sm);
-        transition: background-color var(--transition-duration) var(--transition-timing);
+    /* Desktop grid (hidden on mobile) */
+    .libraries-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
     }
 
-    .instance-label:hover {
-        background: var(--surface-hover);
+    .library-item {
+        width: 100%; /* Take full grid cell width */
+        display: block; /* Override flex to allow grid positioning */
     }
 
-    .instance-name {
-        font-weight: var(--font-weight-medium);
-        color: var(--text-primary);
-        font-size: var(--font-size-base);
-        line-height: var(--line-height-tight);
-        margin: 0;
+    .library-item .checkbox-field-container {
+        min-height: var(--touch-target-min); /* 44px touch target */
+        padding: var(--space-1); /* 4px - very compact for library items */
+        background: var(--surface);
+        width: 100%; /* Fit within grid cell */
+        box-sizing: border-box;
+        display: flex; /* Restore flex for internal layout */
     }
 
-    .instance-url {
-        font-size: var(--font-size-sm);
-        color: var(--text-secondary);
-        word-break: break-all;
-        line-height: var(--line-height-relaxed);
-        margin: 0;
-        opacity: 0.8;
-    }
+    /* ===========================================
+       EMPTY & ERROR STATES - MOBILE
+       =========================================== */
 
-    /* Enhanced Plex-specific styling */
-    .plex-instance-item {
-        border-left: 4px solid var(--accent);
-    }
-
-    .poster-upload-option {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        margin-left: var(--space-8);
-        margin-top: var(--space-2);
-        padding: var(--space-3);
-        background: var(--surface-elevated);
-        border-radius: var(--border-radius-md);
-        border: 1px solid var(--border-color);
-        transition: all var(--transition-duration) var(--transition-timing);
-    }
-
-    .poster-upload-option:hover {
-        background: var(--surface-hover);
-        border-color: var(--border-color-hover);
-    }
-
-    .upload-label {
-        font-size: var(--font-size-sm);
-        color: var(--text-secondary);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        min-height: var(--touch-target-min);
-        padding: var(--space-1);
-        border-radius: var(--border-radius-sm);
-        transition: color var(--transition-duration) var(--transition-timing);
-        line-height: var(--line-height-relaxed);
-        font-weight: var(--font-weight-medium);
-    }
-
-    .upload-label:hover {
-        color: var(--text-primary);
-    }
-
-    /* Enhanced empty state with better visual appeal */
+    /* Empty state - mobile centered design */
     .instance-empty-state {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: var(--space-3);
-        padding: var(--space-8);
+        padding: var(--space-6); /* 24px - generous mobile padding */
         text-align: center;
         background: var(--surface);
         border: 2px dashed var(--border-color);
         border-radius: var(--border-radius-lg);
         color: var(--text-secondary);
-        min-height: var(--space-24);
-        justify-content: center;
+        min-height: var(--space-24); /* 96px - appropriate height */
     }
 
     .empty-message {
         font-weight: var(--font-weight-medium);
         color: var(--text-primary);
-        font-size: var(--font-size-base);
+        font-size: var(--font-size-base); /* 16px - readable */
         margin: 0;
     }
 
     .empty-help {
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-sm); /* 14px - help text */
         color: var(--text-tertiary);
         line-height: var(--line-height-relaxed);
         margin: 0;
-        opacity: 0.8;
     }
 
-    /* Responsive design with enhanced breakpoints */
+    /* Library loading/error states */
+    .libraries-loading,
+    .libraries-error,
+    .libraries-empty {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+        background: var(--surface);
+        border-radius: var(--border-radius-md);
+        margin-top: var(--space-2);
+    }
+
+    .loading-spinner-small {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--border-color);
+        border-top: 2px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        flex-shrink: 0;
+    }
+
+    .error-icon,
+    .info-icon {
+        flex-shrink: 0;
+        font-size: var(--font-size-base);
+    }
+
+    /* ===========================================
+       TABLET ENHANCEMENT (768px+)
+       =========================================== */
+
     @media (min-width: 768px) {
         .instances-field-content {
-            gap: var(--space-6);
+            gap: var(--space-3); /* 12px - slightly more spacing */
         }
 
         .service-section {
-            padding: var(--space-5);
-        }
-
-        .instance-item {
-            padding: var(--space-4);
-        }
-
-        .instance-label {
-            flex-direction: row;
-            align-items: center;
-            gap: var(--space-4);
-            padding: var(--space-2);
-        }
-
-        .instance-url {
-            word-break: normal;
-        }
-
-        .poster-upload-option {
-            margin-left: var(--space-10);
-            padding: var(--space-4);
+            padding: var(--space-4); /* 16px - more generous on tablet */
         }
 
         .service-title {
-            font-size: var(--font-size-xl);
-            margin-bottom: var(--space-4);
+            font-size: var(--font-size-lg); /* 18px - larger on tablet */
+            margin-bottom: var(--space-3);
+        }
+
+        /* Two-column layout for multiple services on tablet+ */
+        .multi-service-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            align-items: start;
+        }
+
+        /* Plex section spans full width when present with other services */
+        .multi-service-selector .service-section:has(.plex-instance-item),
+        .multi-service-selector .service-section:last-child {
+            grid-column: 1 / -1;
+        }
+
+        .instance-item .checkbox-field-container {
+            padding: var(--space-3); /* 12px - more generous */
+        }
+
+        /* TABLET: Switch to desktop layout */
+        .libraries-mobile {
+            display: none;
+        }
+
+        .libraries-desktop {
+            display: block;
+        }
+
+        .libraries-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-2);
+        }
+
+        .plex-options {
+            padding-left: var(--space-4); /* 16px */
         }
     }
+
+    /* ===========================================
+       DESKTOP ENHANCEMENT (1024px+)
+       =========================================== */
 
     @media (min-width: 1024px) {
         .multi-service-selector {
-            gap: var(--space-6);
+            gap: var(--space-5); /* 20px spacing */
         }
 
         .service-section {
-            padding: var(--space-6);
+            padding: var(--space-5); /* 20px desktop padding */
+        }
+
+        /* Desktop horizontal instance layout */
+        .instance-item .checkbox-content {
+            flex-direction: row;
+            align-items: center;
+            gap: var(--space-3); /* 12px between name and URL */
+        }
+
+        .instance-item .instance-url {
+            word-break: normal; /* Don't break URLs on desktop */
+        }
+
+        /* DESKTOP: Three columns for libraries */
+        .libraries-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-2);
+        }
+
+        .plex-options {
+            padding-left: var(--space-6); /* 24px */
         }
     }
 
-    /* Touch targets for mobile with enhanced accessibility */
-    @media (max-width: 767px) {
-        .instance-label {
-            min-height: var(--touch-target-min);
-            padding: var(--space-2);
-        }
+    /* ===========================================
+       LARGE DESKTOP (1200px+) - FOUR COLUMNS
+       =========================================== */
 
-        .upload-label {
-            min-height: var(--touch-target-min);
-            padding: var(--space-2);
-        }
-
-        .instance-item {
-            padding: var(--space-3);
-        }
-
-        .poster-upload-option {
-            margin-left: var(--space-6);
-            padding: var(--space-3);
+    @media (min-width: 1200px) {
+        /* LARGE DESKTOP: Four columns for libraries */
+        .libraries-list {
+            grid-template-columns: repeat(4, 1fr);
         }
     }
 
-    /* Enhanced accessibility and interaction states */
-    .instance-item:focus-within {
-        outline: none;
+    /* ===========================================
+       ACCESSIBILITY & INTERACTION STATES
+       =========================================== */
+
+    /* Focus management */
+    .instance-item .checkbox-field-container:focus-visible {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
     }
 
-    /* Enhanced disabled state */
+    /* Disabled state */
     .instances-field-content[aria-disabled="true"] .service-section {
         opacity: 0.5;
         pointer-events: none;
-        filter: grayscale(0.3);
     }
 
-    .instances-field-content[aria-disabled="true"] .instance-label,
-    .instances-field-content[aria-disabled="true"] .upload-label {
+    .instances-field-content[aria-disabled="true"] .checkbox-field-container {
         cursor: not-allowed;
+        background: var(--surface-disabled);
     }
 
-    /* Loading skeleton animation for better perceived performance */
-    .instances-loading::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.1),
-            transparent
-        );
-        animation: shimmer 2s infinite;
-    }
-
-    @keyframes shimmer {
-        0% {
-            left: -100%;
-        }
-        100% {
-            left: 100%;
-        }
-    }
-
-    /* High contrast mode support */
+    /* High contrast support */
     @media (prefers-contrast: high) {
-        .instance-item {
-            border-width: 3px;
-        }
-
-        .service-section {
+        .service-section,
+        .instance-item .checkbox-field-container {
             border-width: 2px;
         }
 
         .instances-loading,
-        .instances-error {
+        .instances-error,
+        .instance-empty-state {
             border-width: 3px;
         }
     }
 
     /* Reduced motion support */
     @media (prefers-reduced-motion: reduce) {
-        .instance-item,
+        .instance-item .checkbox-field-container,
         .poster-upload-option,
-        .instance-label,
-        .upload-label {
+        .service-section {
             transition: none;
         }
 
-        .loading-spinner {
+        .loading-spinner,
+        .loading-spinner-small {
             animation: none;
         }
 
-        .instances-loading::before {
-            animation: none;
-        }
-
-        .instance-item:hover {
+        .instance-item .checkbox-field-container:active {
             transform: none;
         }
     }

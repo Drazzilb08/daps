@@ -216,4 +216,18 @@ export const instancesAPI = {
     syncInstance: (instanceId, options = {}) => {
         return apiCore.post(`/instances/${instanceId}/sync`, options);
     },
+
+    /**
+     * Fetch Plex libraries for a specific instance
+     * @param {string} instanceName - Plex instance name
+     * @param {Object} options - Request options
+     * @returns {Promise<Array>} List of Plex libraries
+     */
+    fetchPlexLibraries: (instanceName, options = {}) => {
+        return apiCore.get(`/plex/${instanceName}/libraries`, {
+            useCache: true,
+            cacheTTL: 10 * 60 * 1000, // 10 minutes cache for library data
+            ...options,
+        });
+    },
 };

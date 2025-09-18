@@ -124,6 +124,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'dirlist_options',
     'gdrive_presets',
     'holiday_presets',
+    'instances',
 ]);
 
 /**

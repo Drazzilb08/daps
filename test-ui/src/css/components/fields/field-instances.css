@@ -1,0 +1,415 @@
+/**
+ * Instances Field Styling - Professional UX Implementation
+ *
+ * Mobile-first responsive design with proper DAPS design system integration.
+ * Features enhanced visual hierarchy, improved spacing, and better interaction patterns.
+ */
+
+@layer components {
+    /* Main instances field container with improved spacing */
+    .instances-field-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+        min-height: var(--space-16); /* Prevent layout shift during loading */
+    }
+
+    /* Enhanced loading state with better visual feedback */
+    .instances-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-3);
+        padding: var(--space-6);
+        background: var(--surface);
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        color: var(--text-secondary);
+        min-height: var(--space-20);
+    }
+
+    .loading-spinner {
+        width: 20px;
+        height: 20px;
+        border: 3px solid var(--border-color);
+        border-top: 3px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Enhanced error state with better visual hierarchy */
+    .instances-error {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-3);
+        padding: var(--space-4);
+        background: var(--error-bg);
+        border: 2px solid var(--error);
+        border-radius: var(--border-radius-lg);
+        color: var(--error-text);
+        min-height: var(--space-16);
+    }
+
+    .error-icon {
+        flex-shrink: 0;
+        font-size: var(--font-size-lg);
+        margin-top: var(--space-1);
+    }
+
+    .error-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        flex: 1;
+    }
+
+    .error-title {
+        font-weight: var(--font-weight-semibold);
+        font-size: var(--font-size-base);
+        margin: 0;
+    }
+
+    .error-message {
+        font-size: var(--font-size-sm);
+        opacity: 0.9;
+        line-height: var(--line-height-relaxed);
+        margin: 0;
+    }
+
+    /* Service sections with enhanced visual hierarchy */
+    .single-service-selector,
+    .multi-service-selector {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+    }
+
+    .service-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-lg);
+        padding: var(--space-4);
+        transition: border-color var(--transition-duration) var(--transition-timing);
+    }
+
+    .service-section:hover {
+        border-color: var(--border-color-hover);
+    }
+
+    .service-title {
+        margin: 0 0 var(--space-3) 0;
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        color: var(--text-primary);
+        padding-bottom: var(--space-2);
+        border-bottom: 2px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+    }
+
+    /* Instance selection lists with improved spacing */
+    .instance-selection-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    /* Enhanced instance items with better visual feedback */
+    .instance-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        background: var(--surface-elevated);
+        border: 2px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        transition: all var(--transition-duration) var(--transition-timing);
+        position: relative;
+    }
+
+    .instance-item:hover {
+        background: var(--surface-hover);
+        border-color: var(--border-color-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .instance-item:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-bg);
+        outline: none;
+    }
+
+    /* Enhanced instance selection row */
+    .instance-selection {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        min-height: var(--touch-target-min);
+        padding: var(--space-1);
+    }
+
+    .instance-label {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        cursor: pointer;
+        flex: 1;
+        min-height: var(--touch-target-min);
+        justify-content: center;
+        padding: var(--space-1);
+        border-radius: var(--border-radius-sm);
+        transition: background-color var(--transition-duration) var(--transition-timing);
+    }
+
+    .instance-label:hover {
+        background: var(--surface-hover);
+    }
+
+    .instance-name {
+        font-weight: var(--font-weight-medium);
+        color: var(--text-primary);
+        font-size: var(--font-size-base);
+        line-height: var(--line-height-tight);
+        margin: 0;
+    }
+
+    .instance-url {
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+        word-break: break-all;
+        line-height: var(--line-height-relaxed);
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    /* Enhanced Plex-specific styling */
+    .plex-instance-item {
+        border-left: 4px solid var(--accent);
+    }
+
+    .poster-upload-option {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-left: var(--space-8);
+        margin-top: var(--space-2);
+        padding: var(--space-3);
+        background: var(--surface-elevated);
+        border-radius: var(--border-radius-md);
+        border: 1px solid var(--border-color);
+        transition: all var(--transition-duration) var(--transition-timing);
+    }
+
+    .poster-upload-option:hover {
+        background: var(--surface-hover);
+        border-color: var(--border-color-hover);
+    }
+
+    .upload-label {
+        font-size: var(--font-size-sm);
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        min-height: var(--touch-target-min);
+        padding: var(--space-1);
+        border-radius: var(--border-radius-sm);
+        transition: color var(--transition-duration) var(--transition-timing);
+        line-height: var(--line-height-relaxed);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .upload-label:hover {
+        color: var(--text-primary);
+    }
+
+    /* Enhanced empty state with better visual appeal */
+    .instance-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-8);
+        text-align: center;
+        background: var(--surface);
+        border: 2px dashed var(--border-color);
+        border-radius: var(--border-radius-lg);
+        color: var(--text-secondary);
+        min-height: var(--space-24);
+        justify-content: center;
+    }
+
+    .empty-message {
+        font-weight: var(--font-weight-medium);
+        color: var(--text-primary);
+        font-size: var(--font-size-base);
+        margin: 0;
+    }
+
+    .empty-help {
+        font-size: var(--font-size-sm);
+        color: var(--text-tertiary);
+        line-height: var(--line-height-relaxed);
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    /* Responsive design with enhanced breakpoints */
+    @media (min-width: 768px) {
+        .instances-field-content {
+            gap: var(--space-6);
+        }
+
+        .service-section {
+            padding: var(--space-5);
+        }
+
+        .instance-item {
+            padding: var(--space-4);
+        }
+
+        .instance-label {
+            flex-direction: row;
+            align-items: center;
+            gap: var(--space-4);
+            padding: var(--space-2);
+        }
+
+        .instance-url {
+            word-break: normal;
+        }
+
+        .poster-upload-option {
+            margin-left: var(--space-10);
+            padding: var(--space-4);
+        }
+
+        .service-title {
+            font-size: var(--font-size-xl);
+            margin-bottom: var(--space-4);
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .multi-service-selector {
+            gap: var(--space-6);
+        }
+
+        .service-section {
+            padding: var(--space-6);
+        }
+    }
+
+    /* Touch targets for mobile with enhanced accessibility */
+    @media (max-width: 767px) {
+        .instance-label {
+            min-height: var(--touch-target-min);
+            padding: var(--space-2);
+        }
+
+        .upload-label {
+            min-height: var(--touch-target-min);
+            padding: var(--space-2);
+        }
+
+        .instance-item {
+            padding: var(--space-3);
+        }
+
+        .poster-upload-option {
+            margin-left: var(--space-6);
+            padding: var(--space-3);
+        }
+    }
+
+    /* Enhanced accessibility and interaction states */
+    .instance-item:focus-within {
+        outline: none;
+    }
+
+    /* Enhanced disabled state */
+    .instances-field-content[aria-disabled="true"] .service-section {
+        opacity: 0.5;
+        pointer-events: none;
+        filter: grayscale(0.3);
+    }
+
+    .instances-field-content[aria-disabled="true"] .instance-label,
+    .instances-field-content[aria-disabled="true"] .upload-label {
+        cursor: not-allowed;
+    }
+
+    /* Loading skeleton animation for better perceived performance */
+    .instances-loading::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            left: -100%;
+        }
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .instance-item {
+            border-width: 3px;
+        }
+
+        .service-section {
+            border-width: 2px;
+        }
+
+        .instances-loading,
+        .instances-error {
+            border-width: 3px;
+        }
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+        .instance-item,
+        .poster-upload-option,
+        .instance-label,
+        .upload-label {
+            transition: none;
+        }
+
+        .loading-spinner {
+            animation: none;
+        }
+
+        .instances-loading::before {
+            animation: none;
+        }
+
+        .instance-item:hover {
+            transform: none;
+        }
+    }
+}

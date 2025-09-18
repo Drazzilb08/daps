@@ -1,0 +1,203 @@
+/**
+ * Instances Field Libraries Extension - CSS for Plex libraries functionality
+ *
+ * Additional styling for the Plex libraries selection feature added to InstancesField.
+ */
+
+@layer components {
+    /* Plex Options Container */
+    .plex-options {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        margin-left: var(--space-8);
+        margin-top: var(--space-3);
+        padding: var(--space-4);
+        background: var(--surface-elevated);
+        border-radius: var(--border-radius-md);
+        border: 1px solid var(--border-color);
+        transition: all var(--transition-duration) var(--transition-timing);
+    }
+
+    .plex-options:hover {
+        background: var(--surface-hover);
+        border-color: var(--border-color-hover);
+    }
+
+    /* Update poster-upload-option to work within plex-options */
+    .plex-options .poster-upload-option {
+        margin-left: 0;
+        margin-top: 0;
+        padding: var(--space-2);
+        background: var(--surface);
+        border-radius: var(--border-radius-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .plex-options .poster-upload-option:hover {
+        background: var(--surface-elevated);
+        border-color: var(--border-color-hover);
+    }
+
+    /* Plex Libraries Selection Styling */
+    .libraries-selection {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .libraries-title {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--text-primary);
+        margin: 0;
+        padding-bottom: var(--space-1);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .libraries-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        max-height: 200px;
+        overflow-y: auto;
+        padding: var(--space-1);
+    }
+
+    .library-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2);
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        transition: all var(--transition-duration) var(--transition-timing);
+        min-height: var(--touch-target-min);
+    }
+
+    .library-item:hover {
+        background: var(--surface-hover);
+        border-color: var(--border-color-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .library-label {
+        font-size: var(--font-size-sm);
+        color: var(--text-primary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        min-height: var(--touch-target-min);
+        padding: var(--space-1);
+        border-radius: var(--border-radius-sm);
+        transition: color var(--transition-duration) var(--transition-timing);
+        line-height: var(--line-height-relaxed);
+        font-weight: var(--font-weight-medium);
+        flex: 1;
+    }
+
+    .library-label:hover {
+        color: var(--text-secondary);
+    }
+
+    /* Libraries Loading State */
+    .libraries-loading {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        color: var(--text-secondary);
+        font-size: var(--font-size-sm);
+        background: var(--surface);
+        border-radius: var(--border-radius-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .loading-spinner-small {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--border-color);
+        border-top: 2px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Libraries Error State */
+    .libraries-error {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        background: var(--error-bg);
+        border: 1px solid var(--error);
+        border-radius: var(--border-radius-sm);
+        color: var(--error-text);
+        font-size: var(--font-size-sm);
+    }
+
+    .libraries-error .error-icon {
+        flex-shrink: 0;
+        font-size: var(--font-size-base);
+    }
+
+    /* Libraries Empty State */
+    .libraries-empty {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        background: var(--surface);
+        border: 1px dashed var(--border-color);
+        border-radius: var(--border-radius-sm);
+        color: var(--text-secondary);
+        font-size: var(--font-size-sm);
+        font-style: italic;
+    }
+
+    .info-icon {
+        flex-shrink: 0;
+        font-size: var(--font-size-base);
+        opacity: 0.7;
+    }
+
+    /* Responsive adjustments for libraries */
+    @media (min-width: 768px) {
+        .plex-options {
+            margin-left: var(--space-10);
+            padding: var(--space-5);
+        }
+
+        .libraries-list {
+            max-height: 240px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .plex-options {
+            margin-left: var(--space-6);
+            padding: var(--space-3);
+        }
+
+        .libraries-list {
+            max-height: 160px;
+        }
+    }
+
+    /* Accessibility and motion preferences */
+    @media (prefers-reduced-motion: reduce) {
+        .library-item,
+        .plex-options {
+            transition: none;
+        }
+
+        .library-item:hover {
+            transform: none;
+        }
+
+        .loading-spinner-small {
+            animation: none;
+        }
+    }
+}

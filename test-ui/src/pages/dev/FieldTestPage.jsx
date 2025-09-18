@@ -139,10 +139,34 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
             baseConfig.min_directories = 1;
         }
 
+        // Add schema configuration for instances fields
+        if (fieldType === 'instances') {
+            baseConfig.instance_types = ['radarr', 'sonarr', 'plex'];
+            baseConfig.add_posters_option = true;
+            baseConfig.placeholder = 'Select instances for this module...';
+            baseConfig.description =
+                'Testing instances field with multiple service types and poster upload options';
+        }
+
         return baseConfig;
     });
 
-    const [testValue, setTestValue] = useState('');
+    const [testValue, setTestValue] = useState(() => {
+        // Initialize test value based on field type
+        if (fieldType === 'instances') {
+            return []; // Array for instances field
+        }
+        if (fieldType === 'color_list' || fieldType === 'color_list_poster') {
+            return []; // Array for color list fields
+        }
+        if (fieldType === 'dirlist' || fieldType === 'dirlist_dragdrop' || fieldType === 'dirlist_options') {
+            return []; // Array for directory list fields
+        }
+        if (fieldType === 'check_box') {
+            return false; // Boolean for checkbox
+        }
+        return ''; // String for most fields
+    });
     const [showError, setShowError] = useState(false);
     const toast = useToast();
 
@@ -190,7 +214,29 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
             baseConfig.min_directories = 1;
         }
 
+        // Add schema configuration for instances fields
+        if (fieldType === 'instances') {
+            baseConfig.instance_types = ['radarr', 'sonarr', 'plex'];
+            baseConfig.add_posters_option = true;
+            baseConfig.placeholder = 'Select instances for this module...';
+            baseConfig.description =
+                'Testing instances field with multiple service types and poster upload options';
+        }
+
         setTestConfig(baseConfig);
+
+        // Reset test value based on field type
+        if (fieldType === 'instances') {
+            setTestValue([]); // Array for instances field
+        } else if (fieldType === 'color_list' || fieldType === 'color_list_poster') {
+            setTestValue([]); // Array for color list fields
+        } else if (fieldType === 'dirlist' || fieldType === 'dirlist_dragdrop' || fieldType === 'dirlist_options') {
+            setTestValue([]); // Array for directory list fields
+        } else if (fieldType === 'check_box') {
+            setTestValue(false); // Boolean for checkbox
+        } else {
+            setTestValue(''); // String for most fields
+        }
     }, [fieldType]);
 
     // Create test field configuration

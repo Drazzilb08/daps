@@ -9,12 +9,12 @@
 export { JsonField } from './JsonField.jsx';
 export { GDrivePresetsField } from './GDrivePresetsField.jsx';
 export { HolidayPresetsField } from './HolidayPresetsField.jsx';
+export { InstancesField } from './InstancesField.jsx';
 
 // Placeholder implementations
 export {
     DirListField,
     InstanceDropdownField,
-    InstancesField,
     GDriveCustomField,
     ReplacerCustomField,
     UpgradinatorCustomField,

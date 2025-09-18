@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
+import { calculateOptimalPosition, isElementVisible } from '../../utils/positioning';
 
 /**
  * Reusable dropdown container component
@@ -63,106 +64,26 @@ const Dropdown = ({
             if (isOpen && anchorRef.current && dropdownRef.current) {
                 const anchorRect = anchorRef.current.getBoundingClientRect();
                 const dropdownRect = dropdownRef.current.getBoundingClientRect();
-                const viewport = {
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                };
 
-                // Validate that anchor is still visible (not scrolled out of view)
-                if (anchorRect.top < -anchorRect.height || anchorRect.top > viewport.height) {
-                    // Anchor scrolled out of view, close dropdown
+                // Validate that anchor is still visible
+                if (!isElementVisible(anchorRef.current, 0.1)) {
                     onClose();
                     return;
                 }
 
-                const gap = 4; // Space between anchor and dropdown
+                const optimalPosition = calculateOptimalPosition(
+                    anchorRect,
+                    { width: dropdownRect.width, height: dropdownRect.height },
+                    placement,
+                    4
+                );
 
-                let top, left;
-                let finalPlacement = placement;
-
-                // Calculate initial position based on placement
-                switch (placement) {
-                    case 'bottom-left':
-                        top = anchorRect.bottom + gap;
-                        left = anchorRect.left;
-                        break;
-                    case 'bottom-right':
-                        top = anchorRect.bottom + gap;
-                        left = anchorRect.right - dropdownRect.width;
-                        break;
-                    case 'bottom-center':
-                        top = anchorRect.bottom + gap;
-                        left = anchorRect.left + (anchorRect.width - dropdownRect.width) / 2;
-                        break;
-                    case 'top-left':
-                        top = anchorRect.top - dropdownRect.height - gap;
-                        left = anchorRect.left;
-                        break;
-                    case 'top-right':
-                        top = anchorRect.top - dropdownRect.height - gap;
-                        left = anchorRect.right - dropdownRect.width;
-                        break;
-                    case 'top-center':
-                        top = anchorRect.top - dropdownRect.height - gap;
-                        left = anchorRect.left + (anchorRect.width - dropdownRect.width) / 2;
-                        break;
-                    case 'left':
-                        top = anchorRect.top + (anchorRect.height - dropdownRect.height) / 2;
-                        left = anchorRect.left - dropdownRect.width - gap;
-                        break;
-                    case 'right':
-                        top = anchorRect.top + (anchorRect.height - dropdownRect.height) / 2;
-                        left = anchorRect.right + gap;
-                        break;
-                    default:
-                        // Default to bottom-right
-                        top = anchorRect.bottom + gap;
-                        left = anchorRect.right - dropdownRect.width;
-                        finalPlacement = 'bottom-right';
+                if (optimalPosition) {
+                    setPosition({
+                        top: optimalPosition.top,
+                        left: optimalPosition.left,
+                    });
                 }
-
-                // Viewport boundary detection and collision avoidance
-
-                // Check horizontal bounds
-                if (left < 0) {
-                    left = Math.max(8, anchorRect.left); // Minimum 8px from edge
-                } else if (left + dropdownRect.width > viewport.width) {
-                    left = Math.min(
-                        viewport.width - dropdownRect.width - 8,
-                        anchorRect.right - dropdownRect.width
-                    );
-                }
-
-                // Check vertical bounds and flip if needed
-                if (top < 0) {
-                    // Not enough space above, try below
-                    if (finalPlacement.startsWith('top-')) {
-                        top = anchorRect.bottom + gap;
-                    } else {
-                        top = 8; // Minimum from top edge
-                    }
-                } else if (top + dropdownRect.height > viewport.height) {
-                    // Not enough space below, try above
-                    if (finalPlacement.startsWith('bottom-')) {
-                        const newTop = anchorRect.top - dropdownRect.height - gap;
-                        if (newTop >= 0) {
-                            top = newTop;
-                        } else {
-                            top = Math.max(8, viewport.height - dropdownRect.height - 8);
-                        }
-                    } else {
-                        top = Math.max(8, viewport.height - dropdownRect.height - 8);
-                    }
-                }
-
-                // Ensure dropdown stays within reasonable bounds
-                left = Math.max(8, Math.min(left, viewport.width - dropdownRect.width - 8));
-                top = Math.max(8, Math.min(top, viewport.height - dropdownRect.height - 8));
-
-                setPosition({
-                    top: top,
-                    left: left,
-                });
             }
         };
 
@@ -170,7 +91,7 @@ const Dropdown = ({
             calculatePosition();
         }
 
-        // Store calculatePosition function for scroll handler
+        // Keep existing scroll handler logic
         if (isOpen) {
             const handleScroll = () => {
                 calculatePosition();
@@ -178,12 +99,14 @@ const Dropdown = ({
 
             // Add scroll listener to update position during scroll
             window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+            window.addEventListener('resize', handleScroll);
 
             return () => {
                 window.removeEventListener('scroll', handleScroll, { capture: true });
+                window.removeEventListener('resize', handleScroll);
             };
         }
-    }, [isOpen, anchorRef, placement, onClose]);
+    }, [isOpen, placement, anchorRef, onClose]);
 
     // Focus management - focus first interactive element when opened
     useEffect(() => {

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { fetchPosterFileList } from '../../../utils/api';
 
 const BORDER_THICKNESS = 5;
+const DEFAULT_COLOR = '#ff7300'; // Fallback hex color
 
 function hexToRgb(hex) {
     hex = hex.replace(/^#/, '');
@@ -12,6 +13,47 @@ function hexToRgb(hex) {
             .join('');
     const num = parseInt(hex, 16);
     return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+}
+
+function resolveCSSVariable(cssValue) {
+    // If it's already a hex color, return as-is
+    if (cssValue && cssValue.startsWith('#')) {
+        return cssValue;
+    }
+
+    // If it's a CSS variable, try to resolve it
+    if (cssValue && cssValue.startsWith('var(')) {
+        try {
+            // Create a temporary element to resolve the CSS variable
+            const tempEl = document.createElement('div');
+            tempEl.style.color = cssValue;
+            document.body.appendChild(tempEl);
+            const computed = getComputedStyle(tempEl).color;
+            document.body.removeChild(tempEl);
+
+            // Convert RGB to hex if we got a valid color
+            if (computed && computed !== cssValue) {
+                return rgbToHex(computed);
+            }
+        } catch (error) {
+            console.warn('Failed to resolve CSS variable:', cssValue, error);
+        }
+    }
+
+    // Return fallback color for any invalid values
+    return DEFAULT_COLOR;
+}
+
+function rgbToHex(rgb) {
+    // Handle rgb(r, g, b) or rgba(r, g, b, a) format
+    const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?\)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+    }
+    return DEFAULT_COLOR;
 }
 
 function getPosterByIndex(posterAssets, idx) {
@@ -145,7 +187,7 @@ export function ColorListField({
                         if (!poster) continue;
                         const url = await getPosterPreviewUrl(
                             poster,
-                            colorArray[i] || 'var(--primary-contrast)',
+                            colorArray[i] || DEFAULT_COLOR,
                             {
                                 width: 156,
                                 height: 234,
@@ -189,7 +231,7 @@ export function ColorListField({
     }
 
     function handleAdd() {
-        const updatedArray = [...colorArray, 'var(--primary-contrast)'];
+        const updatedArray = [...colorArray, DEFAULT_COLOR];
         onChange?.(updatedArray);
     }
 
@@ -217,7 +259,7 @@ export function ColorListField({
                         <div key={idx} className="color-picker-swatch">
                             <input
                                 type="color"
-                                value={color || 'var(--primary-contrast)'}
+                                value={resolveCSSVariable(color || DEFAULT_COLOR)}
                                 className={highlightInvalid ? 'input-error' : ''}
                                 onChange={e => handleColorChange(idx, e.target.value)}
                                 onInput={e => handleColorChange(idx, e.target.value)}

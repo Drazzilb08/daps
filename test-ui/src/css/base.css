@@ -232,7 +232,7 @@
     ul,
     ol {
         margin-bottom: var(--space-4);
-        padding-left: var(--space-6);
+        /* padding-left: var(--space-6); */
     }
 
     ul {

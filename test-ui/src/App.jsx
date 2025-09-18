@@ -245,8 +245,8 @@ const App = () => {
                                                 path="dev/fields"
                                                 element={
                                                     <PageErrorBoundary
-                                                        pageName="DAPS Settings"
-                                                        pageDescription="Real DAPS configuration settings page"
+                                                        pageName="Field Test"
+                                                        pageDescription="Field system development testing interface"
                                                     >
                                                         <FieldTestPage />
                                                     </PageErrorBoundary>

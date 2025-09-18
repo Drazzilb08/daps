@@ -43,7 +43,7 @@ export const AddButton = React.memo(
         icon = '+',
         className = '',
         ariaProps = {},
-        ...props
+        ...domProps // Only pass valid DOM props
     }) => {
         const handleClick = e => {
             if (disabled) return;
@@ -74,7 +74,7 @@ export const AddButton = React.memo(
                 aria-label={`Add new ${itemType.toLowerCase()}`}
                 title={disabled ? disabledReason : `Add new ${itemType.toLowerCase()}`}
                 {...ariaProps}
-                {...props}
+                {...domProps}
             >
                 <span className="inline-block mr-1" aria-hidden="true">
                     {icon}

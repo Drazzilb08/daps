@@ -51,7 +51,8 @@ export const RemoveButton = React.memo(
         size = 'medium',
         className = '',
         ariaProps = {},
-        ...props
+        disabledReason, // Extract to prevent passing to DOM
+        ...domProps // Only pass valid DOM props
     }) => {
         const handleClick = e => {
             if (disabled) return;
@@ -90,9 +91,9 @@ export const RemoveButton = React.memo(
                 onClick={handleClick}
                 disabled={disabled}
                 aria-label={ariaLabel}
-                title={ariaLabel}
+                title={disabledReason && disabled ? disabledReason : ariaLabel}
                 {...ariaProps}
-                {...props}
+                {...domProps}
             >
                 <span className="remove-button-icon" aria-hidden="true">
                     {icon}

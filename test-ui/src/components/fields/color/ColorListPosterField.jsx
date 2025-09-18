@@ -10,140 +10,52 @@ import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primi
 import { ColorPicker } from '../features/color/ColorPicker';
 import { AddButton, RemoveButton, ItemCounter } from '../features/shared';
 import { postersAPI } from '../../../utils/api/posters';
+import { getPosterPreviewUrl, hexToRgb, getPosterByIndex, getPosterDimensions } from '../../../utils/posterCanvas';
+import { useArrayField } from '../../../hooks/useArrayField';
+
+// CSS variable resolution utilities
+const DEFAULT_COLOR = '#FFFFFF';
 
 /**
- * Get border thickness from CSS custom property
- * Converts rem value to pixels for canvas operations
+ * Convert RGB color to hex format
+ * @param {string} rgb - RGB color string like "rgb(255, 115, 0)"
+ * @returns {string} Hex color like "#ff7300"
  */
-const getBorderThickness = () => {
-    const remValue = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue('--poster-border-thickness')
-    );
-    return remValue * 16; // Convert rem to pixels (assuming 16px = 1rem)
-};
+function rgbToHex(rgb) {
+    const result = rgb.match(/\d+/g);
+    if (!result || result.length < 3) return DEFAULT_COLOR;
+
+    const [r, g, b] = result.map(x => parseInt(x, 10));
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
 
 /**
- * Get poster dimensions from CSS custom properties
- * @returns {Object} Object with width and height properties
+ * Resolve CSS variable to actual hex value
+ * @param {string} cssValue - CSS value that might be a variable
+ * @returns {string} Resolved hex color
  */
-const getPosterDimensions = () => {
-    const styles = getComputedStyle(document.documentElement);
-    return {
-        width: parseInt(styles.getPropertyValue('--poster-width-standard'), 10),
-        height: parseInt(styles.getPropertyValue('--poster-height-standard'), 10),
-    };
-};
-
-/**
- * Convert hex color to RGB object
- * @param {string} hex - Hex color string
- * @returns {Object} RGB object with r, g, b properties
- */
-function hexToRgb(hex) {
-    hex = hex.replace(/^#/, '');
-    if (hex.length === 3) {
-        hex = hex
-            .split('')
-            .map(x => x + x)
-            .join('');
+function resolveCSSVariable(cssValue) {
+    // If already hex, return as-is
+    if (cssValue && cssValue.startsWith('#')) {
+        return cssValue;
     }
-    const num = parseInt(hex, 16);
-    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
-}
 
-/**
- * Get poster by index with cycling
- * @param {Array} posterAssets - Array of poster file names
- * @param {number} idx - Index
- * @returns {string|null} Poster URL or null
- */
-function getPosterByIndex(posterAssets, idx) {
-    if (!posterAssets.length) return null;
-    return `/posters/${posterAssets[idx % posterAssets.length]}`;
-}
+    // Resolve CSS variables
+    if (cssValue && cssValue.startsWith('var(')) {
+        const tempEl = document.createElement('div');
+        tempEl.style.color = cssValue;
+        document.body.appendChild(tempEl);
 
-/**
- * Generate poster preview with color border using canvas
- * @param {string} imgUrl - Image URL
- * @param {string|null} borderColor - Hex color for border, null to remove border
- * @param {Object} options - Canvas options
- * @returns {Promise<string>} Data URL of processed image
- */
-function getPosterPreviewUrl(imgUrl, borderColor, options = {}) {
-    return new Promise((resolve, reject) => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
+        const computedColor = getComputedStyle(tempEl).color;
+        document.body.removeChild(tempEl);
 
-        // Important: Set crossOrigin before setting src
-        img.crossOrigin = 'anonymous';
+        if (computedColor && computedColor.startsWith('rgb')) {
+            return rgbToHex(computedColor);
+        }
+    }
 
-        img.onload = function () {
-            try {
-                const width = options.width || img.width;
-                const height = options.height || img.height;
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height);
-
-                if (!borderColor) {
-                    const borderThickness = getBorderThickness();
-                    const cropW = width - borderThickness * 2;
-                    const cropH = height - borderThickness * 2;
-                    const cropCanvas = document.createElement('canvas');
-                    cropCanvas.width = cropW;
-                    cropCanvas.height = cropH;
-                    const cropCtx = cropCanvas.getContext('2d');
-                    cropCtx.drawImage(
-                        canvas,
-                        borderThickness,
-                        borderThickness,
-                        cropW,
-                        cropH,
-                        0,
-                        0,
-                        cropW,
-                        cropH
-                    );
-                    resolve(cropCanvas.toDataURL());
-                    return;
-                }
-
-                const borderThickness = getBorderThickness();
-                const imgData = ctx.getImageData(0, 0, width, height);
-                const data = imgData.data;
-                const rgb = hexToRgb(borderColor);
-
-                for (let y = 0; y < height; ++y) {
-                    for (let x = 0; x < width; ++x) {
-                        const isBorder =
-                            x < borderThickness ||
-                            x >= width - borderThickness ||
-                            y < borderThickness ||
-                            y >= height - borderThickness;
-                        if (isBorder) {
-                            const i = (y * width + x) * 4;
-                            data[i] = rgb.r;
-                            data[i + 1] = rgb.g;
-                            data[i + 2] = rgb.b;
-                        }
-                    }
-                }
-                ctx.putImageData(imgData, 0, 0);
-                resolve(canvas.toDataURL());
-            } catch (error) {
-                console.error('Error processing poster image:', error);
-                reject(error);
-            }
-        };
-
-        img.onerror = function () {
-            console.error('Failed to load poster image:', imgUrl);
-            reject(new Error(`Failed to load poster image: ${imgUrl}`));
-        };
-
-        img.src = imgUrl;
-    });
+    // Fallback for any other cases
+    return DEFAULT_COLOR;
 }
 
 /**
@@ -179,58 +91,45 @@ export const ColorListPosterField = React.memo(
             return [];
         }, [value]);
 
+        // Handle output format transformation for parent onChange
+        const handleArrayChange = useCallback((newColors) => {
+            // Field configuration determines output format
+            const outputFormat = field.output_format || 'array';
+
+            if (outputFormat === 'string' || outputFormat === 'comma_separated') {
+                // Output as comma-separated string
+                onChange(newColors.join(', '));
+            } else {
+                // Output as array (default)
+                onChange(newColors);
+            }
+        }, [onChange, field.output_format]);
+
+        // Array field management hook
+        const arrayField = useArrayField(colorsArray, handleArrayChange, {
+            minItems: field.min_items || field.minColors || 0,
+            maxItems: field.max_items || field.maxColors || 10,
+            defaultItem: DEFAULT_COLOR,
+            validateItem: (color) => /^#[0-9A-Fa-f]{6}$/.test(color)
+        });
+
         // State for poster assets and previews
         const [posterAssets, setPosterAssets] = useState([]);
         const [previews, setPreviews] = useState([]);
         const [loadingPreviews, setLoadingPreviews] = useState(false);
 
-        // Handle color list changes with proper output format
-        const handleChange = useCallback(
-            newColors => {
-                // Field configuration determines output format
-                const outputFormat = field.output_format || 'array';
-
-                if (outputFormat === 'string' || outputFormat === 'comma_separated') {
-                    // Output as comma-separated string
-                    onChange(newColors.join(', '));
-                } else {
-                    // Output as array (default)
-                    onChange(newColors);
-                }
-            },
-            [onChange, field.output_format]
-        );
-
-        // Handle adding a new color
+        // Simplified handlers using array field
         const handleAddColor = useCallback(() => {
-            const maxColors = field.max_colors || field.maxColors || 10;
-            if (colorsArray.length >= maxColors || disabled) return;
+            arrayField.addItem();
+        }, [arrayField]);
 
-            const newColors = [...colorsArray, '#000000'];
-            handleChange(newColors);
-        }, [colorsArray, field.max_colors, field.maxColors, disabled, handleChange]);
+        const handleRemoveColor = useCallback((index) => {
+            arrayField.removeItem(index);
+        }, [arrayField]);
 
-        // Handle removing a color at specific index
-        const handleRemoveColor = useCallback(
-            index => {
-                const minColors = field.min_colors || field.minColors || 0;
-                if (colorsArray.length <= minColors || disabled) return;
-
-                const newColors = colorsArray.filter((_, i) => i !== index);
-                handleChange(newColors);
-            },
-            [colorsArray, field.min_colors, field.minColors, disabled, handleChange]
-        );
-
-        // Handle changing a color at specific index
-        const handleColorChange = useCallback(
-            (index, newColor) => {
-                const newColors = [...colorsArray];
-                newColors[index] = newColor;
-                handleChange(newColors);
-            },
-            [colorsArray, handleChange]
-        );
+        const handleColorChange = useCallback((index, newColor) => {
+            arrayField.updateItem(index, newColor);
+        }, [arrayField]);
 
         // Fetch poster file list dynamically
         useEffect(() => {
@@ -268,9 +167,9 @@ export const ColorListPosterField = React.memo(
                 let newPreviews = [];
 
                 try {
-                    if (colorsArray.length && posterAssets.length) {
+                    if (arrayField.items.length && posterAssets.length) {
                         // Generate preview for each color
-                        for (let i = 0; i < colorsArray.length; i++) {
+                        for (let i = 0; i < arrayField.items.length; i++) {
                             try {
                                 const poster = getPosterByIndex(posterAssets, i);
                                 if (!poster) continue;
@@ -278,7 +177,7 @@ export const ColorListPosterField = React.memo(
                                 const posterDimensions = getPosterDimensions();
                                 const previewUrl = await getPosterPreviewUrl(
                                     poster,
-                                    colorsArray[i] || '#000000',
+                                    resolveCSSVariable(arrayField.items[i] || DEFAULT_COLOR),
                                     posterDimensions
                                 );
 
@@ -334,18 +233,16 @@ export const ColorListPosterField = React.memo(
             return () => {
                 cancelled = true;
             };
-        }, [colorsArray, posterAssets]);
+        }, [arrayField.items, posterAssets]);
 
         const inputId = `field-${field.key}`;
 
         // Extract field configuration options
-        const maxColors = field.max_colors || field.maxColors || 10;
-        const minColors = field.min_colors || field.minColors || 0;
         const label = field.label || 'Poster Colors';
 
-        // Check constraints
-        const canAddColor = colorsArray.length < maxColors && !disabled;
-        const canRemoveColor = index => colorsArray.length > minColors && !disabled;
+        // Update constraints
+        const canAddColor = arrayField.canAdd && !disabled;
+        const canRemoveColor = (index) => arrayField.canRemove && !disabled;
 
         return (
             <FieldWrapper
@@ -361,7 +258,7 @@ export const ColorListPosterField = React.memo(
                 />
 
                 <div className="color-poster-grid grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                    {colorsArray.length === 0
+                    {arrayField.items.length === 0
                         ? previews[0] && (
                               <div className="color-poster-item flex flex-col gap-2">
                                   <div className="color-poster-preview flex justify-center items-center flex-shrink-0">
@@ -379,7 +276,7 @@ export const ColorListPosterField = React.memo(
                                   </div>
                               </div>
                           )
-                        : colorsArray.map((color, index) => {
+                        : arrayField.items.map((color, index) => {
                               const previewUrl = previews[index];
                               const poster = getPosterByIndex(posterAssets, index);
 
@@ -409,7 +306,7 @@ export const ColorListPosterField = React.memo(
 
                                       <div className="color-poster-controls flex items-center gap-2 justify-center">
                                           <ColorPicker
-                                              value={color}
+                                              value={resolveCSSVariable(color || DEFAULT_COLOR)}
                                               onChange={newColor =>
                                                   handleColorChange(index, newColor)
                                               }
@@ -423,7 +320,7 @@ export const ColorListPosterField = React.memo(
                                               onClick={() => handleRemoveColor(index)}
                                               disabled={!canRemoveColor(index)}
                                               itemType="color"
-                                              disabledReason={`Minimum ${minColors} colors required`}
+                                              disabledReason={`Minimum ${arrayField.minItems || 0} colors required`}
                                               className="color-poster-remove-button"
                                               aria-label={`Remove color ${index + 1}`}
                                           />
@@ -439,14 +336,14 @@ export const ColorListPosterField = React.memo(
                         disabled={!canAddColor}
                         text={field.add_button_text || 'Add Color'}
                         itemType="color"
-                        disabledReason={`Maximum ${maxColors} colors allowed`}
+                        disabledReason={`Maximum ${arrayField.maxItems || 10} colors allowed`}
                         className="color-poster-add-button"
                     />
 
-                    {maxColors > 1 && colorsArray.length > 0 && (
+                    {(arrayField.maxItems || 10) > 1 && arrayField.count > 0 && (
                         <ItemCounter
-                            current={colorsArray.length}
-                            total={maxColors}
+                            current={arrayField.count}
+                            total={arrayField.maxItems || 10}
                             itemType="color"
                             warningThreshold={0.8}
                             className="color-poster-counter"

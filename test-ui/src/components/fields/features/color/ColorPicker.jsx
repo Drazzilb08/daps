@@ -35,7 +35,8 @@ export const ColorPicker = React.memo(
         ariaLabel,
         className = '',
         title,
-        ...props
+        invalid, // Extract invalid prop to prevent it from being passed to DOM
+        ...domProps // Only pass valid DOM props
     }) => {
         const handleChange = useCallback(
             e => {
@@ -64,7 +65,7 @@ export const ColorPicker = React.memo(
                 className={`color-picker ${className}`.trim()}
                 aria-label={ariaLabel}
                 title={displayTitle}
-                {...props}
+                {...domProps}
             />
         );
     }

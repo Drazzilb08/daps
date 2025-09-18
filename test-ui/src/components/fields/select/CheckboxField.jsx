@@ -1,12 +1,13 @@
 /**
  * CheckboxField Component
  *
- * Checkbox field using primitive composition with large clickable area.
- * The entire wrapper including label is clickable.
+ * ENTIRE FIELD IS CLICKABLE - provides excellent UX
+ * The full field area (including label and description) toggles the checkbox
+ * Uses design tokens exclusively, no hardcoded values
  */
 
 import React, { useCallback } from 'react';
-import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primitives';
+import { FieldWrapper, FieldLabel, FieldError, FieldDescription, CheckboxBase } from '../primitives';
 
 /**
  * CheckboxField component for boolean input
@@ -28,59 +29,74 @@ export const CheckboxField = React.memo(
         highlightInvalid = false,
         errorMessage = null,
     }) => {
-        const handleClick = useCallback(() => {
+        const handleContainerClick = useCallback((e) => {
+            // Don't handle click if it came from the label or checkbox input
+            // This allows native label-checkbox association to work properly
             if (disabled) return;
+            if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+
             onChange(!value);
         }, [onChange, value, disabled]);
+
+        const handleCheckboxChange = useCallback((e) => {
+            if (disabled) return;
+            onChange(e.target.checked);
+        }, [onChange, disabled]);
 
         const inputId = `field-${field.key}`;
         const isChecked = Boolean(value);
 
         return (
             <FieldWrapper invalid={highlightInvalid}>
+                {/* ENTIRE AREA IS CLICKABLE */}
                 <div
-                    className={`checkbox-field flex items-start gap-3 p-3 rounded min-h-touch-comfortable cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${highlightInvalid ? 'border-red-500' : ''}`}
-                    onClick={handleClick}
+                    className="checkbox-field-container"
+                    onClick={handleContainerClick}
+                    role="button"
+                    tabIndex={disabled ? -1 : 0}
+                    onKeyDown={(e) => {
+                        if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
+                            e.preventDefault();
+                            onChange(!value);
+                        }
+                    }}
+                    aria-pressed={isChecked}
+                    aria-disabled={disabled}
+                    aria-describedby={errorMessage ? `${inputId}-error` : undefined}
                 >
-                    <div className="checkbox-container">
-                        <input
-                            id={inputId}
-                            type="checkbox"
-                            name={field.key}
-                            checked={isChecked}
-                            disabled={disabled}
-                            required={field.required}
-                            onChange={() => {}} // Controlled by wrapper click
-                            className="checkbox-input"
-                        />
-                        <div className="checkbox-box">
-                            {isChecked && (
-                                <svg
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                >
-                                    <polyline points="20,6 9,17 4,12" />
-                                </svg>
-                            )}
-                        </div>
-                    </div>
+                    {/* Use existing CheckboxBase primitive - WRITE ONCE, USE EVERYWHERE */}
+                    <CheckboxBase
+                        id={inputId}
+                        name={field.key}
+                        checked={isChecked}
+                        onChange={handleCheckboxChange}
+                        disabled={disabled}
+                        required={field.required}
+                        invalid={highlightInvalid}
+                        ariaDescribedby={errorMessage ? `${inputId}-error` : undefined}
+                    />
 
-                    <div className="flex-1 min-w-0">
+                    {/* Field content */}
+                    <div className="checkbox-content">
                         <FieldLabel
                             htmlFor={inputId}
                             label={field.label}
                             required={field.required}
-                            className="cursor-pointer"
-                            onClick={e => e.preventDefault()} // Prevent double firing
+                            className="checkbox-label"
                         />
 
-                        <FieldDescription id={`${inputId}-desc`} description={field.description} />
-
-                        <FieldError id={`${inputId}-error`} message={errorMessage} />
+                        {field.description && (
+                            <FieldDescription
+                                id={`${inputId}-desc`}
+                                description={field.description}
+                            />
+                        )}
                     </div>
                 </div>
+
+                {errorMessage && (
+                    <FieldError id={`${inputId}-error`} message={errorMessage} />
+                )}
             </FieldWrapper>
         );
     }

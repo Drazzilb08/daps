@@ -1,88 +1,124 @@
 /**
  * DAPS Design Token System
+ *
+ * Core design tokens for the DAPS test-ui system. These tokens provide the
+ * foundation for all styling decisions and ensure consistency across components.
+ *
  * Usage: var(--token-name)
- * DO NOT use hardcoded values - always reference tokens
+ *
+ * IMPORTANT:
+ * - DO NOT use hardcoded values anywhere - always reference these tokens
+ * - Colors are defined in theme files (dark.css, light.css) NOT here
+ * - All measurements use rem units for accessibility scaling
+ * - Touch targets must meet WCAG 2.1 AA standards (44px minimum)
  */
 
 :root {
+    /* Spacing Scale */
+
     --space-0: 0;
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 0.75rem;
-    --space-4: 1rem;
-    --space-5: 1.25rem;
-    --space-6: 1.5rem;
-    --space-7: 1.75rem;
-    --space-8: 2rem;
-    --space-9: 2.25rem;
-    --space-10: 2.5rem;
-    --space-12: 3rem;
-    --space-14: 3.5rem;
-    --space-16: 4rem;
-    --space-20: 5rem;
-    --space-24: 6rem;
-    --space-32: 8rem;
-    --sidebar-width: 210px;
-    --sidebar-collapsed: 72px;
-    --header-height: 64px;
-    --footer-height: 48px;
-    --content-max-width: 1200px;
-    --form-max-width: 600px;
-    --modal-max-width: 800px;
-    --card-max-width: 400px;
-    --font-size-xs: 0.75rem;
-    --font-size-sm: 0.875rem;
-    --font-size-base: 1rem;
-    --font-size-lg: 1.125rem;
-    --font-size-xl: 1.25rem;
-    --font-size-2xl: 1.5rem;
-    --font-size-3xl: 1.875rem;
-    --font-size-4xl: 2.25rem;
-    --font-size-5xl: 3rem;
-    --font-size-6xl: 3.75rem;
+    --space-1: 0.25rem;     /* 4px */
+    --space-2: 0.5rem;      /* 8px */
+    --space-3: 0.75rem;     /* 12px */
+    --space-4: 1rem;        /* 16px - base unit */
+    --space-5: 1.25rem;     /* 20px */
+    --space-6: 1.5rem;      /* 24px */
+    --space-7: 1.75rem;     /* 28px */
+    --space-8: 2rem;        /* 32px */
+    --space-9: 2.25rem;     /* 36px */
+    --space-10: 2.5rem;     /* 40px */
+    --space-12: 3rem;       /* 48px */
+    --space-14: 3.5rem;     /* 56px */
+    --space-16: 4rem;       /* 64px */
+    --space-20: 5rem;       /* 80px */
+    --space-24: 6rem;       /* 96px */
+    --space-32: 8rem;       /* 128px */
+
+    /* Typography System */
+
+    /* Font Sizes - Progressive Scale */
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px - minimum for accessibility */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-2xl: 1.5rem;    /* 24px */
+    --font-size-3xl: 1.875rem;  /* 30px */
+    --font-size-4xl: 2.25rem;   /* 36px */
+    --font-size-5xl: 3rem;      /* 48px */
+    --font-size-6xl: 3.75rem;   /* 60px */
+
+    /* Font Families - Robust Fallback Stacks */
     --font-family-sans: 'Roboto', 'Open Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     --font-family-mono: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', consolas, monospace;
     --font-family-serif: georgia, 'Times New Roman', serif;
+
+    /* Font Weights */
     --font-weight-light: 300;
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
+
+    /* Line Heights */
     --line-height-tight: 1.25;
     --line-height-normal: 1.5;
     --line-height-relaxed: 1.75;
+
+    /* Letter Spacing */
     --letter-spacing-tight: -0.025em;
     --letter-spacing-normal: 0;
     --letter-spacing-wide: 0.025em;
+
+    /* Border Radius */
+
     --radius-none: 0;
-    --radius-1: 0.25rem;
-    --radius-2: 0.5rem;
-    --radius-3: 0.75rem;
-    --radius-full: 9999px;
-    --breakpoint-mobile: 375px;
-    --breakpoint-mobile-lg: 425px;
-    --breakpoint-tablet: 768px;
-    --breakpoint-desktop: 1024px;
-    --breakpoint-desktop-lg: 1200px;
-    --breakpoint-desktop-xl: 1440px;
-    --touch-target-min: 44px;
-    --touch-target-comfortable: 48px;
-    --focus-ring-width: 2px;
-    --focus-ring-offset: 2px;
+    --radius-1: 0.25rem;        /* 4px */
+    --radius-2: 0.5rem;         /* 8px */
+    --radius-3: 0.75rem;        /* 12px */
+    --radius-full: 9999px;      /* Perfect circle */
+
+    /* Responsive Breakpoints */
+
+    --breakpoint-mobile: 375px;        /* Small phones */
+    --breakpoint-mobile-lg: 425px;     /* Large phones */
+    --breakpoint-tablet: 768px;        /* Tablets */
+    --breakpoint-desktop: 1024px;      /* Small desktops */
+    --breakpoint-desktop-lg: 1200px;   /* Large desktops */
+    --breakpoint-desktop-xl: 1440px;   /* Extra large desktops */
+
+    /* Accessibility & Touch Targets */
+
+    --touch-target-min: 44px;          /* WCAG 2.1 AA minimum */
+    --touch-target-comfortable: 48px;   /* Comfortable tap target */
+    --focus-ring-width: 2px;           /* Visible focus indicator */
+    --focus-ring-offset: 2px;          /* Focus ring offset */
+
+    /* Elevation System */
+
     --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 5%);
     --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%);
+
+    /* Animation & Transitions */
+
+    /* Duration Values */
     --transition-fast: 150ms ease-in-out;
     --transition-normal: 250ms ease-in-out;
     --transition-slow: 350ms ease-in-out;
     --duration-extra-slow: 500ms;
+
+    /* Specialized Easing Curves */
     --transition-bounce: 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
     --transition-spring: 500ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
     --ease-in: cubic-bezier(0.4, 0, 1, 1);
     --ease-out: cubic-bezier(0, 0, 0.2, 1);
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Z-Index Stacking */
+
     --z-dropdown: 1000;
     --z-sticky: 1020;
     --z-fixed: 1030;
@@ -91,75 +127,129 @@
     --z-popover: 1060;
     --z-tooltip: 1070;
     --z-toast: 1080;
-    --grid-columns: 12;
+
+    /* Layout Dimensions */
+
+    /* Application Layout */
+    --sidebar-width: 210px;
+    --sidebar-collapsed: 72px;
+    --header-height: 64px;
+    --footer-height: 48px;
+
+    /* Content Containers */
+    --content-max-width: 1200px;
+    --form-max-width: 600px;
+    --modal-max-width: 800px;
+    --card-max-width: 400px;
+
+    /* Container Sizing */
+    --container-width-xl: 1400px;
+    --container-width-2xl: 1600px;
+    --container-width-3xl: 1800px;
+
+    /* Content Spacing */
     --container-padding: var(--space-4);
     --container-padding-mobile: var(--space-3);
     --section-spacing: var(--space-16);
     --section-spacing-mobile: var(--space-12);
-    --input-height: var(--touch-target-min);
-    --input-padding-x: var(--space-3);
-    --input-padding-y: var(--space-2);
-    --input-border-width: 1px;
-    --button-height: var(--touch-target-min);
-    --button-padding-x: var(--space-4);
-    --button-padding-y: var(--space-2);
-    --button-border-width: 1px;
-    --poster-width-standard: 156px;
-    --poster-height-standard: 234px;
-    --poster-width-mobile: 120px;
-    --poster-height-mobile: 180px;
-    --poster-width-tablet: 130px;
-    --poster-height-tablet: 195px;
-    --poster-border-thickness: 0.3125rem;
-    --poster-grid-min-width: 180px;
-    --poster-grid-min-width-lg: 200px;
     --content-gap: var(--space-6);
     --content-gap-mobile: var(--space-4);
     --paragraph-spacing: var(--space-4);
     --list-spacing: var(--space-2);
-    --border-width-thin: 1px;
-    --border-width-medium: 2px;
-    --border-width-thick: 3px;
-    --size-icon-xs: 12px;
-    --size-icon-sm: 16px;
-    --size-icon-md: 20px;
-    --size-icon-lg: 24px;
-    --size-icon-xl: 32px;
-    --size-icon-2xl: 40px;
-    --size-checkbox: 22px;
-    --size-checkbox-icon: 22px;
-    --size-avatar-sm: 32px;
-    --size-avatar-md: 40px;
-    --size-avatar-lg: 56px;
-    --size-avatar-xl: 64px;
+
+    /* Form Controls */
+
+    /* Input Elements */
+    --input-height: var(--touch-target-min);
+    --input-padding-x: var(--space-3);
+    --input-padding-y: var(--space-2);
+    --input-border-width: 1px;
+
+    /* Button Elements */
+    --button-height: var(--touch-target-min);
+    --button-padding-x: var(--space-4);
+    --button-padding-y: var(--space-2);
+    --button-border-width: 1px;
+
+    /* Form Constraints */
     --min-width-button: 80px;
     --min-width-input: 120px;
     --min-width-select: 140px;
-    --dropdown-width-min: 7.5rem;
-    --dropdown-width-max: 10rem;
-    --dropdown-width-desktop: 20rem;
-    --max-height-dropdown: 300px;
     --max-height-textarea: 400px;
     --max-height-modal: 80vh;
+
+    /* Grid System */
+
+    --grid-columns: 12;
     --grid-min-width-xs: 160px;
     --grid-min-width-sm: 200px;
     --grid-min-width-md: 280px;
     --grid-min-width-lg: 320px;
     --grid-min-width-xl: 400px;
     --grid-min-width-2xl: 500px;
-    --container-width-xl: 1400px;
-    --container-width-2xl: 1600px;
-    --container-width-3xl: 1800px;
+
+    /* Component Sizes */
+
+    /* Icons */
+    --size-icon-xs: 12px;
+    --size-icon-sm: 16px;
+    --size-icon-md: 20px;
+    --size-icon-lg: 24px;
+    --size-icon-xl: 32px;
+    --size-icon-2xl: 40px;
+
+    /* Form Controls */
+    --size-checkbox: 22px;
+    --size-checkbox-icon: 22px;
+
+    /* Avatars */
+    --size-avatar-sm: 32px;
+    --size-avatar-md: 40px;
+    --size-avatar-lg: 56px;
+    --size-avatar-xl: 64px;
+
+    /* Dropdowns */
+    --dropdown-width-min: 7.5rem;
+    --dropdown-width-max: 10rem;
+    --dropdown-width-desktop: 20rem;
+    --max-height-dropdown: 300px;
+
+    /* Media-Specific Measurements */
+
+    /* Poster Dimensions */
+    --poster-width-standard: 156px;
+    --poster-height-standard: 234px;
+    --poster-width-mobile: 120px;
+    --poster-height-mobile: 180px;
+    --poster-width-tablet: 130px;
+    --poster-height-tablet: 195px;
+    --poster-border-thickness: 0.3125rem;  /* 5px for poster borders */
+    --poster-grid-min-width: 180px;
+    --poster-grid-min-width-lg: 200px;
+
+    /* Border Widths */
+
+    --border-width-thin: 1px;
+    --border-width-medium: 2px;
+    --border-width-thick: 3px;
+
+    /* Micro-Interactions */
+
+    /* Transform Offsets */
     --transform-offset-xs: -1px;
     --transform-offset-sm: -2px;
     --transform-offset-md: -4px;
     --transform-offset-lg: -6px;
     --transform-offset-xl: -8px;
+
+    /* Transform Lifts */
     --transform-lift-xs: 1px;
     --transform-lift-sm: 2px;
     --transform-lift-md: 4px;
     --transform-lift-lg: 6px;
     --transform-lift-xl: 8px;
+
+    /* Opacity Levels - 10 standardized values */
     --opacity-10: 0.1;
     --opacity-15: 0.15;
     --opacity-20: 0.2;

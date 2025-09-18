@@ -1,6 +1,9 @@
 export default {
   extends: ['stylelint-config-standard'],
   plugins: ['stylelint-selector-bem-pattern'],
+  ignoreFiles: [
+    'src/css/utilities.css', // Preserve compact formatting for readability
+  ],
   rules: {
     // BEM class naming: block, block__element, block--modifier, block__element--modifier
     // Also allow utility classes with special patterns for responsive/fraction utilities

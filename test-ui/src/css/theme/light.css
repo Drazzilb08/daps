@@ -1,106 +1,177 @@
 /**
  * DAPS Light Theme
- * WCAG AA contrast compliant light theme for bright environments
+ *
+ * WCAG AA contrast compliant light theme optimized for bright environments
+ * and daylight viewing conditions. Provides clean, crisp interface with
+ * excellent readability and professional appearance.
+ *
+ * Theme Application: Applied via data-theme="light" attribute on <html> element
+ * Color Strategy: High contrast text on light backgrounds for optimal readability
+ * Usage: Components reference these theme variables for consistent theming
  */
 
 [data-theme='light'] {
-    --primary: #ff7300;
-    --accent: #246ddb;
-    --success: #1cab40;
-    --warning: #e6b500;
-    --error: #e11e39;
-    --focus: #ff9500;
-    --bg: #fafbfe;
-    --surface: #fff;
-    --surface-alt: #f7f7fa;
-    --surface-elevated: #fff;
-    --border: #ececf2;
-    --border-light: #f0f0f4;
-    --sidebar-border: #e6e6ea;
-    --text-primary: #1a1a1a;
-    --text-secondary: #28292c;
-    --text-tertiary: #5e5e5e;
-    --text-disabled: #5e5e5e;
-    --sidebar-bg: #f7f7fa;
-    --sidebar-hover: #f0f0f4;
-    --header-bg: #f5f5f8;
-    --overlay: rgb(0 0 0 / 10%);
-    --overlay-strong: rgb(0 0 0 / 75%);
+
+    /* Brand & Semantic Colors */
+
+    --primary: #ff7300;        /* Primary brand orange - consistent across themes */
+    --accent: #246ddb;         /* Secondary brand blue for links and accents */
+    --success: #1cab40;        /* Success state green for positive feedback */
+    --warning: #e6b500;        /* Warning state yellow for caution messages */
+    --error: #e11e39;          /* Error state red for negative feedback */
+    --focus: #ff9500;          /* Focus indicator - bright orange for visibility */
+
+    /* Surface & Background Colors */
+
+    --bg: #fafbfe;                    /* Main background - soft white base */
+    --surface: #fff;                  /* Primary surface - pure white for cards, panels */
+    --surface-alt: #f7f7fa;           /* Alternative surface - subtle gray for secondary areas */
+    --surface-elevated: #fff;         /* Elevated surface - white for modals, dropdowns */
+
+    /* Border & Separation Colors */
+
+    --border: #ececf2;                /* Standard border - light gray for form fields, cards */
+    --border-light: #f0f0f4;          /* Lighter border - very subtle for hover states */
+
+    /* Text & Content Colors */
+
+    --text-primary: #1a1a1a;          /* Primary text - dark for maximum contrast */
+    --text-secondary: #28292c;        /* Secondary text - slightly lighter for labels */
+    --text-tertiary: #5e5e5e;         /* Tertiary text - medium gray for placeholders */
+    --text-disabled: #5e5e5e;         /* Disabled text - same as tertiary for consistency */
+
+    /* Layout Specific Colors */
+
+    --sidebar-bg: #f7f7fa;            /* Sidebar background - light gray for distinction */
+    --sidebar-hover: #f0f0f4;         /* Sidebar item hover - darker gray for feedback */
+    --sidebar-border: #e6e6ea;        /* Sidebar border - medium gray for separation */
+    --header-bg: #f5f5f8;             /* Header background - slightly darker than sidebar */
+
+    /* Overlay & Modal Colors */
+
+    --overlay: rgb(0 0 0 / 10%);      /* Standard overlay - subtle dark overlay */
+    --overlay-strong: rgb(0 0 0 / 75%); /* Strong overlay - darker for important modals */
+
+    /* Semantic Color Mappings */
+
+    /* Primary Color System */
     --color-primary: var(--primary);
     --color-primary-hover: var(--focus);
-    --color-primary-text: #fff;
-    --color-primary-opacity-10: rgb(255 115 0 / 10%);
-    --color-primary-opacity-20: rgb(255 115 0 / 20%);
+    --color-primary-text: #fff;                           /* White text on orange background */
+    --color-primary-opacity-10: rgb(255 115 0 / 10%);     /* Primary with 10% opacity */
+    --color-primary-opacity-20: rgb(255 115 0 / 20%);     /* Primary with 20% opacity */
+
+    /* Accent Color System */
     --color-accent: var(--accent);
-    --color-accent-text: #fff;
+    --color-accent-text: #fff;                            /* White text on blue background */
+
+    /* Success Color System */
     --color-success: var(--success);
-    --color-success-text: #fff;
-    --color-success-opacity-20: rgb(28 171 64 / 20%);
+    --color-success-text: #fff;                           /* White text on green background */
+    --color-success-opacity-20: rgb(28 171 64 / 20%);     /* Success with 20% opacity */
+
+    /* Warning Color System */
     --color-warning: var(--warning);
-    --color-warning-text: #fff;
-    --color-warning-opacity-20: rgb(230 181 0 / 20%);
+    --color-warning-text: #fff;                           /* White text on yellow background */
+    --color-warning-opacity-20: rgb(230 181 0 / 20%);     /* Warning with 20% opacity */
+
+    /* Error Color System */
     --color-error: var(--error);
-    --color-error-text: #fff;
-    --color-error-opacity-20: rgb(225 30 57 / 20%);
+    --color-error-text: #fff;                             /* White text on red background */
+    --color-error-opacity-20: rgb(225 30 57 / 20%);       /* Error with 20% opacity */
+
+    /* Danger Color System (alias for error) */
+    --color-danger: var(--error);                         /* Danger aliases error for consistency */
+    --color-danger-surface: rgb(225 30 57 / 10%);         /* Danger background surface */
+
+    /* Text Color Mappings */
     --color-text-primary: var(--text-primary);
     --color-text-secondary: var(--text-secondary);
     --color-text-tertiary: var(--text-tertiary);
     --color-text-disabled: var(--text-disabled);
-    --color-text-muted: var(--text-tertiary);
+    --color-text-muted: var(--text-tertiary);             /* Alias for tertiary text */
+
+    /* Background & Surface Mappings */
     --color-background: var(--bg);
     --color-background-alt: var(--surface-alt);
     --color-surface: var(--surface);
     --color-surface-hover: var(--surface-alt);
     --color-surface-active: var(--border-light);
     --color-surface-elevated: var(--surface-elevated);
+
+    /* Border & Separation Mappings */
     --color-border: var(--border);
     --color-border-light: var(--border-light);
     --color-border-hover: var(--border-light);
+
+    /* Layout Component Mappings */
     --color-sidebar-bg: var(--sidebar-bg);
     --color-sidebar-hover: var(--sidebar-hover);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-text: var(--text-secondary);
-    --color-sidebar-text-secondary: #737378;
+    --color-sidebar-text-secondary: #737378;              /* Subdued sidebar text */
     --color-header-bg: var(--header-bg);
     --color-header-border: var(--sidebar-border);
+
+    /* Link & Interaction Colors */
     --color-link: var(--accent);
-    --color-link-hover: #4a85e8;
-    --color-link-visited: #4a85e8;
-    --input-bg: #fff;
+    --color-link-hover: #4a85e8;                          /* Lighter blue for hover state */
+    --color-link-visited: #4a85e8;                        /* Consistent visited link color */
+
+    /* Form Control Colors */
+
+    /* Input Background Colors */
+    --input-bg: #fff;                                     /* Pure white input background */
     --color-input-bg: var(--input-bg);
-    --color-input-bg-hover: #f8f9fa;
-    --color-input-bg-focus: var(--input-bg);
-    --color-input-bg-disabled: #f5f5f8;
-    --color-input-bg-readonly: #f7f7fa;
+    --color-input-bg-hover: #f8f9fa;                      /* Very light gray on hover */
+    --color-input-bg-focus: var(--input-bg);              /* Return to white on focus */
+    --color-input-bg-disabled: #f5f5f8;                   /* Light gray for disabled state */
+    --color-input-bg-readonly: #f7f7fa;                   /* Subtle gray for readonly */
+
+    /* Input Border Colors */
     --color-input-border: var(--border);
     --color-input-border-hover: var(--border-light);
-    --color-input-border-disabled: #e8e8ec;
+    --color-input-border-disabled: #e8e8ec;               /* Lighter disabled border */
+
+    /* Input Text Colors */
     --color-input-text: var(--text-primary);
     --color-input-text-disabled: var(--text-disabled);
     --color-input-placeholder: var(--text-tertiary);
-    --color-input-addon-bg: var(--surface-alt);
-    --input-addon-border: 1px solid var(--color-primary);
+
+    /* Input Enhancement Colors */
+    --color-input-addon-bg: var(--surface-alt);           /* Light gray addon background */
+
+    /* Form Element Decorative Properties */
+    --input-addon-border: 1px solid var(--color-primary); /* Defined border for light theme */
     --input-addon-shadow: 0 1px 2px rgb(var(--shadow-color), var(--shadow-opacity-light));
-    --checkbox-indicator-bg: var(--color-input-bg);
-    --checkbox-border: 1px solid var(--color-text-secondary);
+    --checkbox-indicator-bg: var(--color-input-bg);       /* White checkbox background */
+    --checkbox-border: 1px solid var(--text-primary);     /* Dark border for contrast */
     --checkbox-shadow: 0 1px 2px rgb(var(--shadow-color), var(--shadow-opacity-light));
-    --field-base-border: 1px solid var(--color-text-secondary);
+    --field-base-border: 1px solid var(--color-text-secondary); /* Defined field borders */
     --field-base-shadow: 0 1px 2px rgb(var(--shadow-color), var(--shadow-opacity-light));
+
+    /* Focus & Interaction Feedback */
     --color-focus-ring: var(--focus);
     --color-focus-ring-offset: var(--bg);
+
+    /* Button System Colors */
     --color-button-primary: var(--primary);
-    --color-button-primary-text: #fff;
+    --color-button-primary-text: #fff;                    /* White text on orange button */
+
+    /* Overlay & Shadow System */
     --color-overlay: var(--overlay);
-    --shadow-color: 0, 0, 0;
-    --shadow-opacity-light: 0.1;
-    --shadow-opacity-medium: 0.15;
-    --shadow-opacity-heavy: 0.25;
+    --shadow-color: 0, 0, 0;                              /* Shadow base color (RGB values) */
+    --shadow-opacity-light: 0.1;                          /* Very light shadow opacity */
+    --shadow-opacity-medium: 0.15;                        /* Medium shadow opacity */
+    --shadow-opacity-heavy: 0.25;                         /* Heavier shadow opacity */
 }
+
+/* High Contrast Mode Support */
 
 @media (prefers-contrast: more) {
     [data-theme='light'] {
-        --color-border: #000;
-        --color-text-primary: #000;
-        --color-background: #fff;
+        --color-border: #000;          /* Pure black border for maximum contrast */
+        --color-text-primary: #000;    /* Pure black text for maximum contrast */
+        --color-background: #fff;      /* Pure white background for maximum contrast */
     }
 }

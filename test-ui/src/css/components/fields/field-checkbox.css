@@ -27,10 +27,15 @@
         border-color: var(--color-primary);
     }
 
-    /* Focus state for entire field */
+    /* Focus state for entire field - matches TextField styling */
     .checkbox-field-container:focus {
         outline: none;
-        border-color: var(--color-primary);
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    }
+
+    /* Also apply focus styling when the checkbox input itself is focused */
+    .checkbox-field-container:focus-within {
+        outline: none;
         box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
     }
 
@@ -49,7 +54,7 @@
     /* Checked state styling */
     .checkbox-field-container[aria-pressed="true"] {
         background: var(--color-primary-surface);
-        border-color: var(--color-primary);
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
     }
 
     .checkbox-field-container[aria-pressed="true"]:hover {

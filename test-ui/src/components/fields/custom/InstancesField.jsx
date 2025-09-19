@@ -51,11 +51,11 @@ const SimpleInstanceSelector = React.memo(({
 
     if (serviceInstances.length === 0) {
         return (
-            <div className="instance-empty-state">
-                <div className="empty-message">
+            <div className="instance-empty-state flex flex-col items-center gap-3 text-center bg-surface border border-dashed text-secondary">
+                <div className="empty-message font-medium text-primary">
                     No {humanize(serviceType)} instances configured
                 </div>
-                <div className="empty-help">
+                <div className="empty-help text-sm text-tertiary">
                     Configure instances in Settings → Instances
                 </div>
             </div>
@@ -63,7 +63,7 @@ const SimpleInstanceSelector = React.memo(({
     }
 
     return (
-        <div className="instance-selection-list">
+        <div className="instance-selection-list flex flex-col gap-2">
             {serviceInstances.map(instance => {
                 const isSelected = (selectedInstances || []).includes(instance.name);
                 const inputId = `instance-${serviceType}-${instance.name}`;
@@ -71,7 +71,7 @@ const SimpleInstanceSelector = React.memo(({
                 return (
                     <div key={instance.name} className="instance-item">
                         <div
-                            className="checkbox-field-container"
+                            className="checkbox-field-container flex items-center bg-surface-elevated border"
                             onClick={(e) => {
                                 // Don't handle click if it came from the label or checkbox input
                                 if (disabled) return;
@@ -96,14 +96,14 @@ const SimpleInstanceSelector = React.memo(({
                                 onChange={(e) => handleInstanceToggle(instance.name, e.target.checked)}
                                 disabled={disabled}
                             />
-                            <div className="checkbox-content">
+                            <div className="checkbox-content flex flex-col">
                                 <FieldLabel
                                     htmlFor={inputId}
                                     label={humanize(instance.name)}
                                     className="checkbox-label"
                                 />
                                 {instance.url && (
-                                    <div className="instance-url">{instance.url}</div>
+                                    <div className="instance-url text-xs text-secondary">{instance.url}</div>
                                 )}
                             </div>
                         </div>
@@ -159,7 +159,7 @@ const PlexLibrarySelector = React.memo(({
 
     if (librariesLoading) {
         return (
-            <div className="libraries-loading">
+            <div className="libraries-loading flex items-center gap-2 text-sm text-secondary bg-surface">
                 <div className="loading-spinner-small" />
                 <span>Loading libraries...</span>
             </div>
@@ -168,7 +168,7 @@ const PlexLibrarySelector = React.memo(({
 
     if (librariesError) {
         return (
-            <div className="libraries-error">
+            <div className="libraries-error flex items-center gap-2 text-sm text-secondary bg-surface">
                 <span className="error-icon">⚠️</span>
                 <span>Failed to load libraries: {librariesError.message}</span>
             </div>
@@ -177,7 +177,7 @@ const PlexLibrarySelector = React.memo(({
 
     if (!libraries || libraries.length === 0) {
         return (
-            <div className="libraries-empty">
+            <div className="libraries-empty flex items-center gap-2 text-sm text-secondary bg-surface">
                 <span className="info-icon">ℹ️</span>
                 <span>No libraries found for this Plex instance</span>
             </div>
@@ -186,18 +186,18 @@ const PlexLibrarySelector = React.memo(({
 
     return (
         <div className="libraries-selection">
-            <div className="libraries-title">Select Libraries:</div>
+            <div className="libraries-title text-base font-semibold text-primary">Select Libraries:</div>
 
             {/* Mobile: Compact chip-style selection */}
             <div className="libraries-mobile">
-                <div className="libraries-chips">
+                <div className="libraries-chips grid gap-2">
                     {libraries.map(library => {
                         const isSelected = selectedLibraries.includes(library);
                         return (
                             <button
                                 key={library}
                                 type="button"
-                                className={`library-chip ${isSelected ? 'library-chip--selected' : ''}`}
+                                className={`library-chip flex items-center justify-center text-center bg-surface-elevated border-2 text-sm font-medium text-primary ${isSelected ? 'library-chip--selected' : ''}`}
                                 onClick={() => handleLibraryToggle(library, !isSelected)}
                                 disabled={disabled}
                             >
@@ -210,7 +210,7 @@ const PlexLibrarySelector = React.memo(({
 
             {/* Desktop: Grid layout with checkboxes */}
             <div className="libraries-desktop">
-                <div className="libraries-list">
+                <div className="libraries-list grid gap-2">
                     {libraries.map(library => {
                         const isSelected = selectedLibraries.includes(library);
                         const libraryId = `library-${instanceName}-${library}`;
@@ -218,7 +218,7 @@ const PlexLibrarySelector = React.memo(({
                         return (
                             <div key={library} className="library-item">
                                 <div
-                                    className="checkbox-field-container"
+                                    className="checkbox-field-container flex items-center bg-surface-elevated border"
                                     onClick={(e) => {
                                         // Don't handle click if it came from the label or checkbox input
                                         if (disabled) return;
@@ -243,11 +243,11 @@ const PlexLibrarySelector = React.memo(({
                                         onChange={(e) => handleLibraryToggle(library, e.target.checked)}
                                         disabled={disabled}
                                     />
-                                    <div className="checkbox-content">
+                                    <div className="checkbox-content flex flex-col">
                                         <FieldLabel
                                             htmlFor={libraryId}
                                             label={library}
-                                            className="checkbox-label"
+                                            className="checkbox-label font-medium text-primary"
                                         />
                                     </div>
                                 </div>
@@ -341,15 +341,15 @@ const PlexInstanceSelector = React.memo(({
 
     if (plexInstances.length === 0) {
         return (
-            <div className="instance-empty-state">
-                <div className="empty-message">No Plex instances configured</div>
-                <div className="empty-help">Configure instances in Settings → Instances</div>
+            <div className="instance-empty-state flex flex-col items-center gap-3 text-center bg-surface border border-dashed text-secondary">
+                <div className="empty-message font-medium text-primary">No Plex instances configured</div>
+                <div className="empty-help text-sm text-tertiary">Configure instances in Settings → Instances</div>
             </div>
         );
     }
 
     return (
-        <div className="instance-selection-list">
+        <div className="instance-selection-list flex flex-col gap-2">
             {plexInstances.map(instance => {
                 const selectedItem = parsedSelection.find(item => item.name === instance.name);
                 const isSelected = Boolean(selectedItem);
@@ -361,7 +361,7 @@ const PlexInstanceSelector = React.memo(({
                 return (
                     <div key={instance.name} className="instance-item plex-instance-item">
                         <div
-                            className="checkbox-field-container"
+                            className="checkbox-field-container flex items-center bg-surface-elevated border"
                             onClick={(e) => {
                                 // Don't handle click if it came from the label or checkbox input
                                 if (disabled) return;
@@ -386,25 +386,25 @@ const PlexInstanceSelector = React.memo(({
                                 onChange={(e) => handleInstanceToggle(instance.name, e.target.checked)}
                                 disabled={disabled}
                             />
-                            <div className="checkbox-content">
+                            <div className="checkbox-content flex flex-col">
                                 <FieldLabel
                                     htmlFor={instanceId}
                                     label={humanize(instance.name)}
                                     className="checkbox-label"
                                 />
                                 {instance.url && (
-                                    <div className="instance-url">{instance.url}</div>
+                                    <div className="instance-url text-xs text-secondary">{instance.url}</div>
                                 )}
                             </div>
                         </div>
 
                         {isSelected && (
-                            <div className="plex-options">
+                            <div className="plex-options flex flex-col gap-4">
                                 {/* Poster upload option */}
                                 {showPosterOption && (
                                     <div className="poster-upload-option">
                                         <div
-                                            className="checkbox-field-container"
+                                            className="checkbox-field-container flex items-center bg-surface-elevated border"
                                             onClick={(e) => {
                                                 // Don't handle click if it came from the label or checkbox input
                                                 if (disabled) return;
@@ -429,11 +429,11 @@ const PlexInstanceSelector = React.memo(({
                                                 onChange={(e) => handlePosterUploadToggle(instance.name, e.target.checked)}
                                                 disabled={disabled}
                                             />
-                                            <div className="checkbox-content">
+                                            <div className="checkbox-content flex flex-col">
                                                 <FieldLabel
                                                     htmlFor={uploadId}
                                                     label="Upload posters to this Plex instance"
-                                                    className="checkbox-label"
+                                                    className="checkbox-label font-medium text-primary"
                                                 />
                                             </div>
                                         </div>
@@ -574,7 +574,7 @@ export const InstancesField = React.memo(({
         return (
             <FieldWrapper invalid={highlightInvalid}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={isRequired} />
-                <div className="instances-loading">
+                <div className="instances-loading flex flex-col items-center justify-center gap-3 text-center bg-surface border-2 text-secondary">
                     <div className="loading-spinner" />
                     <span>Loading instances...</span>
                 </div>
@@ -590,11 +590,11 @@ export const InstancesField = React.memo(({
         return (
             <FieldWrapper invalid={true}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={isRequired} />
-                <div className="instances-error">
+                <div className="instances-error flex flex-col items-center gap-3 text-center bg-error-subtle border-2 border-error">
                     <div className="error-icon">⚠️</div>
-                    <div className="error-content">
-                        <div className="error-title">Failed to load instances</div>
-                        <div className="error-message">{loadError?.message || 'Unknown error occurred'}</div>
+                    <div className="error-content flex flex-col gap-2">
+                        <div className="error-title font-semibold text-base">Failed to load instances</div>
+                        <div className="error-message text-sm">{loadError?.message || 'Unknown error occurred'}</div>
                     </div>
                 </div>
                 {field.description && (
@@ -638,16 +638,16 @@ export const InstancesField = React.memo(({
             <div className="instances-field-content" id={inputId}>
                 {instanceTypes.length === 1 ? (
                     // Single service type - simplified UI
-                    <div className="single-service-selector">
-                        <h4 className="service-title">{humanize(instanceTypes[0])}</h4>
+                    <div className="single-service-selector flex flex-col gap-4">
+                        <h4 className="service-title text-base font-semibold text-primary">{humanize(instanceTypes[0])}</h4>
                         {renderServiceSelector(instanceTypes[0])}
                     </div>
                 ) : (
                     // Multiple service types - sectioned UI
-                    <div className="multi-service-selector">
+                    <div className="multi-service-selector flex flex-col gap-3">
                         {instanceTypes.map(serviceType => (
-                            <div key={serviceType} className="service-section">
-                                <h4 className="service-title">{humanize(serviceType)}</h4>
+                            <div key={serviceType} className="service-section flex flex-col gap-2 bg-surface border">
+                                <h4 className="service-title text-base font-semibold text-primary">{humanize(serviceType)}</h4>
                                 {renderServiceSelector(serviceType)}
                             </div>
                         ))}

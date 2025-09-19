@@ -13,26 +13,14 @@
 
     /* Main field container - compact horizontal layout */
     .instances-field-content {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2);
         width: 100%;
     }
 
     /* Loading state - mobile optimized */
     .instances-loading {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: var(--space-3);
         padding: var(--space-6); /* 24px - comfortable mobile padding */
-        background: var(--surface);
-        border: 2px solid var(--border-color);
         border-radius: var(--border-radius-lg);
-        color: var(--text-secondary);
         min-height: var(--space-24); /* 96px - appropriate mobile height */
-        text-align: center;
     }
 
     /* Loading spinner */
@@ -52,16 +40,8 @@
 
     /* Error state - mobile optimized */
     .instances-error {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--space-3);
         padding: var(--space-5); /* 20px - mobile-appropriate */
-        background: var(--error-bg);
-        border: 2px solid var(--error);
         border-radius: var(--border-radius-lg);
-        color: var(--error-text);
-        text-align: center;
     }
 
     .error-icon {
@@ -70,9 +50,6 @@
     }
 
     .error-content {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2);
         width: 100%;
     }
 
@@ -95,27 +72,16 @@
 
     /* Single service type container */
     .single-service-selector {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4); /* 16px gap between elements */
         width: 100%;
     }
 
     /* Multiple service types - compact vertical stack on mobile */
     .multi-service-selector {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-3); /* 12px - compact spacing for mobile */
         width: 100%;
     }
 
     /* Individual service sections - mobile compact */
     .service-section {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2); /* 8px - compact mobile gap */
-        background: var(--surface);
-        border: 1px solid var(--border-color);
         border-radius: var(--border-radius-lg);
         padding: var(--space-3); /* 12px - compact mobile padding */
         width: 100%;
@@ -142,9 +108,6 @@
 
     /* Instance selection list - compact mobile layout */
     .instance-selection-list {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2); /* 8px - compact mobile spacing */
         width: 100%;
     }
 
@@ -160,10 +123,6 @@
         min-height: var(--touch-target-min); /* 44px minimum touch target */
         padding: var(--space-2); /* 8px - compact mobile padding */
         gap: var(--space-2); /* 8px - compact space between checkbox and content */
-        display: flex;
-        align-items: center; /* Center align for horizontal layout */
-        background: var(--surface-elevated);
-        border: 1px solid var(--border-color);
         border-radius: var(--border-radius-md);
         transition: all var(--transition-duration) var(--transition-timing);
         cursor: pointer;
@@ -183,15 +142,11 @@
     .instance-item .checkbox-content {
         flex: 1;
         min-width: 0;
-        display: flex;
-        flex-direction: column; /* Keep name and URL stacked */
         gap: 2px; /* Very tight spacing */
     }
 
     /* Instance names - compact mobile typography */
     .instance-item .checkbox-label {
-        font-weight: var(--font-weight-medium);
-        color: var(--color-text-primary);
         font-size: var(--font-size-sm); /* 14px - compact mobile */
         line-height: var(--line-height-tight);
         margin: 0;
@@ -201,7 +156,6 @@
     /* Instance URLs - very compact mobile */
     .instance-item .instance-url {
         font-size: var(--font-size-xs); /* 12px - very compact for mobile */
-        color: var(--color-text-secondary);
         word-break: break-word;
         hyphens: auto;
         opacity: 0.7;
@@ -223,12 +177,7 @@
         width: 100%;
         margin-top: var(--space-4);
         padding: var(--space-3);
-        background: var(--surface);
-        border: 1px solid var(--border-color);
         border-radius: var(--border-radius-lg);
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4);
     }
 
     /* Poster upload option - integrated design */
@@ -243,8 +192,6 @@
     .poster-upload-option .checkbox-field-container {
         min-height: var(--touch-target-min); /* 44px touch target */
         padding: var(--space-3); /* 12px - comfortable padding */
-        background: var(--surface-elevated);
-        border: 2px solid var(--border-color);
         border-radius: var(--border-radius-md);
         transition: all var(--transition-duration) var(--transition-timing);
     }
@@ -260,9 +207,6 @@
     }
 
     .libraries-title {
-        font-size: var(--font-size-base); /* 16px - readable */
-        font-weight: var(--font-weight-semibold);
-        color: var(--text-primary);
         margin-bottom: var(--space-3); /* 12px */
         padding-bottom: var(--space-2);
         border-bottom: 1px solid var(--border-color);
@@ -279,26 +223,15 @@
 
     /* Mobile: Responsive grid library selection */
     .libraries-chips {
-        display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: var(--space-2);
     }
 
     .library-chip {
         padding: var(--space-2) var(--space-3);
-        background: var(--surface-elevated);
-        border: 2px solid var(--border-color);
         border-radius: var(--border-radius-md);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-        color: var(--text-primary);
         cursor: pointer;
         transition: all var(--transition-duration) var(--transition-timing);
         min-height: var(--touch-target-min);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -313,16 +246,10 @@
     }
 
     .library-chip--selected {
-        background: var(--primary-surface);
-        border-color: var(--primary);
-        color: var(--primary-text);
-        font-weight: var(--font-weight-semibold);
         box-shadow: 0 0 0 1px var(--primary), 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
     .library-chip--selected:hover {
-        background: var(--primary-surface);
-        border-color: var(--primary);
         transform: translateY(-1px);
         box-shadow: 0 0 0 1px var(--primary), 0 4px 8px rgba(0, 0, 0, 0.2);
     }
@@ -334,14 +261,11 @@
         right: 4px;
         font-size: 12px;
         font-weight: bold;
-        color: var(--primary-text);
     }
 
     /* Desktop grid (hidden on mobile) */
     .libraries-list {
-        display: grid;
         grid-template-columns: 1fr;
-        gap: var(--space-2);
     }
 
     .library-item {
@@ -352,10 +276,8 @@
     .library-item .checkbox-field-container {
         min-height: var(--touch-target-min); /* 44px touch target */
         padding: var(--space-1); /* 4px - very compact for library items */
-        background: var(--surface);
         width: 100%; /* Fit within grid cell */
         box-sizing: border-box;
-        display: flex; /* Restore flex for internal layout */
     }
 
     /* ===========================================
@@ -364,29 +286,17 @@
 
     /* Empty state - mobile centered design */
     .instance-empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: var(--space-3);
         padding: var(--space-6); /* 24px - generous mobile padding */
-        text-align: center;
-        background: var(--surface);
-        border: 2px dashed var(--border-color);
         border-radius: var(--border-radius-lg);
-        color: var(--text-secondary);
         min-height: var(--space-24); /* 96px - appropriate height */
     }
 
     .empty-message {
-        font-weight: var(--font-weight-medium);
-        color: var(--text-primary);
         font-size: var(--font-size-base); /* 16px - readable */
         margin: 0;
     }
 
     .empty-help {
-        font-size: var(--font-size-sm); /* 14px - help text */
-        color: var(--text-tertiary);
         line-height: var(--line-height-relaxed);
         margin: 0;
     }
@@ -395,13 +305,7 @@
     .libraries-loading,
     .libraries-error,
     .libraries-empty {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
         padding: var(--space-3);
-        font-size: var(--font-size-sm);
-        color: var(--text-secondary);
-        background: var(--surface);
         border-radius: var(--border-radius-md);
         margin-top: var(--space-2);
     }
@@ -419,7 +323,6 @@
     .error-icon,
     .info-icon {
         flex-shrink: 0;
-        font-size: var(--font-size-base);
     }
 
     /* ===========================================
@@ -442,10 +345,7 @@
 
         /* Two-column layout for multiple services on tablet+ */
         .multi-service-selector {
-            display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: var(--space-4);
-            align-items: start;
         }
 
         /* Plex section spans full width when present with other services */
@@ -468,9 +368,7 @@
         }
 
         .libraries-list {
-            display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: var(--space-2);
         }
 
     }
@@ -490,8 +388,6 @@
 
         /* Desktop horizontal instance layout */
         .instance-item .checkbox-content {
-            flex-direction: row;
-            align-items: center;
             gap: var(--space-3); /* 12px between name and URL */
         }
 
@@ -501,9 +397,7 @@
 
         /* DESKTOP: Two columns for libraries - better readability */
         .libraries-list {
-            display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: var(--space-2);
         }
 
         .plex-options {
@@ -519,7 +413,6 @@
         /* LARGE DESKTOP: Keep two columns for better readability */
         .libraries-list {
             grid-template-columns: repeat(2, 1fr);
-            gap: var(--space-3); /* Slightly more gap on large screens */
         }
     }
 

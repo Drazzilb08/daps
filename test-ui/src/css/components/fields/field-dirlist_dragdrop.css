@@ -14,7 +14,6 @@
         background: transparent;
         color: var(--primary);
         border: none;
-        border-radius: var(--radius-1);
         font-size: var(--font-size-3);
         font-weight: var(--font-weight-medium);
         cursor: pointer;
@@ -45,7 +44,6 @@
         background: transparent;
         color: var(--color-text-tertiary);
         border: none;
-        border-radius: var(--radius-1);
         font-size: var(--font-size-2);
         font-weight: var(--font-weight-regular);
         cursor: grab;

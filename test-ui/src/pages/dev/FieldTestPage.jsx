@@ -308,20 +308,20 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                 <h3 className="field-tester__title m-0">{fieldType}</h3>
                 <div className="field-tester__status">
                     {!isWorking && (
-                        <span className="status-badge status-badge--placeholder">Placeholder</span>
+                        <span className="status-badge status-badge--placeholder rounded-sm">Placeholder</span>
                     )}
                     {isWorking && isApproved && (
-                        <span className="status-badge status-badge--approved">Approved</span>
+                        <span className="status-badge status-badge--approved rounded-sm">Approved</span>
                     )}
                     {isWorking && !isApproved && (
-                        <span className="status-badge status-badge--working">Needs Testing</span>
+                        <span className="status-badge status-badge--working rounded-sm">Needs Testing</span>
                     )}
                 </div>
             </div>
 
             {isWorking && (
                 <>
-                    <div className="field-tester__config">
+                    <div className="field-tester__config rounded-sm">
                         <h4 className="config-title">Field Configuration</h4>
                         <div className="config-controls">
                             <label className="config-control touch-target">
@@ -351,7 +351,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                         </div>
                     </div>
 
-                    <div className="field-tester__test-area">
+                    <div className="field-tester__test-area rounded-sm">
                         <h4 className="test-title">Field Test</h4>
                         <FormRenderer
                             schema={testSchema}
@@ -364,7 +364,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                         />
                     </div>
 
-                    <div className="field-tester__approval">
+                    <div className="field-tester__approval rounded-sm">
                         <h4 className="approval-title">Approval Status</h4>
                         <div className="approval-actions">
                             {isApproved ? (
@@ -537,7 +537,7 @@ const FieldTestPage = () => {
                             id="filter-select"
                             value={filter}
                             onChange={e => setFilter(e.target.value)}
-                            className="filter-select"
+                            className="filter-select rounded-sm"
                         >
                             <option value="all">All Field Types</option>
                             <option value="working">Working Only</option>
@@ -558,7 +558,7 @@ const FieldTestPage = () => {
                                 id="field-type-select"
                                 value={selectedFieldType}
                                 onChange={e => handleFieldTypeSelect(e.target.value)}
-                                className="field-type-select"
+                                className="field-type-select rounded-sm"
                             >
                                 {filteredFieldTypes.map(type => (
                                     <option key={type} value={type}>

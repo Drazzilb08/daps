@@ -31,7 +31,7 @@ TestSection.displayName = 'TestSection';
  * API response display component
  */
 const ApiResponseDisplay = React.memo(({ data, isLoading, error, title }) => (
-    <div className="api-response-display">
+    <div className="api-response-display rounded-sm">
         <h4 className="response-title">{title}</h4>
         {isLoading && (
             <div className="loading-state flex items-center gap-2">
@@ -40,11 +40,11 @@ const ApiResponseDisplay = React.memo(({ data, isLoading, error, title }) => (
             </div>
         )}
         {error && (
-            <div className="error-state" role="alert">
+            <div className="error-state rounded-sm" role="alert">
                 <strong>Error:</strong> {error.message}
             </div>
         )}
-        {data && !isLoading && <pre className="response-data">{JSON.stringify(data, null, 2)}</pre>}
+        {data && !isLoading && <pre className="response-data rounded-sm">{JSON.stringify(data, null, 2)}</pre>}
     </div>
 ));
 
@@ -84,7 +84,7 @@ const VersionTestComponent = React.memo(() => {
                 error={error}
                 title="Version Response (with caching)"
             />
-            <div className="test-info">
+            <div className="test-info rounded-sm">
                 <p>
                     <strong>API Layer:</strong> systemAPI.getVersion()
                 </p>
@@ -130,7 +130,7 @@ const ConfigTestComponent = React.memo(() => {
                 <select
                     value={section}
                     onChange={e => setSection(e.target.value)}
-                    className="domain-select"
+                    className="domain-select rounded-sm"
                 >
                     <option value="">All Configuration</option>
                     <option value="instances">Instances</option>
@@ -151,7 +151,7 @@ const ConfigTestComponent = React.memo(() => {
                 error={error}
                 title="Configuration Response (with caching)"
             />
-            <div className="test-info">
+            <div className="test-info rounded-sm">
                 <p>
                     <strong>API Layer:</strong> configAPI.fetchConfig() / fetchSection()
                 </p>
@@ -202,7 +202,7 @@ const JobStatsTestComponent = React.memo(() => {
                 error={error}
                 title="Job Statistics Response (with caching)"
             />
-            <div className="test-info">
+            <div className="test-info rounded-sm">
                 <p>
                     <strong>API Layer:</strong> jobsAPI.getStats()
                 </p>
@@ -257,7 +257,7 @@ const ErrorTestComponent = React.memo(() => {
                 <select
                     value={errorType}
                     onChange={e => setErrorType(e.target.value)}
-                    className="error-type-select"
+                    className="error-type-select rounded-sm"
                 >
                     <option value="404">404 - Not Found</option>
                     <option value="400">400 - Bad Request</option>
@@ -277,7 +277,7 @@ const ErrorTestComponent = React.memo(() => {
                 error={error}
                 title="Error Response (through API layer)"
             />
-            <div className="test-info">
+            <div className="test-info rounded-sm">
                 <p>
                     <strong>API Layer:</strong>{' '}
                     {errorType === '404'

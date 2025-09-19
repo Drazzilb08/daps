@@ -8,11 +8,10 @@
 
 @layer components {
     .color-picker {
-        /* Use utility: .min-w-touch .min-h-touch .border .border-input .rounded .cursor-pointer .transition-fast .bg-none .p-0 .appearance-none */
+        /* Use utility: .min-w-touch .min-h-touch .border .border-input .rounded-sm .cursor-pointer .transition-fast .bg-none .p-0 .appearance-none */
         min-width: var(--touch-target-min);
         min-height: var(--touch-target-min);
         border: var(--input-border-width) solid var(--color-border);
-        border-radius: var(--radius-1);
         cursor: pointer;
         transition: all var(--transition-fast);
         background: none;

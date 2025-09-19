@@ -17,9 +17,8 @@
     }
 
     .field-placeholder code {
-        /* Use utility: .bg-surface .px-2 .py-1 .rounded */
+        /* Use utility: .bg-surface .px-2 .py-1 .rounded-sm */
         background: var(--color-surface);
         padding: var(--space-1) var(--space-2);
-        border-radius: var(--radius-1);
     }
 }

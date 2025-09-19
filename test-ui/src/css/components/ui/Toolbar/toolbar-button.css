@@ -6,7 +6,7 @@
 
 @layer components {
     .page-toolbar-button {
-        /* Use utility: .flex .flex-col .items-center .justify-center .w-auto .flex-shrink-0 .p-input .bg-transparent .border-none .text-primary .text-center .cursor-pointer .rounded-input .transition-colors .min-h-touch */
+        /* Use utility: .flex .flex-col .items-center .justify-center .w-auto .flex-shrink-0 .p-input .bg-transparent .border-none .text-primary .text-center .cursor-pointer .rounded-sm .transition-colors .min-h-touch */
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -20,7 +20,6 @@
         color: var(--color-text-primary);
         text-align: center;
         cursor: pointer;
-        border-radius: var(--radius-1);
         transition: color var(--transition-fast);
         min-height: var(--touch-target-min);
     }

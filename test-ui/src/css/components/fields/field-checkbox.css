@@ -8,7 +8,7 @@
 @layer components {
     /* Main checkbox field container - ENTIRE AREA CLICKABLE */
     .checkbox-field-container {
-        /* Use utility: .flex .items-center .gap-3 .py-2 .px-3 .min-h-touch .rounded .cursor-pointer .relative */
+        /* Use utility: .flex .items-center .gap-3 .py-2 .px-3 .min-h-touch .rounded-sm .cursor-pointer .relative */
         display: flex;
         align-items: center; /* Changed from flex-start to center for better pill shape */
         gap: var(--space-3);
@@ -16,7 +16,6 @@
         min-height: var(--touch-target-min); /* 44px minimum */
         background: var(--color-surface);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-1); /* Changed from radius-2 to radius-1 for pill shape */
         cursor: pointer;
         transition: background-color var(--duration-fast) var(--easing); /* More specific transition like instances */
         position: relative;
@@ -115,8 +114,7 @@
         width: var(--size-checkbox);
         height: var(--size-checkbox);
         border: var(--checkbox-border);
-        /* Use utility: .rounded .bg-white .flex .items-center .justify-center .transition-fast .shrink-0 .pointer-events-none */
-        border-radius: var(--radius-1);
+        /* Use utility: .rounded-sm .bg-white .flex .items-center .justify-center .transition-fast .shrink-0 .pointer-events-none */
         background: white;
         display: flex;
         align-items: center;

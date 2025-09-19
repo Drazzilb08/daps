@@ -253,7 +253,6 @@
     .feature-error-boundary__error-summary {
         background: var(--color-surface-variant);
         border: 1px solid var(--color-error);
-        border-radius: var(--radius-1);
         padding: var(--space-3);
         margin-bottom: var(--space-4);
         font-size: var(--font-size-sm);

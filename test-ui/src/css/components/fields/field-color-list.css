@@ -28,7 +28,6 @@
     .poster-preview-image {
         max-width: 156px;
         max-height: 234px;
-        border-radius: var(--radius-1);
         box-shadow: var(--shadow-sm);
         transition:
             transform var(--transition-fast),
@@ -41,12 +40,11 @@
     }
 
     .poster-preview-error {
-        /* Use utility: .w-39 .h-59 .bg-surface-dim .border .border-gray .rounded .flex .items-center .justify-center .text-sm .text-muted .text-center */
+        /* Use utility: .w-39 .h-59 .bg-surface-dim .border .border-gray .rounded-sm .flex .items-center .justify-center .text-sm .text-muted .text-center */
         width: 156px;
         height: 234px;
         background: var(--color-surface-dim);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-1);
         display: flex;
         align-items: center;
         justify-content: center;

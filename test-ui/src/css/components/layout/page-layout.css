@@ -86,7 +86,6 @@
         justify-content: center;
         width: 44px;
         height: 44px;
-        border-radius: var(--radius-1);
         transition: background-color var(--transition-fast);
     }
 
@@ -147,7 +146,6 @@
         color: inherit;
         cursor: pointer;
         padding: var(--space-1);
-        border-radius: var(--radius-1);
         transition: background-color var(--transition-fast);
     }
 
@@ -472,7 +470,6 @@
         height: 28px;
         background: var(--color-surface);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-1);
         color: var(--color-text-primary);
         cursor: pointer;
         display: flex;

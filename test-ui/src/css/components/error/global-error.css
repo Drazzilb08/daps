@@ -47,7 +47,6 @@
         font-size: var(--font-size-lg);
         cursor: pointer;
         padding: var(--space-1);
-        border-radius: var(--radius-1);
         transition: background-color 0.2s ease;
         width: var(--size-icon-xl);
         height: var(--size-icon-xl);

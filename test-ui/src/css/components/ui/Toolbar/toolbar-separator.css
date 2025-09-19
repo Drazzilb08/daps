@@ -12,6 +12,5 @@
         margin: 0 var(--space-3);
         flex-shrink: 0;
         align-self: center;
-        border-radius: var(--radius-1);
     }
 }

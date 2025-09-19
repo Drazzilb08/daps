@@ -93,8 +93,7 @@
     .card-value-object {
         background: var(--color-bg-secondary);
         border: var(--border-width-1) solid var(--color-border);
-        /* Use utility: .rounded .p-2 .m-0 .font-mono .text-sm .overflow-x-auto .whitespace-pre-wrap */
-        border-radius: var(--radius-1);
+        /* Use utility: .rounded-sm .p-2 .m-0 .font-mono .text-sm .overflow-x-auto .whitespace-pre-wrap */
         padding: var(--space-2);
         margin: 0;
         font-family: var(--font-family-mono);

@@ -62,7 +62,7 @@ export const ColorPicker = React.memo(
                 value={normalizedValue}
                 onChange={handleChange}
                 disabled={disabled}
-                className={`color-picker ${className}`.trim()}
+                className={`color-picker rounded-sm ${className}`.trim()}
                 aria-label={ariaLabel}
                 title={displayTitle}
                 {...domProps}

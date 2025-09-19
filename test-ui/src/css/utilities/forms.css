@@ -457,6 +457,114 @@
     }
   }
 
+  /* ===========================================
+     COMPOSITE INPUT UTILITIES - HIGH IMPACT
+     =========================================== */
+
+  /* Foundation input pattern - eliminates 8-property duplication */
+  .input-foundation {
+    width: 100%;
+    min-height: var(--input-height);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    background: var(--color-input-bg);
+    border: var(--input-border-width) solid var(--color-border);
+    border-radius: var(--input-border-radius);
+    transition: all var(--transition-fast);
+  }
+
+  /* Select foundation pattern */
+  .select-foundation {
+    width: 100%;
+    min-height: var(--input-height);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    background: var(--color-input-bg);
+    border: var(--input-border-width) solid var(--color-border);
+    border-radius: var(--input-border-radius);
+    appearance: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  /* Field container foundation */
+  .field-foundation {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    width: 100%;
+    margin-bottom: var(--space-3);
+  }
+
+  /* Appearance control utilities */
+  .appearance-none { appearance: none; }
+  .appearance-auto { appearance: auto; }
+
+  /* Input interaction state patterns */
+  .input-focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .input-disabled {
+    background: var(--color-input-bg-disabled, var(--color-surface-dim));
+    color: var(--color-text-disabled);
+    border-color: var(--color-border-disabled, var(--color-border));
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* Select-specific utilities */
+  .select-arrow-padding {
+    padding: var(--input-padding-y) calc(var(--input-padding-x) + var(--space-6))
+             var(--input-padding-y) var(--input-padding-x);
+  }
+
+  /* Option styling utilities */
+  .option-checked {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+  }
+
+  /* Checkbox field utilities */
+  .checkbox-field-foundation {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    min-height: var(--touch-target-min);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--easing);
+    position: relative;
+  }
+
+  .checkbox-field-hover {
+    background: var(--color-surface-hover);
+    border-color: var(--color-primary);
+  }
+
+  .checkbox-field-focus {
+    outline: none;
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .checkbox-field-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--color-surface-dim);
+  }
+
+  .checkbox-field-checked {
+    background: var(--color-primary-surface);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
   /* Touch device optimizations */
   @media (hover: none) and (pointer: coarse) {
     .h-input,

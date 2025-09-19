@@ -130,8 +130,9 @@
         border-radius: 0;
     }
 
-    .input-group .input-group-child:focus {
+    .input-group .input-group-child.field-base:focus {
         border-color: transparent;
+        background: transparent;
         box-shadow: none;
         outline: none;
     }

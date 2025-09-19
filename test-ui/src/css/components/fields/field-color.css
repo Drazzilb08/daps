@@ -8,6 +8,7 @@
 
 @layer components {
     .color-picker {
+        /* Use utility: .min-w-touch .min-h-touch .border .border-input .rounded .cursor-pointer .transition-fast .bg-none .p-0 .appearance-none */
         min-width: var(--touch-target-min);
         min-height: var(--touch-target-min);
         border: var(--input-border-width) solid var(--color-border);
@@ -26,11 +27,13 @@
     }
 
     .color-picker:disabled {
+        /* Use utility: .cursor-not-allowed .opacity-50 */
         cursor: not-allowed;
         opacity: 0.5;
     }
 
     .color-input-pair .color-picker {
+        /* Use utility: .shrink-0 */
         flex-shrink: 0;
     }
 
@@ -61,16 +64,19 @@
     }
 
     .color-input-pair .color-text-input {
+        /* Use utility: .flex-1 .min-w-0 */
         flex: 1;
         min-width: 0;
     }
 
     .color-array-item-input {
+        /* Use utility: .flex-1 .min-w-0 */
         flex: 1;
         min-width: 0;
     }
 
     .color-array-controls {
+        /* Use utility: .border-t .border-gray */
         border-top: 1px solid var(--color-border);
     }
 

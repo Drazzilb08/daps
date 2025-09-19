@@ -6,6 +6,7 @@
 
 @layer components {
     .select {
+        /* Use utility: .w-full .min-h-touch .text-base .leading-normal .rounded-md .appearance-none .cursor-pointer .transition-fast */
         width: 100%;
         min-height: var(--touch-target-min);
         padding: var(--space-2) calc(var(--space-3) + var(--space-6)) var(--space-2) var(--space-3);
@@ -21,6 +22,7 @@
     }
 
     .select:focus {
+        /* Use utility: .outline-none */
         outline: none;
         border-color: var(--color-primary);
         box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
@@ -30,6 +32,7 @@
         background: var(--color-input-bg-disabled);
         color: var(--color-input-text-disabled);
         border-color: var(--color-input-border-disabled);
+        /* Use utility: .cursor-not-allowed .opacity-60 */
         cursor: not-allowed;
         opacity: 0.6;
     }
@@ -37,12 +40,14 @@
     .field-select {
         padding: var(--input-padding-y) calc(var(--input-padding-x) + var(--space-6))
             var(--input-padding-y) var(--input-padding-x);
+        /* Use utility: .appearance-none .cursor-pointer */
         appearance: none;
         cursor: pointer;
     }
 
     .field-select-wrapper::after {
         content: '';
+        /* Use utility: .absolute .top-1/2 .right-3 .w-icon-sm */
         position: absolute;
         top: 50%;
         right: var(--input-padding-x);
@@ -53,11 +58,13 @@
         mask-repeat: no-repeat;
         mask-size: contain;
         transform: translateY(-50%);
+        /* Use utility: .transition-fast .pointer-events-none */
         transition: background-color var(--transition-fast);
         pointer-events: none;
     }
 
     .field-select:disabled {
+        /* Use utility: .opacity-60 */
         opacity: 0.6;
     }
 

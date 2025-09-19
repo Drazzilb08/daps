@@ -6,6 +6,7 @@
 
 @layer components {
     .json-field-header {
+        /* Use utility: .flex .justify-between .items-start .mb-2 .gap-2 */
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
@@ -14,12 +15,14 @@
     }
 
     .json-field-controls {
+        /* Use utility: .flex .gap-1 .shrink-0 */
         display: flex;
         gap: var(--space-1);
         flex-shrink: 0;
     }
 
     .json-field-btn {
+        /* Use utility: .flex .items-center .gap-1 .min-h-touch .px-3 .py-2 .bg-secondary .text-secondary .border .border-gray .rounded .text-sm .font-medium .cursor-pointer .transition-fast */
         display: flex;
         align-items: center;
         gap: var(--space-1);
@@ -41,6 +44,7 @@
     }
 
     .json-field-btn:disabled {
+        /* Use utility: .bg-border .text-muted .cursor-not-allowed .transform-none */
         background: var(--color-border);
         color: var(--color-text-muted);
         cursor: not-allowed;
@@ -54,10 +58,12 @@
     }
 
     .json-field-container {
+        /* Use utility: .relative */
         position: relative;
     }
 
     .json-field-textarea {
+        /* Use utility: .tab-2 .whitespace-pre .resize-y */
         tab-size: 2;
         white-space: pre;
         resize: vertical;
@@ -65,11 +71,13 @@
 
     @media (width <= 640px) {
         .json-field-header {
+            /* Use utility: .flex-col .items-stretch */
             flex-direction: column;
             align-items: stretch;
         }
 
         .json-field-controls {
+            /* Use utility: .justify-end */
             justify-content: flex-end;
         }
     }

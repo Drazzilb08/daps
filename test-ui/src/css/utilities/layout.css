@@ -277,6 +277,12 @@
   .gap-6 { gap: var(--space-6); }
   .gap-7 { gap: var(--space-7); }
   .gap-8 { gap: var(--space-8); }
+  .gap-10 { gap: var(--space-10); }
+  .gap-12 { gap: var(--space-12); }
+  .gap-16 { gap: var(--space-16); }
+  .gap-20 { gap: var(--space-20); }
+  .gap-24 { gap: var(--space-24); }
+  .gap-32 { gap: var(--space-32); }
 
   /* Separate row and column gaps */
   .gap-x-0 { column-gap: 0; }

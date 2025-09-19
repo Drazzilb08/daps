@@ -23,18 +23,21 @@
     }
 
     .form-section__description {
+        /* Use utility: .text-sm .text-secondary .leading-normal */
         font-size: var(--font-size-sm);
         color: var(--color-text-secondary);
         line-height: var(--line-height-normal);
     }
 
     .form-actions {
+        /* Use utility: .mt-6 .pt-4 .border-t .border-gray */
         margin-top: var(--space-6);
         padding-top: var(--space-4);
         border-top: 1px solid var(--color-border);
     }
 
     .form-actions--center {
+        /* Use utility: .justify-center */
         justify-content: center;
     }
 
@@ -50,12 +53,14 @@
     .form-validation-summary {
         background: var(--color-error-bg);
         border: 1px solid var(--color-error);
+        /* Use utility: .rounded-md .p-3 .mb-4 */
         border-radius: var(--radius-2);
         padding: var(--space-3);
         margin-bottom: var(--space-4);
     }
 
     .form-validation-summary__title {
+        /* Use utility: .text-sm .font-semibold .text-error .m-0 .mb-2 */
         font-size: var(--font-size-sm);
         font-weight: var(--font-weight-semibold);
         color: var(--color-error);
@@ -63,23 +68,27 @@
     }
 
     .form-validation-summary__list {
+        /* Use utility: .list-none .m-0 .p-0 */
         list-style: none;
         margin: 0;
         padding: 0;
     }
 
     .form-validation-summary__item {
+        /* Use utility: .text-sm .text-error .mb-1 */
         font-size: var(--font-size-sm);
         color: var(--color-error);
         margin-bottom: var(--space-1);
     }
 
     .form-validation-summary__item:last-child {
+        /* Use utility: .mb-0 */
         margin-bottom: 0;
     }
 
     .form-validation-summary__item::before {
         content: '•';
+        /* Use utility: .mr-1 */
         margin-right: var(--space-1);
     }
 
@@ -89,16 +98,19 @@
         }
 
         .form-actions {
+            /* Use utility: .flex-col .items-stretch */
             flex-direction: column;
             align-items: stretch;
         }
 
         .form-actions--between {
+            /* Use utility: .flex-col .items-stretch */
             flex-direction: column;
             align-items: stretch;
         }
 
         .form-button {
+            /* Use utility: .w-full .text-center */
             width: 100%;
             text-align: center;
         }

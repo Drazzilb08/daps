@@ -89,7 +89,7 @@ const App = () => {
                                             <Route
                                                 path="media/search"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Media Search</h1>
                                                         <p>
                                                             Search and discover content in your
@@ -101,7 +101,7 @@ const App = () => {
                                             <Route
                                                 path="media/manage"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Media Management</h1>
                                                         <p>
                                                             Manage and organize your media library
@@ -112,7 +112,7 @@ const App = () => {
                                             <Route
                                                 path="media/statistics"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Media Statistics</h1>
                                                         <p>
                                                             View media library statistics and
@@ -132,7 +132,7 @@ const App = () => {
                                             <Route
                                                 path="poster/search/gdrive"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>GDrive Poster Search</h1>
                                                         <p>Search for posters in Google Drive</p>
                                                     </div>
@@ -141,7 +141,7 @@ const App = () => {
                                             <Route
                                                 path="poster/search/assets"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Assets Poster Search</h1>
                                                         <p>Search for posters in local assets</p>
                                                     </div>
@@ -150,7 +150,7 @@ const App = () => {
                                             <Route
                                                 path="poster/manage"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Poster Management</h1>
                                                         <p>
                                                             Manage your poster and artwork
@@ -162,7 +162,7 @@ const App = () => {
                                             <Route
                                                 path="poster/statistics"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Poster Statistics</h1>
                                                         <p>View poster collection statistics</p>
                                                     </div>
@@ -173,7 +173,7 @@ const App = () => {
                                             <Route
                                                 path="settings"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Settings</h1>
                                                         <p>Configuration and system settings</p>
                                                     </div>
@@ -182,7 +182,7 @@ const App = () => {
                                             <Route
                                                 path="settings/schedule"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Schedule Settings</h1>
                                                         <p>
                                                             Configure job scheduling and automation
@@ -193,7 +193,7 @@ const App = () => {
                                             <Route
                                                 path="settings/instances"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Instance Settings</h1>
                                                         <p>
                                                             Configure service instances and
@@ -205,7 +205,7 @@ const App = () => {
                                             <Route
                                                 path="settings/notifications"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>Notification Settings</h1>
                                                         <p>
                                                             Configure notification providers and
@@ -219,7 +219,7 @@ const App = () => {
                                             <Route
                                                 path="logs"
                                                 element={
-                                                    <div className="content-layout">
+                                                    <div className="grid gap-12 max-w-full">
                                                         <h1>System Logs</h1>
                                                         <p>
                                                             View system logs and debugging

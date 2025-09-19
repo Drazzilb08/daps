@@ -19,6 +19,7 @@
     }
 
     .menu-item--disabled {
+        /* Use utility: .text-disabled .cursor-not-allowed */
         color: var(--color-text-disabled);
         cursor: not-allowed;
     }

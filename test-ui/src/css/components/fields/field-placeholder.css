@@ -6,6 +6,7 @@
 
 @layer components {
     .field-placeholder {
+        /* Use utility: .p-4 .border-2 .border-dashed .border-gray .rounded-md .text-center .text-secondary .italic .bg-surface-secondary */
         padding: var(--space-4);
         border: 2px dashed var(--color-border);
         border-radius: var(--radius-2);
@@ -16,6 +17,7 @@
     }
 
     .field-placeholder code {
+        /* Use utility: .bg-surface .px-2 .py-1 .rounded */
         background: var(--color-surface);
         padding: var(--space-1) var(--space-2);
         border-radius: var(--radius-1);

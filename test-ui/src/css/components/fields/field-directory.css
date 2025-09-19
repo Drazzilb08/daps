@@ -8,12 +8,14 @@
 @layer components {
     /* Directory field input - Clickable read-only input */
     .dir-field-display {
+        /* Use utility: .flex-1 .min-w-0 */
         flex: 1;
         min-width: 0; /* Allow input to shrink */
     }
 
     /* Clickable directory field styling */
     .dir-field-clickable {
+        /* Use utility: .cursor-pointer .bg-input .transition-fast */
         cursor: pointer;
         background: var(--color-input-bg);
         transition: background var(--duration-fast) var(--easing);
@@ -21,6 +23,7 @@
 
 
     .dir-field-clickable:disabled {
+        /* Use utility: .cursor-not-allowed .opacity-60 */
         cursor: not-allowed;
         opacity: 0.6;
     }
@@ -28,6 +31,7 @@
 
     /* Directory List Field Components */
     .dir-list-header {
+        /* Use utility: .flex .items-center .justify-between .gap-3 .mb-2 */
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -36,6 +40,7 @@
     }
 
     .dir-list-container {
+        /* Use utility: .flex .flex-col .gap-3 */
         display: flex;
         flex-direction: column;
         gap: var(--space-3);
@@ -43,6 +48,7 @@
 
     /* Mobile-first directory list item layout */
     .dir-list-item {
+        /* Use utility: .flex .flex-col .gap-2 */
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
@@ -50,6 +56,7 @@
 
     /* Directory list item content container - holds directory input and optional mode select */
     .dir-list-item-content {
+        /* Use utility: .flex .flex-col .gap-2 .flex-1 */
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
@@ -58,22 +65,26 @@
 
     /* Directory list item input */
     .dir-list-item .dir-field-display {
+        /* Use utility: .w-full */
         width: 100%;
     }
 
     /* Mode selection dropdown in directory list */
     .dir-mode-select {
+        /* Use utility: .w-full */
         width: 100%;
     }
 
     /* Directory list item actions container */
     .dir-list-item-actions {
+        /* Use utility: .flex .justify-start */
         display: flex;
         justify-content: flex-start;
     }
 
     /* Remove button in directory list - full width on mobile */
     .dir-list-item-actions .btn {
+        /* Use utility: .w-full .justify-center .min-h-touch .rounded-md */
         width: 100%;
         justify-content: center;
         min-height: var(--touch-target-min);
@@ -83,6 +94,7 @@
     /* Desktop layout for directory list items */
     @media (min-width: 768px) {
         .dir-list-item {
+            /* Use utility: .flex-row .items-center .gap-3 */
             flex-direction: row;
             align-items: center;
             gap: var(--space-3);
@@ -90,6 +102,7 @@
 
         /* Desktop layout for directory list item content */
         .dir-list-item-content {
+            /* Use utility: .flex-row .gap-3 .flex-1 */
             flex-direction: row;
             gap: var(--space-3);
             flex: 1;
@@ -110,10 +123,12 @@
         }
 
         .dir-list-item-actions {
+            /* Use utility: .shrink-0 */
             flex-shrink: 0;
         }
 
         .dir-list-item-actions .btn {
+            /* Use utility: .w-auto .min-w-[calc] .px-3 .py-2 */
             width: auto;
             min-width: calc(var(--touch-target-min) + var(--space-4));
             padding: var(--space-2) var(--space-3);

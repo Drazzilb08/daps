@@ -8,42 +8,30 @@
 
 @layer components {
     .field-wrapper-standard {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-1);
-        margin-bottom: var(--space-4);
-        width: 100%;
+        /* Use utility: .flex .flex-col .gap-1 .mb-4 .w-full */
     }
 
     .field-wrapper-form-section {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4);
-        margin-bottom: var(--space-4);
-        width: 100%;
+        /* Use utility: .flex .flex-col .gap-4 .mb-4 .w-full */
     }
 
     .field-wrapper-checkbox {
-        margin-bottom: var(--space-4);
-        width: 100%;
+        /* Use utility: .mb-4 .w-full */
     }
 
     .field-wrapper-inline {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        margin-bottom: var(--space-4);
-        width: 100%;
+        /* Use utility: .flex .items-center .gap-2 .mb-4 .w-full */
     }
 
     .field-wrapper-minimal {
-        width: 100%;
+        /* Use utility: .w-full */
     }
 
     .field-base {
         background: var(--color-input-bg);
         border: var(--field-base-border, 1px solid var(--color-text-secondary));
         box-shadow: var(--field-base-shadow, 0 1px 2px rgb(0 0 0 / 5%));
+        /* Use utility for: .rounded-md .transition-fast .min-h-input .p-input .box-border */
         border-radius: var(--radius-2);
         transition: all var(--transition-fast);
         min-height: var(--input-height);
@@ -92,6 +80,7 @@
     }
 
     .input-group {
+        /* Use utility: .flex .items-stretch .rounded-md .overflow-hidden */
         display: flex;
         align-items: stretch;
         border-radius: var(--radius-2);
@@ -99,7 +88,7 @@
         background: var(--color-input-bg);
         border: var(--field-base-border, 1px solid var(--color-text-secondary));
         box-shadow: var(--field-base-shadow, 0 1px 2px rgb(0 0 0 / 5%));
-        transition: all var(--transition-fast);
+        transition: all var(--transition-fast); /* Use utility: .transition-fast */
     }
 
     .input-group:focus-within {
@@ -124,6 +113,7 @@
     }
 
     .input-group-child {
+        /* Use utility: .border-0 .bg-transparent .shadow-none .rounded-none */
         border: none;
         background: transparent;
         box-shadow: none;
@@ -131,6 +121,7 @@
     }
 
     .input-group .input-group-child.field-base:focus {
+        /* Use utility: .bg-transparent .shadow-none .outline-none */
         border-color: transparent;
         background: transparent;
         box-shadow: none;
@@ -139,6 +130,7 @@
 
     .input-addon {
         background: var(--color-input-addon-bg);
+        /* Use utility: .border-0 .flex .items-center .justify-center .w-touch .transition-fast */
         border: none;
         display: flex;
         align-items: center;

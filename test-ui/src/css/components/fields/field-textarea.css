@@ -14,10 +14,12 @@
     }
 
     .field-textarea:disabled {
+        /* Use utility: .resize-none */
         resize: none;
     }
 
     .field-textarea:read-only {
+        /* Use utility: .resize-none */
         resize: none;
     }
 

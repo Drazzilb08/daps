@@ -13,6 +13,7 @@
 
 @layer components {
     .btn {
+        /* Use utility: .min-h-touch .leading-none .no-underline .whitespace-nowrap .border .border-transparent .select-none */
         min-height: var(--touch-target-min);
         line-height: 1;
         text-decoration: none;
@@ -78,16 +79,19 @@
     }
 
     .btn--ghost {
+        /* Use utility: .bg-transparent .text-primary .border-gray */
         background: transparent;
         color: var(--color-text-primary);
         border-color: var(--color-border);
     }
 
     .btn--ghost:hover:not(:disabled) {
+        /* Use utility: .bg-surface-hover */
         background: var(--color-surface-hover);
     }
 
     .btn--remove {
+        /* Use utility: .bg-transparent .text-error .border-error */
         background: transparent;
         color: var(--color-error);
         border-color: var(--color-error);

@@ -8,6 +8,7 @@
 /* Container System */
 @layer components {
     .container {
+        /* Use utility: .w-full .mx-auto .px-container-mobile */
         width: 100%;
         margin-left: auto;
         margin-right: auto;
@@ -35,6 +36,7 @@
 
 @layer components {
     .grid {
+        /* Use utility: .grid .gap-content-mobile */
         display: grid;
         gap: var(--content-gap-mobile);
     }
@@ -46,9 +48,7 @@
     }
 
     .media-grid {
-        display: grid;
-        gap: var(--space-4);
-        grid-template-columns: 1fr;
+        /* DEDUPED: Use utility: .grid .gap-4 .grid-cols-1 */
     }
 
     @media (width >= 425px) {
@@ -77,9 +77,7 @@
     }
 
     .form-grid {
-        display: grid;
-        gap: var(--space-6);
-        grid-template-columns: 1fr;
+        /* DEDUPED: Use utility: .grid .gap-6 .grid-cols-1 */
     }
 
     @media (width >= 768px) {
@@ -89,9 +87,7 @@
     }
 
     .dashboard-grid {
-        display: grid;
-        gap: var(--space-6);
-        grid-template-columns: 1fr;
+        /* DEDUPED: Use utility: .grid .gap-6 .grid-cols-1 */
     }
 
     @media (width >= 768px) {
@@ -107,12 +103,14 @@
     }
 
     .grid-auto-fit {
+        /* Use utility: .grid .grid-cols-auto-fit .gap-6 */
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-md), 1fr));
         gap: var(--space-6);
     }
 
     .grid-auto-fill {
+        /* Use utility: .grid .grid-cols-auto-fill .gap-6 */
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-width-md), 1fr));
         gap: var(--space-6);
@@ -121,9 +119,7 @@
 
 @layer components {
     .content-layout {
-        display: grid;
-        gap: var(--section-spacing-mobile);
-        max-width: 100%;
+        /* DEDUPED: Use utility: .grid .gap-12 .max-w-full */
     }
 
     @media (width >= 768px) {
@@ -133,6 +129,7 @@
     }
 
     .content-two-column {
+        /* Use utility: .grid .gap-8 .grid-cols-1 */
         display: grid;
         gap: var(--space-8);
         grid-template-columns: 1fr;
@@ -145,6 +142,7 @@
     }
 
     .content-three-column {
+        /* Use utility: .grid .gap-6 .grid-cols-1 */
         display: grid;
         gap: var(--space-6);
         grid-template-columns: 1fr;
@@ -165,12 +163,14 @@
 
 @layer components {
     .modal-backdrop {
+        /* Use utility: .bg-overlay .backdrop-blur-1 .z-modal-backdrop */
         background: var(--color-overlay);
         backdrop-filter: blur(var(--space-1));
         z-index: var(--z-modal-backdrop);
     }
 
     .modal-container {
+        /* Use utility: .bg-surface .rounded-3 .shadow-xl .max-w-modal .max-h-90vh .w-full .overflow-y-auto .z-modal */
         background: var(--color-surface);
         border-radius: var(--radius-3);
         box-shadow: var(--shadow-xl);
@@ -182,15 +182,18 @@
     }
 
     .modal-header {
+        /* Use utility: .pt-6 .px-6 .pb-3 .border-b .border-color */
         padding: var(--space-6) var(--space-6) var(--space-3) var(--space-6);
         border-bottom: var(--border-width-thin) solid var(--color-border);
     }
 
     .modal-body {
+        /* Use utility: .p-6 */
         padding: var(--space-6);
     }
 
     .modal-footer {
+        /* Use utility: .pt-3 .px-6 .pb-6 .border-t .border-color .flex .items-center .justify-end .gap-3 */
         padding: var(--space-3) var(--space-6) var(--space-6) var(--space-6);
         border-top: 1px solid var(--color-border);
         display: flex;
@@ -202,6 +205,7 @@
 
 @layer components {
     .card {
+        /* Use utility: .bg-surface .border .border-color .rounded-2 .overflow-hidden .transition-all */
         background: var(--color-surface);
         border: var(--border-width-thin) solid var(--color-border);
         border-radius: var(--radius-2);
@@ -219,33 +223,39 @@
     }
 
     .card-header {
+        /* Use utility: .pt-4 .px-4 .pb-3 .border-b .border-color */
         padding: var(--space-4) var(--space-4) var(--space-3) var(--space-4);
         border-bottom: var(--border-width-thin) solid var(--color-border);
     }
 
     .card-body {
+        /* Use utility: .p-4 */
         padding: var(--space-4);
     }
 
     .card-footer {
+        /* Use utility: .pt-3 .px-4 .pb-4 .border-t .border-color .bg-background-alt */
         padding: var(--space-3) var(--space-4) var(--space-4) var(--space-4);
         border-top: 1px solid var(--color-border);
         background: var(--color-background-alt);
     }
 
     .media-card {
+        /* Use utility: .flex .flex-col .h-full */
         display: flex;
         flex-direction: column;
         height: 100%;
     }
 
     .media-card-image {
+        /* Use utility: .aspect-video .overflow-hidden .bg-background-alt */
         aspect-ratio: 16 / 9;
         overflow: hidden;
         background: var(--color-background-alt);
     }
 
     .media-card-content {
+        /* Use utility: .p-4 .flex-1 .flex .flex-col */
         padding: var(--space-4);
         flex: 1;
         display: flex;
@@ -253,6 +263,7 @@
     }
 
     .media-card-actions {
+        /* Use utility: .mt-auto .pt-3 .flex .gap-2 */
         margin-top: auto;
         padding-top: var(--space-3);
         display: flex;

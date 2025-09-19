@@ -6,6 +6,7 @@
 
 @layer components {
     .page-toolbar {
+        /* Use utility: .flex .justify-between .flex-none .px-4 .h-header .bg-surface .text-primary .border-b .border-color */
         display: flex;
         justify-content: space-between;
         flex: 0 0 auto;
@@ -18,6 +19,7 @@
     }
 
     .page-toolbar-section {
+        /* Use utility: .flex .items-center .gap-1 .min-w-0 .overflow-hidden */
         display: flex;
         align-items: center;
         gap: var(--space-1);
@@ -26,6 +28,7 @@
     }
 
     .page-toolbar-section-buttons {
+        /* Use utility: .flex .items-center .gap-1 .flex-1 .min-w-0 .overflow-hidden */
         display: flex;
         align-items: center;
         gap: var(--space-1);
@@ -40,6 +43,7 @@
 
     @media (width <= calc(var(--breakpoint-tablet) - 1px)) {
         .page-toolbar {
+            /* Use utility: .px-2 */
             padding: 0 var(--space-2);
         }
     }

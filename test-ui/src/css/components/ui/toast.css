@@ -5,10 +5,12 @@
 
 @layer components {
     .toast-container {
+        /* Use utility: .pointer-events-none */
         pointer-events: none;
     }
 
     .toast {
+        /* Use utility: .text-white .pointer-events-auto .opacity-0 .transition-all */
         color: white;
         pointer-events: auto;
         opacity: 0;
@@ -16,6 +18,7 @@
     }
 
     .toast.show {
+        /* Use utility: .opacity-100 */
         opacity: 1;
     }
 
@@ -44,6 +47,7 @@
     }
 
     .toast::before {
+        /* Use utility: .absolute .bottom-0 .left-0 .h-1 .w-0 .bg-white-50 .transition-width */
         content: '';
         position: absolute;
         bottom: 0;
@@ -55,6 +59,7 @@
     }
 
     .toast.show::before {
+        /* Use utility: .w-full */
         width: 100%;
     }
 

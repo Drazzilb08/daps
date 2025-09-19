@@ -7,18 +7,22 @@
 
 @layer components {
     .search-interface {
+        /* Use utility: .w-full */
         width: 100%;
     }
 
     .search-form {
+        /* Use utility: .w-full */
         width: 100%;
     }
 
     .search-input-container {
+        /* Use utility: .relative */
         position: relative;
     }
 
     .search-input-wrapper {
+        /* Use utility: .relative .flex .items-center .bg-surface .border .border-color .rounded-md .h-input */
         position: relative;
         display: flex;
         align-items: center;
@@ -33,6 +37,7 @@
     }
 
     .search-icon {
+        /* Use utility: .absolute .left-3 .text-secondary .text-lg .pointer-events-none .z-10 */
         position: absolute;
         left: var(--space-3);
         color: var(--color-text-secondary);
@@ -42,6 +47,7 @@
     }
 
     .search-input {
+        /* Use utility: .flex-1 .py-input .pr-4 .pl-10 .border-none .bg-transparent .text-primary .outline-none .w-full .h-full */
         flex: 1;
         padding: var(--input-padding-y) var(--space-4) var(--input-padding-y) var(--space-10);
         border: none;
@@ -57,6 +63,7 @@
     }
 
     .search-clear {
+        /* Use utility: .absolute .right-2 .top-1/2 .-translate-y-1/2 .w-8 .h-8 .flex .items-center .justify-center .bg-none .border-none .text-secondary .cursor-pointer .rounded .transition-colors */
         position: absolute;
         right: var(--space-2);
         top: 50%;
@@ -75,6 +82,7 @@
     }
 
     .search-clear:hover {
+        /* Use utility: .hover:text-primary */
         color: var(--color-text-primary);
     }
 }

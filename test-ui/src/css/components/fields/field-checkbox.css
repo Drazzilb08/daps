@@ -8,6 +8,7 @@
 @layer components {
     /* Main checkbox field container - ENTIRE AREA CLICKABLE */
     .checkbox-field-container {
+        /* Use utility: .flex .items-center .gap-3 .py-2 .px-3 .min-h-touch .rounded .cursor-pointer .relative */
         display: flex;
         align-items: center; /* Changed from flex-start to center for better pill shape */
         gap: var(--space-3);
@@ -29,18 +30,21 @@
 
     /* Focus state for entire field - matches TextField styling */
     .checkbox-field-container:focus {
+        /* Use utility: .outline-none */
         outline: none;
         box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
     }
 
     /* Also apply focus styling when the checkbox input itself is focused */
     .checkbox-field-container:focus-within {
+        /* Use utility: .outline-none */
         outline: none;
         box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
     }
 
     /* Disabled state */
     .checkbox-field-container[aria-disabled="true"] {
+        /* Use utility: .opacity-60 .cursor-not-allowed */
         opacity: 0.6;
         cursor: not-allowed;
         background: var(--color-surface-dim);
@@ -66,12 +70,14 @@
 
     /* Field content area */
     .checkbox-content {
+        /* Use utility: .flex-1 .min-w-0 */
         flex: 1;
         min-width: 0; /* Allow text to wrap */
     }
 
     /* Checkbox label styling */
     .checkbox-label {
+        /* Use utility: .mb-1 .font-medium .text-primary .cursor-pointer */
         margin-bottom: var(--space-1);
         font-weight: var(--font-weight-medium);
         color: var(--color-text-primary);
@@ -85,6 +91,7 @@
 
     /* Legacy support for CheckboxBase primitive (if still used) */
     .checkbox-container {
+        /* Use utility: .relative .inline-flex .items-center .justify-center .min-w-touch .min-h-touch .cursor-pointer */
         position: relative;
         display: inline-flex;
         align-items: center;
@@ -95,6 +102,7 @@
     }
 
     .checkbox-input {
+        /* Use utility: .absolute .opacity-0 .w-full .h-full .m-0 .cursor-pointer */
         position: absolute;
         opacity: 0;
         width: 100%;
@@ -107,6 +115,7 @@
         width: var(--size-checkbox);
         height: var(--size-checkbox);
         border: var(--checkbox-border);
+        /* Use utility: .rounded .bg-white .flex .items-center .justify-center .transition-fast .shrink-0 .pointer-events-none */
         border-radius: var(--radius-1);
         background: white;
         display: flex;

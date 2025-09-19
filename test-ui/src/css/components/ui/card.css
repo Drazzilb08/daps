@@ -8,6 +8,7 @@
 @layer components {
     /* Base card styles */
     .card {
+        /* Use utility: .flex .flex-col .gap-2 .p-3 .rounded-md .mt-3 */
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
@@ -23,6 +24,7 @@
     }
 
     .card--compact {
+        /* Use utility: .gap-1 .p-2 .text-sm */
         gap: var(--space-1);
         padding: var(--space-2);
         font-size: var(--font-size-sm);
@@ -33,6 +35,7 @@
     }
 
     .card--minimal {
+        /* Use utility: .bg-transparent .py-2 .px-0 .rounded-none */
         background: transparent;
         padding: var(--space-2) 0;
         border-radius: 0;
@@ -40,6 +43,7 @@
 
     /* Card row styles */
     .card-row {
+        /* Use utility: .flex .flex-col .gap-1 */
         display: flex;
         flex-direction: column;
         gap: var(--space-1);
@@ -47,6 +51,7 @@
 
     @media (min-width: 480px) {
         .card-row {
+            /* Use utility: .flex-row .items-start */
             flex-direction: row;
             align-items: flex-start;
         }
@@ -54,6 +59,7 @@
 
     /* Card label styles */
     .card-label {
+        /* Use utility: .font-medium .text-secondary .shrink-0 */
         font-weight: var(--font-weight-medium);
         color: var(--color-text-secondary);
         min-width: 80px;
@@ -63,6 +69,7 @@
     /* Card value styles */
     .card-value {
         color: var(--color-text-primary);
+        /* Use utility: .flex-1 .break-words */
         flex: 1;
         word-break: break-word;
     }
@@ -72,18 +79,21 @@
     }
 
     .card-value-list {
+        /* Use utility: .m-0 .pl-4 .list-disc */
         margin: 0;
         padding-left: var(--space-4);
         list-style-type: disc;
     }
 
     .card-value-list-item {
+        /* Use utility: .mb-1 */
         margin-bottom: var(--space-1);
     }
 
     .card-value-object {
         background: var(--color-bg-secondary);
         border: var(--border-width-1) solid var(--color-border);
+        /* Use utility: .rounded .p-2 .m-0 .font-mono .text-sm .overflow-x-auto .whitespace-pre-wrap */
         border-radius: var(--radius-1);
         padding: var(--space-2);
         margin: 0;
@@ -95,6 +105,7 @@
 
     /* Specific styling for preset details card */
     .preset-details-card {
+        /* Use utility: .mt-3 */
         margin-top: var(--space-3);
         border: var(--border-width-1) solid var(--color-border-subtle);
         background: var(--color-surface-elevated);
@@ -102,6 +113,7 @@
 
     .preset-details-card .card-label {
         color: var(--color-text-tertiary);
+        /* Use utility: .text-sm */
         font-size: var(--font-size-sm);
     }
 

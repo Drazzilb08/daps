@@ -13,7 +13,7 @@ const ToolbarTestPage = () => {
     };
 
     return (
-        <div className="content-layout">
+        <div className="grid gap-12 max-w-full">
             <h1>Toolbar Overflow Test</h1>
             <p>Resize your browser window to test the responsive overflow behavior.</p>
             <p>Buttons should move to an overflow "More" menu instead of getting compressed.</p>

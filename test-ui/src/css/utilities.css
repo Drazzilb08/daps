@@ -320,6 +320,7 @@
   .grid-cols-auto-sm { grid-template-columns: repeat(auto-fit, minmax(var(--min-width-input), 1fr)); }
   .grid-cols-auto-lg { grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-sm), 1fr)); }
 
+
   /* Position */
   .static { position: static; }
   .fixed { position: fixed; }
@@ -761,6 +762,13 @@
     .sm\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
     .sm\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
     .sm\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-xs), 1fr)); }
+
+    /* Grid Column Span - Responsive */
+    .sm\:col-span-1 { grid-column: span 1 / span 1; }
+    .sm\:col-span-2 { grid-column: span 2 / span 2; }
+    .sm\:col-span-3 { grid-column: span 3 / span 3; }
+    .sm\:col-span-4 { grid-column: span 4 / span 4; }
+    .sm\:col-span-full { grid-column: 1 / -1; }
   }
   @media (width >= 769px) {
     .md\:grid-cols-1 { grid-template-columns: repeat(1, 1fr); }

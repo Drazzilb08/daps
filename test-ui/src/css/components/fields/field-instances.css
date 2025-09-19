@@ -343,16 +343,7 @@
             margin-bottom: var(--space-3);
         }
 
-        /* Two-column layout for multiple services on tablet+ */
-        .multi-service-selector {
-            grid-template-columns: 1fr 1fr;
-        }
-
-        /* Plex section spans full width when present with other services */
-        .multi-service-selector .service-section:has(.plex-instance-item),
-        .multi-service-selector .service-section:last-child {
-            grid-column: 1 / -1;
-        }
+        /* Column layout now handled by utility classes in JSX */
 
         .instance-item .checkbox-field-container {
             padding: var(--space-3); /* 12px - more generous */
@@ -378,9 +369,7 @@
        =========================================== */
 
     @media (min-width: 1024px) {
-        .multi-service-selector {
-            gap: var(--space-5); /* 20px spacing */
-        }
+        /* Gap spacing now handled by utility classes */
 
         .service-section {
             padding: var(--space-5); /* 20px desktop padding */

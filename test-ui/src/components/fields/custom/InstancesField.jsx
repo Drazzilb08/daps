@@ -644,9 +644,11 @@ export const InstancesField = React.memo(({
                     </div>
                 ) : (
                     // Multiple service types - sectioned UI
-                    <div className="multi-service-selector flex flex-col gap-3">
+                    <div className="multi-service-selector grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {instanceTypes.map(serviceType => (
-                            <div key={serviceType} className="service-section flex flex-col gap-2 bg-surface border">
+                            <div key={serviceType} className={`service-section flex flex-col gap-2 bg-surface border ${
+                                serviceType === 'plex' ? 'sm:col-span-2' : ''
+                            }`}>
                                 <h4 className="service-title text-base font-semibold text-primary">{humanize(serviceType)}</h4>
                                 {renderServiceSelector(serviceType)}
                             </div>

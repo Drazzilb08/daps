@@ -117,25 +117,11 @@
         min-width: 0; /* Allow text wrapping */
     }
 
-    /* Checkbox containers - HORIZONTAL LAYOUT FOR MOBILE */
+    /* Checkbox containers - INSTANCES-SPECIFIC OVERRIDES ONLY */
     .instance-item .checkbox-field-container {
-        width: 100%;
-        min-height: var(--touch-target-min); /* 44px minimum touch target */
-        padding: var(--space-2); /* 8px - compact mobile padding */
-        gap: var(--space-2); /* 8px - compact space between checkbox and content */
-        border-radius: var(--border-radius-md);
-        transition: all var(--transition-duration) var(--transition-timing);
-        cursor: pointer;
-    }
-
-    .instance-item .checkbox-field-container:hover {
-        background: var(--surface-hover);
-        border-color: var(--border-color-hover);
-    }
-
-    .instance-item .checkbox-field-container:active {
-        background: var(--surface-pressed);
-        transform: scale(0.98); /* Subtle touch feedback */
+        /* Override base checkbox styling with compact instances-specific values */
+        padding: var(--space-2); /* 8px - compact mobile padding (base uses space-3) */
+        gap: var(--space-2); /* 8px - compact gap between checkbox and content */
     }
 
     /* Checkbox content area - horizontal mobile layout */
@@ -190,15 +176,8 @@
     }
 
     .poster-upload-option .checkbox-field-container {
-        min-height: var(--touch-target-min); /* 44px touch target */
-        padding: var(--space-3); /* 12px - comfortable padding */
-        border-radius: var(--border-radius-md);
-        transition: all var(--transition-duration) var(--transition-timing);
-    }
-
-    .poster-upload-option .checkbox-field-container:hover {
-        border-color: var(--border-color-hover);
-        background: var(--surface-hover);
+        /* Override base checkbox with poster-specific padding */
+        padding: var(--space-3); /* 12px - comfortable padding (larger than instances) */
     }
 
     /* Library selection - integrated mobile layout */
@@ -274,10 +253,8 @@
     }
 
     .library-item .checkbox-field-container {
-        min-height: var(--touch-target-min); /* 44px touch target */
+        /* Override base checkbox with very compact library-specific padding */
         padding: var(--space-1); /* 4px - very compact for library items */
-        width: 100%; /* Fit within grid cell */
-        box-sizing: border-box;
     }
 
     /* ===========================================
@@ -346,7 +323,8 @@
         /* Column layout now handled by utility classes in JSX */
 
         .instance-item .checkbox-field-container {
-            padding: var(--space-3); /* 12px - more generous */
+            /* Override mobile compact padding with more generous tablet padding */
+            padding: var(--space-3); /* 12px - more generous than mobile */
         }
 
         /* TABLET: Switch to desktop layout */
@@ -409,41 +387,24 @@
        ACCESSIBILITY & INTERACTION STATES
        =========================================== */
 
-    /* Focus management */
-    .instance-item .checkbox-field-container:focus-visible {
-        outline: 2px solid var(--color-focus);
-        outline-offset: 2px;
-    }
-
-    /* Disabled state */
+    /* Instances-specific disabled state for parent container */
     .instances-field-content[aria-disabled="true"] .service-section {
         opacity: 0.5;
         pointer-events: none;
     }
 
-    .instances-field-content[aria-disabled="true"] .checkbox-field-container {
-        cursor: not-allowed;
-        background: var(--surface-disabled);
-    }
-
-    /* High contrast support */
+    /* High contrast support for instances-specific elements */
     @media (prefers-contrast: high) {
         .service-section,
-        .instance-item .checkbox-field-container {
-            border-width: 2px;
-        }
-
         .instances-loading,
         .instances-error,
         .instance-empty-state {
-            border-width: 3px;
+            border-width: 2px;
         }
     }
 
-    /* Reduced motion support */
+    /* Reduced motion support for instances-specific elements */
     @media (prefers-reduced-motion: reduce) {
-        .instance-item .checkbox-field-container,
-        .poster-upload-option,
         .service-section {
             transition: none;
         }
@@ -451,10 +412,6 @@
         .loading-spinner,
         .loading-spinner-small {
             animation: none;
-        }
-
-        .instance-item .checkbox-field-container:active {
-            transform: none;
         }
     }
 }

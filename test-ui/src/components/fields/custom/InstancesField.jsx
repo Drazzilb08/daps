@@ -71,7 +71,7 @@ const SimpleInstanceSelector = React.memo(({
                 return (
                     <div key={instance.name} className="instance-item">
                         <div
-                            className="checkbox-field-container flex items-center bg-surface-elevated border"
+                            className="checkbox-field-container flex items-center bg-surface-elevated border hover:bg-surface-hover hover:border-primary"
                             onClick={(e) => {
                                 // Don't handle click if it came from the label or checkbox input
                                 if (disabled) return;
@@ -218,7 +218,7 @@ const PlexLibrarySelector = React.memo(({
                         return (
                             <div key={library} className="library-item">
                                 <div
-                                    className="checkbox-field-container flex items-center bg-surface-elevated border"
+                                    className="checkbox-field-container flex items-center bg-surface-elevated border hover:bg-surface-hover hover:border-primary"
                                     onClick={(e) => {
                                         // Don't handle click if it came from the label or checkbox input
                                         if (disabled) return;
@@ -361,7 +361,7 @@ const PlexInstanceSelector = React.memo(({
                 return (
                     <div key={instance.name} className="instance-item plex-instance-item">
                         <div
-                            className="checkbox-field-container flex items-center bg-surface-elevated border"
+                            className="checkbox-field-container flex items-center bg-surface-elevated border hover:bg-surface-hover hover:border-primary"
                             onClick={(e) => {
                                 // Don't handle click if it came from the label or checkbox input
                                 if (disabled) return;
@@ -404,7 +404,7 @@ const PlexInstanceSelector = React.memo(({
                                 {showPosterOption && (
                                     <div className="poster-upload-option">
                                         <div
-                                            className="checkbox-field-container flex items-center bg-surface-elevated border"
+                                            className="checkbox-field-container flex items-center bg-surface-elevated border hover:bg-surface-hover hover:border-primary"
                                             onClick={(e) => {
                                                 // Don't handle click if it came from the label or checkbox input
                                                 if (disabled) return;

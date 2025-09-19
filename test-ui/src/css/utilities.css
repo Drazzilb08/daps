@@ -658,6 +658,12 @@
     background: var(--color-surface-hover);
   }
 
+  /* Background hover utilities */
+  .hover\:bg-surface-hover:hover { background: var(--color-surface-hover); }
+
+  /* Border hover utilities */
+  .hover\:border-primary:hover { border-color: var(--color-primary); }
+
   .state-focus-ring:focus {
     outline: none;
     border-color: var(--color-primary);

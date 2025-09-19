@@ -1,0 +1,409 @@
+/**
+ * Color Utilities - Comprehensive Theme-Aware Color System
+ *
+ * Systematic color utilities for backgrounds, borders, text, and states.
+ * Eliminates color-related duplication across components by providing
+ * comprehensive utilities for all theme colors and interaction states.
+ */
+
+@layer utilities {
+  /* ===========================================
+     BACKGROUND COLOR UTILITIES - THEME AWARE
+     =========================================== */
+
+  /* Primary surface backgrounds */
+  .bg-primary { background: var(--primary); }
+  .bg-bg { background: var(--bg); }
+  .bg-surface { background: var(--surface); }
+  .bg-surface-elevated { background: var(--surface-elevated); }
+  .bg-surface-hover { background: var(--surface-hover); }
+  .bg-surface-active { background: var(--surface-active); }
+  .bg-surface-variant { background: var(--surface-variant); }
+  .bg-surface-alt { background: var(--surface-alt); }
+  .bg-surface-secondary { background: var(--surface-secondary); }
+  .bg-surface-dim { background: var(--surface-dim); }
+
+  /* State color backgrounds */
+  .bg-success { background: var(--success); }
+  .bg-warning { background: var(--warning); }
+  .bg-error { background: var(--error); }
+  .bg-info { background: var(--info); }
+
+  /* Special backgrounds */
+  .bg-transparent { background: transparent; }
+  .bg-white { background: #ffffff; }
+  .bg-black { background: #000000; }
+
+  /* Focus and overlay backgrounds */
+  .bg-focus { background: var(--focus); }
+  .bg-overlay { background: var(--overlay-bg, rgba(0, 0, 0, 0.5)); }
+  .bg-backdrop { background: var(--backdrop-bg, rgba(0, 0, 0, 0.3)); }
+
+  /* Gradient backgrounds for advanced use cases */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-darker, var(--primary)));
+  }
+  .bg-gradient-surface {
+    background: linear-gradient(135deg, var(--surface), var(--surface-elevated));
+  }
+
+  /* ===========================================
+     TEXT COLOR UTILITIES - THEME AWARE
+     =========================================== */
+
+  /* Primary text colors from theme */
+  .text-primary { color: var(--text-color); }
+  .text-secondary { color: var(--text-secondary); }
+  .text-tertiary { color: var(--text-tertiary); }
+  .text-disabled { color: var(--text-disabled); }
+  .text-accent { color: var(--primary); }
+
+  /* State text colors */
+  .text-success { color: var(--success); }
+  .text-warning { color: var(--warning); }
+  .text-error { color: var(--error); }
+  .text-info { color: var(--info); }
+
+  /* Special text colors */
+  .text-inherit { color: inherit; }
+  .text-current { color: currentColor; }
+  .text-transparent { color: transparent; }
+  .text-white { color: #ffffff; }
+  .text-black { color: #000000; }
+
+  /* Focus and interactive text colors */
+  .text-focus { color: var(--focus); }
+  .text-link { color: var(--link-color, var(--primary)); }
+  .text-link-hover { color: var(--link-hover-color, var(--primary)); }
+
+  /* Muted text variants for hierarchy */
+  .text-muted {
+    color: var(--text-muted, var(--text-secondary));
+    opacity: 0.8;
+  }
+  .text-subtle {
+    color: var(--text-subtle, var(--text-tertiary));
+    opacity: 0.6;
+  }
+
+  /* ===========================================
+     BORDER COLOR UTILITIES - THEME AWARE
+     =========================================== */
+
+  /* Primary border colors */
+  .border-primary { border-color: var(--primary); }
+  .border-surface { border-color: var(--surface); }
+  .border-border { border-color: var(--border-color); }
+  .border-border-subtle { border-color: var(--border-subtle, var(--border-color)); }
+  .border-border-strong { border-color: var(--border-strong, var(--border-color)); }
+
+  /* State border colors */
+  .border-success { border-color: var(--success); }
+  .border-warning { border-color: var(--warning); }
+  .border-error { border-color: var(--error); }
+  .border-info { border-color: var(--info); }
+
+  /* Special border colors */
+  .border-transparent { border-color: transparent; }
+  .border-current { border-color: currentColor; }
+  .border-white { border-color: #ffffff; }
+  .border-black { border-color: #000000; }
+
+  /* Focus and interactive border colors */
+  .border-focus { border-color: var(--focus); }
+  .border-disabled { border-color: var(--border-disabled, var(--border-color)); }
+
+  /* Input-specific border colors */
+  .border-input { border-color: var(--input-border-color, var(--border-color)); }
+  .border-input-focus { border-color: var(--input-border-focus, var(--focus)); }
+  .border-input-error { border-color: var(--input-border-error, var(--error)); }
+  .border-input-success { border-color: var(--input-border-success, var(--success)); }
+
+  /* ===========================================
+     FILL COLOR UTILITIES - SVG ICONS
+     =========================================== */
+
+  /* Primary fill colors for SVG icons */
+  .fill-primary { fill: var(--primary); }
+  .fill-text { fill: var(--text-color); }
+  .fill-text-secondary { fill: var(--text-secondary); }
+  .fill-text-tertiary { fill: var(--text-tertiary); }
+  .fill-text-disabled { fill: var(--text-disabled); }
+
+  /* State fill colors */
+  .fill-success { fill: var(--success); }
+  .fill-warning { fill: var(--warning); }
+  .fill-error { fill: var(--error); }
+  .fill-info { fill: var(--info); }
+
+  /* Special fill colors */
+  .fill-current { fill: currentColor; }
+  .fill-none { fill: none; }
+  .fill-white { fill: #ffffff; }
+  .fill-black { fill: #000000; }
+
+  /* ===========================================
+     HOVER STATE COLOR UTILITIES
+     =========================================== */
+
+  /* Background hover utilities */
+  .hover\:bg-primary:hover { background: var(--primary); }
+  .hover\:bg-surface:hover { background: var(--surface); }
+  .hover\:bg-surface-hover:hover { background: var(--surface-hover); }
+  .hover\:bg-surface-active:hover { background: var(--surface-active); }
+  .hover\:bg-success:hover { background: var(--success); }
+  .hover\:bg-warning:hover { background: var(--warning); }
+  .hover\:bg-error:hover { background: var(--error); }
+  .hover\:bg-transparent:hover { background: transparent; }
+
+  /* Text hover utilities */
+  .hover\:text-primary:hover { color: var(--primary); }
+  .hover\:text-secondary:hover { color: var(--text-secondary); }
+  .hover\:text-success:hover { color: var(--success); }
+  .hover\:text-warning:hover { color: var(--warning); }
+  .hover\:text-error:hover { color: var(--error); }
+  .hover\:text-white:hover { color: #ffffff; }
+
+  /* Border hover utilities */
+  .hover\:border-primary:hover { border-color: var(--primary); }
+  .hover\:border-success:hover { border-color: var(--success); }
+  .hover\:border-warning:hover { border-color: var(--warning); }
+  .hover\:border-error:hover { border-color: var(--error); }
+  .hover\:border-transparent:hover { border-color: transparent; }
+
+  /* Fill hover utilities for icons */
+  .hover\:fill-primary:hover { fill: var(--primary); }
+  .hover\:fill-text:hover { fill: var(--text-color); }
+  .hover\:fill-success:hover { fill: var(--success); }
+  .hover\:fill-error:hover { fill: var(--error); }
+
+  /* ===========================================
+     FOCUS STATE COLOR UTILITIES
+     =========================================== */
+
+  /* Background focus utilities */
+  .focus\:bg-primary:focus { background: var(--primary); }
+  .focus\:bg-surface-hover:focus { background: var(--surface-hover); }
+  .focus\:bg-focus:focus { background: var(--focus-bg, var(--surface-hover)); }
+
+  /* Text focus utilities */
+  .focus\:text-primary:focus { color: var(--primary); }
+  .focus\:text-focus:focus { color: var(--focus); }
+
+  /* Border focus utilities */
+  .focus\:border-primary:focus { border-color: var(--primary); }
+  .focus\:border-focus:focus { border-color: var(--focus); }
+  .focus\:border-success:focus { border-color: var(--success); }
+  .focus\:border-error:focus { border-color: var(--error); }
+
+  /* ===========================================
+     ACTIVE STATE COLOR UTILITIES
+     =========================================== */
+
+  /* Background active utilities */
+  .active\:bg-primary:active { background: var(--primary); }
+  .active\:bg-surface-active:active { background: var(--surface-active); }
+  .active\:bg-success:active { background: var(--success); }
+  .active\:bg-error:active { background: var(--error); }
+
+  /* Text active utilities */
+  .active\:text-primary:active { color: var(--primary); }
+  .active\:text-white:active { color: #ffffff; }
+
+  /* Border active utilities */
+  .active\:border-primary:active { border-color: var(--primary); }
+  .active\:border-success:active { border-color: var(--success); }
+  .active\:border-error:active { border-color: var(--error); }
+
+  /* ===========================================
+     DISABLED STATE COLOR UTILITIES
+     =========================================== */
+
+  /* Background disabled utilities */
+  .disabled\:bg-disabled:disabled { background: var(--surface-disabled, var(--surface-dim)); }
+  .disabled\:bg-transparent:disabled { background: transparent; }
+
+  /* Text disabled utilities */
+  .disabled\:text-disabled:disabled { color: var(--text-disabled); }
+  .disabled\:text-muted:disabled {
+    color: var(--text-disabled);
+    opacity: 0.5;
+  }
+
+  /* Border disabled utilities */
+  .disabled\:border-disabled:disabled { border-color: var(--border-disabled, var(--border-color)); }
+  .disabled\:border-transparent:disabled { border-color: transparent; }
+
+  /* Fill disabled utilities */
+  .disabled\:fill-disabled:disabled { fill: var(--text-disabled); }
+
+  /* ===========================================
+     SELECTION STATE COLOR UTILITIES
+     =========================================== */
+
+  /* Selection highlight utilities */
+  .selected\:bg-primary { background: var(--primary); }
+  .selected\:bg-success { background: var(--success); }
+  .selected\:text-white { color: #ffffff; }
+  .selected\:border-primary { border-color: var(--primary); }
+
+  /* Checkbox/radio selection states */
+  .checked\:bg-primary:checked { background: var(--primary); }
+  .checked\:border-primary:checked { border-color: var(--primary); }
+  .checked\:text-white:checked { color: #ffffff; }
+
+  /* ===========================================
+     GROUP COLOR UTILITIES
+     =========================================== */
+
+  /* Group hover effects for cards/items */
+  .group:hover .group-hover\:bg-surface-hover { background: var(--surface-hover); }
+  .group:hover .group-hover\:text-primary { color: var(--primary); }
+  .group:hover .group-hover\:border-primary { border-color: var(--primary); }
+  .group:hover .group-hover\:fill-primary { fill: var(--primary); }
+
+  /* Group focus effects */
+  .group:focus-within .group-focus\:border-primary { border-color: var(--primary); }
+  .group:focus-within .group-focus\:text-primary { color: var(--primary); }
+
+  /* ===========================================
+     THEME-SPECIFIC COLOR PATTERNS
+     =========================================== */
+
+  /* Card color patterns */
+  .card-colors {
+    background: var(--surface);
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+
+  .card-colors-elevated {
+    background: var(--surface-elevated);
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+
+  /* Input color patterns */
+  .input-colors {
+    background: var(--input-bg, var(--surface));
+    color: var(--text-color);
+    border-color: var(--input-border-color, var(--border-color));
+  }
+
+  .input-colors-focus {
+    background: var(--input-bg-focus, var(--surface));
+    color: var(--text-color);
+    border-color: var(--input-border-focus, var(--focus));
+  }
+
+  /* Button color patterns */
+  .btn-colors-primary {
+    background: var(--primary);
+    color: var(--primary-text, #ffffff);
+    border-color: var(--primary);
+  }
+
+  .btn-colors-secondary {
+    background: var(--surface);
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+
+  .btn-colors-success {
+    background: var(--success);
+    color: var(--success-text, #ffffff);
+    border-color: var(--success);
+  }
+
+  .btn-colors-error {
+    background: var(--error);
+    color: var(--error-text, #ffffff);
+    border-color: var(--error);
+  }
+
+  /* ===========================================
+     ACCESSIBILITY COLOR UTILITIES
+     =========================================== */
+
+  /* High contrast mode adjustments */
+  @media (prefers-contrast: high) {
+    .text-primary,
+    .text-secondary,
+    .text-tertiary {
+      color: var(--text-color);
+    }
+
+    .border-primary,
+    .border-focus,
+    .focus\:border-primary:focus,
+    .focus\:border-focus:focus {
+      border-width: 2px;
+    }
+  }
+
+  /* Reduced transparency in high contrast */
+  @media (prefers-contrast: high) {
+    .text-muted,
+    .text-subtle {
+      opacity: 1;
+    }
+  }
+
+  /* ===========================================
+     PRINT COLOR UTILITIES
+     =========================================== */
+
+  @media print {
+    .print\:text-black { color: #000000 !important; }
+    .print\:bg-white { background: #ffffff !important; }
+    .print\:border-black { border-color: #000000 !important; }
+
+    /* Remove backgrounds for print efficiency */
+    .print\:bg-none { background: none !important; }
+  }
+
+  /* ===========================================
+     COLOR OPACITY UTILITIES
+     =========================================== */
+
+  /* Background with opacity */
+  .bg-primary-10 { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+  .bg-primary-20 { background: color-mix(in srgb, var(--primary) 20%, transparent); }
+  .bg-primary-50 { background: color-mix(in srgb, var(--primary) 50%, transparent); }
+
+  .bg-success-10 { background: color-mix(in srgb, var(--success) 10%, transparent); }
+  .bg-success-20 { background: color-mix(in srgb, var(--success) 20%, transparent); }
+
+  .bg-warning-10 { background: color-mix(in srgb, var(--warning) 10%, transparent); }
+  .bg-warning-20 { background: color-mix(in srgb, var(--warning) 20%, transparent); }
+
+  .bg-error-10 { background: color-mix(in srgb, var(--error) 10%, transparent); }
+  .bg-error-20 { background: color-mix(in srgb, var(--error) 20%, transparent); }
+
+  /* Text with opacity */
+  .text-primary-50 { color: color-mix(in srgb, var(--text-color) 50%, transparent); }
+  .text-primary-70 { color: color-mix(in srgb, var(--text-color) 70%, transparent); }
+  .text-primary-80 { color: color-mix(in srgb, var(--text-color) 80%, transparent); }
+
+  /* ===========================================
+     DYNAMIC COLOR UTILITIES
+     =========================================== */
+
+  /* Contextual colors that adapt based on parent background */
+  .text-adaptive {
+    color: var(--text-adaptive, var(--text-color));
+  }
+
+  .border-adaptive {
+    border-color: var(--border-adaptive, var(--border-color));
+  }
+
+  /* Inverse colors for overlays and contrasts */
+  .text-inverse {
+    color: var(--text-inverse, var(--bg));
+  }
+
+  .bg-inverse {
+    background: var(--bg-inverse, var(--text-color));
+  }
+}

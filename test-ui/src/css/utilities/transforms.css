@@ -1,0 +1,120 @@
+/**
+ * Transform and Animation Utilities
+ * Motion utilities with accessibility considerations and performance optimization.
+ */
+
+@layer utilities {
+  /* ===========================================
+     TRANSFORM UTILITIES
+     =========================================== */
+
+  /* Transform base */
+  .transform { transform: var(--transform, none); }
+  .transform-none { transform: none; }
+
+  /* Scale transforms */
+  .scale-95 { transform: scale(0.95); }
+  .scale-98 { transform: scale(0.98); }
+  .scale-100 { transform: scale(1); }
+  .scale-105 { transform: scale(1.05); }
+  .scale-110 { transform: scale(1.1); }
+
+  /* Translate transforms */
+  .translate-x-full { transform: translateX(100%); }
+  .translate-x-0 { transform: translateX(0); }
+  .translate-y-full { transform: translateY(100%); }
+  .translate-y-0 { transform: translateY(0); }
+  .translate-x-negative-1 { transform: translateX(-4px); }
+  .translate-y-negative-1 { transform: translateY(-4px); }
+
+  /* Rotation transforms */
+  .rotate-0 { transform: rotate(0deg); }
+  .rotate-45 { transform: rotate(45deg); }
+  .rotate-90 { transform: rotate(90deg); }
+  .rotate-180 { transform: rotate(180deg); }
+  .rotate-270 { transform: rotate(270deg); }
+
+  /* ===========================================
+     TRANSITION UTILITIES
+     =========================================== */
+
+  .transition-fast { transition: all var(--transition-fast); }
+  .transition { transition: all var(--transition-normal); }
+  .transition-slow { transition: all var(--transition-slow); }
+
+  /* Specific property transitions */
+  .transition-colors {
+    transition: color var(--transition-normal),
+                background-color var(--transition-normal),
+                border-color var(--transition-normal);
+  }
+  .transition-opacity { transition: opacity var(--transition-normal); }
+  .transition-transform { transition: transform var(--transition-normal); }
+
+  /* ===========================================
+     ANIMATION UTILITIES
+     =========================================== */
+
+  .animate-spin { animation: spin 1s linear infinite; }
+  .animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+  .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+  .animate-bounce { animation: bounce 1s infinite; }
+
+  /* Animation keyframes */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes ping {
+    75%, 100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  @keyframes pulse {
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(-25%);
+      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+    }
+    50% {
+      transform: none;
+      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+    }
+  }
+
+  /* Shimmer animation for loading states */
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  /* ===========================================
+     ACCESSIBILITY CONSIDERATIONS
+     =========================================== */
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-spin,
+    .animate-ping,
+    .animate-pulse,
+    .animate-bounce {
+      animation: none;
+    }
+
+    .transition-fast,
+    .transition,
+    .transition-slow,
+    .transition-colors,
+    .transition-opacity,
+    .transition-transform {
+      transition: none;
+    }
+  }
+}

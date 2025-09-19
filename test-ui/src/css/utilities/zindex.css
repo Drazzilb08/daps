@@ -1,0 +1,28 @@
+/**
+ * Z-Index Utilities
+ * Layered z-index system with semantic naming for UI layering.
+ */
+
+@layer utilities {
+  /* ===========================================
+     SEMANTIC Z-INDEX UTILITIES
+     =========================================== */
+
+  /* Base z-index values */
+  .z-0 { z-index: 0; }
+  .z-10 { z-index: 10; }
+  .z-20 { z-index: 20; }
+  .z-30 { z-index: 30; }
+  .z-40 { z-index: 40; }
+  .z-50 { z-index: 50; }
+  .z-auto { z-index: auto; }
+
+  /* Semantic z-index layers */
+  .z-toast { z-index: var(--z-toast); }
+  .z-dropdown { z-index: var(--z-dropdown); }
+  .z-modal { z-index: var(--z-modal); }
+  .z-tooltip { z-index: var(--z-tooltip); }
+
+  /* Negative z-index */
+  .z-negative { z-index: -1; }
+}

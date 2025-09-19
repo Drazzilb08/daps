@@ -1,0 +1,132 @@
+/**
+ * Image and Media Utilities
+ * Responsive images, object-fit utilities, and poster sizing for media content.
+ */
+
+@layer utilities {
+  /* ===========================================
+     OBJECT-FIT UTILITIES
+     =========================================== */
+
+  .img-cover { object-fit: cover; }
+  .img-contain { object-fit: contain; }
+  .img-fill { object-fit: fill; }
+  .img-scale-down { object-fit: scale-down; }
+  .img-none { object-fit: none; }
+
+  /* ===========================================
+     RESPONSIVE IMAGE UTILITIES
+     =========================================== */
+
+  .img-responsive {
+    max-width: 100%;
+    height: auto;
+  }
+  .img-fluid {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+
+  /* ===========================================
+     IMAGE EFFECTS
+     =========================================== */
+
+  .img-shadow { box-shadow: var(--shadow-md); }
+
+  .img-hover-scale { transition: transform var(--transition-fast); }
+  .img-hover-scale:hover { transform: scale(1.02); }
+  .img-shadow-hover { transition: box-shadow var(--transition-fast); }
+  .img-shadow-hover:hover { box-shadow: var(--shadow-lg); }
+
+  /* ===========================================
+     IMAGE STATES
+     =========================================== */
+
+  .img-placeholder {
+    background: var(--color-surface-dim);
+    border: 2px dashed var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    text-align: center;
+  }
+
+  .img-loading {
+    background: var(--color-surface-dim);
+    position: relative;
+    overflow: hidden;
+  }
+  .img-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--color-surface-elevated), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  /* ===========================================
+     POSTER SIZING UTILITIES
+     =========================================== */
+
+  .poster-standard {
+    width: var(--poster-width-standard);
+    height: var(--poster-height-standard);
+  }
+  .poster-mobile {
+    width: var(--poster-width-mobile);
+    height: var(--poster-height-mobile);
+  }
+  .poster-tablet {
+    width: var(--poster-width-tablet);
+    height: var(--poster-height-tablet);
+  }
+
+  /* ===========================================
+     RESPONSIVE POSTER UTILITIES
+     =========================================== */
+
+  @media (width <= 768px) {
+    .poster-responsive {
+      width: var(--poster-width-mobile);
+      height: var(--poster-height-mobile);
+    }
+  }
+  @media (width >= 481px) and (width <= 768px) {
+    .poster-responsive {
+      width: var(--poster-width-tablet);
+      height: var(--poster-height-tablet);
+    }
+  }
+  @media (width >= 769px) {
+    .poster-responsive {
+      width: var(--poster-width-standard);
+      height: var(--poster-height-standard);
+    }
+  }
+
+  /* ===========================================
+     ACCESSIBILITY CONSIDERATIONS
+     =========================================== */
+
+  @media (prefers-reduced-motion: reduce) {
+    .img-hover-scale:hover,
+    .img-shadow-hover:hover {
+      transform: none;
+      box-shadow: var(--shadow-md);
+    }
+    .img-loading::after { animation: none; }
+  }
+
+  @media (prefers-contrast: more) {
+    .img-placeholder {
+      border-width: 3px;
+      border-style: solid;
+    }
+  }
+}

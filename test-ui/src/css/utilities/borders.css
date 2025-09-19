@@ -1,0 +1,91 @@
+/**
+ * Border and Radius Utilities
+ * Complete border system with semantic colors and responsive patterns.
+ */
+
+@layer utilities {
+  /* ===========================================
+     BORDER WIDTH UTILITIES
+     =========================================== */
+
+  .border { border: var(--input-border-width) solid var(--color-border); }
+  .border-2 { border: 2px solid var(--color-border); }
+  .border-none { border: none; }
+
+  /* Individual border sides */
+  .border-t { border-top: 1px solid var(--color-border); }
+  .border-r { border-right: 1px solid var(--color-border); }
+  .border-b { border-bottom: 1px solid var(--color-border); }
+  .border-l { border-left: 1px solid var(--color-border); }
+
+  /* Border styles */
+  .border-solid { border-style: solid; }
+  .border-dashed { border-style: dashed; }
+  .border-dotted { border-style: dotted; }
+
+  /* ===========================================
+     SEMANTIC BORDER COLORS
+     =========================================== */
+
+  .border-primary { border-color: var(--color-primary); }
+  .border-success { border-color: var(--color-success); }
+  .border-warning { border-color: var(--color-warning); }
+  .border-error { border-color: var(--color-error); }
+
+  /* ===========================================
+     BORDER RADIUS UTILITIES
+     =========================================== */
+
+  .rounded-none { border-radius: 0; }
+  .rounded-sm { border-radius: var(--radius-1); }
+  .rounded { border-radius: var(--radius-2); }
+  .rounded-md { border-radius: var(--radius-2); }
+  .rounded-lg { border-radius: var(--radius-3); }
+  .rounded-xl { border-radius: var(--radius-4); }
+  .rounded-2xl { border-radius: var(--radius-5); }
+  .rounded-3xl { border-radius: var(--radius-6); }
+  .rounded-full { border-radius: var(--radius-full); }
+
+  /* ===========================================
+     DIRECTIONAL BORDER RADIUS
+     =========================================== */
+
+  .rounded-t-none {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+  .rounded-t {
+    border-top-left-radius: var(--radius-2);
+    border-top-right-radius: var(--radius-2);
+  }
+  .rounded-b-none {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .rounded-b {
+    border-bottom-left-radius: var(--radius-2);
+    border-bottom-right-radius: var(--radius-2);
+  }
+  .rounded-l-none {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .rounded-l {
+    border-top-left-radius: var(--radius-2);
+    border-bottom-left-radius: var(--radius-2);
+  }
+  .rounded-r-none {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .rounded-r {
+    border-top-right-radius: var(--radius-2);
+    border-bottom-right-radius: var(--radius-2);
+  }
+
+  /* ===========================================
+     HOVER UTILITIES
+     =========================================== */
+
+  .hover\:border-primary:hover { border-color: var(--color-primary); }
+}

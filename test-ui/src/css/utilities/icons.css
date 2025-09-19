@@ -1,0 +1,68 @@
+/**
+ * Icon Utilities
+ * Consistent icon sizing, display, and semantic color utilities.
+ */
+
+@layer utilities {
+  /* ===========================================
+     ICON SIZING UTILITIES
+     =========================================== */
+
+  .icon-xs {
+    width: var(--size-icon-xs);
+    height: var(--size-icon-xs);
+  }
+  .icon-sm {
+    width: var(--size-icon-sm);
+    height: var(--size-icon-sm);
+  }
+  .icon-md {
+    width: var(--size-icon-md);
+    height: var(--size-icon-md);
+  }
+  .icon-lg {
+    width: var(--size-icon-lg);
+    height: var(--size-icon-lg);
+  }
+  .icon-xl {
+    width: var(--size-icon-xl);
+    height: var(--size-icon-xl);
+  }
+  .icon-2xl {
+    width: var(--size-icon-2xl);
+    height: var(--size-icon-2xl);
+  }
+
+  /* ===========================================
+     ICON DISPLAY UTILITIES
+     =========================================== */
+
+  .icon-inline {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .icon-block { display: block; }
+
+  /* ===========================================
+     SEMANTIC ICON COLORS
+     =========================================== */
+
+  .icon-success { color: var(--color-success); }
+  .icon-warning { color: var(--color-warning); }
+  .icon-error { color: var(--color-error); }
+  .icon-info { color: var(--color-accent); }
+  .icon-muted { color: var(--color-text-muted); }
+
+  /* ===========================================
+     ACCESSIBILITY ENHANCEMENTS
+     =========================================== */
+
+  @media (prefers-contrast: more) {
+    .icon-success,
+    .icon-warning,
+    .icon-error,
+    .icon-info {
+      filter: contrast(1.2);
+    }
+  }
+}

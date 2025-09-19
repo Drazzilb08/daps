@@ -1,0 +1,104 @@
+/**
+ * Visual Effects Utilities
+ * Shadows, opacity, filters, and visual effect utilities.
+ */
+
+@layer utilities {
+  /* ===========================================
+     SHADOW UTILITIES
+     =========================================== */
+
+  .shadow-xs { box-shadow: var(--shadow-xs); }
+  .shadow-sm { box-shadow: var(--shadow-sm); }
+  .shadow-md { box-shadow: var(--shadow-md); }
+  .shadow-lg { box-shadow: var(--shadow-lg); }
+  .shadow-xl { box-shadow: var(--shadow-xl); }
+  .shadow-none { box-shadow: none; }
+
+  /* ===========================================
+     OPACITY UTILITIES
+     =========================================== */
+
+  .opacity-0 { opacity: 0; }
+  .opacity-25 { opacity: 0.25; }
+  .opacity-50 { opacity: 0.5; }
+  .opacity-70 { opacity: 0.7; }
+  .opacity-80 { opacity: 0.8; }
+  .opacity-90 { opacity: 0.9; }
+  .opacity-100 { opacity: 1; }
+
+  /* ===========================================
+     BACKDROP UTILITIES
+     =========================================== */
+
+  .backdrop-filter-none { backdrop-filter: none; }
+  .backdrop-blur { backdrop-filter: blur(4px); }
+  .backdrop-blur-sm { backdrop-filter: blur(2px); }
+  .backdrop-blur-lg { backdrop-filter: blur(8px); }
+
+  /* ===========================================
+     FILTER UTILITIES
+     =========================================== */
+
+  .filter-none { filter: none; }
+  .blur { filter: blur(4px); }
+  .blur-sm { filter: blur(2px); }
+  .blur-lg { filter: blur(8px); }
+  .brightness-50 { filter: brightness(0.5); }
+  .brightness-75 { filter: brightness(0.75); }
+  .brightness-100 { filter: brightness(1); }
+  .brightness-125 { filter: brightness(1.25); }
+  .contrast-50 { filter: contrast(0.5); }
+  .contrast-75 { filter: contrast(0.75); }
+  .contrast-100 { filter: contrast(1); }
+  .contrast-125 { filter: contrast(1.25); }
+  .grayscale { filter: grayscale(100%); }
+  .invert { filter: invert(100%); }
+  .sepia { filter: sepia(100%); }
+
+  /* ===========================================
+     OVERFLOW UTILITIES
+     =========================================== */
+
+  .overflow-auto { overflow: auto; }
+  .overflow-hidden { overflow: hidden; }
+  .overflow-visible { overflow: visible; }
+  .overflow-scroll { overflow: scroll; }
+  .overflow-x-auto { overflow-x: auto; }
+  .overflow-y-auto { overflow-y: auto; }
+  .overflow-x-hidden { overflow-x: hidden; }
+  .overflow-y-hidden { overflow-y: hidden; }
+  .overflow-x-scroll { overflow-x: scroll; }
+  .overflow-y-scroll { overflow-y: scroll; }
+
+  /* ===========================================
+     TEXT OVERFLOW UTILITIES
+     =========================================== */
+
+  .whitespace-normal { white-space: normal; }
+  .whitespace-nowrap { white-space: nowrap; }
+  .whitespace-pre { white-space: pre; }
+  .whitespace-pre-line { white-space: pre-line; }
+  .whitespace-pre-wrap { white-space: pre-wrap; }
+
+  .break-normal { word-break: normal; overflow-wrap: normal; }
+  .break-words { overflow-wrap: break-word; }
+  .break-all { word-break: break-all; }
+
+  .text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .text-clip {
+    text-overflow: clip;
+  }
+
+  /* ===========================================
+     APPEARANCE UTILITIES
+     =========================================== */
+
+  .appearance-none { appearance: none; }
+  .appearance-auto { appearance: auto; }
+}

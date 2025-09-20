@@ -14,11 +14,11 @@
     pointer-events: none;
   }
 
-  .state-hover-dim { transition: opacity var(--transition-fast); }
+  .state-hover-dim { transition: opacity 150ms ease-in-out; }
   .state-hover-dim:hover:not(:disabled) { opacity: 0.9; }
 
   .state-hover-toolbar {
-    transition: color var(--transition-fast), background var(--transition-fast);
+    transition: color 150ms ease-in-out, background 150ms ease-in-out;
   }
   .state-hover-toolbar:hover:not(:disabled) {
     color: var(--color-primary);
@@ -43,11 +43,11 @@
   .state-focus-ring:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
   .state-focus-ring:focus-within {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   /* ===========================================
@@ -57,13 +57,13 @@
   .state-invalid { border-color: var(--color-error); }
   .state-invalid:focus,
   .state-invalid:focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
   }
 
   .state-valid { border-color: var(--color-success); }
   .state-valid:focus,
   .state-valid:focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
   }
 
   /* ===========================================

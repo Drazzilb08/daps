@@ -15,14 +15,14 @@
   .w-0 { width: 0; }
   .w-px { width: 1px; }
   .w-0\.5 { width: 0.125rem; }
-  .w-1 { width: var(--space-1); }      /* 4px */
-  .w-2 { width: var(--space-2); }      /* 8px */
-  .w-3 { width: var(--space-3); }      /* 12px */
-  .w-4 { width: var(--space-4); }      /* 16px */
-  .w-5 { width: var(--space-5); }      /* 20px */
-  .w-6 { width: var(--space-6); }      /* 24px */
-  .w-7 { width: var(--space-7); }      /* 28px */
-  .w-8 { width: var(--space-8); }      /* 32px */
+  .w-1 { width: 0.25rem; }      /* 4px */
+  .w-2 { width: 0.5rem; }      /* 8px */
+  .w-3 { width: 0.75rem; }      /* 12px */
+  .w-4 { width: 1rem; }      /* 16px */
+  .w-5 { width: 1.5rem; }      /* 20px */
+  .w-6 { width: 2rem; }      /* 24px */
+  .w-7 { width: 3rem; }      /* 28px */
+  .w-8 { width: 4rem; }      /* 32px */
   .w-10 { width: 2.5rem; }             /* 40px */
   .w-12 { width: 3rem; }               /* 48px */
   .w-14 { width: 3.5rem; }             /* 56px */
@@ -80,20 +80,20 @@
   .w-dvw { width: 100dvw; }      /* Dynamic viewport width */
 
   /* Layout-specific widths */
-  .w-sidebar { width: var(--sidebar-width, 240px); }
-  .w-container { width: var(--container-max, 1200px); }
-  .w-content { width: var(--content-width, 768px); }
+  .w-sidebar { width: 210px; }
+  .w-container { width: 1200px; }
+  .w-content { width: 768px; }
 
   /* Touch target widths for accessibility */
-  .w-touch { width: var(--touch-target-min, 44px); }
-  .w-touch-lg { width: var(--touch-target-large, 48px); }
+  .w-touch { width: 44px; }
+  .w-touch-lg { width: 48px; }
 
   /* Icon and control widths */
-  .w-icon { width: var(--icon-size, 24px); }
-  .w-icon-sm { width: var(--icon-size-sm, 16px); }
-  .w-icon-lg { width: var(--icon-size-lg, 32px); }
-  .w-control { width: var(--control-width, 200px); }
-  .w-input { width: var(--input-width, 100%); }
+  .w-icon { width: 24px; }
+  .w-icon-sm { width: 16px; }
+  .w-icon-lg { width: 32px; }
+  .w-control { width: 200px; }
+  .w-input { width: 100%; }
 
   /* ===========================================
      HEIGHT UTILITIES - COMPLETE SYSTEM
@@ -103,14 +103,14 @@
   .h-0 { height: 0; }
   .h-px { height: 1px; }
   .h-0\.5 { height: 0.125rem; }
-  .h-1 { height: var(--space-1); }     /* 4px */
-  .h-2 { height: var(--space-2); }     /* 8px */
-  .h-3 { height: var(--space-3); }     /* 12px */
-  .h-4 { height: var(--space-4); }     /* 16px */
-  .h-5 { height: var(--space-5); }     /* 20px */
-  .h-6 { height: var(--space-6); }     /* 24px */
-  .h-7 { height: var(--space-7); }     /* 28px */
-  .h-8 { height: var(--space-8); }     /* 32px */
+  .h-1 { height: 0.25rem; }     /* 4px */
+  .h-2 { height: 0.5rem; }     /* 8px */
+  .h-3 { height: 0.75rem; }     /* 12px */
+  .h-4 { height: 1rem; }     /* 16px */
+  .h-5 { height: 1.5rem; }     /* 20px */
+  .h-6 { height: 2rem; }     /* 24px */
+  .h-7 { height: 3rem; }     /* 28px */
+  .h-8 { height: 4rem; }     /* 32px */
   .h-10 { height: 2.5rem; }            /* 40px */
   .h-12 { height: 3rem; }              /* 48px */
   .h-14 { height: 3.5rem; }            /* 56px */
@@ -157,22 +157,22 @@
   .h-dvh { height: 100dvh; }     /* Dynamic viewport height */
 
   /* Layout-specific heights */
-  .h-header { height: var(--header-height, 64px); }
-  .h-footer { height: var(--footer-height, 48px); }
-  .h-content { height: calc(100vh - var(--header-height, 64px)); }
-  .h-modal { height: var(--modal-max-height, 90vh); }
+  .h-header { height: 64px; }
+  .h-footer { height: 48px; }
+  .h-content { height: calc(100vh - 64px); }
+  .h-modal { height: 90vh; }
 
   /* Touch target heights for accessibility */
-  .h-touch { height: var(--touch-target-min, 44px); }
-  .h-touch-lg { height: var(--touch-target-large, 48px); }
+  .h-touch { height: 44px; }
+  .h-touch-lg { height: 48px; }
 
   /* Control and input heights */
-  .h-input { height: var(--input-height, 44px); }
-  .h-input-sm { height: var(--input-height-sm, 36px); }
-  .h-input-lg { height: var(--input-height-lg, 52px); }
-  .h-icon { height: var(--icon-size, 24px); }
-  .h-icon-sm { height: var(--icon-size-sm, 16px); }
-  .h-icon-lg { height: var(--icon-size-lg, 32px); }
+  .h-input { height: 44px; }
+  .h-input-sm { height: 36px; }
+  .h-input-lg { height: 52px; }
+  .h-icon { height: 24px; }
+  .h-icon-sm { height: 16px; }
+  .h-icon-lg { height: 32px; }
 
   /* ===========================================
      SIZE UTILITIES - COMBINED WIDTH & HEIGHT
@@ -182,14 +182,14 @@
   .size-0 { width: 0; height: 0; }
   .size-px { width: 1px; height: 1px; }
   .size-0\.5 { width: 0.125rem; height: 0.125rem; }
-  .size-1 { width: var(--space-1); height: var(--space-1); }
-  .size-2 { width: var(--space-2); height: var(--space-2); }
-  .size-3 { width: var(--space-3); height: var(--space-3); }
-  .size-4 { width: var(--space-4); height: var(--space-4); }
-  .size-5 { width: var(--space-5); height: var(--space-5); }
-  .size-6 { width: var(--space-6); height: var(--space-6); }
-  .size-7 { width: var(--space-7); height: var(--space-7); }
-  .size-8 { width: var(--space-8); height: var(--space-8); }
+  .size-1 { width: 0.25rem; height: 0.25rem; }
+  .size-2 { width: 0.5rem; height: 0.5rem; }
+  .size-3 { width: 0.75rem; height: 0.75rem; }
+  .size-4 { width: 1rem; height: 1rem; }
+  .size-5 { width: 1.5rem; height: 1.5rem; }
+  .size-6 { width: 2rem; height: 2rem; }
+  .size-7 { width: 3rem; height: 3rem; }
+  .size-8 { width: 4rem; height: 4rem; }
   .size-10 { width: 2.5rem; height: 2.5rem; }
   .size-12 { width: 3rem; height: 3rem; }
   .size-14 { width: 3.5rem; height: 3.5rem; }
@@ -218,10 +218,10 @@
   .size-full { width: 100%; height: 100%; }
 
   /* Semantic square sizes */
-  .size-touch { width: var(--touch-target-min); height: var(--touch-target-min); }
-  .size-icon { width: var(--icon-size); height: var(--icon-size); }
-  .size-icon-sm { width: var(--icon-size-sm); height: var(--icon-size-sm); }
-  .size-icon-lg { width: var(--icon-size-lg); height: var(--icon-size-lg); }
+  .size-touch { width: 44px; height: 44px; }
+  .size-icon { width: 24px; height: 24px; }
+  .size-icon-sm { width: 16px; height: 16px; }
+  .size-icon-lg { width: 32px; height: 32px; }
 
   /* ===========================================
      MINIMUM WIDTH UTILITIES
@@ -248,9 +248,9 @@
   .min-w-96 { min-width: 24rem; }
 
   /* Accessibility minimum widths */
-  .min-w-touch { min-width: var(--touch-target-min); }
-  .min-w-input { min-width: var(--input-min-width, 120px); }
-  .min-w-control { min-width: var(--control-min-width, 80px); }
+  .min-w-touch { min-width: 44px; }
+  .min-w-input { min-width: 120px; }
+  .min-w-control { min-width: 80px; }
 
   /* ===========================================
      MAXIMUM WIDTH UTILITIES
@@ -282,9 +282,9 @@
   .max-w-prose-lg { max-width: 80ch; }
 
   /* Container maximum widths */
-  .max-w-container { max-width: var(--container-max); }
-  .max-w-modal { max-width: var(--modal-max-width, 600px); }
-  .max-w-sidebar { max-width: var(--sidebar-max-width, 320px); }
+  .max-w-container { max-width: 1200px; }
+  .max-w-modal { max-width: 800px; }
+  .max-w-sidebar { max-width: 320px; }
 
   /* Screen size maximum widths */
   .max-w-screen-sm { max-width: 640px; }
@@ -308,9 +308,9 @@
   .min-h-fit { min-height: fit-content; }
 
   /* Fixed minimum heights */
-  .min-h-4 { min-height: var(--space-4); }
-  .min-h-6 { min-height: var(--space-6); }
-  .min-h-8 { min-height: var(--space-8); }
+  .min-h-4 { min-height: 1rem; }
+  .min-h-6 { min-height: 2rem; }
+  .min-h-8 { min-height: 4rem; }
   .min-h-10 { min-height: 2.5rem; }
   .min-h-12 { min-height: 3rem; }
   .min-h-16 { min-height: 4rem; }
@@ -323,9 +323,9 @@
   .min-h-64 { min-height: 16rem; }
 
   /* Accessibility minimum heights */
-  .min-h-touch { min-height: var(--touch-target-min); }
-  .min-h-input { min-height: var(--input-height); }
-  .min-h-content { min-height: var(--content-min-height, 400px); }
+  .min-h-touch { min-height: 44px; }
+  .min-h-input { min-height: 44px; }
+  .min-h-content { min-height: 400px; }
 
   /* ===========================================
      MAXIMUM HEIGHT UTILITIES
@@ -358,9 +358,9 @@
   .max-h-96 { max-height: 24rem; }
 
   /* Layout maximum heights */
-  .max-h-modal { max-height: var(--modal-max-height, 90vh); }
-  .max-h-dropdown { max-height: var(--dropdown-max-height, 300px); }
-  .max-h-content { max-height: var(--content-max-height, 80vh); }
+  .max-h-modal { max-height: 90vh; }
+  .max-h-dropdown { max-height: 300px; }
+  .max-h-content { max-height: 80vh; }
 
   /* ===========================================
      ASPECT RATIO UTILITIES
@@ -437,13 +437,13 @@
 
   /* Touch-friendly minimum sizes */
   .a11y-touch {
-    min-width: var(--touch-target-min);
-    min-height: var(--touch-target-min);
+    min-width: 44px;
+    min-height: 44px;
   }
 
   .a11y-touch-large {
-    min-width: var(--touch-target-large);
-    min-height: var(--touch-target-large);
+    min-width: 48px;
+    min-height: 48px;
   }
 
   /* Readable content widths */
@@ -503,13 +503,13 @@
   }
 
   .force-icon {
-    width: var(--icon-size);
-    height: var(--icon-size);
+    width: 24px;
+    height: 24px;
     flex-shrink: 0;
   }
 
   .force-touch {
-    min-width: var(--touch-target-min);
-    min-height: var(--touch-target-min);
+    min-width: 44px;
+    min-height: 44px;
   }
 }

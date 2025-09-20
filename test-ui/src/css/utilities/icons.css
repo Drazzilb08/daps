@@ -9,28 +9,28 @@
      =========================================== */
 
   .icon-xs {
-    width: var(--size-icon-xs);
-    height: var(--size-icon-xs);
+    width: 12px;
+    height: 12px;
   }
   .icon-sm {
-    width: var(--size-icon-sm);
-    height: var(--size-icon-sm);
+    width: 16px;
+    height: 16px;
   }
   .icon-md {
-    width: var(--size-icon-md);
-    height: var(--size-icon-md);
+    width: 20px;
+    height: 20px;
   }
   .icon-lg {
-    width: var(--size-icon-lg);
-    height: var(--size-icon-lg);
+    width: 24px;
+    height: 24px;
   }
   .icon-xl {
-    width: var(--size-icon-xl);
-    height: var(--size-icon-xl);
+    width: 32px;
+    height: 32px;
   }
   .icon-2xl {
-    width: var(--size-icon-2xl);
-    height: var(--size-icon-2xl);
+    width: 40px;
+    height: 40px;
   }
 
   /* ===========================================

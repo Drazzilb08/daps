@@ -12,20 +12,20 @@
      =========================================== */
 
   /* Input height standards */
-  .h-input { height: var(--input-height); }
-  .h-input-sm { height: calc(var(--input-height) * 0.875); } /* ~38px */
-  .h-input-lg { height: calc(var(--input-height) * 1.25); }  /* ~55px */
+  .h-input { height: 44px; }
+  .h-input-sm { height: calc(44px * 0.875); } /* ~38px */
+  .h-input-lg { height: calc(44px * 1.25); }  /* ~55px */
 
   /* Minimum heights for various input types */
-  .min-h-input { min-height: var(--input-height); }
-  .min-h-input-sm { min-height: calc(var(--input-height) * 0.875); }
-  .min-h-input-lg { min-height: calc(var(--input-height) * 1.25); }
+  .min-h-input { min-height: 44px; }
+  .min-h-input-sm { min-height: calc(44px * 0.875); }
+  .min-h-input-lg { min-height: calc(44px * 1.25); }
 
   /* Textarea specific heights */
-  .h-textarea-sm { height: calc(var(--input-height) * 2); }    /* ~88px */
-  .h-textarea { height: calc(var(--input-height) * 3); }       /* ~132px */
-  .h-textarea-lg { height: calc(var(--input-height) * 4); }    /* ~176px */
-  .h-textarea-xl { height: calc(var(--input-height) * 6); }    /* ~264px */
+  .h-textarea-sm { height: calc(44px * 2); }    /* ~88px */
+  .h-textarea { height: calc(44px * 3); }       /* ~132px */
+  .h-textarea-lg { height: calc(44px * 4); }    /* ~176px */
+  .h-textarea-xl { height: calc(44px * 6); }    /* ~264px */
 
   /* ===========================================
      FORM ELEMENT FOUNDATIONS
@@ -33,22 +33,22 @@
 
   /* Standard form element styling */
   .border-input {
-    border: var(--input-border-width) solid var(--color-border);
+    border: 1px solid var(--color-border);
   }
   .border-input-focus {
-    border: var(--input-border-width) solid var(--color-primary);
+    border: 1px solid var(--color-primary);
   }
   .border-input-error {
-    border: var(--input-border-width) solid var(--color-error);
+    border: 1px solid var(--color-error);
   }
   .border-input-success {
-    border: var(--input-border-width) solid var(--color-success);
+    border: 1px solid var(--color-success);
   }
 
   /* Input border radius patterns */
-  .rounded-input { border-radius: var(--input-border-radius); }
-  .rounded-input-sm { border-radius: calc(var(--input-border-radius) * 0.75); }
-  .rounded-input-lg { border-radius: calc(var(--input-border-radius) * 1.5); }
+  .rounded-input { border-radius: 0.25rem; }
+  .rounded-input-sm { border-radius: calc(0.25rem * 0.75); }
+  .rounded-input-lg { border-radius: calc(0.25rem * 1.5); }
 
   /* Input background patterns */
   .bg-input { background: var(--color-input-bg); }
@@ -62,28 +62,28 @@
 
   /* Input padding using design tokens */
   .p-input {
-    padding: var(--input-padding-y) var(--input-padding-x);
+    padding: 0.5rem 0.75rem;
   }
   .py-input {
-    padding-top: var(--input-padding-y);
-    padding-bottom: var(--input-padding-y);
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
   }
   .px-input {
-    padding-left: var(--input-padding-x);
-    padding-right: var(--input-padding-x);
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
   }
 
   /* Input padding variants */
   .p-input-sm {
-    padding: calc(var(--input-padding-y) * 0.75) calc(var(--input-padding-x) * 0.875);
+    padding: calc(0.5rem * 0.75) calc(0.75rem * 0.875);
   }
   .p-input-lg {
-    padding: calc(var(--input-padding-y) * 1.25) calc(var(--input-padding-x) * 1.125);
+    padding: calc(0.5rem * 1.25) calc(0.75rem * 1.125);
   }
 
   /* Input group spacing */
-  .space-input-group > * + * { margin-top: var(--space-2); }
-  .space-input-section > * + * { margin-top: var(--space-4); }
+  .space-input-group > * + * { margin-top: 0.5rem; }
+  .space-input-section > * + * { margin-top: 1rem; }
 
   /* ===========================================
      FIELD LAYOUT PATTERNS
@@ -100,30 +100,30 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: var(--space-3);
+    gap: 0.75rem;
   }
 
   .field-group {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    border: var(--input-border-width) solid var(--color-border);
-    border-radius: var(--input-border-radius);
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
     background: var(--color-surface-elevated);
   }
 
   /* Field label patterns */
   .field-label {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--color-text-primary);
-    margin-bottom: var(--space-1);
+    margin-bottom: 0.25rem;
   }
 
   .field-label-inline {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--color-text-primary);
     min-width: 120px;
     flex-shrink: 0;
@@ -136,24 +136,24 @@
 
   /* Field description patterns */
   .field-description {
-    font-size: var(--font-size-xs);
+    font-size: 0.75rem;
     color: var(--color-text-secondary);
-    margin-top: var(--space-1);
-    line-height: var(--line-height-relaxed);
+    margin-top: 0.25rem;
+    line-height: 1.75;
   }
 
   .field-error {
-    font-size: var(--font-size-xs);
+    font-size: 0.75rem;
     color: var(--color-error);
-    margin-top: var(--space-1);
-    line-height: var(--line-height-relaxed);
+    margin-top: 0.25rem;
+    line-height: 1.75;
   }
 
   .field-success {
-    font-size: var(--font-size-xs);
+    font-size: 0.75rem;
     color: var(--color-success);
-    margin-top: var(--space-1);
-    line-height: var(--line-height-relaxed);
+    margin-top: 0.25rem;
+    line-height: 1.75;
   }
 
   /* ===========================================
@@ -164,19 +164,19 @@
   .form-focus-ring:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   .form-focus-ring-error:focus {
     outline: none;
     border-color: var(--color-error);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
   }
 
   .form-focus-ring-success:focus {
     outline: none;
     border-color: var(--color-success);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
   }
 
   /* Form validation state combinations */
@@ -187,7 +187,7 @@
   .form-invalid:focus {
     outline: none;
     border-color: var(--color-error);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
   }
 
   .form-valid {
@@ -197,7 +197,7 @@
   .form-valid:focus {
     outline: none;
     border-color: var(--color-success);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
   }
 
   /* Form disabled state patterns */
@@ -217,13 +217,13 @@
   .checkbox-field-container {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2);
-    border-radius: var(--input-border-radius);
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
     cursor: pointer;
     transition:
-      background-color var(--transition-fast),
-      border-color var(--transition-fast);
+      background-color 150ms ease-in-out,
+      border-color 150ms ease-in-out;
   }
 
   .checkbox-field-container:hover {
@@ -231,7 +231,7 @@
   }
 
   .checkbox-field-container.has-border {
-    border: var(--input-border-width) solid var(--color-border);
+    border: 1px solid var(--color-border);
   }
 
   .checkbox-field-container.has-border:hover {
@@ -242,23 +242,23 @@
   .checkbox-content {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: 0.25rem;
     flex: 1;
     min-width: 0;
   }
 
   .checkbox-label {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--color-text-primary);
     cursor: pointer;
-    line-height: var(--line-height-tight);
+    line-height: 1.25;
   }
 
   .checkbox-description {
-    font-size: var(--font-size-xs);
+    font-size: 0.75rem;
     color: var(--color-text-secondary);
-    line-height: var(--line-height-relaxed);
+    line-height: 1.75;
   }
 
   /* ===========================================
@@ -276,15 +276,15 @@
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: right var(--space-3) center;
+    background-position: right 0.75rem center;
     background-size: 16px;
-    padding-right: calc(var(--space-8) + var(--space-3));
+    padding-right: calc(2rem + 0.75rem);
   }
 
   /* Dropdown state patterns */
   .dropdown-open {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   /* ===========================================
@@ -295,49 +295,49 @@
   .form-section {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
-    padding: var(--space-5);
-    border: var(--input-border-width) solid var(--color-border);
-    border-radius: var(--input-border-radius);
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
     background: var(--color-surface-elevated);
   }
 
   .form-section-header {
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: var(--space-3);
-    margin-bottom: var(--space-4);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
   }
 
   .form-section-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
+    font-size: 1.125rem;
+    font-weight: 600;
     color: var(--color-text-primary);
     margin: 0;
   }
 
   .form-section-description {
-    font-size: var(--font-size-sm);
+    font-size: 0.875rem;
     color: var(--color-text-secondary);
-    margin-top: var(--space-1);
-    line-height: var(--line-height-relaxed);
+    margin-top: 0.25rem;
+    line-height: 1.75;
   }
 
   /* Form grid layouts */
   .form-grid {
     display: grid;
-    gap: var(--space-4);
+    gap: 1rem;
     grid-template-columns: 1fr;
   }
 
   .form-grid-2 {
     display: grid;
-    gap: var(--space-4);
+    gap: 1rem;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
 
   .form-grid-3 {
     display: grid;
-    gap: var(--space-4);
+    gap: 1rem;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 
@@ -354,35 +354,35 @@
   .input-addon-left {
     display: flex;
     align-items: center;
-    padding: var(--input-padding-y) var(--input-padding-x);
+    padding: 0.5rem 0.75rem;
     background: var(--color-surface-dim);
-    border: var(--input-border-width) solid var(--color-border);
+    border: 1px solid var(--color-border);
     border-right: none;
-    border-radius: var(--input-border-radius) 0 0 var(--input-border-radius);
-    font-size: var(--font-size-sm);
+    border-radius: 0.25rem 0 0 0.25rem;
+    font-size: 0.875rem;
     color: var(--color-text-secondary);
   }
 
   .input-addon-right {
     display: flex;
     align-items: center;
-    padding: var(--input-padding-y) var(--input-padding-x);
+    padding: 0.5rem 0.75rem;
     background: var(--color-surface-dim);
-    border: var(--input-border-width) solid var(--color-border);
+    border: 1px solid var(--color-border);
     border-left: none;
-    border-radius: 0 var(--input-border-radius) var(--input-border-radius) 0;
-    font-size: var(--font-size-sm);
+    border-radius: 0 0.25rem 0.25rem 0;
+    font-size: 0.875rem;
     color: var(--color-text-secondary);
   }
 
   .input-with-addon-left {
     border-left: none;
-    border-radius: 0 var(--input-border-radius) var(--input-border-radius) 0;
+    border-radius: 0 0.25rem 0.25rem 0;
   }
 
   .input-with-addon-right {
     border-right: none;
-    border-radius: var(--input-border-radius) 0 0 var(--input-border-radius);
+    border-radius: 0.25rem 0 0 0.25rem;
   }
 
   /* ===========================================
@@ -394,7 +394,7 @@
     .field-inline {
       flex-direction: column;
       align-items: flex-start;
-      gap: var(--space-2);
+      gap: 0.5rem;
     }
 
     .field-label-inline {
@@ -408,7 +408,7 @@
     }
 
     .form-section {
-      padding: var(--space-4);
+      padding: 1rem;
     }
   }
 
@@ -464,38 +464,38 @@
   /* Foundation input pattern - eliminates 8-property duplication */
   .input-foundation {
     width: 100%;
-    min-height: var(--input-height);
-    padding: var(--input-padding-y) var(--input-padding-x);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-normal);
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
     background: var(--color-input-bg);
-    border: var(--input-border-width) solid var(--color-border);
-    border-radius: var(--input-border-radius);
-    transition: all var(--transition-fast);
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    transition: all 150ms ease-in-out;
   }
 
   /* Select foundation pattern */
   .select-foundation {
     width: 100%;
-    min-height: var(--input-height);
-    padding: var(--input-padding-y) var(--input-padding-x);
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-normal);
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
     background: var(--color-input-bg);
-    border: var(--input-border-width) solid var(--color-border);
-    border-radius: var(--input-border-radius);
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
     appearance: none;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all 150ms ease-in-out;
   }
 
   /* Field container foundation */
   .field-foundation {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
+    gap: 0.25rem;
     width: 100%;
-    margin-bottom: var(--space-3);
+    margin-bottom: 0.75rem;
   }
 
   /* Appearance control utilities */
@@ -506,7 +506,7 @@
   .input-focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   .input-disabled {
@@ -519,8 +519,8 @@
 
   /* Select-specific utilities */
   .select-arrow-padding {
-    padding: var(--input-padding-y) calc(var(--input-padding-x) + var(--space-6))
-             var(--input-padding-y) var(--input-padding-x);
+    padding: 0.5rem calc(0.75rem + 1.5rem)
+             0.5rem 0.75rem;
   }
 
   /* Option styling utilities */
@@ -533,14 +533,14 @@
   .checkbox-field-foundation {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--space-3);
-    min-height: var(--touch-target-min);
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 44px;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
+    border-radius: 0.25rem;
     cursor: pointer;
-    transition: background-color var(--duration-fast) var(--easing);
+    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
   }
 
@@ -551,7 +551,7 @@
 
   .checkbox-field-focus {
     outline: none;
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   .checkbox-field-disabled {
@@ -562,7 +562,7 @@
 
   .checkbox-field-checked {
     background: var(--color-primary-surface);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   /* Touch device optimizations */
@@ -570,17 +570,17 @@
     .h-input,
     .h-input-sm,
     .h-input-lg {
-      min-height: var(--touch-target-min);
+      min-height: 44px;
     }
 
     .checkbox-field-container {
-      min-height: var(--touch-target-min);
-      padding: var(--space-3);
+      min-height: 44px;
+      padding: 0.75rem;
     }
 
     .field-label,
     .checkbox-label {
-      font-size: var(--font-size-base); /* Larger text on touch devices */
+      font-size: 1rem; /* Larger text on touch devices */
     }
   }
 }

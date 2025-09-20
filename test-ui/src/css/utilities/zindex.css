@@ -18,10 +18,10 @@
   .z-auto { z-index: auto; }
 
   /* Semantic z-index layers */
-  .z-toast { z-index: var(--z-toast); }
-  .z-dropdown { z-index: var(--z-dropdown); }
-  .z-modal { z-index: var(--z-modal); }
-  .z-tooltip { z-index: var(--z-tooltip); }
+  .z-toast { z-index: 1080; }
+  .z-dropdown { z-index: 1000; }
+  .z-modal { z-index: 1050; }
+  .z-tooltip { z-index: 1070; }
 
   /* Negative z-index */
   .z-negative { z-index: -1; }

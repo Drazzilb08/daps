@@ -9,7 +9,7 @@
      =========================================== */
 
   /* Transform base */
-  .transform { transform: var(--transform, none); }
+  .transform { transform: none; }
   .transform-none { transform: none; }
 
   /* Scale transforms */
@@ -38,18 +38,18 @@
      TRANSITION UTILITIES
      =========================================== */
 
-  .transition-fast { transition: all var(--transition-fast); }
-  .transition { transition: all var(--transition-normal); }
-  .transition-slow { transition: all var(--transition-slow); }
+  .transition-fast { transition: all 150ms ease-in-out; }
+  .transition { transition: all 250ms ease-in-out; }
+  .transition-slow { transition: all 350ms ease-in-out; }
 
   /* Specific property transitions */
   .transition-colors {
-    transition: color var(--transition-normal),
-                background-color var(--transition-normal),
-                border-color var(--transition-normal);
+    transition: color 250ms ease-in-out,
+                background-color 250ms ease-in-out,
+                border-color 250ms ease-in-out;
   }
-  .transition-opacity { transition: opacity var(--transition-normal); }
-  .transition-transform { transition: transform var(--transition-normal); }
+  .transition-opacity { transition: opacity 250ms ease-in-out; }
+  .transition-transform { transition: transform 250ms ease-in-out; }
 
   /* ===========================================
      ANIMATION UTILITIES

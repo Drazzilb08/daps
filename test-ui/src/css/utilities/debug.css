@@ -9,16 +9,16 @@
      =========================================== */
 
   .debug-grid {
-    background-image: linear-gradient(rgb(255 0 0 / 10%) var(--border-width-thin), transparent var(--border-width-thin)),
-                      linear-gradient(90deg, rgb(255 0 0 / 10%) var(--border-width-thin), transparent var(--border-width-thin));
-    background-size: var(--space-2) var(--space-2);
+    background-image: linear-gradient(rgb(255 0 0 / 10%) 1px, transparent 1px),
+                      linear-gradient(90deg, rgb(255 0 0 / 10%) 1px, transparent 1px);
+    background-size: 0.5rem 0.5rem;
   }
 
-  .debug-layout * { outline: var(--border-width-thin) solid rgb(255 0 0 / 20%); }
+  .debug-layout * { outline: 1px solid rgb(255 0 0 / 20%); }
 
   .debug-focus *:focus {
-    outline: var(--focus-ring-width) solid red;
-    outline-offset: var(--focus-ring-offset);
+    outline: 2px solid red;
+    outline-offset: 2px;
   }
 
   /* ===========================================

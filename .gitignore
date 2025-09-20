@@ -49,3 +49,5 @@ CLAUDE.md
 Thumbs.db
 *~
 /.local
+*.backup*
+transformation/

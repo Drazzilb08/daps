@@ -61,10 +61,10 @@
   .hover\:translate-y-negative-1:hover { transform: translateY(-4px); }
 
   /* Shadow hover variants */
-  .hover\:shadow-sm:hover { box-shadow: var(--shadow-sm); }
-  .hover\:shadow-md:hover { box-shadow: var(--shadow-md); }
-  .hover\:shadow-lg:hover { box-shadow: var(--shadow-lg); }
-  .hover\:shadow-xl:hover { box-shadow: var(--shadow-xl); }
+  .hover\:shadow-sm:hover { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%); }
+  .hover\:shadow-md:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%); }
+  .hover\:shadow-lg:hover { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%); }
+  .hover\:shadow-xl:hover { box-shadow: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%); }
   .hover\:shadow-none:hover { box-shadow: none; }
 
   /* Opacity hover variants */
@@ -81,19 +81,19 @@
   .focus\:ring-primary:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   .focus\:ring-success:focus {
     outline: none;
     border-color: var(--color-success);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
   }
 
   .focus\:ring-error:focus {
     outline: none;
     border-color: var(--color-error);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
   }
 
   /* Focus-within patterns for form containers */
@@ -102,14 +102,14 @@
   }
 
   .focus-within\:ring-primary:focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   /* Focus visible for keyboard navigation */
   .focus-visible\:ring-primary:focus-visible {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   /* Border focus variants */
@@ -184,7 +184,7 @@
   .invalid\:focus\:ring-error[aria-invalid="true"]:focus {
     outline: none;
     border-color: var(--color-error);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
   }
 
   /* Valid state patterns */
@@ -195,7 +195,7 @@
   .valid\:focus\:ring-success[aria-valid="true"]:focus {
     outline: none;
     border-color: var(--color-success);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
   }
 
   /* Required field patterns */
@@ -212,13 +212,13 @@
   .group:hover .group-hover\:bg-surface-hover { background: var(--color-surface-hover); }
   .group:hover .group-hover\:text-primary { color: var(--color-primary); }
   .group:hover .group-hover\:scale-102 { transform: scale(1.02); }
-  .group:hover .group-hover\:shadow-md { box-shadow: var(--shadow-md); }
+  .group:hover .group-hover\:shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%); }
   .group:hover .group-hover\:opacity-100 { opacity: 1; }
 
   /* Group focus patterns */
   .group:focus-within .group-focus\:border-primary { border-color: var(--color-primary); }
   .group:focus-within .group-focus\:ring-primary {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
   /* ===========================================
@@ -228,26 +228,26 @@
   /* Standard transition patterns for interactive elements */
   .transition-interactions {
     transition:
-      background-color var(--transition-fast),
-      border-color var(--transition-fast),
-      color var(--transition-fast),
-      box-shadow var(--transition-fast),
-      transform var(--transition-fast);
+      background-color 150ms ease-in-out,
+      border-color 150ms ease-in-out,
+      color 150ms ease-in-out,
+      box-shadow 150ms ease-in-out,
+      transform 150ms ease-in-out;
   }
 
   .transition-transform {
-    transition: transform var(--transition-fast);
+    transition: transform 150ms ease-in-out;
   }
 
   .transition-colors {
     transition:
-      background-color var(--transition-fast),
-      border-color var(--transition-fast),
-      color var(--transition-fast);
+      background-color 150ms ease-in-out,
+      border-color 150ms ease-in-out,
+      color 150ms ease-in-out;
   }
 
   .transition-shadow {
-    transition: box-shadow var(--transition-fast);
+    transition: box-shadow 150ms ease-in-out;
   }
 
   /* ===========================================
@@ -257,15 +257,15 @@
   /* Button interaction pattern */
   .btn-interactions {
     transition:
-      background-color var(--transition-fast),
-      border-color var(--transition-fast),
-      transform var(--transition-fast),
-      box-shadow var(--transition-fast);
+      background-color 150ms ease-in-out,
+      border-color 150ms ease-in-out,
+      transform 150ms ease-in-out,
+      box-shadow 150ms ease-in-out;
   }
   .btn-interactions:hover:not(:disabled) {
     background: var(--color-surface-hover);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%);
   }
   .btn-interactions:active:not(:disabled) {
     transform: scale(0.98);
@@ -279,25 +279,25 @@
   /* Card interaction pattern */
   .card-interactions {
     transition:
-      box-shadow var(--transition-fast),
-      transform var(--transition-fast);
+      box-shadow 150ms ease-in-out,
+      transform 150ms ease-in-out;
   }
   .card-interactions:hover {
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
     transform: translateY(-2px);
   }
 
   /* Input interaction pattern */
   .input-interactions {
     transition:
-      border-color var(--transition-fast),
-      box-shadow var(--transition-fast),
-      background-color var(--transition-fast);
+      border-color 150ms ease-in-out,
+      box-shadow 150ms ease-in-out,
+      background-color 150ms ease-in-out;
   }
   .input-interactions:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
   .input-interactions:hover:not(:focus):not(:disabled) {
     border-color: var(--color-border-hover, var(--color-primary));

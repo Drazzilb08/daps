@@ -32,12 +32,12 @@
      IMAGE EFFECTS
      =========================================== */
 
-  .img-shadow { box-shadow: var(--shadow-md); }
+  .img-shadow { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%); }
 
-  .img-hover-scale { transition: transform var(--transition-fast); }
+  .img-hover-scale { transition: transform 150ms ease-in-out; }
   .img-hover-scale:hover { transform: scale(1.02); }
-  .img-shadow-hover { transition: box-shadow var(--transition-fast); }
-  .img-shadow-hover:hover { box-shadow: var(--shadow-lg); }
+  .img-shadow-hover { transition: box-shadow 150ms ease-in-out; }
+  .img-shadow-hover:hover { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%); }
 
   /* ===========================================
      IMAGE STATES
@@ -50,7 +50,7 @@
     align-items: center;
     justify-content: center;
     color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
+    font-size: 0.875rem;
     text-align: center;
   }
 
@@ -75,16 +75,16 @@
      =========================================== */
 
   .poster-standard {
-    width: var(--poster-width-standard);
-    height: var(--poster-height-standard);
+    width: 156px;
+    height: 234px;
   }
   .poster-mobile {
-    width: var(--poster-width-mobile);
-    height: var(--poster-height-mobile);
+    width: 120px;
+    height: 180px;
   }
   .poster-tablet {
-    width: var(--poster-width-tablet);
-    height: var(--poster-height-tablet);
+    width: 130px;
+    height: 195px;
   }
 
   /* ===========================================
@@ -93,20 +93,20 @@
 
   @media (width <= 768px) {
     .poster-responsive {
-      width: var(--poster-width-mobile);
-      height: var(--poster-height-mobile);
+      width: 120px;
+      height: 180px;
     }
   }
   @media (width >= 481px) and (width <= 768px) {
     .poster-responsive {
-      width: var(--poster-width-tablet);
-      height: var(--poster-height-tablet);
+      width: 130px;
+      height: 195px;
     }
   }
   @media (width >= 769px) {
     .poster-responsive {
-      width: var(--poster-width-standard);
-      height: var(--poster-height-standard);
+      width: 156px;
+      height: 234px;
     }
   }
 
@@ -118,7 +118,7 @@
     .img-hover-scale:hover,
     .img-shadow-hover:hover {
       transform: none;
-      box-shadow: var(--shadow-md);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
     }
     .img-loading::after { animation: none; }
   }

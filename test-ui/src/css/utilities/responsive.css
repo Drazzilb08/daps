@@ -14,7 +14,7 @@
     .sm\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
     .sm\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
     .sm\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-    .sm\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-xs), 1fr)); }
+    .sm\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 
     /* Grid Column Span - Responsive */
     .sm\:col-span-1 { grid-column: span 1 / span 1; }
@@ -30,7 +30,7 @@
     .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
     .md\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
     .md\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-    .md\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-sm), 1fr)); }
+    .md\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 
     .md\:col-span-1 { grid-column: span 1 / span 1; }
     .md\:col-span-2 { grid-column: span 2 / span 2; }
@@ -45,7 +45,7 @@
     .lg\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
     .lg\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
     .lg\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-    .lg\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-sm), 1fr)); }
+    .lg\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 
     .lg\:col-span-1 { grid-column: span 1 / span 1; }
     .lg\:col-span-2 { grid-column: span 2 / span 2; }
@@ -60,7 +60,7 @@
     .xl\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
     .xl\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
     .xl\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-    .xl\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-lg), 1fr)); }
+    .xl\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 
     .xl\:col-span-1 { grid-column: span 1 / span 1; }
     .xl\:col-span-2 { grid-column: span 2 / span 2; }
@@ -109,46 +109,46 @@
 
   @media (width >= 481px) {
     .sm\:p-0 { padding: 0; }
-    .sm\:p-2 { padding: var(--space-2); }
-    .sm\:p-4 { padding: var(--space-4); }
-    .sm\:p-6 { padding: var(--space-6); }
-    .sm\:p-8 { padding: var(--space-8); }
+    .sm\:p-2 { padding: 0.5rem; }
+    .sm\:p-4 { padding: 1rem; }
+    .sm\:p-6 { padding: 1.5rem; }
+    .sm\:p-8 { padding: 2rem; }
 
     .sm\:m-0 { margin: 0; }
-    .sm\:m-2 { margin: var(--space-2); }
-    .sm\:m-4 { margin: var(--space-4); }
-    .sm\:m-6 { margin: var(--space-6); }
-    .sm\:m-8 { margin: var(--space-8); }
+    .sm\:m-2 { margin: 0.5rem; }
+    .sm\:m-4 { margin: 1rem; }
+    .sm\:m-6 { margin: 1.5rem; }
+    .sm\:m-8 { margin: 2rem; }
     .sm\:m-auto { margin: auto; }
   }
 
   @media (width >= 769px) {
     .md\:p-0 { padding: 0; }
-    .md\:p-2 { padding: var(--space-2); }
-    .md\:p-4 { padding: var(--space-4); }
-    .md\:p-6 { padding: var(--space-6); }
-    .md\:p-8 { padding: var(--space-8); }
+    .md\:p-2 { padding: 0.5rem; }
+    .md\:p-4 { padding: 1rem; }
+    .md\:p-6 { padding: 1.5rem; }
+    .md\:p-8 { padding: 2rem; }
 
     .md\:m-0 { margin: 0; }
-    .md\:m-2 { margin: var(--space-2); }
-    .md\:m-4 { margin: var(--space-4); }
-    .md\:m-6 { margin: var(--space-6); }
-    .md\:m-8 { margin: var(--space-8); }
+    .md\:m-2 { margin: 0.5rem; }
+    .md\:m-4 { margin: 1rem; }
+    .md\:m-6 { margin: 1.5rem; }
+    .md\:m-8 { margin: 2rem; }
     .md\:m-auto { margin: auto; }
   }
 
   @media (width >= 1024px) {
     .lg\:p-0 { padding: 0; }
-    .lg\:p-2 { padding: var(--space-2); }
-    .lg\:p-4 { padding: var(--space-4); }
-    .lg\:p-6 { padding: var(--space-6); }
-    .lg\:p-8 { padding: var(--space-8); }
+    .lg\:p-2 { padding: 0.5rem; }
+    .lg\:p-4 { padding: 1rem; }
+    .lg\:p-6 { padding: 1.5rem; }
+    .lg\:p-8 { padding: 2rem; }
 
     .lg\:m-0 { margin: 0; }
-    .lg\:m-2 { margin: var(--space-2); }
-    .lg\:m-4 { margin: var(--space-4); }
-    .lg\:m-6 { margin: var(--space-6); }
-    .lg\:m-8 { margin: var(--space-8); }
+    .lg\:m-2 { margin: 0.5rem; }
+    .lg\:m-4 { margin: 1rem; }
+    .lg\:m-6 { margin: 1.5rem; }
+    .lg\:m-8 { margin: 2rem; }
     .lg\:m-auto { margin: auto; }
   }
 
@@ -200,31 +200,31 @@
     .sm\:text-left { text-align: left; }
     .sm\:text-center { text-align: center; }
     .sm\:text-right { text-align: right; }
-    .sm\:text-sm { font-size: var(--font-size-sm); }
-    .sm\:text-base { font-size: var(--font-size-base); }
-    .sm\:text-lg { font-size: var(--font-size-lg); }
-    .sm\:text-xl { font-size: var(--font-size-xl); }
+    .sm\:text-sm { font-size: 0.875rem; }
+    .sm\:text-base { font-size: 1rem; }
+    .sm\:text-lg { font-size: 1.125rem; }
+    .sm\:text-xl { font-size: 1.25rem; }
   }
 
   @media (width >= 769px) {
     .md\:text-left { text-align: left; }
     .md\:text-center { text-align: center; }
     .md\:text-right { text-align: right; }
-    .md\:text-sm { font-size: var(--font-size-sm); }
-    .md\:text-base { font-size: var(--font-size-base); }
-    .md\:text-lg { font-size: var(--font-size-lg); }
-    .md\:text-xl { font-size: var(--font-size-xl); }
-    .md\:text-2xl { font-size: var(--font-size-2xl); }
+    .md\:text-sm { font-size: 0.875rem; }
+    .md\:text-base { font-size: 1rem; }
+    .md\:text-lg { font-size: 1.125rem; }
+    .md\:text-xl { font-size: 1.25rem; }
+    .md\:text-2xl { font-size: 1.5rem; }
   }
 
   @media (width >= 1024px) {
     .lg\:text-left { text-align: left; }
     .lg\:text-center { text-align: center; }
     .lg\:text-right { text-align: right; }
-    .lg\:text-base { font-size: var(--font-size-base); }
-    .lg\:text-lg { font-size: var(--font-size-lg); }
-    .lg\:text-xl { font-size: var(--font-size-xl); }
-    .lg\:text-2xl { font-size: var(--font-size-2xl); }
-    .lg\:text-3xl { font-size: var(--font-size-3xl); }
+    .lg\:text-base { font-size: 1rem; }
+    .lg\:text-lg { font-size: 1.125rem; }
+    .lg\:text-xl { font-size: 1.25rem; }
+    .lg\:text-2xl { font-size: 1.5rem; }
+    .lg\:text-3xl { font-size: 1.875rem; }
   }
 }

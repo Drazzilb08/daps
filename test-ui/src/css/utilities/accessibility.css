@@ -53,16 +53,16 @@
     position: static;
     width: auto;
     height: auto;
-    padding: var(--space-2) var(--space-3);
+    padding: 0.5rem 0.75rem;
     margin: 0;
     overflow: visible;
     clip: auto;
     white-space: normal;
     background: var(--color-focus-bg, var(--surface));
     color: var(--color-focus-text, var(--text-color));
-    border: var(--focus-ring-width) solid var(--color-focus);
-    border-radius: var(--radius-1);
-    z-index: var(--z-tooltip, 1000);
+    border: 2px solid var(--color-focus);
+    border-radius: 0.25rem;
+    z-index: 1070;
   }
 
   /* ===========================================
@@ -75,9 +75,9 @@
   }
 
   .focus-ring:focus-visible {
-    outline: var(--focus-ring-width, 2px) solid var(--color-focus);
-    outline-offset: var(--focus-ring-offset, 2px);
-    border-radius: var(--radius-1);
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
   }
 
   /* Enhanced focus ring for high visibility */
@@ -86,12 +86,12 @@
   }
 
   .focus-ring-enhanced:focus-visible {
-    outline: var(--focus-ring-width, 2px) solid var(--color-focus);
-    outline-offset: var(--focus-ring-offset, 2px);
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
     box-shadow:
-      0 0 0 var(--focus-ring-width, 2px) var(--color-focus),
-      0 0 0 calc(var(--focus-ring-width, 2px) + 2px) var(--color-bg);
-    border-radius: var(--radius-1);
+      0 0 0 2px var(--color-focus),
+      0 0 0 4px var(--color-bg);
+    border-radius: 0.25rem;
   }
 
   /* Focus trap container */
@@ -123,7 +123,7 @@
   .focus-lock {
     position: fixed;
     inset: 0;
-    z-index: var(--z-modal-backdrop, 1000);
+    z-index: 1040;
     pointer-events: none;
   }
 
@@ -139,25 +139,25 @@
   .skip-link {
     position: absolute;
     top: -100px;
-    left: var(--space-4);
-    z-index: var(--z-tooltip, 1000);
-    padding: var(--space-2) var(--space-3);
+    left: 1rem;
+    z-index: 1070;
+    padding: 0.5rem 0.75rem;
     background: var(--color-primary);
     color: var(--color-primary-text, white);
     text-decoration: none;
-    border-radius: var(--radius-1);
-    font-weight: var(--font-weight-medium);
-    font-size: var(--font-size-2);
-    line-height: var(--line-height-normal);
+    border-radius: 0.25rem;
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1.5;
     white-space: nowrap;
     transform: translateY(-100%);
-    transition: transform var(--duration-fast) var(--easing);
+    transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .skip-link:focus {
-    top: var(--space-4);
+    top: 1rem;
     transform: translateY(0);
-    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
 
@@ -166,11 +166,11 @@
     position: absolute;
     top: 0;
     left: 0;
-    z-index: var(--z-tooltip, 1000);
+    z-index: 1070;
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
-    padding: var(--space-2);
+    gap: 0.25rem;
+    padding: 0.5rem;
   }
 
   /* ===========================================
@@ -179,23 +179,23 @@
 
   /* Minimum touch target size (44x44px) */
   .touch-target {
-    min-width: var(--touch-target-min, 44px);
-    min-height: var(--touch-target-min, 44px);
+    min-width: 44px;
+    min-height: 44px;
     touch-action: manipulation;
   }
 
   /* Large touch target for improved accessibility */
   .touch-target-large {
-    min-width: var(--touch-target-large, 48px);
-    min-height: var(--touch-target-large, 48px);
+    min-width: 48px;
+    min-height: 48px;
     touch-action: manipulation;
   }
 
   /* Touch target with spacing to prevent accidental activation */
   .touch-target-spaced {
-    min-width: var(--touch-target-min, 44px);
-    min-height: var(--touch-target-min, 44px);
-    margin: var(--space-1);
+    min-width: 44px;
+    min-height: 44px;
+    margin: 0.25rem;
     touch-action: manipulation;
   }
 
@@ -207,7 +207,7 @@
   .keyboard-only {
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--duration-fast) var(--easing);
+    transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .keyboard-only:focus,
@@ -226,7 +226,7 @@
     position: absolute;
     inset: -4px;
     border: 2px solid var(--color-focus);
-    border-radius: var(--radius-2);
+    border-radius: 0.5rem;
     pointer-events: none;
   }
 
@@ -248,12 +248,12 @@
     padding: 2px 4px;
     background: var(--color-primary);
     color: var(--color-primary-text, white);
-    font-size: var(--font-size-0);
+    font-size: 0.75rem;
     line-height: 1;
-    border-radius: var(--radius-1);
+    border-radius: 0.25rem;
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--duration-fast) var(--easing);
+    transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .has-keyboard-shortcut:focus::after {
@@ -285,7 +285,7 @@
 
     /* Enhanced text weight */
     .high-contrast-text {
-      font-weight: var(--font-weight-medium);
+      font-weight: 500;
       text-shadow: none;
     }
 
@@ -455,7 +455,7 @@
     padding: 2px 4px;
     background: var(--color-primary);
     color: var(--color-primary-text, white);
-    font-size: var(--font-size-0);
+    font-size: 0.75rem;
     opacity: 0;
     pointer-events: none;
     z-index: 1000;
@@ -489,8 +489,8 @@
 
   /* Status message styling */
   .status-message {
-    padding: var(--space-3);
-    border-radius: var(--radius-2);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
     border: 1px solid;
     position: relative;
   }
@@ -527,18 +527,18 @@
   .required-field::after {
     content: ' *';
     color: var(--color-error);
-    font-weight: var(--font-weight-bold);
+    font-weight: 700;
     margin-left: 2px;
   }
 
   /* Field group with proper spacing */
   .field-group {
-    margin-bottom: var(--space-4);
+    margin-bottom: 1rem;
   }
 
   .field-group legend {
-    font-weight: var(--font-weight-semibold);
-    margin-bottom: var(--space-2);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
     color: var(--text-color);
   }
 
@@ -550,21 +550,21 @@
 
   .field-error:focus {
     outline-color: var(--color-error);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20, rgba(220, 38, 38, 0.2));
+    box-shadow: 0 0 0 2px var(--color-error-opacity-20, rgba(220, 38, 38, 0.2));
   }
 
   /* Help text styling */
   .help-text {
-    font-size: var(--font-size-1);
+    font-size: 0.875rem;
     color: var(--text-secondary);
-    margin-top: var(--space-1);
+    margin-top: 0.25rem;
   }
 
   .error-text {
-    font-size: var(--font-size-1);
+    font-size: 0.875rem;
     color: var(--color-error);
-    margin-top: var(--space-1);
-    font-weight: var(--font-weight-medium);
+    margin-top: 0.25rem;
+    font-weight: 500;
   }
 
   /* ===========================================
@@ -618,9 +618,9 @@
   @media (hover: none) and (pointer: coarse) {
     /* Larger touch targets on touch devices */
     .touch-optimized {
-      min-width: var(--touch-target-large, 48px);
-      min-height: var(--touch-target-large, 48px);
-      padding: var(--space-3);
+      min-width: 48px;
+      min-height: 48px;
+      padding: 0.75rem;
     }
 
     /* Remove hover states on touch devices */
@@ -641,8 +641,8 @@
   @media (pointer: fine) {
     /* Smaller touch targets acceptable for precise pointers */
     .pointer-fine-optimized {
-      min-width: var(--touch-target-min, 44px);
-      min-height: var(--touch-target-min, 44px);
+      min-width: 44px;
+      min-height: 44px;
     }
   }
 
@@ -652,25 +652,25 @@
 
   /* Accessible button pattern */
   .accessible-button {
-    min-width: var(--touch-target-min);
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
+    border-radius: 0.25rem;
     background: var(--surface);
     color: var(--text-color);
     font-family: inherit;
-    font-size: var(--font-size-2);
-    font-weight: var(--font-weight-medium);
-    line-height: var(--line-height-normal);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.5;
     cursor: pointer;
     touch-action: manipulation;
     user-select: none;
-    transition: all var(--duration-fast) var(--easing);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .accessible-button:focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
 
@@ -686,12 +686,12 @@
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
-    border-radius: var(--radius-1);
-    transition: all var(--duration-fast) var(--easing);
+    border-radius: 0.25rem;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .accessible-link:focus-visible {
-    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline: 2px solid var(--color-focus);
     outline-offset: 2px;
     text-decoration-thickness: 2px;
   }
@@ -703,20 +703,20 @@
 
   /* Accessible form field pattern */
   .accessible-field {
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
+    border-radius: 0.25rem;
     background: var(--surface);
     color: var(--text-color);
     font-family: inherit;
-    font-size: var(--font-size-2);
-    line-height: var(--line-height-normal);
-    transition: all var(--duration-fast) var(--easing);
+    font-size: 1rem;
+    line-height: 1.5;
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .accessible-field:focus {
-    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline: 2px solid var(--color-focus);
     outline-offset: 0;
     border-color: var(--color-focus);
   }

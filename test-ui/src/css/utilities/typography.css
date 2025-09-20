@@ -12,24 +12,24 @@
      =========================================== */
 
   /* Font sizes using design tokens */
-  .text-xs { font-size: var(--font-size-0, 0.75rem); }     /* 12px */
-  .text-sm { font-size: var(--font-size-1, 0.875rem); }    /* 14px */
-  .text-base { font-size: var(--font-size-2, 1rem); }      /* 16px - accessibility base */
-  .text-lg { font-size: var(--font-size-3, 1.125rem); }    /* 18px */
-  .text-xl { font-size: var(--font-size-4, 1.25rem); }     /* 20px */
-  .text-2xl { font-size: var(--font-size-5, 1.5rem); }     /* 24px */
-  .text-3xl { font-size: var(--font-size-6, 1.875rem); }   /* 30px */
-  .text-4xl { font-size: var(--font-size-7, 2.25rem); }    /* 36px */
-  .text-5xl { font-size: var(--font-size-8, 3rem); }       /* 48px */
-  .text-6xl { font-size: var(--font-size-9, 3.75rem); }    /* 60px */
+  .text-xs { font-size: 0.75rem; }     /* 12px */
+  .text-sm { font-size: 0.875rem; }    /* 14px */
+  .text-base { font-size: 1rem; }      /* 16px - accessibility base */
+  .text-lg { font-size: 1.125rem; }    /* 18px */
+  .text-xl { font-size: 1.25rem; }     /* 20px */
+  .text-2xl { font-size: 1.5rem; }     /* 24px */
+  .text-3xl { font-size: 1.875rem; }   /* 30px */
+  .text-4xl { font-size: 2.25rem; }    /* 36px */
+  .text-5xl { font-size: 3rem; }       /* 48px */
+  .text-6xl { font-size: 3.75rem; }    /* 60px */
 
   /* Additional semantic sizes */
-  .text-caption { font-size: var(--font-size-caption, var(--font-size-0)); }
-  .text-body { font-size: var(--font-size-body, var(--font-size-2)); }
-  .text-lead { font-size: var(--font-size-lead, var(--font-size-3)); }
-  .text-title { font-size: var(--font-size-title, var(--font-size-5)); }
-  .text-heading { font-size: var(--font-size-heading, var(--font-size-6)); }
-  .text-display { font-size: var(--font-size-display, var(--font-size-8)); }
+  .text-caption { font-size: 0.75rem; }
+  .text-body { font-size: 1rem; }
+  .text-lead { font-size: 1.125rem; }
+  .text-title { font-size: 1.5rem; }
+  .text-heading { font-size: 1.875rem; }
+  .text-display { font-size: 3rem; }
 
   /* ===========================================
      FONT WEIGHT UTILITIES - DESIGN TOKEN BASED
@@ -37,11 +37,11 @@
 
   .font-thin { font-weight: 100; }
   .font-extralight { font-weight: 200; }
-  .font-light { font-weight: var(--font-weight-light, 300); }
-  .font-normal { font-weight: var(--font-weight-regular, 400); }
-  .font-medium { font-weight: var(--font-weight-medium, 500); }
-  .font-semibold { font-weight: var(--font-weight-semibold, 600); }
-  .font-bold { font-weight: var(--font-weight-bold, 700); }
+  .font-light { font-weight: 300; }
+  .font-normal { font-weight: 400; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
   .font-extrabold { font-weight: 800; }
   .font-black { font-weight: 900; }
 
@@ -49,9 +49,9 @@
      FONT FAMILY UTILITIES
      =========================================== */
 
-  .font-sans { font-family: var(--font-family-sans); }
-  .font-serif { font-family: var(--font-family-serif, serif); }
-  .font-mono { font-family: var(--font-family-mono, monospace); }
+  .font-sans { font-family: 'Roboto', 'Open Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; }
+  .font-serif { font-family: georgia, 'Times New Roman', serif; }
+  .font-mono { font-family: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', consolas, monospace; }
 
   /* System font stacks for performance */
   .font-system {
@@ -67,11 +67,11 @@
      =========================================== */
 
   .leading-none { line-height: 1; }
-  .leading-tight { line-height: var(--line-height-tight, 1.25); }
-  .leading-snug { line-height: var(--line-height-snug, 1.375); }
-  .leading-normal { line-height: var(--line-height-normal, 1.5); }
-  .leading-relaxed { line-height: var(--line-height-relaxed, 1.625); }
-  .leading-loose { line-height: var(--line-height-loose, 2); }
+  .leading-tight { line-height: 1.25; }
+  .leading-snug { line-height: 1.375; }
+  .leading-normal { line-height: 1.5; }
+  .leading-relaxed { line-height: 1.625; }
+  .leading-loose { line-height: 2; }
 
   /* Numeric line heights for precise control */
   .leading-3 { line-height: 0.75rem; }
@@ -268,13 +268,13 @@
   .indent-0 { text-indent: 0; }
   .indent-px { text-indent: 1px; }
   .indent-0\.5 { text-indent: 0.125rem; }
-  .indent-1 { text-indent: var(--space-1); }
-  .indent-2 { text-indent: var(--space-2); }
-  .indent-3 { text-indent: var(--space-3); }
-  .indent-4 { text-indent: var(--space-4); }
-  .indent-5 { text-indent: var(--space-5); }
-  .indent-6 { text-indent: var(--space-6); }
-  .indent-8 { text-indent: var(--space-8); }
+  .indent-1 { text-indent: 0.25rem; }
+  .indent-2 { text-indent: 0.5rem; }
+  .indent-3 { text-indent: 0.75rem; }
+  .indent-4 { text-indent: 1rem; }
+  .indent-5 { text-indent: 1.5rem; }
+  .indent-6 { text-indent: 2rem; }
+  .indent-8 { text-indent: 4rem; }
 
   /* ===========================================
      LIST STYLE UTILITIES
@@ -313,89 +313,89 @@
 
   /* Heading patterns */
   .heading-1 {
-    font-size: var(--font-size-6);
-    font-weight: var(--font-weight-bold);
-    line-height: var(--line-height-tight);
-    margin-bottom: var(--space-4);
+    font-size: 3.75rem; /* 60px */
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 1rem;
   }
 
   .heading-2 {
-    font-size: var(--font-size-5);
-    font-weight: var(--font-weight-semibold);
-    line-height: var(--line-height-tight);
-    margin-bottom: var(--space-3);
+    font-size: 3rem; /* 48px */
+    font-weight: 600;
+    line-height: 1.25;
+    margin-bottom: 0.75rem;
   }
 
   .heading-3 {
-    font-size: var(--font-size-4);
-    font-weight: var(--font-weight-semibold);
-    line-height: var(--line-height-snug);
-    margin-bottom: var(--space-3);
+    font-size: 2.25rem; /* 36px */
+    font-weight: 600;
+    line-height: 1.375;
+    margin-bottom: 0.75rem;
   }
 
   .heading-4 {
-    font-size: var(--font-size-3);
-    font-weight: var(--font-weight-medium);
-    line-height: var(--line-height-snug);
-    margin-bottom: var(--space-2);
+    font-size: 1.875rem; /* 30px */
+    font-weight: 500;
+    line-height: 1.375;
+    margin-bottom: 0.5rem;
   }
 
   /* Body text patterns */
   .body-text {
-    font-size: var(--font-size-2);
-    font-weight: var(--font-weight-regular);
-    line-height: var(--line-height-relaxed);
+    font-size: 1rem; /* 16px */
+    font-weight: 400;
+    line-height: 1.75;
   }
 
   .body-text-sm {
-    font-size: var(--font-size-1);
-    font-weight: var(--font-weight-regular);
-    line-height: var(--line-height-normal);
+    font-size: 0.875rem; /* 14px */
+    font-weight: 400;
+    line-height: 1.5;
   }
 
   .body-text-lg {
-    font-size: var(--font-size-3);
-    font-weight: var(--font-weight-regular);
-    line-height: var(--line-height-relaxed);
+    font-size: 1.125rem; /* 18px */
+    font-weight: 400;
+    line-height: 1.75;
   }
 
   /* Caption and label patterns */
   .caption {
-    font-size: var(--font-size-0);
-    font-weight: var(--font-weight-regular);
-    line-height: var(--line-height-normal);
+    font-size: 0.75rem; /* 12px */
+    font-weight: 400;
+    line-height: 1.5;
     color: var(--text-secondary);
   }
 
   .label {
-    font-size: var(--font-size-1);
-    font-weight: var(--font-weight-medium);
-    line-height: var(--line-height-normal);
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    line-height: 1.5;
   }
 
   .label-sm {
-    font-size: var(--font-size-0);
-    font-weight: var(--font-weight-medium);
-    line-height: var(--line-height-normal);
+    font-size: 0.75rem; /* 12px */
+    font-weight: 500;
+    line-height: 1.5;
   }
 
   /* Code and monospace patterns */
   .code {
-    font-family: var(--font-family-mono);
+    font-family: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', consolas, monospace;
     font-size: 0.875em;
     background: var(--surface-variant);
     padding: 0.125rem 0.25rem;
-    border-radius: var(--radius-1);
+    border-radius: 0.25rem;
     color: var(--text-primary);
   }
 
   .code-block {
-    font-family: var(--font-family-mono);
-    font-size: var(--font-size-1);
-    line-height: var(--line-height-relaxed);
+    font-family: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', consolas, monospace;
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.75;
     background: var(--surface-variant);
-    padding: var(--space-3);
-    border-radius: var(--radius-2);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
     overflow-x: auto;
     white-space: pre;
   }
@@ -406,36 +406,36 @@
 
   /* Mobile-first responsive text sizes */
   @media (width >= 768px) {
-    .md\:text-xs { font-size: var(--font-size-0); }
-    .md\:text-sm { font-size: var(--font-size-1); }
-    .md\:text-base { font-size: var(--font-size-2); }
-    .md\:text-lg { font-size: var(--font-size-3); }
-    .md\:text-xl { font-size: var(--font-size-4); }
-    .md\:text-2xl { font-size: var(--font-size-5); }
-    .md\:text-3xl { font-size: var(--font-size-6); }
-    .md\:text-4xl { font-size: var(--font-size-7); }
-    .md\:text-5xl { font-size: var(--font-size-8); }
+    .md\:text-xs { font-size: 0.75rem; }
+    .md\:text-sm { font-size: 0.875rem; }
+    .md\:text-base { font-size: 1rem; }
+    .md\:text-lg { font-size: 1.125rem; }
+    .md\:text-xl { font-size: 1.25rem; }
+    .md\:text-2xl { font-size: 1.5rem; }
+    .md\:text-3xl { font-size: 1.875rem; }
+    .md\:text-4xl { font-size: 2.25rem; }
+    .md\:text-5xl { font-size: 3rem; }
 
     .md\:text-left { text-align: left; }
     .md\:text-center { text-align: center; }
     .md\:text-right { text-align: right; }
 
-    .md\:leading-tight { line-height: var(--line-height-tight); }
-    .md\:leading-normal { line-height: var(--line-height-normal); }
-    .md\:leading-relaxed { line-height: var(--line-height-relaxed); }
+    .md\:leading-tight { line-height: 1.25; }
+    .md\:leading-normal { line-height: 1.5; }
+    .md\:leading-relaxed { line-height: 1.75; }
   }
 
   @media (width >= 1024px) {
-    .lg\:text-xs { font-size: var(--font-size-0); }
-    .lg\:text-sm { font-size: var(--font-size-1); }
-    .lg\:text-base { font-size: var(--font-size-2); }
-    .lg\:text-lg { font-size: var(--font-size-3); }
-    .lg\:text-xl { font-size: var(--font-size-4); }
-    .lg\:text-2xl { font-size: var(--font-size-5); }
-    .lg\:text-3xl { font-size: var(--font-size-6); }
-    .lg\:text-4xl { font-size: var(--font-size-7); }
-    .lg\:text-5xl { font-size: var(--font-size-8); }
-    .lg\:text-6xl { font-size: var(--font-size-9); }
+    .lg\:text-xs { font-size: 0.75rem; }
+    .lg\:text-sm { font-size: 0.875rem; }
+    .lg\:text-base { font-size: 1rem; }
+    .lg\:text-lg { font-size: 1.125rem; }
+    .lg\:text-xl { font-size: 1.25rem; }
+    .lg\:text-2xl { font-size: 1.5rem; }
+    .lg\:text-3xl { font-size: 1.875rem; }
+    .lg\:text-4xl { font-size: 2.25rem; }
+    .lg\:text-5xl { font-size: 3rem; }
+    .lg\:text-6xl { font-size: 3.75rem; }
 
     .lg\:text-left { text-align: left; }
     .lg\:text-center { text-align: center; }
@@ -448,13 +448,13 @@
 
   /* Minimum text size for accessibility */
   .text-accessible {
-    font-size: max(var(--font-size-2), 16px); /* Ensure minimum 16px */
+    font-size: max(1rem, 16px); /* Ensure minimum 16px */
   }
 
   /* High contrast adjustments */
   @media (prefers-contrast: high) {
     .text-readable {
-      font-weight: var(--font-weight-medium);
+      font-weight: 500;
       letter-spacing: 0.025em;
     }
 
@@ -462,7 +462,7 @@
     .heading-2,
     .heading-3,
     .heading-4 {
-      font-weight: var(--font-weight-bold);
+      font-weight: 700;
     }
   }
 
@@ -510,7 +510,7 @@
 
   /* Focus improvements for better readability */
   .focus\:text-enhanced:focus {
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
     letter-spacing: 0.025em;
   }
 
@@ -526,11 +526,11 @@
 
   /* Subtle adjustments for dark theme readability */
   @media (prefers-color-scheme: dark) {
-    .dark\:font-light { font-weight: var(--font-weight-light); }
+    .dark\:font-light { font-weight: 300; }
     .dark\:tracking-wide { letter-spacing: 0.025em; }
 
     .dark\:text-enhanced {
-      font-weight: var(--font-weight-regular);
+      font-weight: 400;
       letter-spacing: 0.01em;
     }
   }

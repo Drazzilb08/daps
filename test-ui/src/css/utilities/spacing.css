@@ -201,6 +201,7 @@
   .pl-6 { padding-left: 2rem; }
   .pl-7 { padding-left: 3rem; } /* ADDED: Missing from current system */
   .pl-8 { padding-left: 4rem; }
+  .pl-10 { padding-left: 2.5rem; }
 
   /* Padding Right */
   .pr-0 { padding-right: 0; }

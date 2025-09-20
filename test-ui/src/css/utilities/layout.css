@@ -126,6 +126,59 @@
   .self-stretch { align-self: stretch; }
   .self-baseline { align-self: baseline; }
 
+  /* ===========================================
+     FLEXBOX CONVENIENCE UTILITIES - COMMON PATTERNS
+     =========================================== */
+
+  /* Centered flex patterns - frequently used combinations */
+  .inline-flex-center-both {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .flex-center-both {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .inline-flex-center-start {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .flex-center-start {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .inline-flex-center-end {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .flex-center-end {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .inline-flex-between {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   /* Place content (align-content + justify-content) */
   .place-content-center { place-content: center; }
   .place-content-start { place-content: start; }
@@ -171,6 +224,7 @@
   /* Auto-fit and auto-fill columns */
   .grid-cols-auto-fit { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
   .grid-cols-auto-fill { grid-template-columns: repeat(auto-fill, minmax(0, 1fr)); }
+  .grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 
   /* Common responsive column patterns */
   .grid-cols-auto-fit-xs { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }

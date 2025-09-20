@@ -18,6 +18,9 @@
   .border-b { border-bottom: 1px solid var(--color-border); }
   .border-l { border-left: 1px solid var(--color-border); }
 
+  /* Thick border for toast components */
+  .border-l-4 { border-left: 4px solid var(--color-border); }
+
   /* Border styles */
   .border-solid { border-style: solid; }
   .border-dashed { border-style: dashed; }
@@ -31,6 +34,20 @@
   .border-success { border-color: var(--color-success); }
   .border-warning { border-color: var(--color-warning); }
   .border-error { border-color: var(--color-error); }
+
+  /* High contrast border enhancement for dropdowns */
+  @media (prefers-contrast: high) {
+    .border-dropdown {
+      border-width: 2px;
+    }
+  }
+
+  /* Left border color utilities for toast components */
+  .border-l-primary { border-left-color: var(--color-primary); }
+  .border-l-success { border-left-color: var(--color-success); }
+  .border-l-warning { border-left-color: var(--color-warning); }
+  .border-l-error { border-left-color: var(--color-error); }
+  .border-l-info { border-left-color: var(--color-accent); }
 
   /* ===========================================
      BORDER RADIUS UTILITIES

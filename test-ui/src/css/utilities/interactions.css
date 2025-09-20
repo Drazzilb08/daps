@@ -158,6 +158,10 @@
     pointer-events: none;
   }
 
+  /* Pointer events utilities */
+  .pointer-events-none { pointer-events: none; }
+  .pointer-events-auto { pointer-events: auto; }
+
   /* Disabled cursor patterns */
   .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
   .disabled\:pointer-events-none:disabled { pointer-events: none; }
@@ -196,6 +200,95 @@
     outline: none;
     border-color: var(--color-success);
     box-shadow: 0 0 0 2px var(--color-success-opacity-20);
+  }
+
+  /* ===========================================
+     TRANSITION UTILITIES - CONSISTENT ANIMATIONS
+     =========================================== */
+
+  /* Transition duration utilities using design tokens */
+  .transition-fast {
+    transition: all var(--transition-fast); /* 150ms ease-in-out */
+  }
+
+  .transition-normal {
+    transition: all var(--transition-normal); /* 250ms ease-in-out */
+  }
+
+  .transition-slow {
+    transition: all var(--transition-slow); /* 400ms ease-in-out */
+  }
+
+  /* Specific transition properties */
+  .transition-colors {
+    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .transition-opacity {
+    transition: opacity var(--transition-fast);
+  }
+
+  .transition-transform {
+    transition: transform var(--transition-fast);
+  }
+
+  .transition-shadow {
+    transition: box-shadow var(--transition-fast);
+  }
+
+  /* No transition for accessibility */
+  .transition-none {
+    transition: none;
+  }
+
+  /* ===========================================
+     STATE HOVER UTILITIES - INTERACTIVE PATTERNS
+     =========================================== */
+
+  /* Hover dimming effect for secondary interactions */
+  .state-hover-dim:hover:not(:disabled) {
+    opacity: 0.8;
+    transform: translateY(-1px);
+  }
+
+  .state-hover-dim:active:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+
+  /* Hover brightening effect for primary interactions */
+  .state-hover-bright:hover:not(:disabled) {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  .state-hover-bright:active:not(:disabled) {
+    filter: brightness(1.05);
+    transform: translateY(0);
+  }
+
+  /* Hover scale effect for accent interactions */
+  .state-hover-scale:hover:not(:disabled) {
+    transform: scale(1.02);
+  }
+
+  .state-hover-scale:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  /* Combined state utilities */
+  .state-interactive {
+    cursor: pointer;
+    user-select: none;
+    transition: all var(--transition-fast);
+  }
+
+  .state-interactive:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .state-interactive:active:not(:disabled) {
+    transform: translateY(0);
   }
 
   /* Required field patterns */
@@ -345,6 +438,11 @@
     .invalid\:border-error[aria-invalid="true"],
     .valid\:border-success[aria-valid="true"] {
       border-width: 2px;
+    }
+
+    /* Menu item high contrast focus state */
+    .menu-item-focus:focus {
+      background: var(--color-surface-active);
     }
   }
 

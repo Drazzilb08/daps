@@ -40,6 +40,8 @@
      FOCUS STATE UTILITIES
      =========================================== */
 
+  .outline-none { outline: none; }
+
   .state-focus-ring:focus {
     outline: none;
     border-color: var(--color-primary);

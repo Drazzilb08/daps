@@ -29,10 +29,19 @@
   .bg-error { background: var(--error); }
   .bg-info { background: var(--info); }
 
+  /* Subtle/opacity state backgrounds for badges and cards */
+  .bg-success-subtle { background: var(--color-success-subtle, var(--surface)); }
+  .bg-warning-subtle { background: var(--color-warning-subtle, var(--surface)); }
+  .bg-error-subtle { background: var(--color-error-subtle, var(--surface)); }
+  .bg-primary-subtle { background: var(--color-primary-subtle, var(--surface)); }
+
   /* Special backgrounds */
   .bg-transparent { background: transparent; }
   .bg-white { background: #ffffff; }
   .bg-black { background: #000000; }
+
+  /* Text color backgrounds (for separators and borders) */
+  .bg-text-secondary { background: var(--text-secondary); }
 
   /* Focus and overlay backgrounds */
   .bg-focus { background: var(--focus); }
@@ -319,6 +328,52 @@
     background: var(--error);
     color: var(--error-text, #ffffff);
     border-color: var(--error);
+  }
+
+  /* ===========================================
+     BADGE AND STATUS UTILITIES - COMPLETE SYSTEM
+     =========================================== */
+
+  /* Badge base styling */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    border: 1px solid;
+    border-radius: var(--radius-1);
+  }
+
+  /* Status badge variants */
+  .badge-success {
+    border-color: var(--color-success);
+    background: var(--color-success-subtle, var(--surface));
+    color: var(--color-success-text, var(--text-color));
+  }
+
+  .badge-error {
+    border-color: var(--color-error);
+    background: var(--color-error-subtle, var(--surface));
+    color: var(--color-error-text, var(--text-color));
+  }
+
+  .badge-warning {
+    border-color: var(--color-warning);
+    background: var(--color-warning-subtle, var(--surface));
+    color: var(--color-warning-text, var(--text-color));
+  }
+
+  .badge-primary {
+    border-color: var(--color-primary);
+    background: var(--color-primary-subtle, var(--surface));
+    color: var(--color-primary-text, var(--text-color));
+  }
+
+  .badge-secondary {
+    border-color: var(--color-border);
+    background: var(--surface-elevated);
+    color: var(--text-secondary);
   }
 
   /* ===========================================

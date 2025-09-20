@@ -79,6 +79,11 @@
   .w-lvw { width: 100lvw; }      /* Large viewport width */
   .w-dvw { width: 100dvw; }      /* Dynamic viewport width */
 
+  /* Content-based widths */
+  .w-min-content { width: min-content; }
+  .w-max-content { width: max-content; }
+  .w-fit-content { width: fit-content; }
+
   /* Layout-specific widths */
   .w-sidebar { width: 210px; }
   .w-container { width: 1200px; }
@@ -251,6 +256,10 @@
   .min-w-touch { min-width: 44px; }
   .min-w-input { min-width: 120px; }
   .min-w-control { min-width: 80px; }
+  .min-w-200 { min-width: 200px; }
+
+  /* Component-specific minimum widths */
+  .min-w-dropdown { min-width: var(--dropdown-width-min); }
 
   /* ===========================================
      MAXIMUM WIDTH UTILITIES
@@ -280,10 +289,19 @@
   .max-w-prose { max-width: 65ch; }   /* Optimal reading width */
   .max-w-prose-sm { max-width: 45ch; }
   .max-w-prose-lg { max-width: 80ch; }
+  .max-w-60ch { max-width: 60ch; }    /* Field test page description width */
 
   /* Container maximum widths */
   .max-w-container { max-width: 1200px; }
   .max-w-modal { max-width: 800px; }
+
+  /* Component-specific maximum widths */
+  .max-w-dropdown { max-width: var(--dropdown-width-max); }
+
+  /* Component responsive widths */
+  @media (width >= 768px) {
+    .md\:max-w-dropdown-desktop { max-width: var(--dropdown-width-desktop); }
+  }
   .max-w-sidebar { max-width: 320px; }
 
   /* Screen size maximum widths */
@@ -325,6 +343,7 @@
   /* Accessibility minimum heights */
   .min-h-touch { min-height: 44px; }
   .min-h-input { min-height: 44px; }
+  .min-h-error { min-height: 300px; }
   .min-h-content { min-height: 400px; }
 
   /* ===========================================

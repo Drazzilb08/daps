@@ -10,16 +10,8 @@
 @import url('./theme/dark.css');
 @import url('./theme/light.css');
 
-/* Utility system - decomposed for maintainability and reduced duplication */
-@import url('./utilities/spacing.css');       /* Foundational: margins, padding, gaps */
-@import url('./utilities/sizing.css');        /* Foundational: width, height, min/max */
-@import url('./utilities/typography.css');    /* Foundational: text sizing, weights, alignment */
-@import url('./utilities/colors.css');        /* Foundational: backgrounds, borders, text colors */
-@import url('./utilities/layout.css');        /* Layout patterns: display, flex, grid, position */
-@import url('./utilities/forms.css');         /* Form-specific: inputs, validation, field layouts */
-@import url('./utilities/interactions.css');  /* Interaction states: hover, focus, disabled */
-@import url('./utilities/accessibility.css'); /* Accessibility: WCAG 2.1 AA compliance utilities */
-@import url('./utilities.css');               /* Remaining utilities not yet decomposed */
+/* Complete utility system - fully decomposed into 18 specialized modules */
+@import url('./utilities/index.css');
 
 /* Component system */
 @import url('./components/ui/index.css');

@@ -193,7 +193,7 @@ const Section = ({ children, alignContent = 'left', collapseButtons = true }) =>
         }
     };
 
-    const sectionClassName = ['page-toolbar-section', getJustifyClass()].filter(Boolean).join(' ');
+    const sectionClassName = ['flex items-center gap-1 min-w-0 overflow-hidden', getJustifyClass()].filter(Boolean).join(' ');
 
     return (
         <div
@@ -201,7 +201,7 @@ const Section = ({ children, alignContent = 'left', collapseButtons = true }) =>
             className={sectionClassName}
             style={{ flexGrow: alignContent === 'right' ? 0 : buttonCount }}
         >
-            <div className="page-toolbar-section-buttons">
+            <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
                 {visibleButtons}
                 {overflowItems.length > 0 && (
                     <>
@@ -216,7 +216,7 @@ const Section = ({ children, alignContent = 'left', collapseButtons = true }) =>
                             onClose={handleMenuClose}
                             anchorRef={moreButtonRef}
                             placement="bottom-right"
-                            className="toolbar-overflow-dropdown"
+                            className="max-w-dropdown"
                         >
                             <Menu ariaLabel="More actions">
                                 {overflowItems.map((item, index) => (

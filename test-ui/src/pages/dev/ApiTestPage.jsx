@@ -18,10 +18,10 @@ import { api } from '../../utils/api/index.js';
  * Test section component for organized testing
  */
 const TestSection = React.memo(({ title, description, children }) => (
-    <section className="api-test-section">
-        <h2 className="test-section-title">{title}</h2>
-        <p className="test-section-description">{description}</p>
-        <div className="test-section-content flex flex-col gap-4">{children}</div>
+    <section className="bg-surface border border-color rounded-md p-4">
+        <h2 className="text-lg font-semibold text-primary mb-2">{title}</h2>
+        <p className="text-sm text-secondary mb-4">{description}</p>
+        <div className="flex flex-col gap-4">{children}</div>
     </section>
 ));
 
@@ -31,20 +31,24 @@ TestSection.displayName = 'TestSection';
  * API response display component
  */
 const ApiResponseDisplay = React.memo(({ data, isLoading, error, title }) => (
-    <div className="api-response-display rounded-sm">
-        <h4 className="response-title">{title}</h4>
+    <div className="bg-surface-elevated border border-color p-3 rounded-sm">
+        <h4 className="text-sm font-medium text-primary mb-2">{title}</h4>
         {isLoading && (
-            <div className="loading-state flex items-center gap-2">
+            <div className="p-3 text-secondary flex items-center gap-2">
                 <div className="spinner" aria-label="Loading..." />
                 <span>Loading...</span>
             </div>
         )}
         {error && (
-            <div className="error-state rounded-sm" role="alert">
+            <div className="p-3 bg-error-bg text-error border border-error rounded-sm" role="alert">
                 <strong>Error:</strong> {error.message}
             </div>
         )}
-        {data && !isLoading && <pre className="response-data rounded-sm">{JSON.stringify(data, null, 2)}</pre>}
+        {data && !isLoading && (
+            <pre className="bg-surface border border-color p-3 text-primary overflow-auto whitespace-pre-wrap break-words max-h-dropdown rounded-sm">
+                {JSON.stringify(data, null, 2)}
+            </pre>
+        )}
     </div>
 ));
 
@@ -69,7 +73,7 @@ const VersionTestComponent = React.memo(() => {
 
     return (
         <div className="version-test flex flex-col gap-3">
-            <div className="test-controls flex flex-wrap gap-2 items-center">
+            <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <button
                     onClick={execute}
                     disabled={isLoading}
@@ -126,11 +130,11 @@ const ConfigTestComponent = React.memo(() => {
 
     return (
         <div className="config-test flex flex-col gap-3">
-            <div className="test-controls flex flex-wrap gap-2 items-center">
+            <div className="mb-3 flex flex-wrap gap-2 items-center">
                 <select
                     value={section}
                     onChange={e => setSection(e.target.value)}
-                    className="domain-select rounded-sm"
+                    className="min-h-input p-2 px-3 border border-color bg-surface text-primary text-sm rounded-sm w-full md:w-auto"
                 >
                     <option value="">All Configuration</option>
                     <option value="instances">Instances</option>
@@ -151,7 +155,7 @@ const ConfigTestComponent = React.memo(() => {
                 error={error}
                 title="Configuration Response (with caching)"
             />
-            <div className="test-info rounded-sm">
+            <div className="p-3 bg-surface-elevated border border-color rounded-sm">
                 <p>
                     <strong>API Layer:</strong> configAPI.fetchConfig() / fetchSection()
                 </p>
@@ -187,7 +191,7 @@ const JobStatsTestComponent = React.memo(() => {
 
     return (
         <div className="job-stats-test flex flex-col gap-3">
-            <div className="test-controls flex flex-wrap gap-2 items-center">
+            <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <button
                     onClick={execute}
                     disabled={isLoading}
@@ -253,11 +257,11 @@ const ErrorTestComponent = React.memo(() => {
 
     return (
         <div className="error-test flex flex-col gap-3">
-            <div className="test-controls flex flex-wrap gap-2 items-center">
+            <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <select
                     value={errorType}
                     onChange={e => setErrorType(e.target.value)}
-                    className="error-type-select rounded-sm"
+                    className="min-h-input p-2 px-3 border border-color bg-surface text-primary text-sm rounded-sm w-full md:w-auto"
                 >
                     <option value="404">404 - Not Found</option>
                     <option value="400">400 - Bad Request</option>
@@ -316,7 +320,7 @@ const ToastTestComponent = React.memo(() => {
 
     return (
         <div className="toast-test flex flex-col gap-3">
-            <div className="test-controls flex flex-wrap gap-2 items-center">
+            <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <button
                     onClick={testToasts}
                     className="btn btn--info inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
@@ -359,16 +363,16 @@ ToastTestComponent.displayName = 'ToastTestComponent';
  */
 const ApiTestPage = () => {
     return (
-        <div className="api-test-page">
-            <div className="api-test-header">
-                <h1 className="api-test-title">API Integration Testing</h1>
-                <p className="api-test-description">
+        <div className="max-w-container mx-auto p-3 md:p-4">
+            <div className="text-center mb-6 pb-4 border-b border-color">
+                <h1 className="text-2xl font-bold text-primary mb-2">API Integration Testing</h1>
+                <p className="text-base text-secondary max-w-prose mx-auto">
                     Real DAPS backend API testing with actual endpoints, error handling, and toast
                     notifications. This tests the live integration with localhost:8000.
                 </p>
             </div>
 
-            <div className="test-sections grid gap-6">
+            <div className="grid gap-6">
                 <TestSection
                     title="Toast Notifications"
                     description="Test all toast notification types and integration with ToastProvider"

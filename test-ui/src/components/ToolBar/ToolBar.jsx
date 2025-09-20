@@ -8,7 +8,10 @@ import PropTypes from 'prop-types';
  * @param {string} [props.className] - CSS class override
  * @param {React.ReactNode} props.children - Toolbar sections and content
  */
-const ToolBar = ({ className = 'page-toolbar', children }) => {
+const ToolBar = ({
+    className = 'flex justify-between flex-none px-2 md:px-4 h-header bg-surface text-primary border-b border-border',
+    children
+}) => {
     return <div className={className}>{children}</div>;
 };
 

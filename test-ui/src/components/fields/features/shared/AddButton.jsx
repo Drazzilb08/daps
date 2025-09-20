@@ -51,15 +51,24 @@ export const AddButton = React.memo(
         };
 
         const buttonClasses = [
-            'btn',
-            'btn--add',
-            'inline-flex-center-both',
+            'min-h-touch',
+            'leading-none',
+            'no-underline',
+            'whitespace-nowrap',
+            'border',
+            'border-transparent',
+            'select-none',
+            'bg-primary',
+            'text-white',
+            'inline-flex',
+            'items-center',
+            'justify-center',
             'py-2',
             'px-3',
             'rounded-md',
             'cursor-pointer',
-            'transition-fast',
-            disabled && 'state-disabled',
+            'btn-interactions',
+            disabled && 'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
             className,
         ]
             .filter(Boolean)

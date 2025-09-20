@@ -72,7 +72,7 @@ export const PasswordField = React.memo(
                         onClick={togglePasswordVisibility}
                         disabled={disabled}
                         ariaLabel={showPassword ? 'Hide password' : 'Show password'}
-                        className="btn btn--password-toggle btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                        className="min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none bg-surface-elevated text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                     >
                         {showPassword ? (
                             <svg

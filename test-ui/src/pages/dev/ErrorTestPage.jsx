@@ -10,8 +10,8 @@ const CrashComponent = ({ shouldCrash, type = 'demonstration' }) => {
     }
 
     return (
-        <div className="working-component">
-            <p>✅ Component working normally</p>
+        <div className="p-4 bg-surface-elevated rounded-md border border-default">
+            <p className="m-0 text-success font-medium">✅ Component working normally</p>
         </div>
     );
 };
@@ -51,24 +51,24 @@ const ErrorTestPage = () => {
     };
 
     return (
-        <div className="error-test-page">
-            <div className="error-test-header">
-                <h1 className="error-test-title">🔬 Error Handling Demonstrations</h1>
-                <p className="error-test-description">
+        <div className="p-3 md:p-4 max-w-4xl mx-auto">
+            <div className="text-center mb-4">
+                <h1 className="text-2xl font-bold text-primary mb-2">🔬 Error Handling Demonstrations</h1>
+                <p className="text-base text-secondary max-w-prose mx-auto">
                     Click the buttons below to see different error handling approaches:
                 </p>
             </div>
 
             {/* Toast Notifications */}
-            <section className="error-demo-section">
-                <h2 className="error-demo-section__title">🍞 Toast Notifications</h2>
-                <p className="error-demo-section__description">
-                    <strong>What it is:</strong> Small popup notifications that appear briefly
+            <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
+                <h2 className="text-lg font-semibold text-primary mb-2">🍞 Toast Notifications</h2>
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">What it is:</strong> Small popup notifications that appear briefly
                 </p>
-                <p className="error-demo-section__description">
-                    <strong>When to use:</strong> Success confirmations, alerts, quick feedback
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">When to use:</strong> Success confirmations, alerts, quick feedback
                 </p>
-                <div className="toast-buttons">
+                <div className="flex gap-2 flex-wrap mt-3 md:flex-row flex-col md:items-center">
                     <button
                         onClick={() => showToast('success')}
                         className="btn btn--success inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
@@ -97,13 +97,13 @@ const ErrorTestPage = () => {
             </section>
 
             {/* Global Error Handling */}
-            <section className="error-demo-section">
-                <h2 className="error-demo-section__title">🌐 Global Error Handling</h2>
-                <p className="error-demo-section__description">
-                    <strong>What it is:</strong> Centralized error handling for the entire app
+            <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
+                <h2 className="text-lg font-semibold text-primary mb-2">🌐 Global Error Handling</h2>
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">What it is:</strong> Centralized error handling for the entire app
                 </p>
-                <p className="error-demo-section__description">
-                    <strong>When to use:</strong> Network failures, authentication issues, server
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">When to use:</strong> Network failures, authentication issues, server
                     errors
                 </p>
                 <button
@@ -115,17 +115,17 @@ const ErrorTestPage = () => {
             </section>
 
             {/* Critical Feature Error (Full Screen Overlay) */}
-            <section className="error-demo-section">
-                <h2 className="error-demo-section__title">⚠️ Critical Feature Error</h2>
-                <p className="error-demo-section__description">
-                    <strong>What it is:</strong> Full-screen overlay that blocks everything
+            <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
+                <h2 className="text-lg font-semibold text-primary mb-2">⚠️ Critical Feature Error</h2>
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">What it is:</strong> Full-screen overlay that blocks everything
                 </p>
-                <p className="error-demo-section__description">
-                    <strong>When to use:</strong> Essential features like navigation or
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">When to use:</strong> Essential features like navigation or
                     authentication
                 </p>
-                <p className="error-demo-section__description">
-                    <strong>Visual behavior:</strong> Covers entire screen, forces user to resolve
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">Visual behavior:</strong> Covers entire screen, forces user to resolve
                 </p>
 
                 <button
@@ -146,7 +146,7 @@ const ErrorTestPage = () => {
                 {crashes.critical && (
                     <button
                         onClick={() => resetCrash('critical')}
-                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim mt-2"
                     >
                         Reset
                     </button>
@@ -154,16 +154,16 @@ const ErrorTestPage = () => {
             </section>
 
             {/* Page Error (Full Page Replacement) */}
-            <section className="error-demo-section">
-                <h2 className="error-demo-section__title">📄 Page Error</h2>
-                <p className="error-demo-section__description">
-                    <strong>What it is:</strong> Replaces entire page content with error page
+            <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
+                <h2 className="text-lg font-semibold text-primary mb-2">📄 Page Error</h2>
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">What it is:</strong> Replaces entire page content with error page
                 </p>
-                <p className="error-demo-section__description">
-                    <strong>When to use:</strong> When entire pages/routes fail to load
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">When to use:</strong> When entire pages/routes fail to load
                 </p>
-                <p className="error-demo-section__description">
-                    <strong>Visual behavior:</strong> Shows error page with navigation options
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">Visual behavior:</strong> Shows error page with navigation options
                 </p>
 
                 <button
@@ -180,7 +180,7 @@ const ErrorTestPage = () => {
                 {crashes.page && (
                     <button
                         onClick={() => resetCrash('page')}
-                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim mt-2"
                     >
                         Reset
                     </button>
@@ -188,16 +188,16 @@ const ErrorTestPage = () => {
             </section>
 
             {/* Feature Error (Inline Replacement) */}
-            <section className="error-demo-section">
-                <h2 className="error-demo-section__title">🛡️ Feature Error</h2>
-                <p className="error-demo-section__description">
-                    <strong>What it is:</strong> Replaces just the broken component inline
+            <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
+                <h2 className="text-lg font-semibold text-primary mb-2">🛡️ Feature Error</h2>
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">What it is:</strong> Replaces just the broken component inline
                 </p>
-                <p className="error-demo-section__description">
-                    <strong>When to use:</strong> Individual features that might fail independently
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">When to use:</strong> Individual features that might fail independently
                 </p>
-                <p className="error-demo-section__description">
-                    <strong>Visual behavior:</strong> Shows error UI in place of component, allows
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">Visual behavior:</strong> Shows error UI in place of component, allows
                     retry/skip
                 </p>
 
@@ -218,7 +218,7 @@ const ErrorTestPage = () => {
                 {crashes.feature && (
                     <button
                         onClick={() => resetCrash('feature')}
-                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim mt-2"
                     >
                         Reset
                     </button>

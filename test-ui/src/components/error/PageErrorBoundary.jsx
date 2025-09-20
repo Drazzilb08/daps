@@ -207,34 +207,34 @@ class PageErrorBoundaryBase extends Component {
             const { error, errorInfo, retryCount, errorTimestamp } = this.state;
 
             return (
-                <div className="page-error-boundary">
-                    <div className="page-error-boundary__container">
-                        <div className="page-error-boundary__header">
-                            <div className="page-error-boundary__icon">🔧</div>
-                            <h1 className="page-error-boundary__title">{pageName} Page Error</h1>
-                            <p className="page-error-boundary__subtitle">
+                <div className="min-h-content p-4 font-sans">
+                    <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-6 shadow-xl mx-auto">
+                        <div className="text-center mb-6">
+                            <div className="text-4xl mb-3 block">🔧</div>
+                            <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">{pageName} Page Error</h1>
+                            <p className="text-secondary text-lg leading-relaxed">
                                 {pageDescription
                                     ? `There was a problem loading the ${pageDescription.toLowerCase()}.`
                                     : `There was a problem loading the ${pageName} page.`}
                             </p>
                         </div>
 
-                        <div className="page-error-boundary__content">
+                        <div className="text-primary">
                             {pageDescription && (
-                                <div className="page-error-boundary__description">
-                                    <p>
+                                <div className="bg-surface-alt rounded-md p-4 mb-5">
+                                    <p className="text-base leading-relaxed">
                                         The {pageDescription} encountered an error and could not be
                                         displayed properly.
                                     </p>
                                 </div>
                             )}
 
-                            <div className="page-error-boundary__error-details">
-                                <h3 className="page-error-boundary__error-title">Error Details</h3>
-                                <div className="page-error-boundary__error-message">
+                            <div className="bg-surface-variant border border-border rounded-md p-4 mb-5">
+                                <h3 className="text-primary text-xl font-semibold m-0 mb-3">Error Details</h3>
+                                <div className="mb-2 text-sm font-mono break-words">
                                     <strong>Error:</strong> {error?.message || 'Unknown error'}
                                 </div>
-                                <div className="page-error-boundary__error-message">
+                                <div className="mb-2 text-sm font-mono break-words">
                                     <strong>Component Stack:</strong>{' '}
                                     {errorInfo?.componentStack
                                         ?.split('\n')
@@ -242,11 +242,11 @@ class PageErrorBoundaryBase extends Component {
                                         .join('\n') || 'Not available'}
                                 </div>
                                 {retryCount > 0 && (
-                                    <div className="page-error-boundary__retry-info">
+                                    <div className="mb-2 text-sm font-mono break-words">
                                         <strong>Retry Count:</strong> {retryCount}
                                     </div>
                                 )}
-                                <div className="page-error-boundary__timestamp">
+                                <div className="mb-0 text-sm font-mono break-words">
                                     <strong>Time:</strong>{' '}
                                     {errorTimestamp
                                         ? new Date(errorTimestamp).toLocaleString()
@@ -254,14 +254,14 @@ class PageErrorBoundaryBase extends Component {
                                 </div>
                             </div>
 
-                            <div className="page-error-boundary__actions">
+                            <div className="mb-5 flex flex-wrap gap-2">
                                 {showRetry && (
                                     <button
                                         onClick={this.handleRetry}
-                                        className="btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
+                                        className="min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none bg-primary text-white py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                         type="button"
                                     >
-                                        <span className="page-error-boundary__button-icon">🔄</span>
+                                        <span className="inline-block font-normal">🔄</span>
                                         Try Again
                                     </button>
                                 )}
@@ -270,10 +270,10 @@ class PageErrorBoundaryBase extends Component {
                                     <>
                                         <button
                                             onClick={this.handleNavigateHome}
-                                            className="btn btn--secondary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                                            className="min-h-touch leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                             type="button"
                                         >
-                                            <span className="page-error-boundary__button-icon">
+                                            <span className="inline-block font-normal">
                                                 🏠
                                             </span>
                                             Go Home
@@ -281,10 +281,10 @@ class PageErrorBoundaryBase extends Component {
 
                                         <button
                                             onClick={this.handleNavigateBack}
-                                            className="btn btn--secondary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                                            className="min-h-touch leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                             type="button"
                                         >
-                                            <span className="page-error-boundary__button-icon">
+                                            <span className="inline-block font-normal">
                                                 ←
                                             </span>
                                             Go Back
@@ -294,17 +294,17 @@ class PageErrorBoundaryBase extends Component {
 
                                 <button
                                     onClick={this.handleCopyError}
-                                    className={`btn inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast ${
+                                    className={`min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center ${
                                         this.state.copySuccess
-                                            ? 'btn--success state-hover-dim'
+                                            ? 'bg-success text-white'
                                             : this.state.copyError
-                                              ? 'btn--error state-hover-dim'
-                                              : 'btn--info state-hover-dim'
+                                              ? 'bg-error text-white'
+                                              : 'bg-surface-elevated text-primary'
                                     }`}
                                     type="button"
                                     disabled={this.state.copying}
                                 >
-                                    <span className="page-error-boundary__button-icon">
+                                    <span className="inline-block font-normal">
                                         {this.state.copying
                                             ? '⏳'
                                             : this.state.copySuccess
@@ -324,33 +324,33 @@ class PageErrorBoundaryBase extends Component {
 
                                 <button
                                     onClick={this.handleRefresh}
-                                    className="btn btn--ghost inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
+                                    className="min-h-touch leading-none no-underline whitespace-nowrap border border-border select-none bg-transparent text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                     type="button"
                                 >
-                                    <span className="page-error-boundary__button-icon">🔄</span>
+                                    <span className="inline-block font-normal">🔄</span>
                                     Refresh Page
                                 </button>
                             </div>
 
-                            <div className="page-error-boundary__help">
-                                <div className="page-error-boundary__help-box">
-                                    <h4 className="page-error-boundary__help-title">
+                            <div className="mt-5">
+                                <div className="bg-surface-alt border border-border rounded-md p-4">
+                                    <h4 className="text-primary text-lg font-semibold m-0 mb-3">
                                         What can I do?
                                     </h4>
-                                    <ul className="page-error-boundary__help-list">
-                                        <li>Click "Try Again" to attempt reloading this page</li>
-                                        <li>
+                                    <ul className="m-0 pl-5 text-secondary text-sm leading-relaxed">
+                                        <li className="mb-2">Click "Try Again" to attempt reloading this page</li>
+                                        <li className="mb-2">
                                             Use the navigation buttons to go to a different page
                                         </li>
-                                        <li>Refresh your browser if the problem persists</li>
-                                        <li>Check the browser console for additional details</li>
+                                        <li className="mb-2">Refresh your browser if the problem persists</li>
+                                        <li className="mb-2">Check the browser console for additional details</li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="page-error-boundary__footer">
-                            <p className="page-error-boundary__footer-text">
+                        <div className="mt-5 pt-4 border-t border-border text-center">
+                            <p className="m-0 text-sm text-secondary leading-relaxed">
                                 If this error continues to occur, please check the application logs
                                 or contact support for assistance.
                             </p>

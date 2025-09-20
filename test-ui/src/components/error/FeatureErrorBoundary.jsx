@@ -206,10 +206,10 @@ class FeatureErrorBoundaryBase extends Component {
             const { featureName } = this.props;
 
             return (
-                <div className="feature-error-boundary feature-error-boundary--skipped">
-                    <div className="feature-error-boundary__skipped-notice">
-                        <span className="feature-error-boundary__skipped-icon">⏭️</span>
-                        <span className="feature-error-boundary__skipped-text">
+                <div className="bg-surface-alt border border-warning rounded-md my-2 font-sans">
+                    <div className="p-3 text-sm text-secondary flex items-center gap-2">
+                        <span className="text-base shrink-0">⏭️</span>
+                        <span className="flex-1 font-medium">
                             {featureName} skipped due to error
                         </span>
                         <button
@@ -218,7 +218,7 @@ class FeatureErrorBoundaryBase extends Component {
                             type="button"
                             title="Try to load this feature again"
                         >
-                            <span className="feature-error-boundary__button-icon">🔄</span>
+                            <span className="inline-block font-normal">🔄</span>
                             Retry
                         </button>
                     </div>
@@ -244,23 +244,23 @@ class FeatureErrorBoundaryBase extends Component {
             // Critical features get overlay mode
             if (critical) {
                 return (
-                    <div className="feature-error-boundary feature-error-boundary--overlay">
-                        <div className="feature-error-boundary__overlay-backdrop">
-                            <div className="feature-error-boundary__overlay-content">
-                                <h2 className="feature-error-boundary__overlay-title">
+                    <div className="fixed inset-0 z-50 bg-overlay backdrop-blur-sm font-sans">
+                        <div className="absolute inset-0 bg-backdrop">
+                            <div className="relative bg-surface border-2 border-error rounded-lg p-6 m-4 max-w-lg w-full max-h-screen overflow-y-auto shadow-xl z-50">
+                                <h2 className="text-error text-2xl font-bold m-0 mb-4 text-center leading-tight">
                                     Critical Feature Error
                                 </h2>
-                                <p className="feature-error-boundary__overlay-message">
+                                <p className="text-primary text-base m-0 mb-5 text-center leading-relaxed">
                                     The {featureName} feature is required for the application to
                                     function properly.
                                 </p>
-                                <div className="feature-error-boundary__overlay-actions">
+                                <div className="flex flex-wrap gap-2">
                                     <button
                                         onClick={this.handleRetry}
                                         className="btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
-                                        <span className="feature-error-boundary__button-icon">
+                                        <span className="inline-block font-normal">
                                             🔄
                                         </span>
                                         Retry
@@ -277,7 +277,7 @@ class FeatureErrorBoundaryBase extends Component {
                                         type="button"
                                         disabled={this.state.copying}
                                     >
-                                        <span className="feature-error-boundary__button-icon">
+                                        <span className="inline-block font-normal">
                                             {this.state.copying
                                                 ? '⏳'
                                                 : this.state.copySuccess
@@ -299,7 +299,7 @@ class FeatureErrorBoundaryBase extends Component {
                                         className="btn btn--secondary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
                                         type="button"
                                     >
-                                        <span className="feature-error-boundary__button-icon">
+                                        <span className="inline-block font-normal">
                                             🔄
                                         </span>
                                         Reload App
@@ -315,12 +315,12 @@ class FeatureErrorBoundaryBase extends Component {
             if (retryCount >= 3) {
                 return (
                     <div
-                        className="feature-error-boundary feature-error-boundary--disabled"
+                        className="bg-surface-alt border border-text-disabled rounded-md my-2 opacity-70 font-sans"
                         title={`${featureName} is temporarily disabled due to repeated errors`}
                     >
-                        <div className="feature-error-boundary__disabled-notice">
-                            <span className="feature-error-boundary__disabled-icon">⚠️</span>
-                            <span className="feature-error-boundary__disabled-text">
+                        <div className="p-3 text-sm text-disabled flex items-center gap-2">
+                            <span className="text-base shrink-0">⚠️</span>
+                            <span className="flex-1 font-medium">
                                 {featureName} temporarily disabled
                             </span>
                         </div>
@@ -331,47 +331,47 @@ class FeatureErrorBoundaryBase extends Component {
             // Default inline mode
             return (
                 <>
-                    <div className="feature-error-boundary feature-error-boundary--degraded">
-                        <div className="feature-error-boundary__degraded-notice">
+                    <div className="bg-surface-alt border border-warning rounded-md my-2 mb-1 p-2 text-center text-xs text-warning font-medium font-sans">
+                        <div className="m-0 p-0">
                             ⚠️ {featureName} temporarily unavailable
                         </div>
                     </div>
 
-                    <div className="feature-error-boundary feature-error-boundary--inline">
-                        <div className="feature-error-boundary__container">
-                            <div className="feature-error-boundary__header">
-                                <span className="feature-error-boundary__icon">⚠️</span>
-                                <div className="feature-error-boundary__title-group">
-                                    <h3 className="feature-error-boundary__title">
+                    <div className="bg-surface border border-error rounded-md my-2 font-sans">
+                        <div className="p-4">
+                            <div className="mb-4 flex items-center gap-3">
+                                <span className="text-xl shrink-0 mt-1">⚠️</span>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-error text-lg font-semibold m-0 mb-1 leading-tight">
                                         {featureName} Error
                                     </h3>
                                     {featureDescription && (
-                                        <p className="feature-error-boundary__description">
+                                        <p className="text-secondary text-sm leading-relaxed">
                                             {featureDescription}
                                         </p>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="feature-error-boundary__content">
-                                <div className="feature-error-boundary__error-summary">
+                            <div className="text-primary">
+                                <div className="bg-surface-variant border border-error p-3 mb-4 text-sm break-words">
                                     <strong>Error:</strong>{' '}
                                     {error?.message || 'Component failed to render'}
                                     {retryCount > 0 && (
-                                        <span className="feature-error-boundary__attempt-count">
+                                        <span className="text-secondary font-normal">
                                             {' '}
                                             (Attempt {retryCount + 1})
                                         </span>
                                     )}
                                 </div>
 
-                                <div className="feature-error-boundary__actions">
+                                <div className="flex flex-wrap gap-2 mb-0">
                                     <button
                                         onClick={this.handleRetry}
                                         className="btn btn--primary btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
-                                        <span className="feature-error-boundary__button-icon">
+                                        <span className="inline-block font-normal">
                                             🔄
                                         </span>
                                         Retry
@@ -383,7 +383,7 @@ class FeatureErrorBoundaryBase extends Component {
                                             className="btn btn--secondary btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast state-hover-dim"
                                             type="button"
                                         >
-                                            <span className="feature-error-boundary__button-icon">
+                                            <span className="inline-block font-normal">
                                                 ⏭️
                                             </span>
                                             Skip
@@ -402,7 +402,7 @@ class FeatureErrorBoundaryBase extends Component {
                                         type="button"
                                         disabled={this.state.copying}
                                     >
-                                        <span className="feature-error-boundary__button-icon">
+                                        <span className="inline-block font-normal">
                                             {this.state.copying
                                                 ? '⏳'
                                                 : this.state.copySuccess
@@ -425,7 +425,7 @@ class FeatureErrorBoundaryBase extends Component {
                                         className="btn btn--ghost btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
-                                        <span className="feature-error-boundary__button-icon">
+                                        <span className="inline-block font-normal">
                                             🔄
                                         </span>
                                         Reload
@@ -433,8 +433,8 @@ class FeatureErrorBoundaryBase extends Component {
                                 </div>
 
                                 {retryCount >= 2 && (
-                                    <div className="feature-error-boundary__critical-notice">
-                                        <div className="feature-error-boundary__critical-box">
+                                    <div className="mt-4">
+                                        <div className="bg-surface-alt border border-error rounded-md p-3">
                                             <strong>Repeated Errors Detected</strong>
                                             <p>
                                                 This feature has failed multiple times. Consider

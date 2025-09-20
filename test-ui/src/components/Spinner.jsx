@@ -12,21 +12,31 @@
  * @returns {JSX.Element} Spinner component
  */
 const Spinner = ({ size = 'medium', text, className = '', center = false }) => {
-    const sizeClass = `spinner-${size}`;
+    // Size mappings to utility classes
+    const sizeMap = {
+        small: 'w-4 h-4',
+        medium: 'w-6 h-6',
+        large: 'w-8 h-8'
+    };
+
+    const sizeClasses = sizeMap[size] || sizeMap.medium;
 
     const spinnerElement = (
-        <div className={`spinner inline-block ${sizeClass} ${className}`.trim()}>
-            <div className="spinner-circle rounded-full" />
+        <div className={`inline-block ${className}`.trim()}>
+            <div
+                className={`rounded-full animate-spin ${sizeClasses} border-2 border-border`}
+                style={{ borderTopColor: 'var(--color-primary)' }}
+            />
         </div>
     );
 
     // If center is true, wrap in centered container (for Suspense fallbacks)
     if (center) {
         return (
-            <div className="spinner-center flex items-center justify-center p-4">
-                <div className="spinner-container flex flex-col items-center gap-3">
+            <div className="flex items-center justify-center p-4 min-h-content">
+                <div className="flex flex-col items-center gap-3">
                     {spinnerElement}
-                    {text && <p className="spinner-text text-sm m-0">{text}</p>}
+                    {text && <p className="text-sm m-0 text-secondary">{text}</p>}
                 </div>
             </div>
         );
@@ -36,7 +46,7 @@ const Spinner = ({ size = 'medium', text, className = '', center = false }) => {
     return (
         <>
             {spinnerElement}
-            {text && <span className="spinner-text text-sm m-0">{text}</span>}
+            {text && <span className="text-sm m-0 text-secondary">{text}</span>}
         </>
     );
 };

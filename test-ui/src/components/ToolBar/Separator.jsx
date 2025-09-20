@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
  * @param {Object} props - Component props
  * @param {string} [props.className] - Optional CSS class override
  */
-const Separator = ({ className = 'page-toolbar-separator' }) => {
+const Separator = ({ className = 'w-px h-5 bg-text-secondary mx-3 flex-shrink-0 self-center' }) => {
     return <div className={className} />;
 };
 

@@ -63,22 +63,31 @@ export const RemoveButton = React.memo(
         const ariaLabel = itemName ? `Remove ${itemName}` : `Remove ${itemType}`;
 
         const buttonClasses = [
-            'btn',
-            'btn--remove',
-            'btn--icon-only',
-            'flex-center-both', // Icon-only buttons use flex-center-both
+            'min-h-touch',
+            'leading-none',
+            'no-underline',
+            'whitespace-nowrap',
+            'border',
+            'border-error',
+            'select-none',
+            'bg-transparent',
+            'text-error',
+            'hover:bg-error',
+            'hover:text-white',
+            'inline-flex',
+            'items-center',
+            'justify-center',
             'text-lg',
             'font-bold',
-            'p-0',
             'rounded-md',
             'cursor-pointer',
-            'transition-fast',
+            'btn-interactions',
             size === 'small'
-                ? 'btn--small py-1 px-2 text-sm'
+                ? 'min-h-9 w-9 text-sm'
                 : size === 'large'
-                  ? 'btn--large py-3 px-4 text-lg'
-                  : 'py-2 px-3',
-            disabled && 'state-disabled',
+                  ? 'min-h-12 w-12 text-lg'
+                  : 'min-h-touch w-11',
+            disabled && 'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
             className,
         ]
             .filter(Boolean)

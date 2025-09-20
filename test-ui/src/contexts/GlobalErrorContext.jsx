@@ -402,7 +402,7 @@ export class ErrorBoundary extends React.Component {
             }
 
             return (
-                <div className="error-boundary-fallback">
+                <div className="min-h-error p-6 text-center bg-surface border-2 border-error rounded-lg m-4">
                     <h2>Something went wrong</h2>
                     <p>We're sorry, but something unexpected happened.</p>
                     <button onClick={() => window.location.reload()}>Refresh Page</button>

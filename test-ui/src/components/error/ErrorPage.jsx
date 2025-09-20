@@ -116,30 +116,30 @@ const ErrorPage = ({
     };
 
     return (
-        <div className="page-error-boundary">
-            <div className="page-error-boundary__container">
-                <div className="page-error-boundary__header">
-                    <div className="page-error-boundary__icon">{getStatusIcon(statusCode)}</div>
-                    <h1 className="page-error-boundary__title">
+        <div className="min-h-content p-4 font-sans">
+            <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-6 shadow-xl mx-auto">
+                <div className="text-center mb-6">
+                    <div className="text-4xl mb-3 block">{getStatusIcon(statusCode)}</div>
+                    <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">
                         {statusCode} - {finalTitle}
                     </h1>
-                    <p className="page-error-boundary__subtitle">{finalMessage}</p>
+                    <p className="text-secondary text-lg leading-relaxed">{finalMessage}</p>
                 </div>
 
-                <div className="page-error-boundary__content">
+                <div className="text-primary">
                     {finalDescription && (
-                        <div className="page-error-boundary__description">
-                            <p>{finalDescription}</p>
+                        <div className="bg-surface-alt rounded-md p-4 mb-5">
+                            <p className="text-base leading-relaxed">{finalDescription}</p>
                         </div>
                     )}
 
-                    <div className="page-error-boundary__actions">
+                    <div className="mb-5 flex flex-wrap gap-2">
                         {showHome && (
                             <Link
                                 to="/"
-                                className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                                className="btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
                             >
-                                <span className="page-error-boundary__button-icon">🏠</span>
+                                <span className="inline-block font-normal">🏠</span>
                                 Go Home
                             </Link>
                         )}
@@ -147,10 +147,10 @@ const ErrorPage = ({
                         {showBack && (
                             <button
                                 onClick={handleBack}
-                                className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                                className="btn btn--secondary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
                                 type="button"
                             >
-                                <span className="page-error-boundary__button-icon">←</span>
+                                <span className="inline-block font-normal">←</span>
                                 Go Back
                             </button>
                         )}
@@ -158,22 +158,22 @@ const ErrorPage = ({
                         {showRefresh && (
                             <button
                                 onClick={handleRefresh}
-                                className="btn btn--ghost inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                                className="btn btn--ghost inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
                                 type="button"
                             >
-                                <span className="page-error-boundary__button-icon">🔄</span>
+                                <span className="inline-block font-normal">🔄</span>
                                 Refresh
                             </button>
                         )}
                     </div>
 
                     {finalSuggestions.length > 0 && (
-                        <div className="page-error-boundary__help">
-                            <div className="page-error-boundary__help-box">
-                                <h4 className="page-error-boundary__help-title">What can I do?</h4>
-                                <ul className="page-error-boundary__help-list">
+                        <div className="mt-5">
+                            <div className="bg-surface-alt border border-border rounded-md p-4">
+                                <h4 className="text-primary text-lg font-semibold m-0 mb-3">What can I do?</h4>
+                                <ul className="m-0 pl-5 text-secondary text-sm leading-relaxed">
                                     {finalSuggestions.map((suggestion, index) => (
-                                        <li key={index}>{suggestion}</li>
+                                        <li key={index} className="mb-2">{suggestion}</li>
                                     ))}
                                 </ul>
                             </div>
@@ -181,8 +181,8 @@ const ErrorPage = ({
                     )}
                 </div>
 
-                <div className="page-error-boundary__footer">
-                    <p className="page-error-boundary__footer-text">
+                <div className="mt-5 pt-4 border-t border-border text-center">
+                    <p className="m-0 text-sm text-secondary leading-relaxed">
                         {statusCode === 404
                             ? 'If you believe this page should exist, please check the URL or contact support.'
                             : 'If this error persists, please contact support for assistance.'}

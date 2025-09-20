@@ -123,8 +123,7 @@ const Dropdown = ({
     if (!isOpen) return null;
 
     const dropdownClassName = [
-        'dropdown',
-        'bg-surface-elevated rounded-md shadow-lg p-1 min-w-dropdown max-w-dropdown w-max-content',
+        'bg-surface-elevated rounded-md shadow-lg p-1 min-w-dropdown max-w-dropdown w-max-content md:max-w-dropdown-desktop border border-dropdown',
         className,
     ]
         .filter(Boolean)
@@ -134,12 +133,11 @@ const Dropdown = ({
     return createPortal(
         <div
             ref={dropdownRef}
-            className={dropdownClassName}
+            className={`${dropdownClassName} z-dropdown`}
             style={{
                 position: 'fixed',
                 top: position.top,
                 left: position.left,
-                zIndex: 1000,
             }}
         >
             {children}

@@ -84,7 +84,8 @@ export const FloatField = React.memo(
                         onClick={handleDecrement}
                         disabled={decrementDisabled}
                         ariaLabel={`Decrease ${field.label}`}
-                        className="btn btn--number-field btn--number-field-left btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                        className="min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none bg-surface-elevated text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
+                        style={{ borderRadius: '0.25rem 0 0 0.25rem' }}
                     >
                         −
                     </FieldButton>
@@ -108,7 +109,8 @@ export const FloatField = React.memo(
                         onClick={handleIncrement}
                         disabled={incrementDisabled}
                         ariaLabel={`Increase ${field.label}`}
-                        className="btn btn--number-field btn--number-field-right btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                        className="min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none bg-surface-elevated text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
+                        style={{ borderRadius: '0 0.25rem 0.25rem 0' }}
                     >
                         +
                     </FieldButton>

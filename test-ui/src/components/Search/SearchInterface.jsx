@@ -102,15 +102,15 @@ const SearchInterface = React.memo(
         };
 
         return (
-            <div className="search-interface" role="search">
+            <div className="w-full" role="search">
                 {/* Tier 1: Search Field */}
-                <form className="search-form" onSubmit={handleSubmit}>
+                <form className="w-full" onSubmit={handleSubmit}>
                     <div
-                        className={`search-input-container ${isActive ? 'active' : ''} ${searchTerm ? 'has-value' : ''}`}
+                        className={`relative ${isActive ? 'active' : ''} ${searchTerm ? 'has-value' : ''}`}
                     >
-                        <div className="search-input-wrapper">
+                        <div className="relative flex items-center bg-surface border rounded-md h-input focus-within:border-primary">
                             <span
-                                className="search-icon material-symbols-outlined"
+                                className="absolute left-3 text-secondary text-lg pointer-events-none z-10 material-symbols-outlined"
                                 aria-hidden="true"
                             >
                                 search
@@ -118,7 +118,7 @@ const SearchInterface = React.memo(
                             <input
                                 ref={inputRef}
                                 type="text"
-                                className="search-input"
+                                className="flex-1 py-input pr-4 pl-10 border-none bg-transparent text-primary outline-none w-full h-full"
                                 placeholder={getContextualPlaceholder()}
                                 value={searchTerm}
                                 onChange={handleSearchChange}
@@ -129,7 +129,7 @@ const SearchInterface = React.memo(
                             {searchTerm && (
                                 <button
                                     type="button"
-                                    className="search-clear"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center border-none text-secondary cursor-pointer transition-colors bg-transparent hover:text-primary"
                                     onClick={handleClear}
                                     aria-label="Clear search"
                                     tabIndex={0}

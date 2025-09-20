@@ -56,7 +56,7 @@ const FieldStatusOverview = React.memo(() => {
                         {workingTypes.map(type => (
                             <span
                                 key={type}
-                                className="inline-flex items-center py-1 px-2 rounded-sm text-sm border border-success bg-success-subtle"
+                                className="badge badge-success rounded-sm"
                             >
                                 {type}
                             </span>
@@ -72,13 +72,13 @@ const FieldStatusOverview = React.memo(() => {
                         {placeholderTypes.slice(0, 12).map(type => (
                             <span
                                 key={type}
-                                className="inline-flex items-center py-1 px-2 rounded-sm text-sm border border-error bg-error-subtle"
+                                className="badge badge-error rounded-sm"
                             >
                                 {type}
                             </span>
                         ))}
                         {placeholderCount > 12 && (
-                            <span className="inline-flex items-center py-1 px-2 rounded-sm text-sm border border-surface-elevated bg-surface-elevated text-secondary italic">
+                            <span className="badge badge-secondary rounded-sm italic">
                                 +{placeholderCount - 12} more
                             </span>
                         )}
@@ -303,56 +303,59 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
     const isWorking = FieldRegistry.isWorkingFieldType(fieldType);
 
     return (
-        <div className={`field-tester ${!isWorking ? 'field-tester--placeholder' : ''}`}>
-            <div className="field-tester__header">
-                <h3 className="field-tester__title m-0">{fieldType}</h3>
-                <div className="field-tester__status">
+        <div className={`bg-surface border rounded p-4 ${!isWorking ? 'opacity-70 border-dashed' : ''}`}>
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+                <h3 className="text-lg font-medium text-primary font-mono m-0">{fieldType}</h3>
+                <div className="flex gap-2">
                     {!isWorking && (
-                        <span className="status-badge status-badge--placeholder rounded-sm">Placeholder</span>
+                        <span className="badge badge-error rounded-sm">Placeholder</span>
                     )}
                     {isWorking && isApproved && (
-                        <span className="status-badge status-badge--approved rounded-sm">Approved</span>
+                        <span className="badge badge-success rounded-sm">Approved</span>
                     )}
                     {isWorking && !isApproved && (
-                        <span className="status-badge status-badge--working rounded-sm">Needs Testing</span>
+                        <span className="badge badge-warning rounded-sm">Needs Testing</span>
                     )}
                 </div>
             </div>
 
             {isWorking && (
                 <>
-                    <div className="field-tester__config rounded-sm">
-                        <h4 className="config-title">Field Configuration</h4>
-                        <div className="config-controls">
-                            <label className="config-control touch-target">
+                    <div className="mb-4 p-3 bg-surface-elevated border rounded-sm">
+                        <h4 className="text-base font-medium text-primary mb-2">Field Configuration</h4>
+                        <div className="flex gap-4 flex-wrap">
+                            <label className="flex items-center gap-2 text-sm text-primary cursor-pointer touch-target">
                                 <input
                                     type="checkbox"
                                     checked={testConfig.required}
                                     onChange={e => handleConfigChange('required', e.target.checked)}
+                                    className="w-4 h-4"
                                 />
                                 Required
                             </label>
-                            <label className="config-control touch-target">
+                            <label className="flex items-center gap-2 text-sm text-primary cursor-pointer touch-target">
                                 <input
                                     type="checkbox"
                                     checked={testConfig.disabled}
                                     onChange={e => handleConfigChange('disabled', e.target.checked)}
+                                    className="w-4 h-4"
                                 />
                                 Disabled
                             </label>
-                            <label className="config-control touch-target">
+                            <label className="flex items-center gap-2 text-sm text-primary cursor-pointer touch-target">
                                 <input
                                     type="checkbox"
                                     checked={showError}
                                     onChange={e => setShowError(e.target.checked)}
+                                    className="w-4 h-4"
                                 />
                                 Show Error State
                             </label>
                         </div>
                     </div>
 
-                    <div className="field-tester__test-area rounded-sm">
-                        <h4 className="test-title">Field Test</h4>
+                    <div className="mb-4 p-3 bg-surface-elevated border rounded-sm">
+                        <h4 className="text-base font-medium text-primary mb-2">Field Test</h4>
                         <FormRenderer
                             schema={testSchema}
                             initialValues={testFormValues}
@@ -364,9 +367,9 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                         />
                     </div>
 
-                    <div className="field-tester__approval rounded-sm">
-                        <h4 className="approval-title">Approval Status</h4>
-                        <div className="approval-actions">
+                    <div className="p-3 bg-surface-elevated border border-primary rounded-sm">
+                        <h4 className="text-base font-medium text-primary mb-2">Approval Status</h4>
+                        <div className="flex gap-2 flex-wrap">
                             {isApproved ? (
                                 <button
                                     onClick={handleDisapprove}
@@ -394,7 +397,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
             )}
 
             {!isWorking && (
-                <div className="field-tester__placeholder">
+                <div className="p-4 text-center text-secondary italic">
                     <p>
                         This field type is not implemented. It will show a placeholder message in
                         forms.
@@ -506,8 +509,8 @@ const FieldTestPage = () => {
     }, [workingFieldTypes, approvedFields]);
 
     return (
-        <div className="field-test-page">
-            <div className="field-test-page__header">
+        <div className="max-w-6xl mx-auto p-4">
+            <div className="text-center mb-6 pb-4 border-b">
                 <h1 className="text-2xl font-bold text-primary mb-2">Field Development Testing</h1>
                 <p className="text-base text-secondary max-w-60ch mx-auto mb-4">
                     Development interface for testing and approving field implementations. Focus on
@@ -517,27 +520,27 @@ const FieldTestPage = () => {
 
             <FieldStatusOverview />
 
-            <div className="field-testing-section">
-                <div className="testing-header flex justify-between items-center mb-4 flex-wrap gap-2">
-                    <h2 className="testing-title text-lg font-semibold text-primary m-0">
+            <div className="bg-surface-elevated rounded p-4 mb-6 border">
+                <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+                    <h2 className="text-lg font-semibold text-primary m-0">
                         Individual Field Testing
                     </h2>
-                    <div className="testing-stats flex flex-wrap gap-3">
-                        <span className="stat">Working: {stats.working}</span>
-                        <span className="stat">Approved: {stats.approved}</span>
-                        <span className="stat">Needs Testing: {stats.unapproved}</span>
-                        <span className="stat">Placeholder: {stats.placeholder}</span>
+                    <div className="flex flex-wrap gap-3">
+                        <span className="text-sm text-secondary bg-surface border p-1 px-2">Working: {stats.working}</span>
+                        <span className="text-sm text-secondary bg-surface border p-1 px-2">Approved: {stats.approved}</span>
+                        <span className="text-sm text-secondary bg-surface border p-1 px-2">Needs Testing: {stats.unapproved}</span>
+                        <span className="text-sm text-secondary bg-surface border p-1 px-2">Placeholder: {stats.placeholder}</span>
                     </div>
                 </div>
 
-                <div className="testing-controls flex gap-4 mb-4 flex-wrap">
-                    <div className="filter-controls">
-                        <label htmlFor="filter-select">Filter:</label>
+                <div className="flex gap-4 mb-4 flex-wrap">
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="filter-select" className="text-sm font-medium text-primary">Filter:</label>
                         <select
                             id="filter-select"
                             value={filter}
                             onChange={e => setFilter(e.target.value)}
-                            className="filter-select rounded-sm"
+                            className="min-h-touch-target py-2 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm"
                         >
                             <option value="all">All Field Types</option>
                             <option value="working">Working Only</option>
@@ -547,18 +550,18 @@ const FieldTestPage = () => {
                         </select>
                     </div>
 
-                    <div className="field-type-selector">
-                        <label htmlFor="field-type-select">Test Field:</label>
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="field-type-select" className="text-sm font-medium text-primary">Test Field:</label>
                         {filteredFieldTypes.length === 0 ? (
-                            <div className="no-fields-message">
-                                <span className="no-fields-text">No fields match this filter</span>
+                            <div className="text-sm text-secondary">
+                                <span>No fields match this filter</span>
                             </div>
                         ) : (
                             <select
                                 id="field-type-select"
                                 value={selectedFieldType}
                                 onChange={e => handleFieldTypeSelect(e.target.value)}
-                                className="field-type-select rounded-sm"
+                                className="min-h-touch-target py-2 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm"
                             >
                                 {filteredFieldTypes.map(type => (
                                     <option key={type} value={type}>
@@ -573,11 +576,11 @@ const FieldTestPage = () => {
                     </div>
                 </div>
 
-                <div className="field-tester-container">
+                <div className="mb-4">
                     {filteredFieldTypes.length === 0 ? (
-                        <div className="no-fields-tester">
-                            <h3>No Fields Available</h3>
-                            <p>
+                        <div className="text-center p-4">
+                            <h3 className="text-lg font-medium text-primary mb-2">No Fields Available</h3>
+                            <p className="text-secondary">
                                 No field types match the current filter. Try adjusting your filter
                                 selection to see available fields for testing.
                             </p>
@@ -594,28 +597,28 @@ const FieldTestPage = () => {
                 </div>
             </div>
 
-            <div className="quick-actions">
-                <h3 className="quick-actions-title">Quick Actions</h3>
-                <div className="quick-action-buttons">
+            <div className="bg-surface-elevated rounded p-4 border">
+                <h3 className="text-lg font-semibold text-primary mb-3 text-center">Quick Actions</h3>
+                <div className="flex gap-2 justify-center flex-wrap">
                     <button
                         onClick={() => {
                             workingFieldTypes.forEach(type =>
                                 setApprovedFields(prev => new Set([...prev, type]))
                             );
                         }}
-                        className="quick-action-btn quick-action-btn--approve-all"
+                        className="btn btn--primary px-3 py-2 rounded cursor-pointer transition-fast"
                     >
                         Approve All Working Fields
                     </button>
                     <button
                         onClick={() => setApprovedFields(new Set())}
-                        className="quick-action-btn quick-action-btn--reset"
+                        className="btn btn--error px-3 py-2 rounded cursor-pointer transition-fast"
                     >
                         Reset All Approvals
                     </button>
                     <button
                         onClick={() => setFilter('unapproved')}
-                        className="quick-action-btn quick-action-btn--show-unapproved"
+                        className="btn btn--secondary px-3 py-2 rounded cursor-pointer transition-fast"
                     >
                         Show Fields Needing Testing
                     </button>

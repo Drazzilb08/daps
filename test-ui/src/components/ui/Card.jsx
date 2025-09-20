@@ -36,9 +36,9 @@ export const Card = ({
     const defaultFormatValue = value => {
         if (Array.isArray(value)) {
             return (
-                <ul className="card-value-list">
+                <ul className="m-0 pl-4 list-disc">
                     {value.map((item, index) => (
-                        <li key={index} className="card-value-list-item">
+                        <li key={index} className="mb-1">
                             {String(item)}
                         </li>
                     ))}
@@ -48,13 +48,13 @@ export const Card = ({
 
         if (typeof value === 'object' && value !== null) {
             return (
-                <pre className="card-value-object">
+                <pre className="bg-surface-elevated border border-border rounded-sm p-2 m-0 font-mono text-sm overflow-x-auto whitespace-pre-wrap">
                     {JSON.stringify(value, null, 2)}
                 </pre>
             );
         }
 
-        return <span className="card-value-text">{String(value)}</span>;
+        return <span>{String(value)}</span>;
     };
 
     // Use provided formatters or defaults
@@ -70,10 +70,18 @@ export const Card = ({
         return null;
     }
 
-    // Build CSS classes
+    // Build CSS classes using utilities
+    const baseClasses = 'flex flex-col gap-2 p-3 bg-surface rounded-md mt-3';
+    const variantClasses = {
+        standard: '',
+        compact: 'gap-1 p-2 text-sm',
+        bordered: 'border border-border',
+        minimal: 'bg-transparent py-2 px-0 rounded-none',
+    };
+
     const cardClasses = [
-        'card',
-        `card--${variant}`,
+        baseClasses,
+        variantClasses[variant] || '',
         className,
     ]
         .filter(Boolean)
@@ -82,11 +90,11 @@ export const Card = ({
     return (
         <div className={cardClasses}>
             {entries.map(([key, value]) => (
-                <div className="card-row" key={key}>
-                    <span className="card-label">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-start" key={key}>
+                    <span className="font-medium text-secondary shrink-0 min-w-20">
                         {keyFormatter(key)}:
                     </span>
-                    <span className="card-value">
+                    <span className="text-primary flex-1 break-words">
                         {valueFormatter(value)}
                     </span>
                 </div>
@@ -104,14 +112,14 @@ export const Card = ({
  * @param {string} [props.className=""] - Additional CSS classes
  */
 export const CardRow = ({ label, children, className = '' }) => {
-    const rowClasses = ['card-row', className].filter(Boolean).join(' ');
+    const rowClasses = ['flex flex-col gap-1 sm:flex-row sm:items-start', className].filter(Boolean).join(' ');
 
     return (
         <div className={rowClasses}>
-            <span className="card-label">
+            <span className="font-medium text-secondary shrink-0 min-w-20">
                 {label}:
             </span>
-            <span className="card-value">
+            <span className="text-primary flex-1 break-words">
                 {children}
             </span>
         </div>

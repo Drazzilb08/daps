@@ -1,12 +1,12 @@
 /**
  * DAPS CSS Entry Point
- * Import Order: tokens, base, layout, themes, utilities, components, pages
+ * Import Order: tokens, base, themes, utilities, components, pages
  */
 
 /* Design tokens */
 @import url('./tokens.css');
 @import url('./base.css');
-@import url('./layout.css');
+/* layout.css removed - converted to utility classes */
 @import url('./theme/dark.css');
 @import url('./theme/light.css');
 
@@ -14,11 +14,10 @@
 @import url('./utilities/index.css');
 
 /* Component system */
-@import url('./components/ui/index.css');
+/* ui/index.css removed - all UI components converted to utility classes */
 @import url('./components/layout/index.css');
 @import url('./components/search/index.css');
-@import url('./components/error/index.css');
 @import url('./components/fields/index.css');
 
 /* Page-specific styles */
-@import url('./pages/dev/index.css');
+/* pages/dev/index.css removed - dev pages use utility classes */

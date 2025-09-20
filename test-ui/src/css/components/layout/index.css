@@ -3,5 +3,5 @@
  * Central import file for all layout component styles
  */
 
-@import url('./layout.css');
+/* layout.css removed - converted to utility classes */
 @import url('./page-layout.css');

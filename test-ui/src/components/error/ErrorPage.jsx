@@ -117,8 +117,8 @@ const ErrorPage = ({
 
     return (
         <div className="min-h-content p-4 font-sans">
-            <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-6 shadow-xl mx-auto">
-                <div className="text-center mb-6">
+            <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-8 shadow-xl mx-auto">
+                <div className="text-center mb-8">
                     <div className="text-4xl mb-3 block">{getStatusIcon(statusCode)}</div>
                     <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">
                         {statusCode} - {finalTitle}
@@ -128,12 +128,12 @@ const ErrorPage = ({
 
                 <div className="text-primary">
                     {finalDescription && (
-                        <div className="bg-surface-alt rounded-md p-4 mb-5">
+                        <div className="bg-surface-alt rounded-md p-4 mb-6">
                             <p className="text-base leading-relaxed">{finalDescription}</p>
                         </div>
                     )}
 
-                    <div className="mb-5 flex flex-wrap gap-2">
+                    <div className="mb-6 flex flex-wrap gap-2">
                         {showHome && (
                             <Link
                                 to="/"
@@ -168,10 +168,10 @@ const ErrorPage = ({
                     </div>
 
                     {finalSuggestions.length > 0 && (
-                        <div className="mt-5">
+                        <div className="mt-6">
                             <div className="bg-surface-alt border border-border rounded-md p-4">
                                 <h4 className="text-primary text-lg font-semibold m-0 mb-3">What can I do?</h4>
-                                <ul className="m-0 pl-5 text-secondary text-sm leading-relaxed">
+                                <ul className="m-0 pl-6 text-secondary text-sm leading-relaxed">
                                     {finalSuggestions.map((suggestion, index) => (
                                         <li key={index} className="mb-2">{suggestion}</li>
                                     ))}
@@ -181,7 +181,7 @@ const ErrorPage = ({
                     )}
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-border text-center">
+                <div className="mt-6 pt-4 border-t border-border text-center">
                     <p className="m-0 text-sm text-secondary leading-relaxed">
                         {statusCode === 404
                             ? 'If you believe this page should exist, please check the URL or contact support.'

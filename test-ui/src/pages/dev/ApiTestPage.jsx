@@ -364,7 +364,7 @@ ToastTestComponent.displayName = 'ToastTestComponent';
 const ApiTestPage = () => {
     return (
         <div className="max-w-container mx-auto p-3 md:p-4">
-            <div className="text-center mb-6 pb-4 border-b border-color">
+            <div className="text-center mb-8 pb-4 border-b border-color">
                 <h1 className="text-2xl font-bold text-primary mb-2">API Integration Testing</h1>
                 <p className="text-base text-secondary max-w-prose mx-auto">
                     Real DAPS backend API testing with actual endpoints, error handling, and toast
@@ -372,7 +372,7 @@ const ApiTestPage = () => {
                 </p>
             </div>
 
-            <div className="grid gap-6">
+            <div className="grid gap-8">
                 <TestSection
                     title="Toast Notifications"
                     description="Test all toast notification types and integration with ToastProvider"

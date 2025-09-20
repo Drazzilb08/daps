@@ -27,7 +27,7 @@ const FieldStatusOverview = React.memo(() => {
     const completionPercentage = Math.round((workingCount / totalTypes) * 100);
 
     return (
-        <div className="bg-surface-elevated rounded p-4 mb-6 border">
+        <div className="bg-surface-elevated rounded p-4 mb-8 border">
             <h2 className="text-lg font-semibold text-primary mb-3 text-center">
                 Field Implementation Status
             </h2>
@@ -510,7 +510,7 @@ const FieldTestPage = () => {
 
     return (
         <div className="max-w-6xl mx-auto p-4">
-            <div className="text-center mb-6 pb-4 border-b">
+            <div className="text-center mb-8 pb-4 border-b">
                 <h1 className="text-2xl font-bold text-primary mb-2">Field Development Testing</h1>
                 <p className="text-base text-secondary max-w-60ch mx-auto mb-4">
                     Development interface for testing and approving field implementations. Focus on
@@ -520,7 +520,7 @@ const FieldTestPage = () => {
 
             <FieldStatusOverview />
 
-            <div className="bg-surface-elevated rounded p-4 mb-6 border">
+            <div className="bg-surface-elevated rounded p-4 mb-8 border">
                 <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
                     <h2 className="text-lg font-semibold text-primary m-0">
                         Individual Field Testing

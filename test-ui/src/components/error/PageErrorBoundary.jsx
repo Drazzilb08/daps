@@ -208,8 +208,8 @@ class PageErrorBoundaryBase extends Component {
 
             return (
                 <div className="min-h-content p-4 font-sans">
-                    <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-6 shadow-xl mx-auto">
-                        <div className="text-center mb-6">
+                    <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-8 shadow-xl mx-auto">
+                        <div className="text-center mb-8">
                             <div className="text-4xl mb-3 block">🔧</div>
                             <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">{pageName} Page Error</h1>
                             <p className="text-secondary text-lg leading-relaxed">
@@ -221,7 +221,7 @@ class PageErrorBoundaryBase extends Component {
 
                         <div className="text-primary">
                             {pageDescription && (
-                                <div className="bg-surface-alt rounded-md p-4 mb-5">
+                                <div className="bg-surface-alt rounded-md p-4 mb-6">
                                     <p className="text-base leading-relaxed">
                                         The {pageDescription} encountered an error and could not be
                                         displayed properly.
@@ -229,7 +229,7 @@ class PageErrorBoundaryBase extends Component {
                                 </div>
                             )}
 
-                            <div className="bg-surface-variant border border-border rounded-md p-4 mb-5">
+                            <div className="bg-surface-variant border border-border rounded-md p-4 mb-6">
                                 <h3 className="text-primary text-xl font-semibold m-0 mb-3">Error Details</h3>
                                 <div className="mb-2 text-sm font-mono break-words">
                                     <strong>Error:</strong> {error?.message || 'Unknown error'}
@@ -254,7 +254,7 @@ class PageErrorBoundaryBase extends Component {
                                 </div>
                             </div>
 
-                            <div className="mb-5 flex flex-wrap gap-2">
+                            <div className="mb-6 flex flex-wrap gap-2">
                                 {showRetry && (
                                     <button
                                         onClick={this.handleRetry}
@@ -332,12 +332,12 @@ class PageErrorBoundaryBase extends Component {
                                 </button>
                             </div>
 
-                            <div className="mt-5">
+                            <div className="mt-6">
                                 <div className="bg-surface-alt border border-border rounded-md p-4">
                                     <h4 className="text-primary text-lg font-semibold m-0 mb-3">
                                         What can I do?
                                     </h4>
-                                    <ul className="m-0 pl-5 text-secondary text-sm leading-relaxed">
+                                    <ul className="m-0 pl-6 text-secondary text-sm leading-relaxed">
                                         <li className="mb-2">Click "Try Again" to attempt reloading this page</li>
                                         <li className="mb-2">
                                             Use the navigation buttons to go to a different page
@@ -349,7 +349,7 @@ class PageErrorBoundaryBase extends Component {
                             </div>
                         </div>
 
-                        <div className="mt-5 pt-4 border-t border-border text-center">
+                        <div className="mt-6 pt-4 border-t border-border text-center">
                             <p className="m-0 text-sm text-secondary leading-relaxed">
                                 If this error continues to occur, please check the application logs
                                 or contact support for assistance.

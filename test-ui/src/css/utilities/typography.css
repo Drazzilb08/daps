@@ -272,9 +272,9 @@
   .indent-2 { text-indent: 0.5rem; }
   .indent-3 { text-indent: 0.75rem; }
   .indent-4 { text-indent: 1rem; }
-  .indent-5 { text-indent: 1.5rem; }
-  .indent-6 { text-indent: 2rem; }
-  .indent-8 { text-indent: 4rem; }
+  .indent-5 { text-indent: 1.25rem; }
+  .indent-6 { text-indent: 1.5rem; }
+  .indent-8 { text-indent: 2rem; }
 
   /* ===========================================
      LIST STYLE UTILITIES

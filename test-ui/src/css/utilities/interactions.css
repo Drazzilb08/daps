@@ -23,21 +23,21 @@
   /* Primary/accent hover variants */
   .hover\:bg-primary:hover { background: var(--primary); }
   .hover\:bg-primary-hover:hover { background: var(--focus); }
-  .hover\:bg-primary-subtle:hover { background: var(--primary-surface); }
-  .hover\:bg-primary-surface:hover { background: var(--primary-opacity-10); }
+  .hover\:bg-primary-subtle:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+  .hover\:bg-primary-surface:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
 
   /* State color hover variants */
   .hover\:bg-success:hover { background: var(--success); }
-  .hover\:bg-success-subtle:hover { background: var(--success-opacity-20); }
-  .hover\:bg-success-surface:hover { background: var(--success-opacity-20); }
+  .hover\:bg-success-subtle:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
+  .hover\:bg-success-surface:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
 
   .hover\:bg-warning:hover { background: var(--warning); }
-  .hover\:bg-warning-subtle:hover { background: var(--warning-opacity-20); }
-  .hover\:bg-warning-surface:hover { background: var(--warning-opacity-20); }
+  .hover\:bg-warning-subtle:hover { background: color-mix(in srgb, var(--warning) 20%, transparent); }
+  .hover\:bg-warning-surface:hover { background: color-mix(in srgb, var(--warning) 20%, transparent); }
 
   .hover\:bg-error:hover { background: var(--error); }
-  .hover\:bg-error-subtle:hover { background: var(--danger-surface); }
-  .hover\:bg-danger-surface:hover { background: var(--danger-surface); }
+  .hover\:bg-error-subtle:hover { background: color-mix(in srgb, var(--error) 10%, transparent); }
+  .hover\:bg-danger-surface:hover { background: color-mix(in srgb, var(--error) 10%, transparent); }
 
   .hover\:bg-transparent:hover { background: transparent; }
 
@@ -82,19 +82,19 @@
   .focus\:ring-primary:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px var(--primary-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
   }
 
   .focus\:ring-success:focus {
     outline: none;
     border-color: var(--success);
-    box-shadow: 0 0 0 2px var(--success-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent);
   }
 
   .focus\:ring-error:focus {
     outline: none;
     border-color: var(--error);
-    box-shadow: 0 0 0 2px var(--error-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
   }
 
   /* Focus-within patterns for form containers */
@@ -103,18 +103,18 @@
   }
 
   .focus-within\:ring-primary:focus-within {
-    box-shadow: 0 0 0 2px var(--primary-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
   }
 
   .focus-within\:ring-error:focus-within {
-    box-shadow: 0 0 0 2px var(--error-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
   }
 
   /* Focus visible for keyboard navigation */
   .focus-visible\:ring-primary:focus-visible {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 2px var(--primary-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
   }
 
   /* Border focus variants */
@@ -124,7 +124,7 @@
 
   /* Background focus variants */
   .focus\:bg-surface-hover:focus { background: var(--surface-alt); }
-  .focus\:bg-primary-surface:focus { background: var(--primary-opacity-10); }
+  .focus\:bg-primary-surface:focus { background: color-mix(in srgb, var(--primary) 10%, transparent); }
 
   /* ===========================================
      ACTIVE/PRESSED STATE UTILITIES
@@ -191,24 +191,24 @@
 
   /* Invalid state patterns */
   .invalid\:border-error[aria-invalid="true"] { border-color: var(--error); }
-  .invalid\:bg-error-surface[aria-invalid="true"] { background: var(--error-opacity-20); }
+  .invalid\:bg-error-surface[aria-invalid="true"] { background: color-mix(in srgb, var(--error) 20%, transparent); }
   .invalid\:text-error[aria-invalid="true"] { color: var(--error); }
 
   .invalid\:focus\:ring-error[aria-invalid="true"]:focus {
     outline: none;
     border-color: var(--error);
-    box-shadow: 0 0 0 2px var(--error-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
   }
 
   /* Valid state patterns */
   .valid\:border-success[aria-valid="true"] { border-color: var(--success); }
-  .valid\:bg-success-surface[aria-valid="true"] { background: var(--success-opacity-20); }
+  .valid\:bg-success-surface[aria-valid="true"] { background: color-mix(in srgb, var(--success) 20%, transparent); }
   .valid\:text-success[aria-valid="true"] { color: var(--success); }
 
   .valid\:focus\:ring-success[aria-valid="true"]:focus {
     outline: none;
     border-color: var(--success);
-    box-shadow: 0 0 0 2px var(--success-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent);
   }
 
   /* ===========================================
@@ -296,7 +296,7 @@
   /* Group focus patterns */
   .group:focus-within .group-focus\:border-primary { border-color: var(--primary); }
   .group:focus-within .group-focus\:ring-primary {
-    box-shadow: 0 0 0 2px var(--primary-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
   }
 
   /* ===========================================

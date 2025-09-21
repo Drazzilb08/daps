@@ -35,7 +35,7 @@ const ApiResponseDisplay = React.memo(({ data, isLoading, error, title }) => (
         <h4 className="text-sm font-medium text-primary mb-2">{title}</h4>
         {isLoading && (
             <div className="p-3 text-secondary flex items-center gap-2">
-                <div className="spinner" aria-label="Loading..." />
+                <div className="w-4 h-4 border-2 border-border border-t-primary rounded-full animate-spin" aria-label="Loading..." />
                 <span>Loading...</span>
             </div>
         )}
@@ -72,7 +72,7 @@ const VersionTestComponent = React.memo(() => {
     });
 
     return (
-        <div className="version-test flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
             <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <button
                     onClick={execute}
@@ -88,7 +88,7 @@ const VersionTestComponent = React.memo(() => {
                 error={error}
                 title="Version Response (with caching)"
             />
-            <div className="test-info rounded-sm">
+            <div className="rounded-sm">
                 <p>
                     <strong>API Layer:</strong> systemAPI.getVersion()
                 </p>
@@ -129,7 +129,7 @@ const ConfigTestComponent = React.memo(() => {
     });
 
     return (
-        <div className="config-test flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
             <div className="mb-3 flex flex-wrap gap-2 items-center">
                 <select
                     value={section}
@@ -190,7 +190,7 @@ const JobStatsTestComponent = React.memo(() => {
     });
 
     return (
-        <div className="job-stats-test flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
             <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <button
                     onClick={execute}
@@ -206,7 +206,7 @@ const JobStatsTestComponent = React.memo(() => {
                 error={error}
                 title="Job Statistics Response (with caching)"
             />
-            <div className="test-info rounded-sm">
+            <div className="rounded-sm">
                 <p>
                     <strong>API Layer:</strong> jobsAPI.getStats()
                 </p>
@@ -256,7 +256,7 @@ const ErrorTestComponent = React.memo(() => {
     });
 
     return (
-        <div className="error-test flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
             <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <select
                     value={errorType}
@@ -281,7 +281,7 @@ const ErrorTestComponent = React.memo(() => {
                 error={error}
                 title="Error Response (through API layer)"
             />
-            <div className="test-info rounded-sm">
+            <div className="rounded-sm">
                 <p>
                     <strong>API Layer:</strong>{' '}
                     {errorType === '404'
@@ -319,7 +319,7 @@ const ToastTestComponent = React.memo(() => {
     }, [toast]);
 
     return (
-        <div className="toast-test flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
             <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <button
                     onClick={testToasts}
@@ -364,7 +364,7 @@ ToastTestComponent.displayName = 'ToastTestComponent';
 const ApiTestPage = () => {
     return (
         <div className="max-w-container mx-auto p-3 md:p-4">
-            <div className="text-center mb-8 pb-4 border-b border-color">
+            <div className="text-center mb-8 pb-4 border-b border-border">
                 <h1 className="text-2xl font-bold text-primary mb-2">API Integration Testing</h1>
                 <p className="text-base text-secondary max-w-prose mx-auto">
                     Real DAPS backend API testing with actual endpoints, error handling, and toast

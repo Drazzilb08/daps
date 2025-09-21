@@ -10,7 +10,7 @@ const CrashComponent = ({ shouldCrash, type = 'demonstration' }) => {
     }
 
     return (
-        <div className="p-4 bg-surface-elevated rounded-md border border-default">
+        <div className="p-4 bg-surface-elevated rounded-md border border-border">
             <p className="m-0 text-success font-medium">✅ Component working normally</p>
         </div>
     );

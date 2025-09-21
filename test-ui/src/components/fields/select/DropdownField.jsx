@@ -66,7 +66,7 @@ export const DropdownField = React.memo(
                     required={field.required}
                     invalid={highlightInvalid}
                     options={options}
-                    placeholder={!field.required ? 'Select an option...' : undefined}
+                    placeholder={field.placeholder || 'Select an option...'}
                     ariaDescribedby={`${inputId}-desc ${inputId}-error`.trim()}
                 />
 

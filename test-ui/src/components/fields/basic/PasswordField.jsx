@@ -49,7 +49,7 @@ export const PasswordField = React.memo(
             <FieldWrapper invalid={highlightInvalid}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
 
-                <div className="input-group">
+                <div className="flex">
                     <InputBase
                         id={inputId}
                         type={showPassword ? 'text' : 'password'}
@@ -65,14 +65,14 @@ export const PasswordField = React.memo(
                         autoComplete="current-password"
                         aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
                         aria-invalid={highlightInvalid}
-                        className="input-group-child flex-1"
+                        className="flex-1 border border-r-0 border-border bg-input rounded-l-md"
                     />
 
                     <FieldButton
                         onClick={togglePasswordVisibility}
                         disabled={disabled}
                         ariaLabel={showPassword ? 'Hide password' : 'Show password'}
-                        className="min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none bg-surface-elevated text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
+                        variant="right"
                     >
                         {showPassword ? (
                             <svg
@@ -80,7 +80,7 @@ export const PasswordField = React.memo(
                                 height="16"
                                 viewBox="0 0 24 24"
                                 fill="none"
-                                stroke="var(--color-primary)"
+                                stroke="currentColor"
                                 strokeWidth="2"
                             >
                                 <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
@@ -92,7 +92,7 @@ export const PasswordField = React.memo(
                                 height="16"
                                 viewBox="0 0 24 24"
                                 fill="none"
-                                stroke="var(--color-primary)"
+                                stroke="currentColor"
                                 strokeWidth="2"
                             >
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />

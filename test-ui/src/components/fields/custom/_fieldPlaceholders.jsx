@@ -10,10 +10,10 @@ import React from 'react';
 // Simple placeholder for unimplemented field types
 const UnavailableField = ({ field }) => {
     return (
-        <div className="field-placeholder">
-            <label className="field-label">
+        <div className="flex flex-col gap-2 mb-4 w-full">
+            <label className="text-sm font-medium text-secondary">
                 {field.label}
-                {field.required && <span className="required-indicator">*</span>}
+                {field.required && <span className="text-error ml-1">*</span>}
             </label>
 
             <div
@@ -32,7 +32,7 @@ const UnavailableField = ({ field }) => {
                 <small>This field type is not available in the current version</small>
             </div>
 
-            {field.description && <div className="field-description">{field.description}</div>}
+            {field.description && <div className="text-sm text-tertiary mt-1">{field.description}</div>}
         </div>
     );
 };

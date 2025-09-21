@@ -50,7 +50,7 @@ export const CheckboxField = React.memo(
             <FieldWrapper invalid={highlightInvalid}>
                 {/* ENTIRE AREA IS CLICKABLE */}
                 <div
-                    className="checkbox-field-container"
+                    className="flex items-center gap-3 py-2 px-3 bg-surface border rounded-md hover:bg-surface-hover focus:border-primary cursor-pointer transition-colors duration-200 ease-in-out"
                     onClick={handleContainerClick}
                     role="button"
                     tabIndex={disabled ? -1 : 0}
@@ -77,7 +77,7 @@ export const CheckboxField = React.memo(
                     />
 
                     {/* Field content */}
-                    <div className="checkbox-content">
+                    <div className="flex-1">
                         <FieldLabel
                             htmlFor={inputId}
                             label={field.label}

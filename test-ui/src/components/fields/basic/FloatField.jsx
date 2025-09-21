@@ -79,13 +79,12 @@ export const FloatField = React.memo(
             <FieldWrapper invalid={highlightInvalid}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
 
-                <div className="input-group">
+                <div className="flex">
                     <FieldButton
                         onClick={handleDecrement}
                         disabled={decrementDisabled}
                         ariaLabel={`Decrease ${field.label}`}
-                        className="min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none bg-surface-elevated text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
-                        style={{ borderRadius: '0.25rem 0 0 0.25rem' }}
+                        variant="left"
                     >
                         −
                     </FieldButton>
@@ -100,7 +99,7 @@ export const FloatField = React.memo(
                         required={field.required}
                         placeholder={field.placeholder}
                         invalid={highlightInvalid}
-                        className="number-field-display"
+                        className="flex-1 border-t border-b border-l-0 border-r-0 border-border bg-input"
                         aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
                         aria-invalid={highlightInvalid}
                     />
@@ -109,8 +108,7 @@ export const FloatField = React.memo(
                         onClick={handleIncrement}
                         disabled={incrementDisabled}
                         ariaLabel={`Increase ${field.label}`}
-                        className="min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none bg-surface-elevated text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
-                        style={{ borderRadius: '0 0.25rem 0.25rem 0' }}
+                        variant="right"
                     >
                         +
                     </FieldButton>

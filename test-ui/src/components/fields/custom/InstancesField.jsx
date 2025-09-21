@@ -100,7 +100,7 @@ const SimpleInstanceSelector = React.memo(({
                                 <FieldLabel
                                     htmlFor={inputId}
                                     label={humanize(instance.name)}
-                                    className="checkbox-label"
+                                    className="text-sm font-normal leading-normal text-primary cursor-pointer select-none"
                                 />
                                 {instance.url && (
                                     <div className="instance-url text-xs text-secondary">{instance.url}</div>
@@ -254,7 +254,7 @@ const PlexLibrarySelector = React.memo(({
                                         <FieldLabel
                                             htmlFor={libraryId}
                                             label={library}
-                                            className="checkbox-label font-medium text-primary"
+                                            className="text-sm font-medium leading-normal text-primary cursor-pointer select-none"
                                         />
                                     </div>
                                 </div>
@@ -397,7 +397,7 @@ const PlexInstanceSelector = React.memo(({
                                 <FieldLabel
                                     htmlFor={instanceId}
                                     label={humanize(instance.name)}
-                                    className="checkbox-label"
+                                    className="text-sm font-normal leading-normal text-primary cursor-pointer select-none"
                                 />
                                 {instance.url && (
                                     <div className="instance-url text-xs text-secondary">{instance.url}</div>
@@ -440,7 +440,7 @@ const PlexInstanceSelector = React.memo(({
                                                 <FieldLabel
                                                     htmlFor={uploadId}
                                                     label="Upload posters to this Plex instance"
-                                                    className="checkbox-label font-medium text-primary"
+                                                    className="text-sm font-medium leading-normal text-primary cursor-pointer select-none"
                                                 />
                                             </div>
                                         </div>

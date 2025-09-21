@@ -11,6 +11,7 @@ import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
 import FieldTestPage from './pages/dev/FieldTestPage.jsx';
 import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 import ToolbarTestPage from './pages/dev/ToolbarTestPage.jsx';
+import SpinnerTestPage from './pages/dev/SpinnerTestPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -271,6 +272,17 @@ const App = () => {
                                                         pageDescription="Toolbar overflow testing"
                                                     >
                                                         <ToolbarTestPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/spinner"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Spinner Test"
+                                                        pageDescription="Spinner component testing and development"
+                                                    >
+                                                        <SpinnerTestPage />
                                                     </PageErrorBoundary>
                                                 }
                                             />

@@ -13,6 +13,7 @@
 /* Component system - MUST come before utilities for proper cascade */
 /* ui/index.css removed - all UI components converted to utility classes */
 @import url('./components/layout/index.css');
+@import url('./components/hamburger-button.css');
 
 /* Complete utility system - fully decomposed into 18 specialized modules */
 @import url('./utilities/index.css');

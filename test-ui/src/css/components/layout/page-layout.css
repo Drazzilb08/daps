@@ -76,67 +76,6 @@
         flex-shrink: 0;
     }
 
-    .hamburger {
-        background: none;
-        border: none;
-        padding: var(--space-1);
-        cursor: pointer;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        width: 44px;
-        height: 44px;
-        transition: background-color var(--transition-fast);
-    }
-
-    .hamburger:hover {
-        background: var(--surface-alt);
-    }
-
-    .hamburger:focus {
-        outline: var(--focus-ring-width) solid var(--focus);
-        outline-offset: var(--focus-ring-offset);
-    }
-
-    .hamburger svg {
-        overflow: visible;
-    }
-
-    .line {
-        fill: none;
-        stroke: var(--primary);
-        stroke-width: 6;
-        transition:
-            stroke-dasharray var(--duration-extra-slow) cubic-bezier(0.4, 0, 0.2, 1),
-            stroke-dashoffset var(--duration-extra-slow) cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .line1 {
-        stroke-dasharray: 60 207;
-    }
-
-    .line2 {
-        stroke-dasharray: 60 60;
-    }
-
-    .line3 {
-        stroke-dasharray: 60 207;
-    }
-
-    .hamburger.hamburger-menu.opened .line1 {
-        stroke-dasharray: 90 207;
-        stroke-dashoffset: -134;
-    }
-
-    .hamburger.hamburger-menu.opened .line2 {
-        stroke-dasharray: 1 60;
-        stroke-dashoffset: -30;
-    }
-
-    .hamburger.hamburger-menu.opened .line3 {
-        stroke-dasharray: 90 207;
-        stroke-dashoffset: -134;
-    }
 
     .page-header-logo-section {
         display: flex;
@@ -254,10 +193,6 @@
     }
 
     @media (width <= 768px) {
-        .hamburger {
-            display: flex;
-        }
-
         .page-header-title {
             display: none;
         }

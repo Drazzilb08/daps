@@ -13,6 +13,8 @@
 
   /* Primary surface backgrounds */
   .bg-primary { background: var(--primary); }
+  .bg-primary-hover { background: var(--color-primary-hover, var(--primary)); }
+  .bg-primary-surface { background: var(--color-primary-surface); }
   .bg-bg { background: var(--bg); }
   .bg-surface { background: var(--surface); }
   .bg-surface-elevated { background: var(--surface-elevated); }
@@ -47,6 +49,13 @@
   .bg-focus { background: var(--focus); }
   .bg-overlay { background: var(--overlay-bg, rgba(0, 0, 0, 0.5)); }
   .bg-backdrop { background: var(--backdrop-bg, rgba(0, 0, 0, 0.3)); }
+
+  /* Form input backgrounds */
+  .bg-input { background: var(--color-input-bg); }
+  .bg-input-hover { background: var(--color-input-bg-hover, var(--color-surface-hover)); }
+  .bg-input-focus { background: var(--color-input-bg-focus, var(--color-input-bg)); }
+  .bg-input-disabled { background: var(--color-input-bg-disabled, var(--color-surface-dim)); }
+  .bg-input-readonly { background: var(--color-input-bg-readonly); }
 
   /* Gradient backgrounds for advanced use cases */
   .bg-gradient-primary {

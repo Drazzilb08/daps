@@ -53,6 +53,7 @@
     --color-primary-text: #fff;                           /* White text on orange background */
     --color-primary-opacity-10: rgb(255 115 0 / 10%);     /* Primary with 10% opacity */
     --color-primary-opacity-20: rgb(255 115 0 / 20%);     /* Primary with 20% opacity */
+    --color-primary-surface: rgb(255 115 0 / 10%);        /* Primary surface background for selection states */
 
     /* Accent Color System */
     --color-accent: var(--accent);

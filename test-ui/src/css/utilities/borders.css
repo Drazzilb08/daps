@@ -35,6 +35,13 @@
   .border-warning { border-color: var(--color-warning); }
   .border-error { border-color: var(--color-error); }
 
+  /* Form input border utilities */
+  .border-input { border: 1px solid var(--color-border); }
+  .border-input-focus { border-color: var(--color-primary); }
+  .border-input-error { border-color: var(--color-error); }
+  .border-input-success { border-color: var(--color-success); }
+  .border-input-disabled { border-color: var(--color-border-disabled, var(--color-border)); }
+
   /* High contrast border enhancement for dropdowns */
   @media (prefers-contrast: high) {
     .border-dropdown {

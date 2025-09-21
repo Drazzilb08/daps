@@ -54,6 +54,8 @@
    INTERACTION UTILITIES - BEHAVIOR PATTERNS
    =========================================== */
 
+/* Button utilities removed - buttons use pure atomic utilities from proper modules */
+
 /* Interaction states - cursors, pointer events, user interaction */
 @import url('./interactions.css');
 
@@ -70,8 +72,7 @@
 /* Image and media - responsive images, poster sizing */
 @import url('./images.css');
 
-/* Form utilities - form-specific helpers and patterns */
-@import url('./forms.css');
+/* Form utilities removed - form styling uses atomic utilities from proper modules */
 
 /* ===========================================
    RESPONSIVE UTILITIES - ADAPTIVE DESIGN

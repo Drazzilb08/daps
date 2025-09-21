@@ -14,6 +14,17 @@
     pointer-events: none;
   }
 
+  .state-readonly {
+    background: var(--color-surface-dim);
+    cursor: default;
+  }
+
+  .disabled-input {
+    background: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+  }
+
   .state-hover-dim { transition: opacity 150ms ease-in-out; }
   .state-hover-dim:hover:not(:disabled) { opacity: 0.9; }
 
@@ -50,6 +61,18 @@
   .state-focus-ring:focus-within {
     border-color: var(--color-primary);
     box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
+  }
+
+  .state-focus-ring-error:focus {
+    outline: none;
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
+  }
+
+  .state-focus-ring-success:focus {
+    outline: none;
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
   }
 
   /* ===========================================

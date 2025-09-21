@@ -199,6 +199,16 @@
     touch-action: manipulation;
   }
 
+  /* Visually hidden checkbox input for custom styling */
+  .checkbox-visually-hidden {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+  }
+
   /* ===========================================
      KEYBOARD NAVIGATION UTILITIES
      =========================================== */

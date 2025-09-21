@@ -247,6 +247,7 @@
   .pr-7 { padding-right: 1.75rem; }
   .pr-8 { padding-right: 2rem; }
   .pr-10 { padding-right: 2.5rem; }
+  .pr-11 { padding-right: 2.75rem; }
   .pr-12 { padding-right: 3rem; }
 
   /* Padding X/Y Axis */
@@ -436,6 +437,12 @@
   }
   .p-input {
     padding: 0.5rem 0.75rem;
+  }
+  .p-input-sm {
+    padding: calc(0.5rem * 0.75) calc(0.75rem * 0.875);
+  }
+  .p-input-lg {
+    padding: calc(0.5rem * 1.25) calc(0.75rem * 1.125);
   }
 
   /* Field spacing patterns */

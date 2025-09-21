@@ -48,6 +48,41 @@
   .brightness-75 { filter: brightness(0.75); }
   .brightness-100 { filter: brightness(1); }
   .brightness-125 { filter: brightness(1.25); }
+
+  /* ===========================================
+     SVG STROKE UTILITIES
+     =========================================== */
+
+  .stroke-current { stroke: currentColor; }
+  .stroke-1 { stroke-width: 1; }
+  .stroke-2 { stroke-width: 2; }
+  .stroke-3 { stroke-width: 2.5; }
+
+  /* ===========================================
+     SVG FILL UTILITIES
+     =========================================== */
+
+  .fill-none { fill: none; }
+  .fill-current { fill: currentColor; }
+
+  /* ===========================================
+     RING UTILITIES (FOCUS RINGS)
+     =========================================== */
+
+  .ring-0 { box-shadow: 0 0 0 0px rgba(0, 0, 0, 0); }
+  .ring-1 { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1); }
+  .ring-2 { box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1); }
+  .ring-4 { box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1); }
+
+  /* Themed ring colors */
+  .ring-primary { box-shadow: 0 0 0 2px var(--color-primary-opacity-20, rgba(255, 115, 0, 0.2)); }
+  .ring-error { box-shadow: 0 0 0 2px var(--color-error-opacity-20, rgba(220, 38, 38, 0.2)); }
+  .ring-success { box-shadow: 0 0 0 2px var(--color-success-opacity-20, rgba(34, 197, 94, 0.2)); }
+
+  /* Ring opacity variants for composition */
+  .ring-primary\/20 { box-shadow: 0 0 0 2px var(--color-primary-opacity-20, rgba(255, 115, 0, 0.2)); }
+  .ring-error\/20 { box-shadow: 0 0 0 2px var(--color-error-opacity-20, rgba(220, 38, 38, 0.2)); }
+  .ring-success\/20 { box-shadow: 0 0 0 2px var(--color-success-opacity-20, rgba(34, 197, 94, 0.2)); }
   .contrast-50 { filter: contrast(0.5); }
   .contrast-75 { filter: contrast(0.75); }
   .contrast-100 { filter: contrast(1); }

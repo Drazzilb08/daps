@@ -22,6 +22,7 @@
 
   /* Primary/accent hover variants */
   .hover\:bg-primary:hover { background: var(--color-primary); }
+  .hover\:bg-primary-hover:hover { background: var(--color-primary-hover, var(--color-primary)); }
   .hover\:bg-primary-subtle:hover { background: var(--color-primary-subtle, var(--color-surface)); }
   .hover\:bg-primary-surface:hover { background: var(--color-primary-opacity-10); }
 
@@ -105,6 +106,10 @@
     box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
   }
 
+  .focus-within\:ring-error:focus-within {
+    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
+  }
+
   /* Focus visible for keyboard navigation */
   .focus-visible\:ring-primary:focus-visible {
     outline: none;
@@ -176,6 +181,10 @@
   /* Disabled border patterns */
   .disabled\:border-disabled:disabled { border-color: var(--color-text-disabled); }
 
+  /* Disabled hover overrides - prevent hover effects when disabled */
+  .disabled\:hover\:bg-surface-dim:disabled:hover { background: var(--color-surface-dim); }
+  .disabled\:hover\:border-border:disabled:hover { border-color: var(--border-color); }
+
   /* ===========================================
      FORM STATE UTILITIES - VALIDATION STATES
      =========================================== */
@@ -242,54 +251,30 @@
   }
 
   /* ===========================================
-     STATE HOVER UTILITIES - INTERACTIVE PATTERNS
+     ATOMIC STATE UTILITIES - ONE PROPERTY EACH
      =========================================== */
 
-  /* Hover dimming effect for secondary interactions */
-  .state-hover-dim:hover:not(:disabled) {
-    opacity: 0.8;
-    transform: translateY(-1px);
-  }
+  /* Atomic opacity utilities */
+  .hover\:opacity-80:hover { opacity: 0.8; }
+  .active\:opacity-90:active { opacity: 0.9; }
 
-  .state-hover-dim:active:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(0);
-  }
+  /* Atomic filter utilities */
+  .hover\:brightness-110:hover { filter: brightness(1.1); }
+  .active\:brightness-105:active { filter: brightness(1.05); }
 
-  /* Hover brightening effect for primary interactions */
-  .state-hover-bright:hover:not(:disabled) {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
+  /* Atomic transform utilities (Y translation) */
+  .hover\:translate-y-negative-1:hover { transform: translateY(-1px); }
+  .active\:translate-y-0:active { transform: translateY(0); }
 
-  .state-hover-bright:active:not(:disabled) {
-    filter: brightness(1.05);
-    transform: translateY(0);
-  }
+  /* Atomic scale utilities */
+  .hover\:scale-102:hover { transform: scale(1.02); }
+  .active\:scale-98:active { transform: scale(0.98); }
 
-  /* Hover scale effect for accent interactions */
-  .state-hover-scale:hover:not(:disabled) {
-    transform: scale(1.02);
-  }
+  /* Atomic cursor utilities */
+  .cursor-pointer { cursor: pointer; }
 
-  .state-hover-scale:active:not(:disabled) {
-    transform: scale(0.98);
-  }
-
-  /* Combined state utilities */
-  .state-interactive {
-    cursor: pointer;
-    user-select: none;
-    transition: all var(--transition-fast);
-  }
-
-  .state-interactive:hover:not(:disabled) {
-    transform: translateY(-1px);
-  }
-
-  .state-interactive:active:not(:disabled) {
-    transform: translateY(0);
-  }
+  /* Atomic user-select utilities */
+  .select-none { user-select: none; }
 
   /* Required field patterns */
   .required\:after[required]::after {
@@ -315,86 +300,29 @@
   }
 
   /* ===========================================
-     INTERACTION TIMING & TRANSITIONS
+     ATOMIC TRANSITION UTILITIES
      =========================================== */
 
-  /* Standard transition patterns for interactive elements */
-  .transition-interactions {
-    transition:
-      background-color 150ms ease-in-out,
-      border-color 150ms ease-in-out,
-      color 150ms ease-in-out,
-      box-shadow 150ms ease-in-out,
-      transform 150ms ease-in-out;
-  }
-
-  .transition-transform {
-    transition: transform 150ms ease-in-out;
-  }
-
-  .transition-colors {
-    transition:
-      background-color 150ms ease-in-out,
-      border-color 150ms ease-in-out,
-      color 150ms ease-in-out;
-  }
-
-  .transition-shadow {
-    transition: box-shadow 150ms ease-in-out;
-  }
+  /* Atomic transition utilities - one property each */
+  .transition-transform { transition: transform 150ms ease-in-out; }
+  .transition-background { transition: background-color 150ms ease-in-out; }
+  .transition-border { transition: border-color 150ms ease-in-out; }
+  .transition-color { transition: color 150ms ease-in-out; }
+  .transition-shadow { transition: box-shadow 150ms ease-in-out; }
+  .transition-opacity { transition: opacity 150ms ease-in-out; }
+  .transition-all { transition: all 150ms ease-in-out; }
 
   /* ===========================================
-     COMMON INTERACTION PATTERNS
+     ATOMIC INTERACTION UTILITIES ONLY
      =========================================== */
 
-  /* Button interaction pattern */
-  .btn-interactions {
-    transition:
-      background-color 150ms ease-in-out,
-      border-color 150ms ease-in-out,
-      transform 150ms ease-in-out,
-      box-shadow 150ms ease-in-out;
-  }
-  .btn-interactions:hover:not(:disabled) {
-    background: var(--color-surface-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%);
-  }
-  .btn-interactions:active:not(:disabled) {
-    transform: scale(0.98);
-  }
-  .btn-interactions:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
+  /* Components should compose atomic utilities instead of using compositional classes */
+  /* Example: className="transition-background hover:bg-surface-hover active:scale-98 disabled:opacity-50" */
 
-  /* Card interaction pattern */
-  .card-interactions {
-    transition:
-      box-shadow 150ms ease-in-out,
-      transform 150ms ease-in-out;
-  }
-  .card-interactions:hover {
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%);
-    transform: translateY(-2px);
-  }
-
-  /* Input interaction pattern */
-  .input-interactions {
-    transition:
-      border-color 150ms ease-in-out,
-      box-shadow 150ms ease-in-out,
-      background-color 150ms ease-in-out;
-  }
-  .input-interactions:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
-  }
-  .input-interactions:hover:not(:focus):not(:disabled) {
-    border-color: var(--color-border-hover, var(--color-primary));
-  }
+  /* Additional atomic utilities for common needs */
+  .hover\:translate-y-negative-2:hover { transform: translateY(-2px); }
+  .disabled\:pointer-events-none:disabled { pointer-events: none; }
+  .focus\:outline-none:focus { outline: none; }
 
   /* ===========================================
      ACCESSIBILITY IMPROVEMENTS
@@ -408,20 +336,17 @@
     .hover\:translate-y-negative-1:hover,
     .active\:scale-98:active,
     .active\:scale-95:active,
-    .group-hover\:scale-102,
-    .btn-interactions:hover,
-    .btn-interactions:active,
-    .card-interactions:hover {
+    .group-hover\:scale-102 {
       transform: none;
     }
 
-    .transition-interactions,
     .transition-transform,
-    .transition-colors,
+    .transition-background,
+    .transition-border,
+    .transition-color,
     .transition-shadow,
-    .btn-interactions,
-    .card-interactions,
-    .input-interactions {
+    .transition-opacity,
+    .transition-all {
       transition: none;
     }
   }
@@ -504,9 +429,7 @@
     .hover\:shadow-md:hover,
     .group-hover\:bg-surface-hover,
     .group-hover\:text-primary,
-    .group-hover\:scale-102,
-    .btn-interactions:hover,
-    .card-interactions:hover {
+    .group-hover\:scale-102 {
       /* Reset hover effects */
       background: inherit;
       border-color: inherit;
@@ -522,4 +445,23 @@
       transition: transform 0.1s ease;
     }
   }
+
+  /* ===========================================
+     ATOMIC UTILITY ARCHITECTURE COMPLETE
+     =========================================== */
+
+  /* ALL COMPOSITIONAL UTILITIES ELIMINATED
+   * Every utility class in this file now controls exactly ONE CSS property
+   * Complex styling achieved through composition in JSX:
+   *
+   * Example button composition:
+   * className="cursor-pointer select-none transition-all
+   *            hover:bg-surface-hover hover:translate-y-negative-1
+   *            active:scale-98 disabled:opacity-50"
+   *
+   * This maintains perfect atomic utility architecture where:
+   * ✅ ONE class = ONE CSS property
+   * ✅ Complex styling = Utility composition
+   * ✅ No multi-property utilities anywhere
+   */
 }

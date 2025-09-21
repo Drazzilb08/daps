@@ -179,6 +179,24 @@
   .h-icon-sm { height: 16px; }
   .h-icon-lg { height: 32px; }
 
+  /* Textarea heights - calculated from input base */
+  .h-textarea-sm { height: calc(44px * 2); }
+  .h-textarea { height: calc(44px * 3); }
+  .h-textarea-lg { height: calc(44px * 4); }
+  .h-textarea-xl { height: calc(44px * 6); }
+
+  /* Checkbox sizes */
+  .h-checkbox { height: 18px; }
+  .h-checkbox-lg { height: 20px; }
+
+  /* Checkbox width utilities (square) */
+  .w-checkbox { width: 18px; }
+  .w-checkbox-lg { width: 20px; }
+
+  /* Square checkbox utilities */
+  .size-checkbox { width: 18px; height: 18px; }
+  .size-checkbox-lg { width: 20px; height: 20px; }
+
   /* ===========================================
      SIZE UTILITIES - COMBINED WIDTH & HEIGHT
      =========================================== */
@@ -239,6 +257,7 @@
   .min-w-fit { min-width: fit-content; }
 
   /* Fixed minimum widths */
+  .min-w-9 { min-width: 2.25rem; }
   .min-w-10 { min-width: 2.5rem; }
   .min-w-12 { min-width: 3rem; }
   .min-w-16 { min-width: 4rem; }
@@ -329,6 +348,7 @@
   .min-h-4 { min-height: 1rem; }
   .min-h-6 { min-height: 1.5rem; }
   .min-h-8 { min-height: 2rem; }
+  .min-h-9 { min-height: 2.25rem; }
   .min-h-10 { min-height: 2.5rem; }
   .min-h-12 { min-height: 3rem; }
   .min-h-16 { min-height: 4rem; }
@@ -343,6 +363,8 @@
   /* Accessibility minimum heights */
   .min-h-touch { min-height: 44px; }
   .min-h-input { min-height: 44px; }
+  .min-h-input-sm { min-height: 36px; }
+  .min-h-input-lg { min-height: 52px; }
   .min-h-error { min-height: 300px; }
   .min-h-content { min-height: 400px; }
 

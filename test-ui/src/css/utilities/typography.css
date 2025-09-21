@@ -521,6 +521,15 @@
   }
 
   /* ===========================================
+     FONT VARIANT UTILITIES
+     =========================================== */
+
+  .font-numeric-tabular { font-variant-numeric: tabular-nums; }
+  .font-numeric-normal { font-variant-numeric: normal; }
+  .font-numeric-lining { font-variant-numeric: lining-nums; }
+  .font-numeric-oldstyle { font-variant-numeric: oldstyle-nums; }
+
+  /* ===========================================
      DARK MODE TYPOGRAPHY ADJUSTMENTS
      =========================================== */
 
@@ -534,4 +543,14 @@
       letter-spacing: 0.01em;
     }
   }
+
+  /* ===========================================
+     PLACEHOLDER UTILITIES - THEME AWARE
+     =========================================== */
+
+  .placeholder-text-primary::placeholder { color: var(--text-color); }
+  .placeholder-text-secondary::placeholder { color: var(--text-secondary); }
+  .placeholder-text-tertiary::placeholder { color: var(--text-tertiary); }
+  .placeholder-text-muted::placeholder { color: var(--text-muted, var(--text-secondary)); }
+  .placeholder-transparent::placeholder { color: transparent; }
 }

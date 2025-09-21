@@ -13,6 +13,7 @@
   .transform-none { transform: none; }
 
   /* Scale transforms */
+  .scale-75 { transform: scale(0.75); }
   .scale-95 { transform: scale(0.95); }
   .scale-98 { transform: scale(0.98); }
   .scale-100 { transform: scale(1); }
@@ -42,6 +43,15 @@
   .transition-fast { transition: all 150ms ease-in-out; }
   .transition { transition: all 250ms ease-in-out; }
   .transition-slow { transition: all 350ms ease-in-out; }
+
+  /* Form input transitions */
+  .transition-input { transition: all 150ms ease-in-out; }
+  .transition-textarea {
+    transition:
+      border-color 150ms ease-in-out,
+      background-color 150ms ease-in-out,
+      box-shadow 150ms ease-in-out;
+  }
 
   /* Specific property transitions */
   .transition-colors {

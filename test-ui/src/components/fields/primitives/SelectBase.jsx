@@ -74,7 +74,7 @@ export const SelectBase = React.memo(
             .join(' ');
 
         return (
-            <div className="field-select-wrapper relative inline-block w-full">
+            <div className="relative inline-block w-full">
                 <select
                     id={id}
                     name={name}
@@ -82,7 +82,7 @@ export const SelectBase = React.memo(
                     onChange={handleChange}
                     disabled={disabled}
                     required={required}
-                    className={`field-select ${selectClasses}`}
+                    className={selectClasses}
                     aria-describedby={ariaDescribedby}
                     aria-invalid={invalid}
                     {...rest}

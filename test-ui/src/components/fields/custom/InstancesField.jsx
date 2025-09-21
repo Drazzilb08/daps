@@ -52,10 +52,10 @@ const SimpleInstanceSelector = React.memo(({
     if (serviceInstances.length === 0) {
         return (
             <div className="flex flex-col items-center gap-3 p-6 text-center bg-surface border border-dashed rounded-md text-secondary">
-                <div className="empty-message font-medium text-primary">
+                <div className="font-medium text-primary">
                     No {humanize(serviceType)} instances configured
                 </div>
-                <div className="empty-help text-sm text-tertiary">
+                <div className="text-sm text-tertiary">
                     Configure instances in Settings → Instances
                 </div>
             </div>
@@ -63,13 +63,13 @@ const SimpleInstanceSelector = React.memo(({
     }
 
     return (
-        <div className="instance-selection-list flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
             {serviceInstances.map(instance => {
                 const isSelected = (selectedInstances || []).includes(instance.name);
                 const inputId = `instance-${serviceType}-${instance.name}`;
 
                 return (
-                    <div key={instance.name} className="instance-item">
+                    <div key={instance.name}>
                         <div
                             className="flex items-center gap-3 py-2 px-3 bg-surface border rounded-md hover:bg-surface-hover focus:border-primary cursor-pointer transition-colors duration-200 ease-in-out"
                             onClick={(e) => {
@@ -96,14 +96,14 @@ const SimpleInstanceSelector = React.memo(({
                                 onChange={(e) => handleInstanceToggle(instance.name, e.target.checked)}
                                 disabled={disabled}
                             />
-                            <div className="checkbox-content flex flex-col">
+                            <div className="flex flex-col">
                                 <FieldLabel
                                     htmlFor={inputId}
                                     label={humanize(instance.name)}
                                     className="text-sm font-normal leading-normal text-primary cursor-pointer select-none"
                                 />
                                 {instance.url && (
-                                    <div className="instance-url text-xs text-secondary">{instance.url}</div>
+                                    <div className="text-xs text-secondary">{instance.url}</div>
                                 )}
                             </div>
                         </div>
@@ -159,8 +159,8 @@ const PlexLibrarySelector = React.memo(({
 
     if (librariesLoading) {
         return (
-            <div className="libraries-loading flex items-center gap-2 text-sm text-secondary bg-surface">
-                <div className="loading-spinner-small" />
+            <div className="flex items-center gap-2 text-sm text-secondary bg-surface">
+                <div className="w-4 h-4 border-2 border-border border-t-primary rounded-full animate-spin" />
                 <span>Loading libraries...</span>
             </div>
         );
@@ -168,8 +168,8 @@ const PlexLibrarySelector = React.memo(({
 
     if (librariesError) {
         return (
-            <div className="libraries-error flex items-center gap-2 text-sm text-secondary bg-surface">
-                <span className="error-icon">⚠️</span>
+            <div className="flex items-center gap-2 text-sm text-secondary bg-surface">
+                <span>⚠️</span>
                 <span>Failed to load libraries: {librariesError.message}</span>
             </div>
         );
@@ -177,16 +177,16 @@ const PlexLibrarySelector = React.memo(({
 
     if (!libraries || libraries.length === 0) {
         return (
-            <div className="libraries-empty flex items-center gap-2 text-sm text-secondary bg-surface">
-                <span className="info-icon">ℹ️</span>
+            <div className="flex items-center gap-2 text-sm text-secondary bg-surface">
+                <span>ℹ️</span>
                 <span>No libraries found for this Plex instance</span>
             </div>
         );
     }
 
     return (
-        <div className="libraries-selection">
-            <div className="libraries-title text-base font-semibold text-primary">Select Libraries:</div>
+        <div>
+            <div className="text-base font-semibold text-primary">Select Libraries:</div>
 
             {/* Mobile: Compact chip-style selection */}
             <div className="md:hidden">
@@ -250,7 +250,7 @@ const PlexLibrarySelector = React.memo(({
                                         onChange={(e) => handleLibraryToggle(library, e.target.checked)}
                                         disabled={disabled}
                                     />
-                                    <div className="checkbox-content flex flex-col">
+                                    <div className="flex flex-col">
                                         <FieldLabel
                                             htmlFor={libraryId}
                                             label={library}
@@ -349,14 +349,14 @@ const PlexInstanceSelector = React.memo(({
     if (plexInstances.length === 0) {
         return (
             <div className="flex flex-col items-center gap-3 p-6 text-center bg-surface border border-dashed rounded-md text-secondary">
-                <div className="empty-message font-medium text-primary">No Plex instances configured</div>
-                <div className="empty-help text-sm text-tertiary">Configure instances in Settings → Instances</div>
+                <div className="font-medium text-primary">No Plex instances configured</div>
+                <div className="text-sm text-tertiary">Configure instances in Settings → Instances</div>
             </div>
         );
     }
 
     return (
-        <div className="instance-selection-list flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
             {plexInstances.map(instance => {
                 const selectedItem = parsedSelection.find(item => item.name === instance.name);
                 const isSelected = Boolean(selectedItem);
@@ -366,7 +366,7 @@ const PlexInstanceSelector = React.memo(({
                 const uploadId = `upload-${instance.name}`;
 
                 return (
-                    <div key={instance.name} className="instance-item plex-instance-item">
+                    <div key={instance.name}>
                         <div
                             className="flex items-center gap-3 py-2 px-3 bg-surface border rounded-md hover:bg-surface-hover focus:border-primary cursor-pointer transition-colors duration-200 ease-in-out"
                             onClick={(e) => {
@@ -393,23 +393,23 @@ const PlexInstanceSelector = React.memo(({
                                 onChange={(e) => handleInstanceToggle(instance.name, e.target.checked)}
                                 disabled={disabled}
                             />
-                            <div className="checkbox-content flex flex-col">
+                            <div className="flex flex-col">
                                 <FieldLabel
                                     htmlFor={instanceId}
                                     label={humanize(instance.name)}
                                     className="text-sm font-normal leading-normal text-primary cursor-pointer select-none"
                                 />
                                 {instance.url && (
-                                    <div className="instance-url text-xs text-secondary">{instance.url}</div>
+                                    <div className="text-xs text-secondary">{instance.url}</div>
                                 )}
                             </div>
                         </div>
 
                         {isSelected && (
-                            <div className="plex-options flex flex-col gap-4">
+                            <div className="flex flex-col gap-4">
                                 {/* Poster upload option */}
                                 {showPosterOption && (
-                                    <div className="poster-upload-option">
+                                    <div>
                                         <div
                                             className="flex items-center gap-3 py-2 px-3 bg-surface border rounded-md hover:bg-surface-hover focus:border-primary cursor-pointer transition-colors duration-200 ease-in-out"
                                             onClick={(e) => {
@@ -436,7 +436,7 @@ const PlexInstanceSelector = React.memo(({
                                                 onChange={(e) => handlePosterUploadToggle(instance.name, e.target.checked)}
                                                 disabled={disabled}
                                             />
-                                            <div className="checkbox-content flex flex-col">
+                                            <div className="flex flex-col">
                                                 <FieldLabel
                                                     htmlFor={uploadId}
                                                     label="Upload posters to this Plex instance"
@@ -581,8 +581,8 @@ export const InstancesField = React.memo(({
         return (
             <FieldWrapper invalid={highlightInvalid}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={isRequired} />
-                <div className="instances-loading flex flex-col items-center justify-center gap-3 text-center bg-surface border-2 text-secondary">
-                    <div className="loading-spinner" />
+                <div className="flex flex-col items-center justify-center gap-3 text-center bg-surface border-2 text-secondary">
+                    <div className="w-8 h-8 border-2 border-border border-t-primary rounded-full animate-spin" />
                     <span>Loading instances...</span>
                 </div>
                 {field.description && (
@@ -597,11 +597,11 @@ export const InstancesField = React.memo(({
         return (
             <FieldWrapper invalid={true}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={isRequired} />
-                <div className="instances-error flex flex-col items-center gap-3 text-center bg-error-subtle border-2 border-error">
-                    <div className="error-icon">⚠️</div>
-                    <div className="error-content flex flex-col gap-2">
-                        <div className="error-title font-semibold text-base">Failed to load instances</div>
-                        <div className="error-message text-sm">{loadError?.message || 'Unknown error occurred'}</div>
+                <div className="flex flex-col items-center gap-3 text-center bg-error-subtle border-2 border-error">
+                    <div>⚠️</div>
+                    <div className="flex flex-col gap-2">
+                        <div className="font-semibold text-base">Failed to load instances</div>
+                        <div className="text-sm">{loadError?.message || 'Unknown error occurred'}</div>
                     </div>
                 </div>
                 {field.description && (
@@ -642,19 +642,19 @@ export const InstancesField = React.memo(({
         <FieldWrapper invalid={highlightInvalid}>
             <FieldLabel htmlFor={inputId} label={field.label} required={isRequired} />
 
-            <div className="instances-field-content" id={inputId}>
+            <div id={inputId}>
                 {instanceTypes.length === 1 ? (
                     // Single service type - simplified UI
-                    <div className="single-service-selector flex flex-col gap-4">
-                        <h4 className="service-title text-base font-semibold text-primary">{humanize(instanceTypes[0])}</h4>
+                    <div className="flex flex-col gap-4">
+                        <h4 className="text-base font-semibold text-primary">{humanize(instanceTypes[0])}</h4>
                         {renderServiceSelector(instanceTypes[0])}
                     </div>
                 ) : (
                     // Multiple service types - sectioned UI
-                    <div className="multi-service-selector grid gap-3 grid-cols-auto-fit-md">
+                    <div className="grid gap-3 grid-cols-auto-fit-md">
                         {instanceTypes.map(serviceType => (
-                            <div key={serviceType} className="service-section flex flex-col gap-2 bg-surface border">
-                                <h4 className="service-title text-base font-semibold text-primary">{humanize(serviceType)}</h4>
+                            <div key={serviceType} className="flex flex-col gap-2 bg-surface border">
+                                <h4 className="text-base font-semibold text-primary">{humanize(serviceType)}</h4>
                                 {renderServiceSelector(serviceType)}
                             </div>
                         ))}

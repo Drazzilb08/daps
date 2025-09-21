@@ -147,7 +147,7 @@ export const GDrivePresetsField = React.memo(
                     <Card
                         data={selectedPreset}
                         excludeKeys={['id']}
-                        className="mt-3 border-border-subtle bg-surface-elevated"
+                        className="mt-3 bg-surface-elevated"
                         variant="bordered"
                     />
                 )}

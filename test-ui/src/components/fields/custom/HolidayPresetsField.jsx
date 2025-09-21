@@ -165,7 +165,7 @@ export const HolidayPresetsField = React.memo(
                     <Card
                         data={selectedPreset}
                         excludeKeys={[]}
-                        className="mt-3 border-border-subtle bg-surface-elevated"
+                        className="mt-3 bg-surface-elevated"
                         variant="bordered"
                     />
                 )}

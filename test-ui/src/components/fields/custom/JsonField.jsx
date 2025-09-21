@@ -116,11 +116,11 @@ export const JsonField = ({
     const rows = Math.max(minRows, Math.min(maxRows, (textValue.match(/\n/g) || []).length + 3));
 
     return (
-        <FieldWrapper invalid={highlightInvalid || hasError} className="json-field">
-            <div className="json-field-header">
+        <FieldWrapper invalid={highlightInvalid || hasError}>
+            <div>
                 <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
 
-                <div className="json-field-controls">
+                <div>
                     <button
                         type="button"
                         onClick={formatJson}
@@ -144,7 +144,7 @@ export const JsonField = ({
                 </div>
             </div>
 
-            <div className="json-field-container">
+            <div>
                 <TextareaBase
                     id={inputId}
                     value={textValue}
@@ -153,7 +153,7 @@ export const JsonField = ({
                     disabled={disabled}
                     required={field.required}
                     rows={rows}
-                    className="json-field-textarea"
+                    className=""
                     spellCheck={false}
                     aria-describedby={
                         errorToShow
@@ -166,10 +166,10 @@ export const JsonField = ({
                     {...fieldProps}
                 />
 
-                <div className="json-field-status" role="status" aria-live="polite">
+                <div role="status" aria-live="polite">
                     {jsonError && (
-                        <div className="json-validation-indicator json-validation-indicator--error">
-                            <span className="json-validation-icon" aria-hidden="true">
+                        <div>
+                            <span aria-hidden="true">
                                 ❌
                             </span>
                             {jsonError}
@@ -177,8 +177,8 @@ export const JsonField = ({
                     )}
 
                     {!jsonError && textValue.trim() && (
-                        <div className="json-validation-indicator json-validation-indicator--valid">
-                            <span className="json-validation-icon" aria-hidden="true">
+                        <div>
+                            <span aria-hidden="true">
                                 ✅
                             </span>
                             Valid JSON

@@ -361,8 +361,8 @@ export const ColorListPosterField = React.memo(
                             </div>
                         )}
                         {loadingPreviews && (
-                            <div className="color-poster-loading rounded">
-                                <span className="color-poster-loading-text">
+                            <div className="rounded">
+                                <span>
                                     Generating poster previews...
                                 </span>
                             </div>

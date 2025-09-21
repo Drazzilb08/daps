@@ -44,8 +44,8 @@
         font-size: var(--font-size-base);
         font-weight: var(--font-weight-normal);
         line-height: var(--line-height-normal);
-        color: var(--color-text-primary);
-        background-color: var(--color-background);
+        color: var(--text-primary);
+        background-color: var(--bg);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizelegibility;
@@ -135,7 +135,7 @@
     h6 {
         font-weight: var(--font-weight-semibold);
         line-height: var(--line-height-tight);
-        color: var(--color-text-primary);
+        color: var(--text-primary);
         margin-bottom: var(--space-4);
     }
 
@@ -168,14 +168,14 @@
 
     p {
         margin-bottom: var(--paragraph-spacing);
-        color: var(--color-text-secondary);
+        color: var(--text-secondary);
         line-height: var(--line-height-normal);
     }
 
     strong,
     b {
         font-weight: var(--font-weight-semibold);
-        color: var(--color-text-primary);
+        color: var(--text-primary);
     }
 
     em,
@@ -185,14 +185,14 @@
 
     small {
         font-size: var(--font-size-sm);
-        color: var(--color-text-tertiary);
+        color: var(--text-tertiary);
     }
 
     code {
         font-family: var(--font-family-mono);
         font-size: 0.875em;
-        color: var(--color-text-primary);
-        background-color: var(--color-surface-elevated);
+        color: var(--text-primary);
+        background-color: var(--surface-elevated);
         padding: var(--space-1) var(--space-2);
         border-radius: var(--radius-1);
     }
@@ -201,8 +201,8 @@
         font-family: var(--font-family-mono);
         font-size: var(--font-size-sm);
         line-height: var(--line-height-normal);
-        color: var(--color-text-primary);
-        background-color: var(--color-surface-elevated);
+        color: var(--text-primary);
+        background-color: var(--surface-elevated);
         padding: var(--space-4);
         border-radius: var(--radius-2);
         overflow-x: auto;
@@ -215,18 +215,18 @@
     }
 
     a {
-        color: var(--color-link);
+        color: var(--accent);
         transition: color var(--transition-fast);
         text-decoration: underline;
         text-underline-offset: var(--border-width-medium);
     }
 
     a:hover {
-        color: var(--color-link-hover);
+        color: var(--link-hover);
     }
 
     a:visited {
-        color: var(--color-link-visited);
+        color: var(--link-visited);
     }
 
     ul,
@@ -245,21 +245,21 @@
 
     li {
         margin-bottom: var(--list-spacing);
-        color: var(--color-text-secondary);
+        color: var(--text-secondary);
     }
 
     hr {
         border: none;
         height: var(--border-width-thin);
-        background-color: var(--color-border);
+        background-color: var(--border);
         margin: var(--space-8) 0;
     }
 
     blockquote {
-        border-left: var(--space-1) solid var(--color-border);
+        border-left: var(--space-1) solid var(--border);
         padding-left: var(--space-4);
         margin: var(--space-6) 0;
-        color: var(--color-text-secondary);
+        color: var(--text-secondary);
         font-style: italic;
     }
 }
@@ -270,7 +270,7 @@
     }
 
     :focus-visible {
-        outline: var(--focus-ring-width) solid var(--color-focus-ring);
+        outline: 2px solid var(--focus);
         outline-offset: var(--focus-ring-offset);
         border-radius: var(--radius-1);
     }
@@ -280,15 +280,15 @@
     textarea:focus-visible,
     select:focus-visible,
     a:focus-visible {
-        outline: var(--focus-ring-width) solid var(--color-focus-ring);
+        outline: 2px solid var(--focus);
         outline-offset: var(--focus-ring-offset);
         box-shadow:
-            0 0 0 var(--focus-ring-offset) var(--color-focus-ring-offset),
-            0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--color-focus-ring);
+            0 0 0 2px var(--focus),
+            0 0 0 4px var(--focus);
     }
 
     input:focus-visible {
-        border: var(--border-width-thin) solid var(--color-primary);
+        border: var(--border-width-thin) solid var(--primary);
         outline: none;
     }
 
@@ -296,8 +296,8 @@
         position: absolute;
         top: calc(-1 * var(--space-10));
         left: var(--space-1);
-        background: var(--color-surface);
-        color: var(--color-text-primary);
+        background: var(--surface);
+        color: var(--text-primary);
         padding: var(--space-2) var(--space-3);
         border-radius: var(--radius-1);
         text-decoration: none;
@@ -332,8 +332,8 @@
 
 @layer base {
     ::selection {
-        background-color: var(--color-primary);
-        color: var(--color-primary-text);
+        background-color: var(--primary);
+        color: var(--primary-text);
     }
 }
 
@@ -344,16 +344,16 @@
     }
 
     ::-webkit-scrollbar-track {
-        background: var(--color-surface);
+        background: var(--surface);
     }
 
     ::-webkit-scrollbar-thumb {
-        background: var(--color-border);
+        background: var(--border);
         border-radius: var(--radius-full);
     }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: var(--color-border-hover);
+        background: var(--border);
     }
 }
 

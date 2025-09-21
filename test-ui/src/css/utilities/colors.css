@@ -342,50 +342,15 @@
   }
 
   /* ===========================================
-     BADGE AND STATUS UTILITIES - COMPLETE SYSTEM
+     BADGE UTILITIES - ATOMIC UTILITIES ONLY
      =========================================== */
 
-  /* Badge base styling */
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border: 1px solid;
-    border-radius: 0.25rem;
-  }
+  /* Badge-specific atomic utilities (single-property only) */
+  .badge-spacing { padding: 0.25rem 0.5rem; }
+  .badge-text-size { font-size: 0.875rem; }
+  .badge-text-weight { font-weight: 500; }
 
-  /* Status badge variants */
-  .badge-success {
-    border-color: var(--success);
-    background: var(--surface);
-    color: var(--success-text);
-  }
-
-  .badge-error {
-    border-color: var(--error);
-    background: var(--surface);
-    color: var(--error-text);
-  }
-
-  .badge-warning {
-    border-color: var(--warning);
-    background: var(--surface);
-    color: var(--warning-text);
-  }
-
-  .badge-primary {
-    border-color: var(--primary);
-    background: var(--surface);
-    color: var(--primary-text);
-  }
-
-  .badge-secondary {
-    border-color: var(--border);
-    background: var(--surface-elevated);
-    color: var(--text-secondary);
-  }
+  /* NOTE: Badge patterns converted to utility-first approach in FieldTestPage.jsx */
 
   /* ===========================================
      ACCESSIBILITY COLOR UTILITIES

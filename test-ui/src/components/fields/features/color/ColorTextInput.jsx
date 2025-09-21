@@ -2,11 +2,11 @@
  * ColorTextInput Primitive Component
  *
  * Text input specialized for hex color values with validation and formatting.
- * Uses monospace font for precise hex editing and includes pattern validation.
+ * Includes pattern validation and auto-completion of '#' prefix.
  * Designed for composition into color field types following "write once, use everywhere" philosophy.
  *
  * Features:
- * - Monospace font for precise hex editing
+ * - Consistent typography with other input fields
  * - Real-time hex validation (pattern matching)
  * - Auto-completion of '#' prefix
  * - Touch-optimized sizing (44px minimum)
@@ -67,7 +67,7 @@ export const ColorTextInput = React.memo(
                 required={required}
                 pattern="^#?[0-9A-Fa-f]{6}$"
                 maxLength={7}
-                className={`color-text-input ${className}`.trim()}
+                className={`flex-1 min-w-0 ${className}`.trim()}
                 aria-describedby={`${id}-format-hint`}
                 title="Enter hex color (e.g. #ff0000 or ff0000)"
                 {...props}

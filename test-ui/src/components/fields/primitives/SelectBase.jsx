@@ -41,13 +41,33 @@ export const SelectBase = React.memo(
             [onChange]
         );
 
+        // ATOMIC UTILITY COMPOSITION - replaces compositional classes
         const selectClasses = [
-            'field-select',
-            'field-base',
-            'w-full',
-            'touch-target',
-            disabled ? 'state-disabled' : '',
-            invalid ? 'state-invalid' : '',
+            // Base styling - atomic utilities only
+            'h-11 w-full', // Consistent height (44px minimum)
+            'px-3 py-2', // Padding using design tokens
+            'bg-input border border-border rounded-md',
+            'text-primary',
+            'appearance-none', // Remove default styling
+            'cursor-pointer',
+            'transition-colors',
+
+            // Dropdown arrow styling using CSS (inline style in component)
+            'pr-11', // Right padding for arrow (var(--space-3) + var(--space-6) = 2.75rem)
+
+            // Focus states (atomic utilities)
+            'focus:outline-none focus:border-primary focus:ring-primary',
+
+            // Hover states (atomic utilities)
+            !disabled && 'hover:border-primary hover:bg-input-hover',
+
+            // Error states (atomic utilities)
+            invalid && 'border-error',
+            invalid && 'focus:ring-error',
+
+            // Disabled states (atomic utilities)
+            disabled && 'opacity-60 cursor-not-allowed bg-input-disabled',
+
             className,
         ]
             .filter(Boolean)
@@ -62,7 +82,7 @@ export const SelectBase = React.memo(
                     onChange={handleChange}
                     disabled={disabled}
                     required={required}
-                    className={selectClasses}
+                    className={`field-select ${selectClasses}`}
                     aria-describedby={ariaDescribedby}
                     aria-invalid={invalid}
                     {...rest}
@@ -82,6 +102,22 @@ export const SelectBase = React.memo(
                         </option>
                     ))}
                 </select>
+                {/* Dropdown chevron icon matching backup CSS exactly */}
+                <div
+                    className="absolute top-1/2 pointer-events-none transition-colors"
+                    style={{
+                        right: 'var(--space-3)', // 12px from backup CSS line 53
+                        width: 'var(--size-icon-sm)', // 16px from backup CSS line 54
+                        height: '12px', // Exact height from backup CSS line 55
+                        backgroundColor: 'var(--primary)', // Background color from backup CSS line 56
+                        // SVG mask from backup CSS lines 57-60
+                        maskImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='black' d='m2 5 6 6 6-6'/%3e%3c/svg%3e\")",
+                        maskRepeat: 'no-repeat',
+                        maskSize: 'contain',
+                        transform: 'translateY(-50%)' // Backup CSS line 60
+                    }}
+                    aria-hidden="true"
+                />
             </div>
         );
     }

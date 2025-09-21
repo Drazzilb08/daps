@@ -24,24 +24,19 @@ export const FieldWrapper = ({
     variant = 'standard',
     className = '',
 }) => {
-    // Base classes always applied
-    const baseClasses = ['field-wrapper'];
-
-    // Variant-specific utility classes - using new field-wrapper utilities
+    // Variant-specific utility classes - using atomic utilities
     const variantClasses = {
-        standard: ['field-wrapper-standard'],
-        'form-section': ['field-wrapper-form-section'],
-        checkbox: ['field-wrapper-checkbox'],
-        inline: ['field-wrapper-inline'],
-        minimal: ['field-wrapper-minimal'],
+        standard: 'flex flex-col gap-1 mb-4 w-full',
+        'form-section': 'flex flex-col gap-4 mb-4 w-full',
+        checkbox: 'flex flex-row gap-2 items-center mb-2 w-full',
+        inline: 'flex flex-row gap-2 items-center mb-3 w-full',
+        minimal: 'w-full',
     };
 
-    const wrapperClasses = [
-        ...baseClasses,
-        ...(variantClasses[variant] || variantClasses.standard),
-        invalid ? 'field-wrapper--invalid' : '',
-        className,
-    ]
+    const baseClasses = variantClasses[variant] || variantClasses.standard;
+    const invalidClasses = invalid ? 'text-error' : '';
+
+    const wrapperClasses = [baseClasses, invalidClasses, className]
         .filter(Boolean)
         .join(' ');
 

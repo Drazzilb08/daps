@@ -63,9 +63,10 @@ export const RemoveButton = React.memo(
         const ariaLabel = itemName ? `Remove ${itemName}` : `Remove ${itemType}`;
 
         const buttonClasses = [
-            'min-h-touch',
+            // Base atomic utilities for consistent remove button styling
+            'min-w-touch min-h-touch', // Square 44px x 44px minimum (matches original)
+            'shrink-0', // flex-shrink: 0 (matches original .color-poster-remove-button)
             'leading-none',
-            'no-underline',
             'whitespace-nowrap',
             'border',
             'border-error',
@@ -81,12 +82,14 @@ export const RemoveButton = React.memo(
             'font-bold',
             'rounded-md',
             'cursor-pointer',
-            'btn-interactions',
+            'transition-colors', // Added proper transition
+
+            // Size variants (all maintain square proportions)
             size === 'small'
-                ? 'min-h-9 w-9 text-sm'
+                ? 'min-w-9 min-h-9 text-sm'
                 : size === 'large'
-                  ? 'min-h-12 w-12 text-lg'
-                  : 'min-h-touch w-11',
+                  ? 'min-w-12 min-h-12 text-xl'
+                  : '', // Use default touch target sizing
             disabled && 'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
             className,
         ]
@@ -104,10 +107,10 @@ export const RemoveButton = React.memo(
                 {...ariaProps}
                 {...domProps}
             >
-                <span className="remove-button-icon" aria-hidden="true">
+                <span aria-hidden="true">
                     {icon}
                 </span>
-                {!iconOnly && <span className="remove-button-text">{text}</span>}
+                {!iconOnly && <span>{text}</span>}
                 {iconOnly && <span className="sr-only">{text}</span>}
             </button>
         );

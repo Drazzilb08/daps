@@ -15,7 +15,7 @@ export const FieldDescription = ({ id, description, className = '' }) => {
     return (
         <div
             id={id}
-            className={`field-description text-xs text-secondary mt-1 ${className}`.trim()}
+            className={`text-xs text-secondary mt-1 ${className}`.trim()}
         >
             {description}
         </div>

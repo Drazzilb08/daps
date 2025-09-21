@@ -67,15 +67,12 @@ const SortableDirectoryItem = React.memo(({
         opacity: isDragging ? 0.5 : 1,
     };
 
-    // Apply semantic class when mode options are present (dirlist_options variant)
-    const itemClasses = `dir-list-item${modeOptions ? ' dir-list-item--with-options' : ''}`;
-
     return (
-        <div className={itemClasses} ref={setNodeRef} style={style}>
+        <div className="flex gap-2 items-center" ref={setNodeRef} style={style}>
             {/* Desktop: Drag Handle (left side) */}
             {enableReordering && (
                 <div
-                    className="dir-drag-handle"
+                    className="flex items-center justify-center w-8 h-8 text-gray-400 cursor-grab hover:text-gray-600 transition-colors"
                     {...attributes}
                     {...listeners}
                 >
@@ -89,13 +86,13 @@ const SortableDirectoryItem = React.memo(({
                     onClick={() => onMoveUp && onMoveUp(index)}
                     disabled={!canMoveUp}
                     ariaLabel={`Move ${directory || 'directory'} up`}
-                    className="dir-reorder-button dir-reorder-up"
+                    className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden"
                 >
                     ↑
                 </FieldButton>
             )}
 
-            <div className="dir-list-item-content">
+            <div className={`flex ${modeOptions ? 'flex-col md:flex-row md:gap-3' : ''} flex-1`}>
                 <InputBase
                     id={itemId}
                     type="text"
@@ -107,7 +104,7 @@ const SortableDirectoryItem = React.memo(({
                     onClick={() => onClick(index)}
                     invalid={invalid}
                     aria-label={`${label} ${index + 1}`}
-                    className="dir-field-display dir-field-clickable"
+                    className={modeOptions ? 'md:flex-[2_1_0%] md:min-w-[120px]' : ''}
                     style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
                 />
 
@@ -122,7 +119,7 @@ const SortableDirectoryItem = React.memo(({
                         invalid={invalid}
                         options={modeOptions}
                         placeholder="Select mode..."
-                        className="dir-mode-select"
+                        className="mt-2 md:mt-0 md:flex-[1_1_0%] md:min-w-[100px] md:max-w-[150px]"
                         aria-label={`Mode for ${label} ${index + 1}`}
                     />
                 )}
@@ -134,24 +131,22 @@ const SortableDirectoryItem = React.memo(({
                     onClick={() => onMoveDown && onMoveDown(index)}
                     disabled={!canMoveDown}
                     ariaLabel={`Move ${directory || 'directory'} down`}
-                    className="dir-reorder-button dir-reorder-down"
+                    className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden"
                 >
                     ↓
                 </FieldButton>
             )}
 
-            <div className="dir-list-item-actions">
-                <RemoveButton
-                    onClick={() => onRemove(index)}
-                    disabled={!canRemoveDirectory}
-                    itemName={`${label} ${index + 1}`}
-                    itemType="directory"
-                    text={removeButtonText}
-                    variant="default"
-                    size="medium"
-                    title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
-                />
-            </div>
+            <RemoveButton
+                onClick={() => onRemove(index)}
+                disabled={!canRemoveDirectory}
+                itemName={`${label} ${index + 1}`}
+                itemType="directory"
+                text={removeButtonText}
+                variant="default"
+                size="medium"
+                title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
+            />
         </div>
     );
 });
@@ -181,12 +176,9 @@ const DirectoryItem = React.memo(({
     modeOptions,
     onModeChange
 }) => {
-    // Apply semantic class when mode options are present (dirlist_options variant)
-    const itemClasses = `dir-list-item${modeOptions ? ' dir-list-item--with-options' : ''}`;
-
     return (
-        <div className={itemClasses}>
-            <div className="dir-list-item-content">
+        <div className="flex gap-2 items-center">
+            <div className={`flex ${modeOptions ? 'flex-col md:flex-row md:gap-3' : ''} flex-1`}>
                 <InputBase
                     id={itemId}
                     type="text"
@@ -198,7 +190,7 @@ const DirectoryItem = React.memo(({
                     onClick={() => onClick(index)}
                     invalid={invalid}
                     aria-label={`${label} ${index + 1}`}
-                    className="dir-field-display dir-field-clickable"
+                    className={modeOptions ? 'md:flex-[2_1_0%] md:min-w-[120px]' : ''}
                     style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
                 />
 
@@ -213,24 +205,22 @@ const DirectoryItem = React.memo(({
                         invalid={invalid}
                         options={modeOptions}
                         placeholder="Select mode..."
-                        className="dir-mode-select"
+                        className="mt-2 md:mt-0 md:flex-[1_1_0%] md:min-w-[100px] md:max-w-[150px]"
                         aria-label={`Mode for ${label} ${index + 1}`}
                     />
                 )}
             </div>
 
-            <div className="dir-list-item-actions">
-                <RemoveButton
-                    onClick={() => onRemove(index)}
-                    disabled={!canRemoveDirectory}
-                    itemName={`${label} ${index + 1}`}
-                    itemType="directory"
-                    text={removeButtonText}
-                    variant="default"
-                    size="medium"
-                    title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
-                />
-            </div>
+            <RemoveButton
+                onClick={() => onRemove(index)}
+                disabled={!canRemoveDirectory}
+                itemName={`${label} ${index + 1}`}
+                itemType="directory"
+                text={removeButtonText}
+                variant="default"
+                size="medium"
+                title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
+            />
         </div>
     );
 });

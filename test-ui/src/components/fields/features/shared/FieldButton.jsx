@@ -26,7 +26,9 @@ import React from 'react';
  */
 export const FieldButton = React.memo(
     ({ onClick, disabled = false, ariaLabel, children, className = '' }) => {
-        const buttonClasses = className;
+        // Base atomic utility classes for consistent button appearance
+        const baseClasses = 'inline-flex-center-both py-2 px-3 rounded-md border bg-surface text-primary hover:bg-surface-hover focus:border-input-focus disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 ease-in-out';
+        const buttonClasses = `${baseClasses} ${className}`.trim();
 
         return (
             <button

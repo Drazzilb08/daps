@@ -72,12 +72,12 @@ const UnknownFieldType = ({ field }) => {
 
     return (
         <>
-            <label htmlFor={inputId} className="field-label">
+            <label htmlFor={inputId} className="text-sm font-medium text-secondary">
                 {field.label}
-                {field.required && <span className="required-indicator">*</span>}
+                {field.required && <span className="text-error ml-1">*</span>}
             </label>
 
-            <div className="field-unknown">
+            <div className="mt-2">
                 <div
                     style={{
                         padding: 'var(--space-4)',
@@ -96,7 +96,7 @@ const UnknownFieldType = ({ field }) => {
             </div>
 
             {field.description && (
-                <div id={`${inputId}-description`} className="field-description">
+                <div id={`${inputId}-description`} className="text-sm text-tertiary mt-1">
                     {field.description}
                 </div>
             )}

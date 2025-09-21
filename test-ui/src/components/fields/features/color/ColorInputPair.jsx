@@ -66,7 +66,7 @@ export const ColorInputPair = React.memo(
 
         return (
             <div
-                className={`color-input-pair flex gap-2 items-stretch ${className}`.trim()}
+                className={`flex gap-2 items-stretch ${className}`.trim()}
                 role="group"
                 aria-labelledby={`${baseId}-label`}
                 {...props}

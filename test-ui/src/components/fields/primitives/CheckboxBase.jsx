@@ -41,10 +41,41 @@ export const CheckboxBase = React.memo(
         );
 
         const containerClasses = [
-            'checkbox-container',
-            disabled ? 'checkbox-field--disabled' : '',
-            invalid ? 'field-input--invalid' : '',
+            'relative flex items-center touch-target cursor-pointer',
+            disabled ? 'cursor-not-allowed' : '',
+            invalid ? 'text-error' : '',
             className,
+        ]
+            .filter(Boolean)
+            .join(' ');
+
+        // ATOMIC UTILITY COMPOSITION - matching backup CSS exactly
+        const indicatorClasses = [
+            // Base indicator styling - atomic utilities only
+            'relative flex items-center justify-center',
+            'w-4 h-4', // 16px x 16px checkbox size
+            'border rounded-sm',
+            'transition-colors transition-fast',
+            'cursor-pointer shrink-0',
+
+            // Background/border states matching backup CSS lines 136-138, 118
+            checked
+                ? 'bg-primary border-primary text-white' // :checked state from backup
+                : 'bg-white border-border', // Default white background from backup line 118
+
+            // Hover states matching backup CSS lines 127-129
+            !disabled && !checked && 'hover:border-primary',
+            !disabled && checked && 'hover:bg-primary',
+
+            // Focus states matching backup CSS lines 131-134
+            'focus-within:border-primary',
+
+            // Error states
+            invalid && !checked && 'border-error',
+            invalid && 'focus-within:border-error',
+
+            // Disabled states
+            disabled && 'opacity-60 cursor-not-allowed pointer-events-none',
         ]
             .filter(Boolean)
             .join(' ');
@@ -59,27 +90,31 @@ export const CheckboxBase = React.memo(
                     onChange={handleChange}
                     disabled={disabled}
                     required={required}
-                    className="checkbox-input"
+                    className="sr-only" // Atomic utility for screen reader only
                     aria-describedby={ariaDescribedby}
                     aria-invalid={invalid}
                     {...rest}
                 />
 
-                {/* Large clickable checkbox indicator */}
-                <div className="checkbox-box">
-                    {checked && (
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            aria-hidden="true"
-                        >
-                            <polyline points="20,6 9,17 4,12" />
-                        </svg>
-                    )}
+                {/* Checkbox indicator with atomic utility composition */}
+                <div className={indicatorClasses}>
+                    <svg
+                        className={[
+                            // Checkmark atomic utilities
+                            'w-3 h-3', // 12px x 12px
+                            'stroke-current stroke-2',
+                            'fill-none',
+                            'transition-all',
+                            // Visibility states using atomic utilities
+                            checked ? 'opacity-100 scale-100' : 'opacity-0 scale-75',
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                    >
+                        <polyline points="20,6 9,17 4,12" />
+                    </svg>
                 </div>
             </div>
         );

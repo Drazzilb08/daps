@@ -16,10 +16,10 @@ export const FieldLabel = ({ htmlFor, label, required = false, className = '' })
     return (
         <label
             htmlFor={htmlFor}
-            className={`field-label text-sm font-medium text-primary mb-1 ${className}`.trim()}
+            className={`text-sm font-medium text-primary mb-1 ${className}`.trim()}
         >
             {label}
-            {required && <span className="required-indicator ml-1 font-semibold">*</span>}
+            {required && <span className="ml-1 font-semibold text-error">*</span>}
         </label>
     );
 };

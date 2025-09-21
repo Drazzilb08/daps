@@ -53,7 +53,32 @@ export const TextareaBase = ({
             maxLength={maxLength}
             minLength={minLength}
             spellCheck={spellCheck}
-            className={`field-textarea field-base w-full touch-target ${invalid ? 'state-invalid' : ''} ${disabled ? 'state-disabled' : ''} ${className}`.trim()}
+            className={[
+                // Base textarea styling - atomic utilities only
+                'w-full',
+                'px-3 py-2', // Standard padding
+                'bg-input border border-border rounded-md',
+                'text-primary placeholder:text-secondary',
+                'resize-y', // Allow vertical resize only
+                'transition-colors',
+
+                // Focus states (atomic utilities)
+                'focus:outline-none focus:border-primary focus:ring-primary',
+
+                // Hover states (atomic utilities)
+                !disabled && 'hover:border-primary hover:bg-surface-hover',
+
+                // Error states (atomic utilities)
+                invalid && 'border-error',
+                invalid && 'focus:ring-error',
+
+                // Disabled states (atomic utilities)
+                disabled && 'opacity-60 cursor-not-allowed bg-surface-dim',
+
+                className,
+            ]
+                .filter(Boolean)
+                .join(' ')}
             aria-describedby={ariaDescribedby}
             aria-invalid={ariaInvalid}
             {...textareaProps}

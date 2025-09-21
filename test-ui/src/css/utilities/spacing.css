@@ -346,6 +346,8 @@
      =========================================== */
 
   .gap-0 { gap: 0; }
+  .gap-px { gap: 1px; }
+  .gap-0\.5 { gap: 0.125rem; }
   .gap-1 { gap: 0.25rem; }
   .gap-2 { gap: 0.5rem; }
   .gap-3 { gap: 0.75rem; }
@@ -356,9 +358,15 @@
   .gap-8 { gap: 2rem; }
   .gap-10 { gap: 2.5rem; }
   .gap-12 { gap: 3rem; }
+  .gap-16 { gap: 4rem; }
+  .gap-20 { gap: 5rem; }
+  .gap-24 { gap: 6rem; }
+  .gap-32 { gap: 8rem; }
 
   /* Gap X/Y Axis */
   .gap-x-0 { column-gap: 0; }
+  .gap-x-px { column-gap: 1px; }
+  .gap-x-0\.5 { column-gap: 0.125rem; }
   .gap-x-1 { column-gap: 0.25rem; }
   .gap-x-2 { column-gap: 0.5rem; }
   .gap-x-3 { column-gap: 0.75rem; }
@@ -367,10 +375,10 @@
   .gap-x-6 { column-gap: 1.5rem; }
   .gap-x-7 { column-gap: 1.75rem; }
   .gap-x-8 { column-gap: 2rem; }
-  .gap-x-10 { column-gap: 2.5rem; }
-  .gap-x-12 { column-gap: 3rem; }
 
   .gap-y-0 { row-gap: 0; }
+  .gap-y-px { row-gap: 1px; }
+  .gap-y-0\.5 { row-gap: 0.125rem; }
   .gap-y-1 { row-gap: 0.25rem; }
   .gap-y-2 { row-gap: 0.5rem; }
   .gap-y-3 { row-gap: 0.75rem; }
@@ -379,8 +387,6 @@
   .gap-y-6 { row-gap: 1.5rem; }
   .gap-y-7 { row-gap: 1.75rem; }
   .gap-y-8 { row-gap: 2rem; }
-  .gap-y-10 { row-gap: 2.5rem; }
-  .gap-y-12 { row-gap: 3rem; }
 
   /* ===========================================
      SPACE UTILITIES - CHILD ELEMENT SPACING

@@ -308,97 +308,17 @@
   .stacked-fractions { font-variant-numeric: stacked-fractions; }
 
   /* ===========================================
-     TYPOGRAPHY PATTERNS & COMBINATIONS
+     TYPOGRAPHY UTILITIES - ATOMIC ONLY
      =========================================== */
 
-  /* Heading patterns */
-  .heading-1 {
-    font-size: 3.75rem; /* 60px */
-    font-weight: 700;
-    line-height: 1.25;
-    margin-bottom: 1rem;
-  }
+  /* NOTE: Typography component patterns (.heading-*, .body-text, .caption, .label, .code)
+     have been moved to components/typography.css for proper architectural separation.
+     This section now contains only atomic utilities for individual CSS properties. */
 
-  .heading-2 {
-    font-size: 3rem; /* 48px */
-    font-weight: 600;
-    line-height: 1.25;
-    margin-bottom: 0.75rem;
-  }
-
-  .heading-3 {
-    font-size: 2.25rem; /* 36px */
-    font-weight: 600;
-    line-height: 1.375;
-    margin-bottom: 0.75rem;
-  }
-
-  .heading-4 {
-    font-size: 1.875rem; /* 30px */
-    font-weight: 500;
-    line-height: 1.375;
-    margin-bottom: 0.5rem;
-  }
-
-  /* Body text patterns */
-  .body-text {
-    font-size: 1rem; /* 16px */
-    font-weight: 400;
-    line-height: 1.75;
-  }
-
-  .body-text-sm {
-    font-size: 0.875rem; /* 14px */
-    font-weight: 400;
-    line-height: 1.5;
-  }
-
-  .body-text-lg {
-    font-size: 1.125rem; /* 18px */
-    font-weight: 400;
-    line-height: 1.75;
-  }
-
-  /* Caption and label patterns */
-  .caption {
-    font-size: 0.75rem; /* 12px */
-    font-weight: 400;
-    line-height: 1.5;
-    color: var(--text-secondary);
-  }
-
-  .label {
-    font-size: 0.875rem; /* 14px */
-    font-weight: 500;
-    line-height: 1.5;
-  }
-
-  .label-sm {
-    font-size: 0.75rem; /* 12px */
-    font-weight: 500;
-    line-height: 1.5;
-  }
-
-  /* Code and monospace patterns */
-  .code {
-    font-family: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', consolas, monospace;
-    font-size: 0.875em;
-    background: var(--surface-variant);
-    padding: 0.125rem 0.25rem;
-    border-radius: 0.25rem;
-    color: var(--text-primary);
-  }
-
-  .code-block {
-    font-family: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', consolas, monospace;
-    font-size: 0.875rem; /* 14px */
-    line-height: 1.75;
-    background: var(--surface-variant);
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    overflow-x: auto;
-    white-space: pre;
-  }
+  /* Atomic utilities for common typography combinations */
+  .heading-base { line-height: 1.25; }
+  .body-base { line-height: 1.75; }
+  .caption-base { line-height: 1.5; }
 
   /* ===========================================
      RESPONSIVE TYPOGRAPHY UTILITIES
@@ -458,12 +378,7 @@
       letter-spacing: 0.025em;
     }
 
-    .heading-1,
-    .heading-2,
-    .heading-3,
-    .heading-4 {
-      font-weight: 700;
-    }
+    /* Heading classes moved to components/typography.css */
   }
 
   /* Reduced motion adjustments */

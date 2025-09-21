@@ -205,28 +205,18 @@
      GRID UTILITIES - COMPREHENSIVE SYSTEM
      =========================================== */
 
-  /* Grid template columns */
+  /* Grid template columns - Practical responsive set */
   .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
   .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   .grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .grid-cols-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
-  .grid-cols-8 { grid-template-columns: repeat(8, minmax(0, 1fr)); }
-  .grid-cols-9 { grid-template-columns: repeat(9, minmax(0, 1fr)); }
-  .grid-cols-10 { grid-template-columns: repeat(10, minmax(0, 1fr)); }
-  .grid-cols-11 { grid-template-columns: repeat(11, minmax(0, 1fr)); }
   .grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
   .grid-cols-none { grid-template-columns: none; }
   .grid-cols-subgrid { grid-template-columns: subgrid; }
 
-  /* Auto-fit and auto-fill columns */
-  .grid-cols-auto-fit { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
-  .grid-cols-auto-fill { grid-template-columns: repeat(auto-fill, minmax(0, 1fr)); }
+  /* Auto-fit column patterns */
   .grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-
-  /* Common responsive column patterns */
   .grid-cols-auto-fit-xs { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
   .grid-cols-auto-fit-sm { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
   .grid-cols-auto-fit-md { grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
@@ -319,49 +309,13 @@
   .row-end-7 { grid-row-end: 7; }
   .row-end-auto { grid-row-end: auto; }
 
-  /* Grid gap utilities (shared with flexbox) */
-  .gap-0 { gap: 0; }
-  .gap-px { gap: 1px; }
-  .gap-0\.5 { gap: 0.125rem; }
-  .gap-1 { gap: 0.25rem; }
-  .gap-2 { gap: 0.5rem; }
-  .gap-3 { gap: 0.75rem; }
-  .gap-4 { gap: 1rem; }
-  .gap-5 { gap: 1.25rem; }
-  .gap-6 { gap: 1.5rem; }
-  .gap-7 { gap: 1.75rem; }
-  .gap-8 { gap: 2rem; }
-  .gap-10 { gap: 2.5rem; }
-  .gap-12 { gap: 3rem; }
-  .gap-16 { gap: 4rem; }
-  .gap-20 { gap: 5rem; }
-  .gap-24 { gap: 6rem; }
-  .gap-32 { gap: 8rem; }
+  /* ===========================================
+     GAP UTILITIES MOVED TO SPACING.CSS
+     =========================================== */
 
-  /* Separate row and column gaps */
-  .gap-x-0 { column-gap: 0; }
-  .gap-x-px { column-gap: 1px; }
-  .gap-x-0\.5 { column-gap: 0.125rem; }
-  .gap-x-1 { column-gap: 0.25rem; }
-  .gap-x-2 { column-gap: 0.5rem; }
-  .gap-x-3 { column-gap: 0.75rem; }
-  .gap-x-4 { column-gap: 1rem; }
-  .gap-x-5 { column-gap: 1.25rem; }
-  .gap-x-6 { column-gap: 1.5rem; }
-  .gap-x-7 { column-gap: 1.75rem; }
-  .gap-x-8 { column-gap: 2rem; }
-
-  .gap-y-0 { row-gap: 0; }
-  .gap-y-px { row-gap: 1px; }
-  .gap-y-0\.5 { row-gap: 0.125rem; }
-  .gap-y-1 { row-gap: 0.25rem; }
-  .gap-y-2 { row-gap: 0.5rem; }
-  .gap-y-3 { row-gap: 0.75rem; }
-  .gap-y-4 { row-gap: 1rem; }
-  .gap-y-5 { row-gap: 1.25rem; }
-  .gap-y-6 { row-gap: 1.5rem; }
-  .gap-y-7 { row-gap: 1.75rem; }
-  .gap-y-8 { row-gap: 2rem; }
+  /* Gap utilities have been consolidated in spacing.css to eliminate duplication.
+     All gap, gap-x, and gap-y utilities are now defined in a single location
+     for better maintainability and consistency. */
 
   /* ===========================================
      POSITION UTILITIES - COMPLETE SYSTEM
@@ -487,26 +441,11 @@
   .left-full { left: 100%; }
 
   /* ===========================================
-     Z-INDEX UTILITIES
+     Z-INDEX UTILITIES - MOVED TO utilities/zindex.css
      =========================================== */
 
-  .z-0 { z-index: 0; }
-  .z-10 { z-index: 10; }
-  .z-20 { z-index: 20; }
-  .z-30 { z-index: 30; }
-  .z-40 { z-index: 40; }
-  .z-50 { z-index: 50; }
-  .z-auto { z-index: auto; }
-
-  /* Semantic z-index values */
-  .z-dropdown { z-index: 1000; }
-  .z-sticky { z-index: 1020; }
-  .z-fixed { z-index: 1030; }
-  .z-modal-backdrop { z-index: 1040; }
-  .z-modal { z-index: 1050; }
-  .z-popover { z-index: 1060; }
-  .z-tooltip { z-index: 1070; }
-  .z-notification { z-index: 800; }
+  /* All z-index utilities have been consolidated into utilities/zindex.css
+     to eliminate duplication and provide single source of truth */
 
   /* ===========================================
      OVERFLOW UTILITIES
@@ -722,9 +661,7 @@
     .md\:justify-center { justify-content: center; }
     .md\:justify-between { justify-content: space-between; }
     .md\:items-center { align-items: center; }
-    .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    /* Grid responsive utilities moved to responsive.css for consolidation */
   }
 
   /* Desktop and up: 1024px */
@@ -737,10 +674,7 @@
     .lg\:justify-center { justify-content: center; }
     .lg\:justify-between { justify-content: space-between; }
     .lg\:items-center { align-items: center; }
-    .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .lg\:grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-    .lg\:grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    /* Grid responsive utilities moved to responsive.css for consolidation */
   }
 
   /* ===========================================

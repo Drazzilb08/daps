@@ -1,14 +1,14 @@
 /**
- * Z-Index Utilities
- * Layered z-index system with semantic naming for UI layering.
+ * Z-Index Utilities - SINGLE SOURCE OF TRUTH
+ * Complete z-index system with logical stacking order for UI layers.
+ * Consolidates all z-index utilities to eliminate duplication.
  */
 
 @layer utilities {
   /* ===========================================
-     SEMANTIC Z-INDEX UTILITIES
+     BASE Z-INDEX VALUES - ATOMIC UTILITIES
      =========================================== */
 
-  /* Base z-index values */
   .z-0 { z-index: 0; }
   .z-10 { z-index: 10; }
   .z-20 { z-index: 20; }
@@ -16,13 +16,23 @@
   .z-40 { z-index: 40; }
   .z-50 { z-index: 50; }
   .z-auto { z-index: auto; }
-
-  /* Semantic z-index layers */
-  .z-toast { z-index: 1080; }
-  .z-dropdown { z-index: 1000; }
-  .z-modal { z-index: 1050; }
-  .z-tooltip { z-index: 1070; }
-
-  /* Negative z-index */
   .z-negative { z-index: -1; }
+
+  /* ===========================================
+     SEMANTIC Z-INDEX LAYERS - LOGICAL STACKING ORDER
+     =========================================== */
+
+  /* UI Layer Stack (bottom to top): */
+  .z-dropdown { z-index: 100; }        /* Dropdown menus - above base content */
+  .z-sticky { z-index: 200; }          /* Sticky navigation - above dropdowns */
+  .z-fixed { z-index: 300; }           /* Fixed positioning - above sticky */
+  .z-modal-backdrop { z-index: 400; }  /* Modal backdrop - below modal content */
+  .z-modal { z-index: 500; }           /* Modal dialogs - above backdrop */
+  .z-popover { z-index: 600; }         /* Popovers - above modals */
+  .z-notification { z-index: 700; }    /* Notifications - above popovers */
+  .z-tooltip { z-index: 800; }         /* Tooltips - above everything except max */
+  .z-max { z-index: 999; }             /* Maximum z-index for emergency use */
+
+  /* Legacy semantic aliases (for backward compatibility) */
+  .z-toast { z-index: 700; }           /* Alias for .z-notification */
 }

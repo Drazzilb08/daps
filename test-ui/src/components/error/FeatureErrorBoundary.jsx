@@ -214,7 +214,7 @@ class FeatureErrorBoundaryBase extends Component {
                         </span>
                         <button
                             onClick={this.handleRetry}
-                            className="btn btn--ghost btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
+                            className="min-h-touch bg-transparent text-primary px-2 py-1 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
                             type="button"
                             title="Try to load this feature again"
                         >
@@ -257,7 +257,7 @@ class FeatureErrorBoundaryBase extends Component {
                                 <div className="flex flex-wrap gap-2">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
+                                        className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                                         type="button"
                                     >
                                         <span className="inline-block font-normal">
@@ -267,12 +267,12 @@ class FeatureErrorBoundaryBase extends Component {
                                     </button>
                                     <button
                                         onClick={this.handleCopyError}
-                                        className={`btn ${
+                                        className={`min-h-touch px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center ${
                                             this.state.copySuccess
-                                                ? 'btn--success'
+                                                ? 'bg-success text-white'
                                                 : this.state.copyError
-                                                  ? 'btn--error state-hover-dim'
-                                                  : 'btn--info state-hover-dim'
+                                                  ? 'bg-error text-white'
+                                                  : 'bg-info text-white'
                                         }`}
                                         type="button"
                                         disabled={this.state.copying}
@@ -296,7 +296,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     </button>
                                     <button
                                         onClick={this.handleReload}
-                                        className="btn btn--secondary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                                        className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                                         type="button"
                                     >
                                         <span className="inline-block font-normal">
@@ -368,7 +368,7 @@ class FeatureErrorBoundaryBase extends Component {
                                 <div className="flex flex-wrap gap-2 mb-0">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="btn btn--primary btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
+                                        className="min-h-touch bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
                                         type="button"
                                     >
                                         <span className="inline-block font-normal">
@@ -380,7 +380,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     {!critical && (
                                         <button
                                             onClick={this.handleSkip}
-                                            className="btn btn--secondary btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast state-hover-dim"
+                                            className="min-h-touch bg-surface text-primary px-2 py-1 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
                                             type="button"
                                         >
                                             <span className="inline-block font-normal">
@@ -392,12 +392,12 @@ class FeatureErrorBoundaryBase extends Component {
 
                                     <button
                                         onClick={this.handleCopyError}
-                                        className={`btn btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast ${
+                                        className={`min-h-touch px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm ${
                                             this.state.copySuccess
-                                                ? 'btn--success state-hover-dim'
+                                                ? 'bg-success text-white'
                                                 : this.state.copyError
-                                                  ? 'btn--error state-hover-dim'
-                                                  : 'btn--info state-hover-dim'
+                                                  ? 'bg-error text-white'
+                                                  : 'bg-info text-white'
                                         }`}
                                         type="button"
                                         disabled={this.state.copying}
@@ -422,7 +422,7 @@ class FeatureErrorBoundaryBase extends Component {
 
                                     <button
                                         onClick={this.handleReload}
-                                        className="btn btn--ghost btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
+                                        className="min-h-touch bg-transparent text-primary px-2 py-1 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
                                         type="button"
                                     >
                                         <span className="inline-block font-normal">
@@ -442,7 +442,7 @@ class FeatureErrorBoundaryBase extends Component {
                                             </p>
                                             <button
                                                 onClick={this.handleReload}
-                                                className="btn btn--primary btn--small inline-flex items-center justify-center py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
+                                                className="min-h-touch bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
                                                 type="button"
                                             >
                                                 Reload Application

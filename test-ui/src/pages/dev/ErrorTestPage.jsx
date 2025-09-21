@@ -71,25 +71,25 @@ const ErrorTestPage = () => {
                 <div className="flex gap-2 flex-wrap mt-3 md:flex-row flex-col md:items-center">
                     <button
                         onClick={() => showToast('success')}
-                        className="btn btn--success inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                        className="min-h-touch bg-success text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                     >
                         Success Toast
                     </button>
                     <button
                         onClick={() => showToast('error')}
-                        className="btn btn--error inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                        className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                     >
                         Error Toast
                     </button>
                     <button
                         onClick={() => showToast('warning')}
-                        className="btn btn--warning inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                        className="min-h-touch bg-warning text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                     >
                         Warning Toast
                     </button>
                     <button
                         onClick={() => showToast('info')}
-                        className="btn btn--info inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                        className="min-h-touch bg-info text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                     >
                         Info Toast
                     </button>
@@ -108,7 +108,7 @@ const ErrorTestPage = () => {
                 </p>
                 <button
                     onClick={showGlobalError}
-                    className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                 >
                     Trigger Global Error
                 </button>
@@ -130,7 +130,7 @@ const ErrorTestPage = () => {
 
                 <button
                     onClick={() => triggerCrash('critical')}
-                    className="btn btn--danger inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                    className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                 >
                     Trigger Critical Error
                 </button>
@@ -146,7 +146,7 @@ const ErrorTestPage = () => {
                 {crashes.critical && (
                     <button
                         onClick={() => resetCrash('critical')}
-                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim mt-2"
+                        className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex-center-both mt-2"
                     >
                         Reset
                     </button>
@@ -168,7 +168,7 @@ const ErrorTestPage = () => {
 
                 <button
                     onClick={() => triggerCrash('page')}
-                    className="btn btn--danger inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                    className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                 >
                     Trigger Page Error
                 </button>
@@ -180,7 +180,7 @@ const ErrorTestPage = () => {
                 {crashes.page && (
                     <button
                         onClick={() => resetCrash('page')}
-                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim mt-2"
+                        className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex-center-both mt-2"
                     >
                         Reset
                     </button>
@@ -203,7 +203,7 @@ const ErrorTestPage = () => {
 
                 <button
                     onClick={() => triggerCrash('feature')}
-                    className="btn btn--danger inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                    className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                 >
                     Trigger Feature Error
                 </button>
@@ -218,7 +218,7 @@ const ErrorTestPage = () => {
                 {crashes.feature && (
                     <button
                         onClick={() => resetCrash('feature')}
-                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim mt-2"
+                        className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex-center-both mt-2"
                     >
                         Reset
                     </button>

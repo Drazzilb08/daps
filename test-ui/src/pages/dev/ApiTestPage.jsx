@@ -18,7 +18,7 @@ import { api } from '../../utils/api/index.js';
  * Test section component for organized testing
  */
 const TestSection = React.memo(({ title, description, children }) => (
-    <section className="bg-surface border border-color rounded-md p-4">
+    <section className="bg-surface border border-border rounded-md p-4">
         <h2 className="text-lg font-semibold text-primary mb-2">{title}</h2>
         <p className="text-sm text-secondary mb-4">{description}</p>
         <div className="flex flex-col gap-4">{children}</div>
@@ -31,7 +31,7 @@ TestSection.displayName = 'TestSection';
  * API response display component
  */
 const ApiResponseDisplay = React.memo(({ data, isLoading, error, title }) => (
-    <div className="bg-surface-elevated border border-color p-3 rounded-sm">
+    <div className="bg-surface-elevated border border-border p-3 rounded-sm">
         <h4 className="text-sm font-medium text-primary mb-2">{title}</h4>
         {isLoading && (
             <div className="p-3 text-secondary flex items-center gap-2">
@@ -45,7 +45,7 @@ const ApiResponseDisplay = React.memo(({ data, isLoading, error, title }) => (
             </div>
         )}
         {data && !isLoading && (
-            <pre className="bg-surface border border-color p-3 text-primary overflow-auto whitespace-pre-wrap break-words max-h-dropdown rounded-sm">
+            <pre className="bg-surface border border-border p-3 text-primary overflow-auto whitespace-pre-wrap break-words max-h-dropdown rounded-sm">
                 {JSON.stringify(data, null, 2)}
             </pre>
         )}
@@ -77,7 +77,7 @@ const VersionTestComponent = React.memo(() => {
                 <button
                     onClick={execute}
                     disabled={isLoading}
-                    className="btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
+                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     {isLoading ? 'Loading...' : 'Get Version'}
                 </button>
@@ -134,7 +134,7 @@ const ConfigTestComponent = React.memo(() => {
                 <select
                     value={section}
                     onChange={e => setSection(e.target.value)}
-                    className="min-h-input p-2 px-3 border border-color bg-surface text-primary text-sm rounded-sm w-full md:w-auto"
+                    className="min-h-input p-2 px-3 border border-border bg-surface text-primary text-sm rounded-sm w-full md:w-auto"
                 >
                     <option value="">All Configuration</option>
                     <option value="instances">Instances</option>
@@ -144,7 +144,7 @@ const ConfigTestComponent = React.memo(() => {
                 <button
                     onClick={execute}
                     disabled={isLoading}
-                    className="btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
+                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     {isLoading ? 'Loading...' : 'Get Config'}
                 </button>
@@ -155,7 +155,7 @@ const ConfigTestComponent = React.memo(() => {
                 error={error}
                 title="Configuration Response (with caching)"
             />
-            <div className="p-3 bg-surface-elevated border border-color rounded-sm">
+            <div className="p-3 bg-surface-elevated border border-border rounded-sm">
                 <p>
                     <strong>API Layer:</strong> configAPI.fetchConfig() / fetchSection()
                 </p>
@@ -195,7 +195,7 @@ const JobStatsTestComponent = React.memo(() => {
                 <button
                     onClick={execute}
                     disabled={isLoading}
-                    className="btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
+                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     {isLoading ? 'Loading...' : 'Get Job Stats'}
                 </button>
@@ -261,7 +261,7 @@ const ErrorTestComponent = React.memo(() => {
                 <select
                     value={errorType}
                     onChange={e => setErrorType(e.target.value)}
-                    className="min-h-input p-2 px-3 border border-color bg-surface text-primary text-sm rounded-sm w-full md:w-auto"
+                    className="min-h-input p-2 px-3 border border-border bg-surface text-primary text-sm rounded-sm w-full md:w-auto"
                 >
                     <option value="404">404 - Not Found</option>
                     <option value="400">400 - Bad Request</option>
@@ -270,7 +270,7 @@ const ErrorTestComponent = React.memo(() => {
                 <button
                     onClick={execute}
                     disabled={isLoading}
-                    className="btn btn--danger inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                    className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     {isLoading ? 'Testing...' : 'Test Error'}
                 </button>
@@ -323,31 +323,31 @@ const ToastTestComponent = React.memo(() => {
             <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <button
                     onClick={testToasts}
-                    className="btn btn--info inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                    className="min-h-touch bg-info text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     Test All Toasts
                 </button>
                 <button
                     onClick={() => toast.success('Success toast!')}
-                    className="btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
+                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     Success
                 </button>
                 <button
                     onClick={() => toast.error('Error toast!')}
-                    className="btn btn--danger inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                    className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     Error
                 </button>
                 <button
                     onClick={() => toast.warning('Warning toast!')}
-                    className="btn btn--warning inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                    className="min-h-touch bg-warning text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     Warning
                 </button>
                 <button
                     onClick={() => toast.info('Info toast!')}
-                    className="btn btn--secondary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                    className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                 >
                     Info
                 </button>

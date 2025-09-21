@@ -373,21 +373,21 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                             {isApproved ? (
                                 <button
                                     onClick={handleDisapprove}
-                                    className="btn btn--warning inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                                    className="min-h-touch bg-warning text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                                 >
                                     Unapprove
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleApprove}
-                                    className="approval-btn approval-btn--approve btn btn--primary inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast"
+                                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                                 >
                                     Approve for Production
                                 </button>
                             )}
                             <button
                                 onClick={handleDisapprove}
-                                className="btn btn--error inline-flex items-center justify-center py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                                className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                             >
                                 Needs Work
                             </button>
@@ -606,19 +606,19 @@ const FieldTestPage = () => {
                                 setApprovedFields(prev => new Set([...prev, type]))
                             );
                         }}
-                        className="btn btn--primary px-3 py-2 rounded cursor-pointer transition-fast"
+                        className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors"
                     >
                         Approve All Working Fields
                     </button>
                     <button
                         onClick={() => setApprovedFields(new Set())}
-                        className="btn btn--error px-3 py-2 rounded cursor-pointer transition-fast"
+                        className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors"
                     >
                         Reset All Approvals
                     </button>
                     <button
                         onClick={() => setFilter('unapproved')}
-                        className="btn btn--secondary px-3 py-2 rounded cursor-pointer transition-fast"
+                        className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover"
                     >
                         Show Fields Needing Testing
                     </button>

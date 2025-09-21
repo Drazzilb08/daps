@@ -62,8 +62,7 @@ const Button = React.forwardRef(
             'touch-target',
             'state-hover-toolbar',
             'state-focus-ring',
-            // Keep btn for any remaining button styles
-            'btn',
+            // btn class removed - now using atomic utilities
             isDisabled && 'state-disabled',
             isSpinning && 'pointer-events-none',
         ]

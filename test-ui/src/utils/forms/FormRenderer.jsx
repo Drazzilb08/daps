@@ -215,9 +215,9 @@ export const FormRenderer = React.memo(
 
                     {/* Render sectioned fields */}
                     {Object.entries(sections).map(([sectionName, sectionFields]) => (
-                        <div key={sectionName} className="form-section mb-8">
-                            <div className="form-section__header mb-4 pb-2 border-b">
-                                <h3 className="form-section__title text-lg font-semibold text-primary mb-1">
+                        <div key={sectionName} className="mb-8">
+                            <div className="mb-4 pb-2 border-b border-border">
+                                <h3 className="m-0 text-lg font-semibold text-primary mb-1">
                                     {sectionName}
                                 </h3>
                             </div>
@@ -235,21 +235,21 @@ export const FormRenderer = React.memo(
         return (
             <form
                 onSubmit={handleSubmit}
-                className={`form mx-auto ${layout === 'horizontal' ? 'form--horizontal' : ''} ${loading ? 'form--loading' : ''}`}
+                className={`max-w-lg mx-auto ${layout === 'horizontal' ? 'grid grid-cols-2 gap-4' : ''} ${loading ? 'opacity-80' : ''}`}
                 noValidate
             >
                 {/* Render form validation summary if there are errors */}
                 {Object.keys(validationErrors).length > 0 && (
-                    <div className="form-validation-summary">
-                        <h4 className="form-validation-summary__title">
+                    <div className="mb-4 p-3 bg-error-subtle border border-error rounded-md">
+                        <h4 className="m-0 mb-2 text-sm font-medium text-error-text">
                             Please fix the following errors:
                         </h4>
-                        <ul className="form-validation-summary__list">
+                        <ul className="list-none m-0 p-0">
                             {Object.entries(validationErrors).map(([fieldKey, error]) => {
                                 const field = schema.fields?.find(f => f.key === fieldKey);
                                 const fieldLabel = field?.label || fieldKey;
                                 return (
-                                    <li key={fieldKey} className="form-validation-summary__item">
+                                    <li key={fieldKey} className="text-sm text-error-text">
                                         {fieldLabel}: {error}
                                     </li>
                                 );
@@ -260,12 +260,12 @@ export const FormRenderer = React.memo(
 
                 {/* Form title and description */}
                 {schema.label && (
-                    <div className="form-section__header mb-4 pb-2 border-b">
-                        <h2 className="form-section__title text-lg font-semibold text-primary mb-1">
+                    <div className="mb-4 pb-2 border-b border-border">
+                        <h2 className="m-0 text-lg font-semibold text-primary mb-1">
                             {schema.label}
                         </h2>
                         {schema.description && (
-                            <p className="form-section__description m-0">{schema.description}</p>
+                            <p className="m-0 text-sm text-secondary">{schema.description}</p>
                         )}
                     </div>
                 )}
@@ -275,10 +275,10 @@ export const FormRenderer = React.memo(
 
                 {/* Form actions */}
                 {showSubmit && (
-                    <div className="form-actions flex items-center gap-3">
+                    <div className="border-t border-border pt-4 mt-6 flex items-center gap-3">
                         <button
                             type="submit"
-                            className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                            className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                             disabled={disabled || loading}
                         >
                             {loading ? 'Saving...' : submitText}

@@ -42,7 +42,7 @@ const FieldRenderer = React.memo(({ field, value, onChange, disabled }) => {
     }, [markTouched]);
 
     return (
-        <div className="form-field" data-field-type={field.type} data-field-key={field.key}>
+        <div className="relative" data-field-type={field.type} data-field-key={field.key}>
             <FieldComponent
                 field={field}
                 value={value}
@@ -79,34 +79,34 @@ const FormSection = React.memo(({ section, formData, onFieldChange, disabled }) 
     }
 
     return (
-        <div className="form-section" data-section-collapsible={section.collapsible}>
+        <div className="mb-6" data-section-collapsible={section.collapsible}>
             {section.title && (
-                <div className="form-section-header">
+                <div className="mb-4 pb-2 border-b border-border">
                     {section.collapsible ? (
                         <button
                             type="button"
-                            className="form-section-toggle"
+                            className="flex items-center w-full bg-transparent border-none p-0 text-left cursor-pointer hover:text-primary"
                             onClick={toggleCollapsed}
                             aria-expanded={!collapsed}
                         >
                             <span
-                                className={`form-section-toggle-icon ${collapsed ? 'collapsed' : 'expanded'}`}
+                                className={`mr-2 text-sm text-secondary transition-transform transform ${collapsed ? '-rotate-90' : 'rotate-0'}`}
                             >
                                 ▼
                             </span>
-                            <h3 className="form-section-title">{section.title}</h3>
+                            <h3 className="m-0 text-lg font-medium text-primary">{section.title}</h3>
                         </button>
                     ) : (
-                        <h3 className="form-section-title">{section.title}</h3>
+                        <h3 className="m-0 text-lg font-medium text-primary">{section.title}</h3>
                     )}
                     {section.description && (
-                        <p className="form-section-description">{section.description}</p>
+                        <p className="mt-2 mb-0 text-sm text-secondary leading-relaxed">{section.description}</p>
                     )}
                 </div>
             )}
 
             {(!section.collapsible || !collapsed) && (
-                <div className="form-section-fields">
+                <div className="gap-3">
                     {section.fields.map(field => (
                         <FieldRenderer
                             key={field.key}
@@ -250,7 +250,7 @@ export const FormRenderer = React.memo(
 
         if (!schema) {
             return (
-                <div className="form-renderer-error">
+                <div className="p-6 text-center bg-error-subtle border border-error rounded-lg text-error-text">
                     <h3>Form Configuration Error</h3>
                     <p>The form schema is invalid or missing. Please check the configuration.</p>
                 </div>
@@ -268,16 +268,16 @@ export const FormRenderer = React.memo(
                 <form className={formClasses} onSubmit={handleSubmit} noValidate>
                     {/* Form header */}
                     {schema.title && (
-                        <div className="form-header">
-                            <h2 className="form-title">{schema.title}</h2>
+                        <div className="mb-6 text-center">
+                            <h2 className="m-0 mb-2 text-2xl font-semibold text-primary leading-tight">{schema.title}</h2>
                             {schema.description && (
-                                <p className="form-description">{schema.description}</p>
+                                <p className="m-0 text-base text-secondary leading-relaxed">{schema.description}</p>
                             )}
                         </div>
                     )}
 
                     {/* Form sections and fields */}
-                    <div className="form-content">
+                    <div className="mb-6">
                         {sections.map((section, index) => (
                             <FormSection
                                 key={index}
@@ -291,17 +291,17 @@ export const FormRenderer = React.memo(
 
                     {/* Submit error display */}
                     {submitError && (
-                        <div className="form-submit-error" role="alert">
+                        <div className="mb-4 p-3 bg-error-subtle text-error-text border border-error rounded-md text-sm" role="alert">
                             <strong>Submission Error:</strong> {submitError}
                         </div>
                     )}
 
                     {/* Form actions */}
-                    <div className="form-actions flex items-center gap-3">
+                    <div className="border-t border-border pt-4 mt-6 flex items-center gap-3">
                         {onSubmit && (
                             <button
                                 type="submit"
-                                className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
+                                className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
                                 disabled={disabled || isSubmitting}
                             >
                                 {isSubmitting ? 'Submitting...' : schema.submitLabel || 'Submit'}
@@ -311,7 +311,7 @@ export const FormRenderer = React.memo(
                         {schema.cancelLabel && (
                             <button
                                 type="button"
-                                className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
+                                className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex-center-both"
                                 disabled={isSubmitting}
                                 onClick={() => {
                                     // Reset to initial data

@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
-import Spinner from '../../components/Spinner.jsx';
+import { Spinner } from '../../components/ui';
 import { useToast } from '../../contexts/ToastContext.jsx';
 
 /**

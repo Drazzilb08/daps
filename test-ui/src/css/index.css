@@ -16,8 +16,6 @@
 /* Component system */
 /* ui/index.css removed - all UI components converted to utility classes */
 @import url('./components/layout/index.css');
-@import url('./components/search/index.css');
-@import url('./components/fields/index.css');
 
 /* Page-specific styles */
 /* pages/dev/index.css removed - dev pages use utility classes */

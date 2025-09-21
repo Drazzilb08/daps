@@ -41,53 +41,31 @@
     --sidebar-bg: #191b1f;            /* Sidebar background - darker for visual separation */
     --sidebar-hover: #262a30;         /* Sidebar item hover - subtle interaction feedback */
     --sidebar-border: #292c30;        /* Sidebar border - gentle separation */
+    --sidebar-text-secondary: #737378; /* Subdued sidebar text */
     --header-bg: #191b1f;             /* Header background - matches sidebar for unity */
 
     /* Overlay & Modal Colors */
-    --overlay: rgb(24 25 31 / 64%);   /* Standard overlay - modals, dropdowns */
-    --overlay-strong: rgb(0 0 0 / 80%); /* Strong overlay - important modals, alerts */
+    --overlay: rgb(24 25 31 / 64%);                /* Standard overlay - modals, dropdowns */
+    --overlay-strong: rgb(0 0 0 / 80%);            /* Strong overlay - important modals, alerts */
 
-    /* Color System Extensions - Direct Values Only */
-
-    /* Primary color text and opacity variants */
+    /* Text-on-Color Utilities */
     --primary-text: #fff;                           /* White text on orange background */
-    --primary-opacity-10: rgb(255 115 0 / 10%);     /* Primary with 10% opacity */
-    --primary-opacity-20: rgb(255 115 0 / 20%);     /* Primary with 20% opacity */
-    --primary-surface: rgb(255 115 0 / 10%);        /* Primary surface background for selection states */
-
-    /* State color text variants */
     --accent-text: #fff;                            /* White text on blue background */
     --success-text: #fff;                           /* White text on green background */
-    --success-opacity-20: rgb(50 215 75 / 20%);     /* Success with 20% opacity */
     --warning-text: #fff;                           /* White text on yellow background */
-    --warning-opacity-20: rgb(255 159 10 / 20%);    /* Warning with 20% opacity */
     --error-text: #fff;                             /* White text on red background */
-    --error-opacity-20: rgb(255 55 95 / 20%);       /* Error with 20% opacity */
-    --danger-surface: rgb(255 55 95 / 10%);         /* Danger background surface */
 
-    /* Link colors */
+    /* Link state colors */
     --link-hover: #5a96ff;                          /* Lighter blue for hover state */
     --link-visited: #5a96ff;                        /* Consistent visited link color */
 
     /* Form Control Colors */
-    --input-bg: #21242a;                                  /* Primary input background */
-    --input-bg-hover: #252830;                      /* Input hover background */
-    --input-bg-disabled: #1a1d22;                   /* Disabled input background */
-    --input-bg-readonly: #23262c;                   /* Readonly input background */
-    --input-border-disabled: #202328;               /* Subtle disabled border */
-
-    /* Form Element Decorative Properties */
-    --input-addon-border: none;                           /* No border for clean look */
-    --input-addon-shadow: 0 1px 3px rgb(var(--shadow-color), var(--shadow-opacity-medium));
-    --checkbox-indicator-bg: #fff;   /* White checkbox indicator */
-    --checkbox-border: none;                              /* No border for modern look */
-    --checkbox-shadow: 0 1px 3px rgb(var(--shadow-color), var(--shadow-opacity-medium));
-    --field-base-border: none;                            /* Clean field base styling */
-    --field-base-shadow: 0 1px 3px rgb(var(--shadow-color), var(--shadow-opacity-medium));
-    --shadow-color: 0, 0, 0;                              /* Shadow base color (RGB values) */
-    --shadow-opacity-light: 0.3;                          /* Light shadow opacity */
-    --shadow-opacity-medium: 0.4;                         /* Medium shadow opacity */
-    --shadow-opacity-heavy: 0.5;                          /* Heavy shadow opacity */
+    --input-bg: #21242a;                           /* Primary input background */
+    --input-bg-hover: #252830;                     /* Input hover background */
+    --input-bg-disabled: #1a1d22;                  /* Disabled input background */
+    --input-bg-readonly: #23262c;                  /* Readonly input background */
+    --input-border-disabled: #202328;              /* Subtle disabled border */
+    --checkbox-indicator-bg: #fff;                 /* White checkbox indicator */
 }
 
 /* High Contrast Mode Support */

@@ -75,14 +75,14 @@
   .ring-4 { box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1); }
 
   /* Themed ring colors */
-  .ring-primary { box-shadow: 0 0 0 2px var(--color-primary-opacity-20, rgba(255, 115, 0, 0.2)); }
-  .ring-error { box-shadow: 0 0 0 2px var(--color-error-opacity-20, rgba(220, 38, 38, 0.2)); }
-  .ring-success { box-shadow: 0 0 0 2px var(--color-success-opacity-20, rgba(34, 197, 94, 0.2)); }
+  .ring-primary { box-shadow: 0 0 0 2px var(--primary-opacity-20); }
+  .ring-error { box-shadow: 0 0 0 2px var(--error-opacity-20); }
+  .ring-success { box-shadow: 0 0 0 2px var(--success-opacity-20); }
 
   /* Ring opacity variants for composition */
-  .ring-primary\/20 { box-shadow: 0 0 0 2px var(--color-primary-opacity-20, rgba(255, 115, 0, 0.2)); }
-  .ring-error\/20 { box-shadow: 0 0 0 2px var(--color-error-opacity-20, rgba(220, 38, 38, 0.2)); }
-  .ring-success\/20 { box-shadow: 0 0 0 2px var(--color-success-opacity-20, rgba(34, 197, 94, 0.2)); }
+  .ring-primary\/20 { box-shadow: 0 0 0 2px var(--primary-opacity-20); }
+  .ring-error\/20 { box-shadow: 0 0 0 2px var(--error-opacity-20); }
+  .ring-success\/20 { box-shadow: 0 0 0 2px var(--success-opacity-20); }
   .contrast-50 { filter: contrast(0.5); }
   .contrast-75 { filter: contrast(0.75); }
   .contrast-100 { filter: contrast(1); }

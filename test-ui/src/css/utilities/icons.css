@@ -47,11 +47,11 @@
      SEMANTIC ICON COLORS
      =========================================== */
 
-  .icon-success { color: var(--color-success); }
-  .icon-warning { color: var(--color-warning); }
-  .icon-error { color: var(--color-error); }
-  .icon-info { color: var(--color-accent); }
-  .icon-muted { color: var(--color-text-muted); }
+  .icon-success { color: var(--success); }
+  .icon-warning { color: var(--warning); }
+  .icon-error { color: var(--error); }
+  .icon-info { color: var(--accent); }
+  .icon-muted { color: var(--text-tertiary); }
 
   /* ===========================================
      ACCESSIBILITY ENHANCEMENTS

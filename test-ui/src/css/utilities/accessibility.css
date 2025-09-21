@@ -58,9 +58,9 @@
     overflow: visible;
     clip: auto;
     white-space: normal;
-    background: var(--color-focus-bg, var(--surface));
-    color: var(--color-focus-text, var(--text-color));
-    border: 2px solid var(--color-focus);
+    background: var(--surface);
+    color: var(--text-primary);
+    border: 2px solid var(--focus);
     border-radius: 0.25rem;
     z-index: 1070;
   }
@@ -75,7 +75,7 @@
   }
 
   .focus-ring:focus-visible {
-    outline: 2px solid var(--color-focus);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
     border-radius: 0.25rem;
   }
@@ -86,11 +86,11 @@
   }
 
   .focus-ring-enhanced:focus-visible {
-    outline: 2px solid var(--color-focus);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
     box-shadow:
-      0 0 0 2px var(--color-focus),
-      0 0 0 4px var(--color-bg);
+      0 0 0 2px var(--focus),
+      0 0 0 4px var(--bg);
     border-radius: 0.25rem;
   }
 
@@ -142,8 +142,8 @@
     left: 1rem;
     z-index: 1070;
     padding: 0.5rem 0.75rem;
-    background: var(--color-primary);
-    color: var(--color-primary-text, white);
+    background: var(--primary);
+    color: var(--primary-text);
     text-decoration: none;
     border-radius: 0.25rem;
     font-weight: 500;
@@ -157,7 +157,7 @@
   .skip-link:focus {
     top: 1rem;
     transform: translateY(0);
-    outline: 2px solid var(--color-focus);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
 
@@ -235,7 +235,7 @@
     content: '';
     position: absolute;
     inset: -4px;
-    border: 2px solid var(--color-focus);
+    border: 2px solid var(--focus);
     border-radius: 0.5rem;
     pointer-events: none;
   }
@@ -256,8 +256,8 @@
     top: -8px;
     right: -8px;
     padding: 2px 4px;
-    background: var(--color-primary);
-    color: var(--color-primary-text, white);
+    background: var(--primary);
+    color: var(--primary-text);
     font-size: 0.75rem;
     line-height: 1;
     border-radius: 0.25rem;
@@ -303,10 +303,10 @@
     .focus-ring:focus-visible,
     .focus-ring-enhanced:focus-visible {
       outline-width: 3px;
-      outline-color: var(--color-focus);
+      outline-color: var(--focus);
       box-shadow:
-        0 0 0 3px var(--color-focus),
-        0 0 0 6px var(--color-bg);
+        0 0 0 3px var(--focus),
+        0 0 0 6px var(--bg);
     }
   }
 
@@ -406,25 +406,25 @@
 
   /* ARIA selected states */
   .aria-selected[aria-selected="true"] {
-    background-color: var(--color-primary);
-    color: var(--color-primary-text, white);
+    background-color: var(--primary);
+    color: var(--primary-text);
   }
 
   .aria-selected[aria-selected="false"] {
     background-color: transparent;
-    color: var(--text-color);
+    color: var(--text-primary);
   }
 
   /* ARIA pressed states for toggle buttons */
   .aria-pressed[aria-pressed="true"] {
-    background-color: var(--color-primary);
-    color: var(--color-primary-text, white);
+    background-color: var(--primary);
+    color: var(--primary-text);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 
   .aria-pressed[aria-pressed="false"] {
     background-color: var(--surface);
-    color: var(--text-color);
+    color: var(--text-primary);
   }
 
   /* ARIA disabled states */
@@ -436,14 +436,14 @@
 
   /* ARIA invalid states */
   .aria-invalid[aria-invalid="true"] {
-    border-color: var(--color-error);
-    background-color: var(--color-error-bg, var(--surface));
+    border-color: var(--error);
+    background-color: var(--danger-surface);
   }
 
   /* ARIA required field indicators */
   .aria-required[aria-required="true"]::after {
     content: ' *';
-    color: var(--color-error);
+    color: var(--error);
     font-weight: var(--font-weight-bold);
   }
 
@@ -463,8 +463,8 @@
     top: 0;
     left: 0;
     padding: 2px 4px;
-    background: var(--color-primary);
-    color: var(--color-primary-text, white);
+    background: var(--primary);
+    color: var(--primary-text);
     font-size: 0.75rem;
     opacity: 0;
     pointer-events: none;
@@ -506,27 +506,27 @@
   }
 
   .status-message.success {
-    background-color: var(--color-success-bg, var(--surface));
-    border-color: var(--color-success);
-    color: var(--color-success-text, var(--text-color));
+    background-color: var(--success-opacity-20);
+    border-color: var(--success);
+    color: var(--success-text);
   }
 
   .status-message.error {
-    background-color: var(--color-error-bg, var(--surface));
-    border-color: var(--color-error);
-    color: var(--color-error-text, var(--text-color));
+    background-color: var(--danger-surface);
+    border-color: var(--error);
+    color: var(--error-text);
   }
 
   .status-message.warning {
-    background-color: var(--color-warning-bg, var(--surface));
-    border-color: var(--color-warning);
-    color: var(--color-warning-text, var(--text-color));
+    background-color: var(--warning-opacity-20);
+    border-color: var(--warning);
+    color: var(--warning-text);
   }
 
   .status-message.info {
-    background-color: var(--color-info-bg, var(--surface));
-    border-color: var(--color-info);
-    color: var(--color-info-text, var(--text-color));
+    background-color: var(--surface-alt);
+    border-color: var(--accent);
+    color: var(--accent-text);
   }
 
   /* ===========================================
@@ -536,7 +536,7 @@
   /* Required field indicators */
   .required-field::after {
     content: ' *';
-    color: var(--color-error);
+    color: var(--error);
     font-weight: 700;
     margin-left: 2px;
   }
@@ -549,18 +549,18 @@
   .field-group legend {
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: var(--text-color);
+    color: var(--text-primary);
   }
 
   /* Error field styling */
   .field-error {
-    border-color: var(--color-error);
-    background-color: var(--color-error-bg, var(--surface));
+    border-color: var(--error);
+    background-color: var(--danger-surface);
   }
 
   .field-error:focus {
-    outline-color: var(--color-error);
-    box-shadow: 0 0 0 2px var(--color-error-opacity-20, rgba(220, 38, 38, 0.2));
+    outline-color: var(--error);
+    box-shadow: 0 0 0 2px var(--error-opacity-20);
   }
 
   /* Help text styling */
@@ -572,7 +572,7 @@
 
   .error-text {
     font-size: 0.875rem;
-    color: var(--color-error);
+    color: var(--error);
     margin-top: 0.25rem;
     font-weight: 500;
   }
@@ -643,7 +643,7 @@
     /* Enhanced active states for touch feedback */
     .touch-feedback:active {
       transform: scale(0.95);
-      background-color: var(--color-surface-active);
+      background-color: var(--surface-alt);
     }
   }
 
@@ -665,10 +665,10 @@
     min-width: 44px;
     min-height: 44px;
     padding: 0.5rem 0.75rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--border);
     border-radius: 0.25rem;
     background: var(--surface);
-    color: var(--text-color);
+    color: var(--text-primary);
     font-family: inherit;
     font-size: 1rem;
     font-weight: 500;
@@ -680,7 +680,7 @@
   }
 
   .accessible-button:focus-visible {
-    outline: 2px solid var(--color-focus);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
 
@@ -692,7 +692,7 @@
 
   /* Accessible link pattern */
   .accessible-link {
-    color: var(--color-primary);
+    color: var(--primary);
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
@@ -701,24 +701,24 @@
   }
 
   .accessible-link:focus-visible {
-    outline: 2px solid var(--color-focus);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
     text-decoration-thickness: 2px;
   }
 
   .accessible-link:hover {
     text-decoration-thickness: 2px;
-    color: var(--color-primary-hover, var(--color-primary));
+    color: var(--focus);
   }
 
   /* Accessible form field pattern */
   .accessible-field {
     min-height: 44px;
     padding: 0.5rem 0.75rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--border);
     border-radius: 0.25rem;
     background: var(--surface);
-    color: var(--text-color);
+    color: var(--text-primary);
     font-family: inherit;
     font-size: 1rem;
     line-height: 1.5;
@@ -726,19 +726,19 @@
   }
 
   .accessible-field:focus {
-    outline: 2px solid var(--color-focus);
+    outline: 2px solid var(--focus);
     outline-offset: 0;
-    border-color: var(--color-focus);
+    border-color: var(--focus);
   }
 
   .accessible-field[aria-invalid="true"] {
-    border-color: var(--color-error);
-    background-color: var(--color-error-bg, var(--surface));
+    border-color: var(--error);
+    background-color: var(--danger-surface);
   }
 
   .accessible-field:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background-color: var(--color-surface-disabled, var(--surface-dim));
+    background-color: var(--input-bg-disabled);
   }
 }

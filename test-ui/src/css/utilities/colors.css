@@ -14,7 +14,7 @@
   /* Primary surface backgrounds */
   .bg-primary { background: var(--primary); }
   .bg-primary-hover { background: var(--focus); }
-  .bg-primary-surface { background: var(--primary-surface); }
+  .bg-primary-surface { background: color-mix(in srgb, var(--primary) 10%, transparent); }
   .bg-bg { background: var(--bg); }
   .bg-surface { background: var(--surface); }
   .bg-surface-elevated { background: var(--surface-elevated); }
@@ -47,7 +47,8 @@
 
   /* Focus and overlay backgrounds */
   .bg-focus { background: var(--focus); }
-  .bg-overlay { background: var(--overlay-bg, rgba(0, 0, 0, 0.5)); }
+  .bg-overlay { background: var(--overlay); }
+  .bg-overlay-strong { background: var(--overlay-strong); }
   .bg-backdrop { background: var(--backdrop-bg, rgba(0, 0, 0, 0.3)); }
 
   /* Form input backgrounds */
@@ -91,8 +92,9 @@
 
   /* Focus and interactive text colors */
   .text-focus { color: var(--focus); }
-  .text-link { color: var(--link-color, var(--primary)); }
-  .text-link-hover { color: var(--link-hover-color, var(--primary)); }
+  .text-link { color: var(--accent); }
+  .text-link-hover { color: var(--link-hover); }
+  .text-link-visited { color: var(--link-visited); }
 
   /* Muted text variants for hierarchy */
   .text-muted {
@@ -430,18 +432,25 @@
      COLOR OPACITY UTILITIES
      =========================================== */
 
-  /* Background with opacity */
+  /* Background with opacity - DERIVED FROM THEME COLORS */
+  .bg-primary\/10 { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+  .bg-primary\/20 { background: color-mix(in srgb, var(--primary) 20%, transparent); }
+  .bg-primary\/50 { background: color-mix(in srgb, var(--primary) 50%, transparent); }
+
+  .bg-success\/10 { background: color-mix(in srgb, var(--success) 10%, transparent); }
+  .bg-success\/20 { background: color-mix(in srgb, var(--success) 20%, transparent); }
+
+  .bg-warning\/10 { background: color-mix(in srgb, var(--warning) 10%, transparent); }
+  .bg-warning\/20 { background: color-mix(in srgb, var(--warning) 20%, transparent); }
+
+  .bg-error\/10 { background: color-mix(in srgb, var(--error) 10%, transparent); }
+  .bg-error\/20 { background: color-mix(in srgb, var(--error) 20%, transparent); }
+
+  /* Legacy opacity utilities (removed from themes) */
   .bg-primary-10 { background: color-mix(in srgb, var(--primary) 10%, transparent); }
   .bg-primary-20 { background: color-mix(in srgb, var(--primary) 20%, transparent); }
-  .bg-primary-50 { background: color-mix(in srgb, var(--primary) 50%, transparent); }
-
-  .bg-success-10 { background: color-mix(in srgb, var(--success) 10%, transparent); }
   .bg-success-20 { background: color-mix(in srgb, var(--success) 20%, transparent); }
-
-  .bg-warning-10 { background: color-mix(in srgb, var(--warning) 10%, transparent); }
   .bg-warning-20 { background: color-mix(in srgb, var(--warning) 20%, transparent); }
-
-  .bg-error-10 { background: color-mix(in srgb, var(--error) 10%, transparent); }
   .bg-error-20 { background: color-mix(in srgb, var(--error) 20%, transparent); }
 
   /* Text with opacity */

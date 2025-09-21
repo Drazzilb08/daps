@@ -178,6 +178,22 @@
     .md\:justify-center { justify-content: center; }
     .md\:justify-end { justify-content: flex-end; }
     .md\:justify-between { justify-content: space-between; }
+
+    /* Additional spacing utilities */
+    .md\:mt-0 { margin-top: 0; }
+    .md\:mb-8 { margin-bottom: 2rem; }
+
+    /* Additional sizing utilities */
+    .md\:w-auto { width: auto; }
+    .md\:max-w-sm { max-width: 24rem; }
+    .md\:min-w-0 { min-width: 0; }
+
+    /* Flex utilities */
+    .md\:flex-\[1_1_0\%\] { flex: 1 1 0%; }
+    .md\:min-w-\[100px\] { min-width: 100px; }
+    .md\:max-w-\[150px\] { max-width: 150px; }
+
+    /* Small screen flex utilities */
   }
 
   @media (width >= 1024px) {

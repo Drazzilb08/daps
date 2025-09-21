@@ -44,6 +44,12 @@
   .transition { transition: all 250ms ease-in-out; }
   .transition-slow { transition: all 350ms ease-in-out; }
 
+  /* Duration utilities */
+  .duration-200 { transition-duration: 200ms; }
+
+  /* Easing utilities */
+  .ease-in-out { transition-timing-function: ease-in-out; }
+
   /* Form input transitions */
   .transition-input { transition: all 150ms ease-in-out; }
   .transition-textarea {

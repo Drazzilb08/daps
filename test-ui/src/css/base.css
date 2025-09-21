@@ -40,10 +40,10 @@
     }
 
     body {
-        font-family: var(--font-family-sans);
-        font-size: var(--font-size-base);
-        font-weight: var(--font-weight-normal);
-        line-height: var(--line-height-normal);
+        font-family: 'Roboto', 'Open Sans', 'Helvetica Neue', sans-serif;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
         color: var(--text-primary);
         background-color: var(--bg);
         -webkit-font-smoothing: antialiased;
@@ -133,48 +133,48 @@
     h4,
     h5,
     h6 {
-        font-weight: var(--font-weight-semibold);
-        line-height: var(--line-height-tight);
+        font-weight: 600;
+        line-height: 1.25;
         color: var(--text-primary);
-        margin-bottom: var(--space-4);
+        margin-bottom: 1rem;
     }
 
     h1 {
-        font-size: var(--font-size-4xl);
-        letter-spacing: var(--letter-spacing-tight);
+        font-size: 3.75rem;
+        letter-spacing: -0.025em;
     }
 
     h2 {
-        font-size: var(--font-size-3xl);
-        letter-spacing: var(--letter-spacing-tight);
+        font-size: 3rem;
+        letter-spacing: -0.025em;
     }
 
     h3 {
-        font-size: var(--font-size-2xl);
+        font-size: 2.25rem;
     }
 
     h4 {
-        font-size: var(--font-size-xl);
+        font-size: 1.875rem;
     }
 
     h5 {
-        font-size: var(--font-size-lg);
+        font-size: 1.5rem;
     }
 
     h6 {
-        font-size: var(--font-size-base);
-        font-weight: var(--font-weight-medium);
+        font-size: 1rem;
+        font-weight: 500;
     }
 
     p {
-        margin-bottom: var(--paragraph-spacing);
+        margin-bottom: 1rem;
         color: var(--text-secondary);
-        line-height: var(--line-height-normal);
+        line-height: 1.5;
     }
 
     strong,
     b {
-        font-weight: var(--font-weight-semibold);
+        font-weight: 600;
         color: var(--text-primary);
     }
 
@@ -184,29 +184,29 @@
     }
 
     small {
-        font-size: var(--font-size-sm);
+        font-size: 0.875rem;
         color: var(--text-tertiary);
     }
 
     code {
-        font-family: var(--font-family-mono);
+        font-family: 'SF Mono', monaco, 'Cascadia Code', monospace;
         font-size: 0.875em;
         color: var(--text-primary);
         background-color: var(--surface-elevated);
-        padding: var(--space-1) var(--space-2);
-        border-radius: var(--radius-1);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
     }
 
     pre {
-        font-family: var(--font-family-mono);
-        font-size: var(--font-size-sm);
-        line-height: var(--line-height-normal);
+        font-family: 'SF Mono', monaco, 'Cascadia Code', monospace;
+        font-size: 0.875rem;
+        line-height: 1.5;
         color: var(--text-primary);
         background-color: var(--surface-elevated);
-        padding: var(--space-4);
-        border-radius: var(--radius-2);
+        padding: 1rem;
+        border-radius: 0.5rem;
         overflow-x: auto;
-        margin-bottom: var(--space-4);
+        margin-bottom: 1rem;
     }
 
     pre code {
@@ -216,23 +216,22 @@
 
     a {
         color: var(--accent);
-        transition: color var(--transition-fast);
+        transition: color 150ms ease-in-out;
         text-decoration: underline;
-        text-underline-offset: var(--border-width-medium);
+        text-underline-offset: 2px;
     }
 
     a:hover {
-        color: var(--link-hover);
+        color: var(--accent-hover);
     }
 
     a:visited {
-        color: var(--link-visited);
+        color: var(--accent-visited);
     }
 
     ul,
     ol {
-        margin-bottom: var(--space-4);
-        /* padding-left: var(--space-6); */
+        margin-bottom: 1rem;
     }
 
     ul {
@@ -244,7 +243,7 @@
     }
 
     li {
-        margin-bottom: var(--list-spacing);
+        margin-bottom: 0.5rem;
         color: var(--text-secondary);
     }
 
@@ -252,13 +251,13 @@
         border: none;
         height: var(--border-width-thin);
         background-color: var(--border);
-        margin: var(--space-8) 0;
+        margin: 2rem 0;
     }
 
     blockquote {
-        border-left: var(--space-1) solid var(--border);
-        padding-left: var(--space-4);
-        margin: var(--space-6) 0;
+        border-left: 0.25rem solid var(--border);
+        padding-left: 1rem;
+        margin: 1.5rem 0;
         color: var(--text-secondary);
         font-style: italic;
     }
@@ -272,7 +271,7 @@
     :focus-visible {
         outline: 2px solid var(--focus);
         outline-offset: var(--focus-ring-offset);
-        border-radius: var(--radius-1);
+        border-radius: 0.25rem;
     }
 
     button:focus-visible,
@@ -294,17 +293,17 @@
 
     .skip-link {
         position: absolute;
-        top: calc(-1 * var(--space-10));
-        left: var(--space-1);
+        top: calc(-1 * 2.5rem);
+        left: 0.25rem;
         background: var(--surface);
         color: var(--text-primary);
-        padding: var(--space-2) var(--space-3);
-        border-radius: var(--radius-1);
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.25rem;
         text-decoration: none;
-        font-weight: var(--font-weight-medium);
-        z-index: var(--z-modal);
+        font-weight: 500;
+        z-index: 1050;
         transform: translateY(-100%);
-        transition: transform var(--transition-fast);
+        transition: transform 150ms ease-in-out;
     }
 
     .skip-link:focus {
@@ -339,8 +338,8 @@
 
 @layer base {
     ::-webkit-scrollbar {
-        width: var(--space-2);
-        height: var(--space-2);
+        width: 0.5rem;
+        height: 0.5rem;
     }
 
     ::-webkit-scrollbar-track {
@@ -349,7 +348,7 @@
 
     ::-webkit-scrollbar-thumb {
         background: var(--border);
-        border-radius: var(--radius-full);
+        border-radius: 9999px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
@@ -358,23 +357,23 @@
 }
 
 @layer base {
-    @media (width <= calc(var(--breakpoint-tablet) - 1px)) {
+    @media (width <= calc(768px - 1px)) {
         h1 {
-            font-size: var(--font-size-3xl);
+            font-size: 1.875rem;
         }
 
         h2 {
-            font-size: var(--font-size-2xl);
+            font-size: 1.5rem;
         }
 
         h3 {
-            font-size: var(--font-size-xl);
+            font-size: 1.25rem;
         }
     }
 
     @media (width >= 1200px) {
         body {
-            font-size: var(--font-size-lg);
+            font-size: 1.125rem;
         }
     }
 }

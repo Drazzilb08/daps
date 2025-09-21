@@ -46,12 +46,15 @@
      =========================================== */
 
   .hover\:bg-surface-hover:hover { background: var(--surface-alt); }
+  .hover\:text-primary:hover { color: var(--text-primary); }
 
   /* ===========================================
      FOCUS STATE UTILITIES
      =========================================== */
 
   .outline-none { outline: none; }
+  .focus\:border-primary:focus { border-color: var(--primary); }
+  .focus-within\:border-primary:focus-within { border-color: var(--primary); }
 
   .state-focus-ring:focus {
     outline: none;

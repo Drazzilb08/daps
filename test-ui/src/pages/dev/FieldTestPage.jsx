@@ -56,7 +56,7 @@ const FieldStatusOverview = React.memo(() => {
                         {workingTypes.map(type => (
                             <span
                                 key={type}
-                                className="badge badge-success rounded-sm"
+                                className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-success border-success"
                             >
                                 {type}
                             </span>
@@ -72,13 +72,13 @@ const FieldStatusOverview = React.memo(() => {
                         {placeholderTypes.slice(0, 12).map(type => (
                             <span
                                 key={type}
-                                className="badge badge-error rounded-sm"
+                                className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-error border-error"
                             >
                                 {type}
                             </span>
                         ))}
                         {placeholderCount > 12 && (
-                            <span className="badge badge-secondary rounded-sm italic">
+                            <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface-elevated text-secondary border-border italic">
                                 +{placeholderCount - 12} more
                             </span>
                         )}
@@ -308,13 +308,13 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                 <h3 className="text-lg font-medium text-primary font-mono m-0">{fieldType}</h3>
                 <div className="flex gap-2">
                     {!isWorking && (
-                        <span className="badge badge-error rounded-sm">Placeholder</span>
+                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-error border-error">Placeholder</span>
                     )}
                     {isWorking && isApproved && (
-                        <span className="badge badge-success rounded-sm">Approved</span>
+                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-success border-success">Approved</span>
                     )}
                     {isWorking && !isApproved && (
-                        <span className="badge badge-warning rounded-sm">Needs Testing</span>
+                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-warning border-warning">Needs Testing</span>
                     )}
                 </div>
             </div>

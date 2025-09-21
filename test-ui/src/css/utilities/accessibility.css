@@ -437,7 +437,7 @@
   /* ARIA invalid states */
   .aria-invalid[aria-invalid="true"] {
     border-color: var(--error);
-    background-color: var(--danger-surface);
+    background-color: color-mix(in srgb, var(--error) 10%, transparent);
   }
 
   /* ARIA required field indicators */
@@ -506,19 +506,19 @@
   }
 
   .status-message.success {
-    background-color: var(--success-opacity-20);
+    background-color: color-mix(in srgb, var(--success) 20%, transparent);
     border-color: var(--success);
     color: var(--success-text);
   }
 
   .status-message.error {
-    background-color: var(--danger-surface);
+    background-color: color-mix(in srgb, var(--error) 10%, transparent);
     border-color: var(--error);
     color: var(--error-text);
   }
 
   .status-message.warning {
-    background-color: var(--warning-opacity-20);
+    background-color: color-mix(in srgb, var(--warning) 20%, transparent);
     border-color: var(--warning);
     color: var(--warning-text);
   }
@@ -555,12 +555,12 @@
   /* Error field styling */
   .field-error {
     border-color: var(--error);
-    background-color: var(--danger-surface);
+    background-color: color-mix(in srgb, var(--error) 10%, transparent);
   }
 
   .field-error:focus {
     outline-color: var(--error);
-    box-shadow: 0 0 0 2px var(--error-opacity-20);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
   }
 
   /* Help text styling */
@@ -733,7 +733,7 @@
 
   .accessible-field[aria-invalid="true"] {
     border-color: var(--error);
-    background-color: var(--danger-surface);
+    background-color: color-mix(in srgb, var(--error) 10%, transparent);
   }
 
   .accessible-field:disabled {

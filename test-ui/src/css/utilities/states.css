@@ -15,14 +15,14 @@
   }
 
   .state-readonly {
-    background: var(--color-surface-dim);
+    background: var(--surface-alt);
     cursor: default;
   }
 
   .disabled-input {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
+    background: var(--input-bg-disabled);
+    color: var(--text-disabled);
+    border-color: var(--input-border-disabled);
   }
 
   .state-hover-dim { transition: opacity 150ms ease-in-out; }
@@ -32,8 +32,8 @@
     transition: color 150ms ease-in-out, background 150ms ease-in-out;
   }
   .state-hover-toolbar:hover:not(:disabled) {
-    color: var(--color-primary);
-    background: var(--color-surface-hover);
+    color: var(--primary);
+    background: var(--surface-alt);
   }
 
   .state-active:active:not(:disabled) {
@@ -45,7 +45,7 @@
      HOVER STATE UTILITIES
      =========================================== */
 
-  .hover\:bg-surface-hover:hover { background: var(--color-surface-hover); }
+  .hover\:bg-surface-hover:hover { background: var(--surface-alt); }
 
   /* ===========================================
      FOCUS STATE UTILITIES
@@ -55,40 +55,40 @@
 
   .state-focus-ring:focus {
     outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-opacity-20);
   }
   .state-focus-ring:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-opacity-20);
   }
 
   .state-focus-ring-error:focus {
     outline: none;
-    border-color: var(--color-error);
-    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
+    border-color: var(--error);
+    box-shadow: 0 0 0 2px var(--error-opacity-20);
   }
 
   .state-focus-ring-success:focus {
     outline: none;
-    border-color: var(--color-success);
-    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
+    border-color: var(--success);
+    box-shadow: 0 0 0 2px var(--success-opacity-20);
   }
 
   /* ===========================================
      VALIDATION STATE UTILITIES
      =========================================== */
 
-  .state-invalid { border-color: var(--color-error); }
+  .state-invalid { border-color: var(--error); }
   .state-invalid:focus,
   .state-invalid:focus-within {
-    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
+    box-shadow: 0 0 0 2px var(--error-opacity-20);
   }
 
-  .state-valid { border-color: var(--color-success); }
+  .state-valid { border-color: var(--success); }
   .state-valid:focus,
   .state-valid:focus-within {
-    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
+    box-shadow: 0 0 0 2px var(--success-opacity-20);
   }
 
   /* ===========================================
@@ -114,12 +114,12 @@
      =========================================== */
 
   .state-selected {
-    background: var(--color-primary);
-    color: var(--color-primary-text);
+    background: var(--primary);
+    color: var(--primary-text);
   }
 
   .state-selected:hover {
-    background: var(--color-primary-hover, var(--color-primary));
+    background: var(--focus);
   }
 
   /* ===========================================
@@ -127,20 +127,20 @@
      =========================================== */
 
   .state-error {
-    background: var(--color-error-surface);
-    border-color: var(--color-error);
-    color: var(--color-error-text);
+    background: var(--danger-surface);
+    border-color: var(--error);
+    color: var(--error-text);
   }
 
   .state-success {
-    background: var(--color-success-surface);
-    border-color: var(--color-success);
-    color: var(--color-success-text);
+    background: var(--success-opacity-20);
+    border-color: var(--success);
+    color: var(--success-text);
   }
 
   .state-warning {
-    background: var(--color-warning-surface);
-    border-color: var(--color-warning);
-    color: var(--color-warning-text);
+    background: var(--warning-opacity-20);
+    border-color: var(--warning);
+    color: var(--warning-text);
   }
 }

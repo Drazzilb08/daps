@@ -8,18 +8,18 @@
      BORDER WIDTH UTILITIES
      =========================================== */
 
-  .border { border: 1px solid var(--color-border); }
-  .border-2 { border: 2px solid var(--color-border); }
+  .border { border: 1px solid var(--border); }
+  .border-2 { border: 2px solid var(--border); }
   .border-none { border: none; }
 
   /* Individual border sides */
-  .border-t { border-top: 1px solid var(--color-border); }
-  .border-r { border-right: 1px solid var(--color-border); }
-  .border-b { border-bottom: 1px solid var(--color-border); }
-  .border-l { border-left: 1px solid var(--color-border); }
+  .border-t { border-top: 1px solid var(--border); }
+  .border-r { border-right: 1px solid var(--border); }
+  .border-b { border-bottom: 1px solid var(--border); }
+  .border-l { border-left: 1px solid var(--border); }
 
   /* Thick border for toast components */
-  .border-l-4 { border-left: 4px solid var(--color-border); }
+  .border-l-4 { border-left: 4px solid var(--border); }
 
   /* Border styles */
   .border-solid { border-style: solid; }
@@ -30,17 +30,17 @@
      SEMANTIC BORDER COLORS
      =========================================== */
 
-  .border-primary { border-color: var(--color-primary); }
-  .border-success { border-color: var(--color-success); }
-  .border-warning { border-color: var(--color-warning); }
-  .border-error { border-color: var(--color-error); }
+  .border-primary { border-color: var(--primary); }
+  .border-success { border-color: var(--success); }
+  .border-warning { border-color: var(--warning); }
+  .border-error { border-color: var(--error); }
 
   /* Form input border utilities */
-  .border-input { border: 1px solid var(--color-border); }
-  .border-input-focus { border-color: var(--color-primary); }
-  .border-input-error { border-color: var(--color-error); }
-  .border-input-success { border-color: var(--color-success); }
-  .border-input-disabled { border-color: var(--color-border-disabled, var(--color-border)); }
+  .border-input { border: 1px solid var(--border); }
+  .border-input-focus { border-color: var(--primary); }
+  .border-input-error { border-color: var(--error); }
+  .border-input-success { border-color: var(--success); }
+  .border-input-disabled { border-color: var(--input-border-disabled); }
 
   /* High contrast border enhancement for dropdowns */
   @media (prefers-contrast: high) {
@@ -50,11 +50,11 @@
   }
 
   /* Left border color utilities for toast components */
-  .border-l-primary { border-left-color: var(--color-primary); }
-  .border-l-success { border-left-color: var(--color-success); }
-  .border-l-warning { border-left-color: var(--color-warning); }
-  .border-l-error { border-left-color: var(--color-error); }
-  .border-l-info { border-left-color: var(--color-accent); }
+  .border-l-primary { border-left-color: var(--primary); }
+  .border-l-success { border-left-color: var(--success); }
+  .border-l-warning { border-left-color: var(--warning); }
+  .border-l-error { border-left-color: var(--error); }
+  .border-l-info { border-left-color: var(--accent); }
 
   /* ===========================================
      BORDER RADIUS UTILITIES
@@ -111,5 +111,5 @@
      HOVER UTILITIES
      =========================================== */
 
-  .hover\:border-primary:hover { border-color: var(--color-primary); }
+  .hover\:border-primary:hover { border-color: var(--primary); }
 }

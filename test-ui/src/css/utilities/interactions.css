@@ -12,47 +12,47 @@
      =========================================== */
 
   /* Background hover variants - Complete coverage for all interactive colors */
-  .hover\:bg-surface:hover { background: var(--color-surface); }
-  .hover\:bg-surface-elevated:hover { background: var(--color-surface-elevated); }
-  .hover\:bg-surface-hover:hover { background: var(--color-surface-hover); }
-  .hover\:bg-surface-active:hover { background: var(--color-surface-active); }
-  .hover\:bg-surface-variant:hover { background: var(--color-surface-variant); }
-  .hover\:bg-surface-alt:hover { background: var(--color-surface-alt); }
-  .hover\:bg-surface-secondary:hover { background: var(--color-surface-secondary); }
+  .hover\:bg-surface:hover { background: var(--surface); }
+  .hover\:bg-surface-elevated:hover { background: var(--surface-elevated); }
+  .hover\:bg-surface-hover:hover { background: var(--surface-alt); }
+  .hover\:bg-surface-active:hover { background: var(--surface-alt); }
+  .hover\:bg-surface-variant:hover { background: var(--surface-alt); }
+  .hover\:bg-surface-alt:hover { background: var(--surface-alt); }
+  .hover\:bg-surface-secondary:hover { background: var(--surface-alt); }
 
   /* Primary/accent hover variants */
-  .hover\:bg-primary:hover { background: var(--color-primary); }
-  .hover\:bg-primary-hover:hover { background: var(--color-primary-hover, var(--color-primary)); }
-  .hover\:bg-primary-subtle:hover { background: var(--color-primary-subtle, var(--color-surface)); }
-  .hover\:bg-primary-surface:hover { background: var(--color-primary-opacity-10); }
+  .hover\:bg-primary:hover { background: var(--primary); }
+  .hover\:bg-primary-hover:hover { background: var(--focus); }
+  .hover\:bg-primary-subtle:hover { background: var(--primary-surface); }
+  .hover\:bg-primary-surface:hover { background: var(--primary-opacity-10); }
 
   /* State color hover variants */
-  .hover\:bg-success:hover { background: var(--color-success); }
-  .hover\:bg-success-subtle:hover { background: var(--color-success-subtle, var(--color-surface)); }
-  .hover\:bg-success-surface:hover { background: var(--color-success-opacity-20); }
+  .hover\:bg-success:hover { background: var(--success); }
+  .hover\:bg-success-subtle:hover { background: var(--success-opacity-20); }
+  .hover\:bg-success-surface:hover { background: var(--success-opacity-20); }
 
-  .hover\:bg-warning:hover { background: var(--color-warning); }
-  .hover\:bg-warning-subtle:hover { background: var(--color-warning-subtle, var(--color-surface)); }
-  .hover\:bg-warning-surface:hover { background: var(--color-warning-opacity-20); }
+  .hover\:bg-warning:hover { background: var(--warning); }
+  .hover\:bg-warning-subtle:hover { background: var(--warning-opacity-20); }
+  .hover\:bg-warning-surface:hover { background: var(--warning-opacity-20); }
 
-  .hover\:bg-error:hover { background: var(--color-error); }
-  .hover\:bg-error-subtle:hover { background: var(--color-error-subtle, var(--color-surface)); }
-  .hover\:bg-danger-surface:hover { background: var(--color-danger-surface); }
+  .hover\:bg-error:hover { background: var(--error); }
+  .hover\:bg-error-subtle:hover { background: var(--danger-surface); }
+  .hover\:bg-danger-surface:hover { background: var(--danger-surface); }
 
   .hover\:bg-transparent:hover { background: transparent; }
 
   /* Border hover variants - Complete coverage */
-  .hover\:border-primary:hover { border-color: var(--color-primary); }
-  .hover\:border-success:hover { border-color: var(--color-success); }
-  .hover\:border-warning:hover { border-color: var(--color-warning); }
-  .hover\:border-error:hover { border-color: var(--color-error); }
+  .hover\:border-primary:hover { border-color: var(--primary); }
+  .hover\:border-success:hover { border-color: var(--success); }
+  .hover\:border-warning:hover { border-color: var(--warning); }
+  .hover\:border-error:hover { border-color: var(--error); }
   .hover\:border-transparent:hover { border-color: transparent; }
 
   /* Text hover variants */
-  .hover\:text-primary:hover { color: var(--color-primary); }
-  .hover\:text-success:hover { color: var(--color-success); }
-  .hover\:text-warning:hover { color: var(--color-warning); }
-  .hover\:text-error:hover { color: var(--color-error); }
+  .hover\:text-primary:hover { color: var(--primary); }
+  .hover\:text-success:hover { color: var(--success); }
+  .hover\:text-warning:hover { color: var(--warning); }
+  .hover\:text-error:hover { color: var(--error); }
   .hover\:text-inherit:hover { color: inherit; }
 
   /* Transform hover variants */
@@ -81,50 +81,50 @@
   /* Standard focus ring pattern */
   .focus\:ring-primary:focus {
     outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-opacity-20);
   }
 
   .focus\:ring-success:focus {
     outline: none;
-    border-color: var(--color-success);
-    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
+    border-color: var(--success);
+    box-shadow: 0 0 0 2px var(--success-opacity-20);
   }
 
   .focus\:ring-error:focus {
     outline: none;
-    border-color: var(--color-error);
-    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
+    border-color: var(--error);
+    box-shadow: 0 0 0 2px var(--error-opacity-20);
   }
 
   /* Focus-within patterns for form containers */
   .focus-within\:border-primary:focus-within {
-    border-color: var(--color-primary);
+    border-color: var(--primary);
   }
 
   .focus-within\:ring-primary:focus-within {
-    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--primary-opacity-20);
   }
 
   .focus-within\:ring-error:focus-within {
-    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
+    box-shadow: 0 0 0 2px var(--error-opacity-20);
   }
 
   /* Focus visible for keyboard navigation */
   .focus-visible\:ring-primary:focus-visible {
     outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-opacity-20);
   }
 
   /* Border focus variants */
-  .focus\:border-primary:focus { border-color: var(--color-primary); }
-  .focus\:border-success:focus { border-color: var(--color-success); }
-  .focus\:border-error:focus { border-color: var(--color-error); }
+  .focus\:border-primary:focus { border-color: var(--primary); }
+  .focus\:border-success:focus { border-color: var(--success); }
+  .focus\:border-error:focus { border-color: var(--error); }
 
   /* Background focus variants */
-  .focus\:bg-surface-hover:focus { background: var(--color-surface-hover); }
-  .focus\:bg-primary-surface:focus { background: var(--color-primary-opacity-10); }
+  .focus\:bg-surface-hover:focus { background: var(--surface-alt); }
+  .focus\:bg-primary-surface:focus { background: var(--primary-opacity-10); }
 
   /* ===========================================
      ACTIVE/PRESSED STATE UTILITIES
@@ -141,11 +141,11 @@
   }
 
   /* Active state backgrounds */
-  .active\:bg-surface-active:active { background: var(--color-surface-active); }
-  .active\:bg-primary:active { background: var(--color-primary); }
+  .active\:bg-surface-active:active { background: var(--surface-alt); }
+  .active\:bg-primary:active { background: var(--primary); }
 
   /* Active state borders */
-  .active\:border-primary:active { border-color: var(--color-primary); }
+  .active\:border-primary:active { border-color: var(--primary); }
 
   /* ===========================================
      DISABLED STATE UTILITIES - SYSTEMATIC COVERAGE
@@ -172,17 +172,17 @@
   .disabled\:pointer-events-none:disabled { pointer-events: none; }
 
   /* Disabled background patterns */
-  .disabled\:bg-surface-dim:disabled { background: var(--color-surface-dim); }
+  .disabled\:bg-surface-dim:disabled { background: var(--surface-alt); }
   .disabled\:bg-transparent:disabled { background: transparent; }
 
   /* Disabled text patterns */
-  .disabled\:text-disabled:disabled { color: var(--color-text-disabled); }
+  .disabled\:text-disabled:disabled { color: var(--text-disabled); }
 
   /* Disabled border patterns */
-  .disabled\:border-disabled:disabled { border-color: var(--color-text-disabled); }
+  .disabled\:border-disabled:disabled { border-color: var(--text-disabled); }
 
   /* Disabled hover overrides - prevent hover effects when disabled */
-  .disabled\:hover\:bg-surface-dim:disabled:hover { background: var(--color-surface-dim); }
+  .disabled\:hover\:bg-surface-dim:disabled:hover { background: var(--surface-alt); }
   .disabled\:hover\:border-border:disabled:hover { border-color: var(--border-color); }
 
   /* ===========================================
@@ -190,25 +190,25 @@
      =========================================== */
 
   /* Invalid state patterns */
-  .invalid\:border-error[aria-invalid="true"] { border-color: var(--color-error); }
-  .invalid\:bg-error-surface[aria-invalid="true"] { background: var(--color-error-opacity-20); }
-  .invalid\:text-error[aria-invalid="true"] { color: var(--color-error); }
+  .invalid\:border-error[aria-invalid="true"] { border-color: var(--error); }
+  .invalid\:bg-error-surface[aria-invalid="true"] { background: var(--error-opacity-20); }
+  .invalid\:text-error[aria-invalid="true"] { color: var(--error); }
 
   .invalid\:focus\:ring-error[aria-invalid="true"]:focus {
     outline: none;
-    border-color: var(--color-error);
-    box-shadow: 0 0 0 2px var(--color-error-opacity-20);
+    border-color: var(--error);
+    box-shadow: 0 0 0 2px var(--error-opacity-20);
   }
 
   /* Valid state patterns */
-  .valid\:border-success[aria-valid="true"] { border-color: var(--color-success); }
-  .valid\:bg-success-surface[aria-valid="true"] { background: var(--color-success-opacity-20); }
-  .valid\:text-success[aria-valid="true"] { color: var(--color-success); }
+  .valid\:border-success[aria-valid="true"] { border-color: var(--success); }
+  .valid\:bg-success-surface[aria-valid="true"] { background: var(--success-opacity-20); }
+  .valid\:text-success[aria-valid="true"] { color: var(--success); }
 
   .valid\:focus\:ring-success[aria-valid="true"]:focus {
     outline: none;
-    border-color: var(--color-success);
-    box-shadow: 0 0 0 2px var(--color-success-opacity-20);
+    border-color: var(--success);
+    box-shadow: 0 0 0 2px var(--success-opacity-20);
   }
 
   /* ===========================================
@@ -279,7 +279,7 @@
   /* Required field patterns */
   .required\:after[required]::after {
     content: ' *';
-    color: var(--color-error);
+    color: var(--error);
   }
 
   /* ===========================================
@@ -287,16 +287,16 @@
      =========================================== */
 
   /* Group hover patterns - useful for card components */
-  .group:hover .group-hover\:bg-surface-hover { background: var(--color-surface-hover); }
-  .group:hover .group-hover\:text-primary { color: var(--color-primary); }
+  .group:hover .group-hover\:bg-surface-hover { background: var(--surface-alt); }
+  .group:hover .group-hover\:text-primary { color: var(--primary); }
   .group:hover .group-hover\:scale-102 { transform: scale(1.02); }
   .group:hover .group-hover\:shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%); }
   .group:hover .group-hover\:opacity-100 { opacity: 1; }
 
   /* Group focus patterns */
-  .group:focus-within .group-focus\:border-primary { border-color: var(--color-primary); }
+  .group:focus-within .group-focus\:border-primary { border-color: var(--primary); }
   .group:focus-within .group-focus\:ring-primary {
-    box-shadow: 0 0 0 2px var(--color-primary-opacity-20);
+    box-shadow: 0 0 0 2px var(--primary-opacity-20);
   }
 
   /* ===========================================
@@ -357,7 +357,7 @@
     .focus\:ring-success:focus,
     .focus\:ring-error:focus,
     .focus-visible\:ring-primary:focus-visible {
-      box-shadow: 0 0 0 2px var(--color-primary);
+      box-shadow: 0 0 0 2px var(--primary);
     }
 
     .invalid\:border-error[aria-invalid="true"],
@@ -367,7 +367,7 @@
 
     /* Menu item high contrast focus state */
     .menu-item-focus:focus {
-      background: var(--color-surface-active);
+      background: var(--surface-alt);
     }
   }
 

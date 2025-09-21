@@ -13,8 +13,8 @@
 
   /* Primary surface backgrounds */
   .bg-primary { background: var(--primary); }
-  .bg-primary-hover { background: var(--color-primary-hover, var(--primary)); }
-  .bg-primary-surface { background: var(--color-primary-surface); }
+  .bg-primary-hover { background: var(--focus); }
+  .bg-primary-surface { background: var(--primary-surface); }
   .bg-bg { background: var(--bg); }
   .bg-surface { background: var(--surface); }
   .bg-surface-elevated { background: var(--surface-elevated); }
@@ -32,10 +32,10 @@
   .bg-info { background: var(--info); }
 
   /* Subtle/opacity state backgrounds for badges and cards */
-  .bg-success-subtle { background: var(--color-success-subtle, var(--surface)); }
-  .bg-warning-subtle { background: var(--color-warning-subtle, var(--surface)); }
-  .bg-error-subtle { background: var(--color-error-subtle, var(--surface)); }
-  .bg-primary-subtle { background: var(--color-primary-subtle, var(--surface)); }
+  .bg-success-subtle { background: var(--surface); }
+  .bg-warning-subtle { background: var(--surface); }
+  .bg-error-subtle { background: var(--surface); }
+  .bg-primary-subtle { background: var(--surface); }
 
   /* Special backgrounds */
   .bg-transparent { background: transparent; }
@@ -51,11 +51,11 @@
   .bg-backdrop { background: var(--backdrop-bg, rgba(0, 0, 0, 0.3)); }
 
   /* Form input backgrounds */
-  .bg-input { background: var(--color-input-bg); }
-  .bg-input-hover { background: var(--color-input-bg-hover, var(--color-surface-hover)); }
-  .bg-input-focus { background: var(--color-input-bg-focus, var(--color-input-bg)); }
-  .bg-input-disabled { background: var(--color-input-bg-disabled, var(--color-surface-dim)); }
-  .bg-input-readonly { background: var(--color-input-bg-readonly); }
+  .bg-input { background: var(--input-bg); }
+  .bg-input-hover { background: var(--input-bg-hover); }
+  .bg-input-focus { background: var(--input-bg); }
+  .bg-input-disabled { background: var(--input-bg-disabled); }
+  .bg-input-readonly { background: var(--input-bg-readonly); }
 
   /* Gradient backgrounds for advanced use cases */
   .bg-gradient-primary {
@@ -356,31 +356,31 @@
 
   /* Status badge variants */
   .badge-success {
-    border-color: var(--color-success);
-    background: var(--color-success-subtle, var(--surface));
-    color: var(--color-success-text, var(--text-color));
+    border-color: var(--success);
+    background: var(--surface);
+    color: var(--success-text);
   }
 
   .badge-error {
-    border-color: var(--color-error);
-    background: var(--color-error-subtle, var(--surface));
-    color: var(--color-error-text, var(--text-color));
+    border-color: var(--error);
+    background: var(--surface);
+    color: var(--error-text);
   }
 
   .badge-warning {
-    border-color: var(--color-warning);
-    background: var(--color-warning-subtle, var(--surface));
-    color: var(--color-warning-text, var(--text-color));
+    border-color: var(--warning);
+    background: var(--surface);
+    color: var(--warning-text);
   }
 
   .badge-primary {
-    border-color: var(--color-primary);
-    background: var(--color-primary-subtle, var(--surface));
-    color: var(--color-primary-text, var(--text-color));
+    border-color: var(--primary);
+    background: var(--surface);
+    color: var(--primary-text);
   }
 
   .badge-secondary {
-    border-color: var(--color-border);
+    border-color: var(--border);
     background: var(--surface-elevated);
     color: var(--text-secondary);
   }

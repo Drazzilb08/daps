@@ -47,117 +47,43 @@
     --overlay: rgb(24 25 31 / 64%);   /* Standard overlay - modals, dropdowns */
     --overlay-strong: rgb(0 0 0 / 80%); /* Strong overlay - important modals, alerts */
 
-    /* Primary Color System */
-    --color-primary: var(--primary);
-    --color-primary-hover: var(--focus);
-    --color-primary-text: #fff;                           /* White text on orange background */
-    --color-primary-opacity-10: rgb(255 115 0 / 10%);     /* Primary with 10% opacity */
-    --color-primary-opacity-20: rgb(255 115 0 / 20%);     /* Primary with 20% opacity */
-    --color-primary-surface: rgb(255 115 0 / 10%);        /* Primary surface background for selection states */
+    /* Color System Extensions - Direct Values Only */
 
-    /* Accent Color System */
-    --color-accent: var(--accent);
-    --color-accent-text: #fff;                            /* White text on blue background */
+    /* Primary color text and opacity variants */
+    --primary-text: #fff;                           /* White text on orange background */
+    --primary-opacity-10: rgb(255 115 0 / 10%);     /* Primary with 10% opacity */
+    --primary-opacity-20: rgb(255 115 0 / 20%);     /* Primary with 20% opacity */
+    --primary-surface: rgb(255 115 0 / 10%);        /* Primary surface background for selection states */
 
-    /* Success Color System */
-    --color-success: var(--success);
-    --color-success-text: #fff;                           /* White text on green background */
-    --color-success-opacity-20: rgb(50 215 75 / 20%);     /* Success with 20% opacity */
+    /* State color text variants */
+    --accent-text: #fff;                            /* White text on blue background */
+    --success-text: #fff;                           /* White text on green background */
+    --success-opacity-20: rgb(50 215 75 / 20%);     /* Success with 20% opacity */
+    --warning-text: #fff;                           /* White text on yellow background */
+    --warning-opacity-20: rgb(255 159 10 / 20%);    /* Warning with 20% opacity */
+    --error-text: #fff;                             /* White text on red background */
+    --error-opacity-20: rgb(255 55 95 / 20%);       /* Error with 20% opacity */
+    --danger-surface: rgb(255 55 95 / 10%);         /* Danger background surface */
 
-    /* Warning Color System */
-    --color-warning: var(--warning);
-    --color-warning-text: #fff;                           /* White text on yellow background */
-    --color-warning-opacity-20: rgb(255 159 10 / 20%);    /* Warning with 20% opacity */
-
-    /* Error Color System */
-    --color-error: var(--error);
-    --color-error-text: #fff;                             /* White text on red background */
-    --color-error-opacity-20: rgb(255 55 95 / 20%);       /* Error with 20% opacity */
-
-    /* Danger Color System (alias for error) */
-    --color-danger: var(--error);                         /* Danger aliases error for consistency */
-    --color-danger-surface: rgb(255 55 95 / 10%);         /* Danger background surface */
-
-    /* Text Color Mappings */
-    --color-text-primary: var(--text-primary);
-    --color-text-secondary: var(--text-secondary);
-    --color-text-tertiary: var(--text-tertiary);
-    --color-text-disabled: var(--text-disabled);
-    --color-text-muted: var(--text-tertiary);             /* Alias for tertiary text */
-
-    /* Background & Surface Mappings */
-    --color-background: var(--bg);
-    --color-background-alt: var(--surface-alt);
-    --color-surface: var(--surface);
-    --color-surface-hover: var(--surface-alt);
-    --color-surface-active: var(--border-light);
-    --color-surface-elevated: var(--surface-elevated);
-
-    /* Border & Separation Mappings */
-    --color-border: var(--border);
-    --color-border-light: var(--border-light);
-    --color-border-hover: var(--border-light);
-
-    /* Layout Component Mappings */
-    --color-sidebar-bg: var(--sidebar-bg);
-    --color-sidebar-hover: var(--sidebar-hover);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-text: var(--text-primary);
-    --color-sidebar-text-secondary: var(--text-secondary);
-    --color-header-bg: var(--header-bg);
-    --color-header-border: var(--sidebar-border);
-
-    /* Link & Interaction Colors */
-    --color-link: var(--accent);
-    --color-link-hover: #5a96ff;                          /* Lighter blue for hover state */
-    --color-link-visited: #5a96ff;                        /* Consistent visited link color */
+    /* Link colors */
+    --link-hover: #5a96ff;                          /* Lighter blue for hover state */
+    --link-visited: #5a96ff;                        /* Consistent visited link color */
 
     /* Form Control Colors */
-
-    /* Input Background Colors */
     --input-bg: #21242a;                                  /* Primary input background */
-    --color-input-bg: var(--input-bg);
-    --color-input-bg-hover: #252830;                      /* Input hover background */
-    --color-input-bg-focus: var(--input-bg);              /* Input focus background */
-    --color-input-bg-disabled: #1a1d22;                   /* Disabled input background */
-    --color-input-bg-readonly: #23262c;                   /* Readonly input background */
-
-    /* Input Border Colors */
-    --color-input-border: var(--border);
-    --color-input-border-hover: var(--border-light);
-    --color-input-border-disabled: #202328;               /* Subtle disabled border */
-
-    /* Input Text Colors */
-    --color-input-text: var(--text-primary);
-    --color-input-text-disabled: var(--text-disabled);
-    --color-input-placeholder: var(--text-tertiary);
-
-    /* Input Enhancement Colors */
-    --color-input-addon-bg: var(--surface-alt);           /* Input addon background */
+    --input-bg-hover: #252830;                      /* Input hover background */
+    --input-bg-disabled: #1a1d22;                   /* Disabled input background */
+    --input-bg-readonly: #23262c;                   /* Readonly input background */
+    --input-border-disabled: #202328;               /* Subtle disabled border */
 
     /* Form Element Decorative Properties */
-
     --input-addon-border: none;                           /* No border for clean look */
     --input-addon-shadow: 0 1px 3px rgb(var(--shadow-color), var(--shadow-opacity-medium));
-    --checkbox-indicator-bg: var(--color-primary-text);   /* White checkbox indicator */
+    --checkbox-indicator-bg: #fff;   /* White checkbox indicator */
     --checkbox-border: none;                              /* No border for modern look */
     --checkbox-shadow: 0 1px 3px rgb(var(--shadow-color), var(--shadow-opacity-medium));
     --field-base-border: none;                            /* Clean field base styling */
     --field-base-shadow: 0 1px 3px rgb(var(--shadow-color), var(--shadow-opacity-medium));
-
-    /* Focus & Interaction Feedback */
-
-    --color-focus-ring: var(--focus);
-    --color-focus-ring-offset: var(--bg);
-
-    /* Button System Colors */
-
-    --color-button-primary: var(--primary);
-    --color-button-primary-text: #fff;                    /* White text on orange button */
-
-    /* Overlay & Shadow System */
-
-    --color-overlay: var(--overlay);
     --shadow-color: 0, 0, 0;                              /* Shadow base color (RGB values) */
     --shadow-opacity-light: 0.3;                          /* Light shadow opacity */
     --shadow-opacity-medium: 0.4;                         /* Medium shadow opacity */

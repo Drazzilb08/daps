@@ -40,7 +40,7 @@
     }
 
     body {
-        font-family: Roboto, 'Open Sans', 'Helvetica Neue', sans-serif;
+        font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
         font-size: 1rem;
         font-weight: 400;
         line-height: 1.5;
@@ -48,7 +48,7 @@
         background-color: var(--bg);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizelegibility;
+        text-rendering: optimizeSpeed;
         min-height: 100vh;
         min-height: 100dvh;
     }
@@ -71,6 +71,9 @@
         background: transparent;
         border: 0;
         cursor: pointer;
+        -webkit-font-smoothing: inherit;
+        -moz-osx-font-smoothing: inherit;
+        text-rendering: inherit;
     }
 
     input,
@@ -80,6 +83,9 @@
         font-size: inherit;
         line-height: inherit;
         color: inherit;
+        -webkit-font-smoothing: inherit;
+        -moz-osx-font-smoothing: inherit;
+        text-rendering: inherit;
     }
 
     fieldset {

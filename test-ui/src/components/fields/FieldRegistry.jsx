@@ -78,17 +78,7 @@ const UnknownFieldType = ({ field }) => {
             </label>
 
             <div className="mt-2">
-                <div
-                    style={{
-                        padding: 'var(--space-4)',
-                        background: 'var(--color-error-bg)',
-                        border: '1px solid var(--color-error)',
-                        borderRadius: 'var(--radius-2)',
-                        textAlign: 'center',
-                        color: 'var(--color-error-text)',
-                        fontSize: 'var(--font-size-sm)',
-                    }}
-                >
+                <div className="p-4 bg-error/20 border border-error rounded-md text-center text-error text-sm">
                     <strong>Unknown field type "{field.type}"</strong>
                     <br />
                     <small>This field type is not recognized by the system</small>

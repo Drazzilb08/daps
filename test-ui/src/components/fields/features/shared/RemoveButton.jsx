@@ -64,7 +64,7 @@ export const RemoveButton = React.memo(
 
         const buttonClasses = [
             // Base atomic utilities for consistent remove button styling
-            'min-w-touch min-h-touch', // Square 44px x 44px minimum (matches original)
+            'touch-target', // Square 44px x 44px minimum (matches original)
             'shrink-0', // flex-shrink: 0 (matches original .color-poster-remove-button)
             'leading-none',
             'whitespace-nowrap',

@@ -16,17 +16,7 @@ const UnavailableField = ({ field }) => {
                 {field.required && <span className="text-error ml-1">*</span>}
             </label>
 
-            <div
-                style={{
-                    padding: 'var(--space-4)',
-                    background: 'var(--color-surface-elevated)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-2)',
-                    textAlign: 'center',
-                    color: 'var(--color-text-tertiary)',
-                    fontSize: 'var(--font-size-sm)',
-                }}
-            >
+            <div className="p-4 bg-surface-elevated border border-border rounded-md text-center text-tertiary text-sm">
                 <strong>Field type "{field.type}" not implemented</strong>
                 <br />
                 <small>This field type is not available in the current version</small>

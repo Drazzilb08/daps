@@ -57,8 +57,7 @@ export const DirField = React.memo(
                     invalid={highlightInvalid}
                     aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
                     aria-invalid={highlightInvalid}
-                    className="h-input bg-input border-input p-input rounded-md transition-input w-full"
-                    style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                    className={disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
                 />
 
                 <FieldDescription id={`${inputId}-desc`} description={field.description} />

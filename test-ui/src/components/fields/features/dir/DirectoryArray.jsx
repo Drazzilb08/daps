@@ -104,8 +104,7 @@ const SortableDirectoryItem = React.memo(({
                     onClick={() => onClick(index)}
                     invalid={invalid}
                     aria-label={`${label} ${index + 1}`}
-                    className={modeOptions ? 'md:flex-[2_1_0%] md:min-w-[120px]' : ''}
-                    style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                    className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-[120px]' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 />
 
                 {/* Mode selection - only show if modeOptions provided */}
@@ -190,8 +189,7 @@ const DirectoryItem = React.memo(({
                     onClick={() => onClick(index)}
                     invalid={invalid}
                     aria-label={`${label} ${index + 1}`}
-                    className={modeOptions ? 'md:flex-[2_1_0%] md:min-w-[120px]' : ''}
-                    style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+                    className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-[120px]' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 />
 
                 {/* Mode selection - only show if modeOptions provided */}

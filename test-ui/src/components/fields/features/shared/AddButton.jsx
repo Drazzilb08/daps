@@ -51,7 +51,7 @@ export const AddButton = React.memo(
         };
 
         const buttonClasses = [
-            'min-h-touch',
+            'touch-target',
             'leading-none',
             'no-underline',
             'whitespace-nowrap',

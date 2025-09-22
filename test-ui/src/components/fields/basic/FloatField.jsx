@@ -85,6 +85,7 @@ export const FloatField = React.memo(
                         disabled={decrementDisabled}
                         ariaLabel={`Decrease ${field.label}`}
                         variant="left"
+                        className="text-accent"
                     >
                         −
                     </FieldButton>
@@ -99,7 +100,7 @@ export const FloatField = React.memo(
                         required={field.required}
                         placeholder={field.placeholder}
                         invalid={highlightInvalid}
-                        className="flex-1 border-t border-b border-l-0 border-r-0 border-border bg-input"
+                        className="flex-1 border-t border-b border-l-0 border-r-0 border-input bg-input text-center"
                         aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
                         aria-invalid={highlightInvalid}
                     />
@@ -109,6 +110,7 @@ export const FloatField = React.memo(
                         disabled={incrementDisabled}
                         ariaLabel={`Increase ${field.label}`}
                         variant="right"
+                        className="text-accent"
                     >
                         +
                     </FieldButton>

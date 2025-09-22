@@ -50,25 +50,21 @@
             padding: var(--space-4) var(--space-3);
         }
     }
-}
 
+    /* =============================================
+       SIDEBAR LAYOUT STRUCTURE
 
-@layer components {
-    .page-sidebar {
-        flex: 0 0 var(--sidebar-width);
-        background: var(--sidebar-bg);
-        border-right: 1px solid var(--sidebar-border);
-        overflow-y: auto;
-        z-index: var(--z-sticky);
-    }
+       MIGRATED TO UTILITIES:
+       - .page-sidebar → utility classes in React component
+       - .page-sidebar-content → utility classes in React component
+       - .nav-link--parent → utility classes in React component
+       - .nav-link--child → utility classes in React component
 
-    .page-sidebar-content {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        padding: var(--space-4) 0;
-    }
-
+       PRESERVED IN navigation.css:
+       - All hover/focus/active states
+       - All pseudo-element orange bar indicators
+       - Mobile responsive overrides
+       ============================================= */
 
     .page-sidebar-nav {
         flex: 1;
@@ -82,113 +78,12 @@
         margin-bottom: 0;
     }
 
-    .nav-link--parent {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        padding: var(--space-3) var(--space-4);
-        color: var(--text-secondary);
-        text-decoration: none;
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-        transition: all var(--transition-fast);
-        min-height: var(--touch-target-min);
-        position: relative;
-    }
-
-    .nav-link--parent:hover {
-        background: var(--sidebar-hover);
-        color: var(--text-primary);
-    }
-
-    .nav-link--parent:focus {
-        outline: none;
-        background: var(--surface-alt);
-    }
-
-    .nav-link--parent-active {
-        background: var(--surface-alt);
-        color: var(--text-primary);
-        font-weight: var(--font-weight-semibold);
-        position: relative;
-    }
-
-    .nav-link--parent-active::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: var(--primary);
-    }
-
-    .nav-link--active {
-        background: var(--surface-alt);
-        color: var(--text-primary);
-        font-weight: var(--font-weight-semibold);
-        position: relative;
-    }
-
-    .nav-link--active::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: var(--primary);
-    }
-
     .nav-children {
         list-style: none;
     }
 
     .nav-child-item {
         margin-bottom: 0;
-    }
-
-    .nav-link--child {
-        display: flex;
-        align-items: center;
-        padding: var(--space-2) var(--space-4);
-        padding-left: calc(var(--space-4) + var(--space-6));
-        color: var(--sidebar-text-secondary);
-        text-decoration: none;
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-normal);
-        transition: all var(--transition-fast);
-        min-height: var(--touch-target-min);
-        position: relative;
-    }
-
-    .nav-link--child:hover {
-        background: var(--sidebar-hover);
-        color: var(--text-primary);
-    }
-
-    .nav-link--child:focus {
-        outline: none;
-        background: var(--surface-alt);
-    }
-
-    .nav-link--child-active {
-        color: var(--primary);
-        font-weight: var(--font-weight-semibold);
-    }
-
-    .nav-link--child-in-active-section {
-        position: relative;
-    }
-
-    .nav-link--child-in-active-section::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: var(--primary);
     }
 
     .nav-icon {
@@ -240,62 +135,14 @@
         background: var(--surface-alt);
     }
 
-    @media (width <= 768px) {
-        .page-sidebar {
-            position: fixed;
-            top: var(--header-height);
-            left: 0;
-            bottom: 0;
-            width: var(--sidebar-width);
-            max-width: 280px;
-            transform: translateX(-100%);
-            transition: transform var(--transition-normal);
-            z-index: var(--z-modal);
-            flex: none;
-            overflow-y: auto;
-        }
+    /* =============================================
+       MOBILE RESPONSIVE STYLES
 
-        .page-sidebar--mobile-open {
-            transform: translateX(0);
-        }
-
-        .nav-label,
-        .nav-label--child {
-            display: block;
-        }
-
-        .nav-children {
-            display: block;
-        }
-
-        .nav-link--parent {
-            padding: var(--space-3) var(--space-4);
-            justify-content: flex-start;
-        }
-
-        .nav-icon {
-            width: 20px;
-        }
-
-        .page-sidebar-content {
-            padding: var(--space-4) 0;
-        }
-
-        .page-sidebar-footer {
-            display: block;
-        }
-
-        .nav-link--parent,
-        .nav-link--child {
-            min-height: var(--touch-target-min);
-        }
-
-        .nav-link--parent-active::before,
-        .nav-link--active::before {
-            width: 3px;
-        }
-    }
-
+       Most mobile styles are now handled by utility classes.
+       Only specific mobile behavior preserved in navigation.css:
+       - .page-sidebar--mobile-open transition override
+       - Active indicator width consistency
+       ============================================= */
 
     .page-sidebar--collapsed {
         flex-basis: var(--sidebar-collapsed);
@@ -313,9 +160,10 @@
     .page-sidebar--collapsed .nav-icon {
         width: auto;
     }
-}
 
-@layer components {
+    /* =============================================
+       PAGE SECTIONS AND CONTENT
+       ============================================= */
     .page-section {
         margin-bottom: var(--space-8);
     }

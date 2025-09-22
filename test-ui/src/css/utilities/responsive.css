@@ -193,6 +193,26 @@
     .md\:min-w-\[100px\] { min-width: 100px; }
     .md\:max-w-\[150px\] { max-width: 150px; }
 
+    /* Transform utilities for responsive sidebar */
+    .md\:translate-x-0 { transform: translateX(0); }
+    .md\:translate-x-full { transform: translateX(100%); }
+    .md\:-translate-x-full { transform: translateX(-100%); }
+
+    /* Position utilities for responsive sidebar */
+    .md\:static { position: static; }
+    .md\:fixed { position: fixed; }
+    .md\:relative { position: relative; }
+    .md\:absolute { position: absolute; }
+
+    /* Z-index utilities for responsive behavior */
+    .md\:z-auto { z-index: auto; }
+    .md\:z-sticky { z-index: var(--z-sticky); }
+
+    /* Top/bottom positioning for responsive layout */
+    .md\:top-0 { top: 0; }
+    .md\:bottom-0 { bottom: 0; }
+    .md\:bottom-auto { bottom: auto; }
+
     /* Small screen flex utilities */
   }
 

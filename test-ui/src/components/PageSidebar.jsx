@@ -218,12 +218,16 @@ const PageSidebar = React.memo(() => {
     return (
         <aside
             ref={sidebarRef}
-            className={`page-sidebar ${isMobile && mobileMenuOpen ? 'page-sidebar--mobile-open' : ''}`}
+            className={`flex-none w-sidebar bg-sidebar-bg border-r border-sidebar-border overflow-y-auto z-sticky fixed md:static top-16 md:top-0 left-0 bottom-0 md:bottom-auto z-modal md:z-sticky ${
+                isMobile && mobileMenuOpen
+                    ? 'translate-x-0'
+                    : '-translate-x-full md:translate-x-0'
+            } transition-transform ${isMobile && mobileMenuOpen ? 'page-sidebar--mobile-open' : ''}`}
             role="navigation"
             aria-label="Main navigation"
             aria-hidden={isMobile && !mobileMenuOpen}
         >
-            <div className="page-sidebar-content">
+            <div className="flex flex-col h-full py-4">
                 {/* Hierarchical Navigation */}
                 <nav className="page-sidebar-nav">
                     <ul className="nav-list" role="list">
@@ -233,7 +237,7 @@ const PageSidebar = React.memo(() => {
                                 <NavLink
                                     to={item.path}
                                     onClick={handleParentNavLinkClick}
-                                    className={`nav-link nav-link--parent ${
+                                    className={`flex items-center gap-3 py-3 px-4 text-secondary no-underline text-sm font-medium transition-all duration-150 min-h-touch relative ${
                                         item.type === 'parent' && isParentActive(item)
                                             ? 'nav-link--parent-active'
                                             : ''
@@ -268,7 +272,7 @@ const PageSidebar = React.memo(() => {
                                                     <NavLink
                                                         to={child.path}
                                                         onClick={handleChildNavLinkClick}
-                                                        className={`nav-link nav-link--child nav-link--child-in-active-section ${
+                                                        className={`flex items-center py-2 px-4 pl-10 text-sidebar-secondary no-underline text-sm font-normal transition-all duration-150 min-h-touch relative nav-link--child-in-active-section ${
                                                             isChildActive(child.path)
                                                                 ? 'nav-link--child-active'
                                                                 : ''

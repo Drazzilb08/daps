@@ -44,6 +44,8 @@
 
   /* Layout-specific backgrounds */
   .bg-header-bg { background: var(--header-bg); }
+  .bg-sidebar-bg { background: var(--sidebar-bg); }
+  .bg-sidebar-hover { background: var(--sidebar-hover); }
 
   /* Text color backgrounds (for separators and borders) */
   .bg-text-secondary { background: var(--text-secondary); }
@@ -80,6 +82,7 @@
   .text-tertiary { color: var(--text-tertiary); }
   .text-disabled { color: var(--text-disabled); }
   .text-accent { color: var(--primary); }
+  .text-sidebar-secondary { color: var(--sidebar-text-secondary); }
 
   /* State text colors */
   .text-success { color: var(--success); }
@@ -121,6 +124,7 @@
   .border-border { border-color: var(--border-color); }
   .border-border-subtle { border-color: var(--border-subtle, var(--border-color)); }
   .border-border-strong { border-color: var(--border-strong, var(--border-color)); }
+  .border-sidebar-border { border-color: var(--sidebar-border); }
 
   /* State border colors */
   .border-success { border-color: var(--success); }

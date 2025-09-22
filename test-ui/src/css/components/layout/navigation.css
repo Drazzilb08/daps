@@ -1,0 +1,123 @@
+/**
+ * Navigation Component CSS - Pseudo-elements Only
+ *
+ * This file contains only CSS that CANNOT be converted to utilities:
+ * - Pseudo-elements (::before, ::after)
+ * - Complex selectors that require component CSS
+ *
+ * All other navigation styles have been migrated to utility classes.
+ */
+
+@layer components {
+  /* ===========================================
+     NAVIGATION ACTIVE STATE INDICATORS
+     Orange bars for active navigation items
+     =========================================== */
+
+  /* Parent navigation active indicator */
+  .nav-link--parent-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary);
+  }
+
+  /* Active navigation link indicator */
+  .nav-link--active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary);
+  }
+
+  /* Child navigation in active section indicator */
+  .nav-link--child-in-active-section::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary);
+  }
+
+  /* ===========================================
+     HOVER STATE OVERRIDES
+     Component-specific hover behaviors that cannot be utilities
+     =========================================== */
+
+  /* Parent link hover states */
+  .nav-link--parent:hover {
+    background: var(--sidebar-hover);
+    color: var(--text-primary);
+  }
+
+  .nav-link--parent:focus {
+    outline: none;
+    background: var(--surface-alt);
+  }
+
+  /* Child link hover states */
+  .nav-link--child:hover {
+    background: var(--sidebar-hover);
+    color: var(--text-primary);
+  }
+
+  .nav-link--child:focus {
+    outline: none;
+    background: var(--surface-alt);
+  }
+
+  /* ===========================================
+     ACTIVE STATE STYLES
+     Component-specific active state styling
+     =========================================== */
+
+  .nav-link--parent-active {
+    background: var(--surface-alt);
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+    position: relative;
+  }
+
+  .nav-link--active {
+    background: var(--surface-alt);
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+    position: relative;
+  }
+
+  .nav-link--child-active {
+    color: var(--primary);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .nav-link--child-in-active-section {
+    position: relative;
+  }
+
+  /* ===========================================
+     MOBILE RESPONSIVE OVERRIDES
+     Mobile-specific adjustments that require CSS
+     =========================================== */
+
+  @media (width <= 768px) {
+    /* Mobile open state - cannot be a utility due to JavaScript class toggling */
+    .page-sidebar--mobile-open {
+      transform: translateX(0);
+    }
+
+    /* Ensure active indicators maintain proper width on mobile */
+    .nav-link--parent-active::before,
+    .nav-link--active::before,
+    .nav-link--child-in-active-section::before {
+      width: 3px;
+    }
+  }
+}

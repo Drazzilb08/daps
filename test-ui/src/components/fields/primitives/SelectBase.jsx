@@ -102,22 +102,13 @@ export const SelectBase = React.memo(
                         </option>
                     ))}
                 </select>
-                {/* Dropdown chevron icon matching backup CSS exactly */}
-                <div
-                    className="absolute top-1/2 pointer-events-none transition-colors"
-                    style={{
-                        right: 'var(--space-3)', // 12px from backup CSS line 53
-                        width: 'var(--size-icon-sm)', // 16px from backup CSS line 54
-                        height: '12px', // Exact height from backup CSS line 55
-                        backgroundColor: 'var(--primary)', // Background color from backup CSS line 56
-                        // SVG mask from backup CSS lines 57-60
-                        maskImage: "url(\"data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='black' d='m2 5 6 6 6-6'/%3e%3c/svg%3e\")",
-                        maskRepeat: 'no-repeat',
-                        maskSize: 'contain',
-                        transform: 'translateY(-50%)' // Backup CSS line 60
-                    }}
+                {/* Dropdown chevron icon using Material Design icon */}
+                <span
+                    className="material-symbols-outlined absolute top-1/2 right-3 text-accent pointer-events-none transition-colors -translate-y-1/2 text-base leading-none"
                     aria-hidden="true"
-                />
+                >
+                    keyboard_arrow_down
+                </span>
             </div>
         );
     }

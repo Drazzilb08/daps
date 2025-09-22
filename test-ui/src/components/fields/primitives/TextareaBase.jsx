@@ -64,9 +64,8 @@ export const TextareaBase = ({
                 'overflow-y-auto', // Handle content overflow with scrolling
                 'transition-colors duration-200',
 
-                // Focus states (atomic utilities) - override global textarea:focus-visible outline
-                'focus:outline-none focus:border-input-focus',
-                'focus-visible:outline-none', // Explicitly override base.css textarea:focus-visible rule
+                // Focus states (atomic utilities)
+                'state-focus-ring',
 
                 // Hover states (atomic utilities)
                 !disabled && 'hover:border-primary hover:bg-input-hover',

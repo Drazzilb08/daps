@@ -1,105 +1,36 @@
 /**
- * Utilities Index - Complete Utility System
+ * Utility System Index - Optimized Architecture
  *
- * Centralized import coordinator for all utility modules.
- * Import order is critical for proper cascade behavior.
- *
- * Mobile-first, accessibility-focused utility class system.
- * All measurements use design tokens, all colors use theme variables.
+ * Foundation-first approach with proper cascade ordering
+ * and minimal duplication across 17 utility modules.
  */
 
-/* ===========================================
-   FOUNDATION UTILITIES - CORE SYSTEM
-   =========================================== */
+/* Foundation Utilities - Core System */
+@import './accessibility.css';   /* WCAG 2.1 AA compliance, screen reader support */
+@import './spacing.css';         /* Margin, padding, gap utilities */
+@import './typography.css';      /* Text utilities and font properties */
+@import './colors.css';          /* Theme-aware color utilities */
 
-/* Accessibility and touch targets - foundational patterns */
-@import url('./accessibility.css');
+/* Layout Utilities - Structure */
+@import './layout.css';          /* Display, flexbox, grid, positioning */
+@import './sizing.css';          /* Width, height, dimensions */
 
-/* Spacing system - margin/padding with complete scale */
-@import url('./spacing.css');
+/* Visual Utilities - Appearance */
+@import './borders.css';         /* Border styling and radius */
+@import './effects.css';         /* Shadows, opacity, filters */
+@import './transforms.css';      /* Motion and transitions */
+@import './zindex.css';          /* Semantic z-index system */
 
-/* Typography - text sizing, alignment, weights, colors */
-@import url('./typography.css');
+/* Interaction Utilities - User Interface */
+@import './interactions.css';    /* Cursors, pointer events */
+@import './states.css';          /* Validation, hover, focus states */
 
-/* Colors - text and background color utilities */
-@import url('./colors.css');
+/* Content Utilities - Media */
+@import './icons.css';           /* Icon sizing and display */
+@import './images.css';          /* Responsive images, object utilities */
 
-/* ===========================================
-   LAYOUT UTILITIES - STRUCTURAL PATTERNS
-   =========================================== */
+/* Responsive Utilities - Breakpoints */
+@import './responsive.css';      /* Mobile-first responsive patterns */
 
-/* Layout system - display, flexbox, grid, positioning */
-@import url('./layout.css');
-
-/* Sizing - width, height, min/max dimensions */
-@import url('./sizing.css');
-
-/* ===========================================
-   VISUAL UTILITIES - STYLING SYSTEM
-   =========================================== */
-
-/* Borders and radius - border styling and semantic colors */
-@import url('./borders.css');
-
-/* Visual effects - shadows, opacity, filters, overflow */
-@import url('./effects.css');
-
-/* Transform and animations - motion with accessibility */
-@import url('./transforms.css');
-
-/* Z-index layering - semantic z-index system */
-@import url('./zindex.css');
-
-/* ===========================================
-   INTERACTION UTILITIES - BEHAVIOR PATTERNS
-   =========================================== */
-
-/* Button utilities removed - buttons use pure atomic utilities from proper modules */
-
-/* Interaction states - cursors, pointer events, user interaction */
-@import url('./interactions.css');
-
-/* Component states - validation, hover, focus, loading states */
-@import url('./states.css');
-
-/* ===========================================
-   CONTENT UTILITIES - MEDIA AND FORMS
-   =========================================== */
-
-/* Icon utilities - sizing, display, semantic colors */
-@import url('./icons.css');
-
-/* Image and media - responsive images, poster sizing */
-@import url('./images.css');
-
-/* Form utilities removed - form styling uses atomic utilities from proper modules */
-
-/* ===========================================
-   RESPONSIVE UTILITIES - ADAPTIVE DESIGN
-   =========================================== */
-
-/* Responsive patterns - mobile-first breakpoint utilities */
-@import url('./responsive.css');
-
-/* ===========================================
-   DEVELOPMENT UTILITIES - DEBUGGING AIDS
-   =========================================== */
-
-/* Debug utilities - layout debugging and accessibility testing */
-@import url('./debug.css');
-
-
-/**
- * UTILITY SYSTEM ARCHITECTURE NOTES:
- *
- * 1. Foundation First: Accessibility and spacing form the base
- * 2. Layout Second: Structure utilities build on foundation
- * 3. Visual Third: Styling utilities enhance layout
- * 4. Interaction Fourth: Behavior utilities add interactivity
- * 5. Content Fifth: Specialized content utilities
- * 6. Responsive Sixth: Adaptive utilities enhance all previous
- * 7. Debug Last: Development utilities overlay everything
- *
- * This order ensures proper cascade inheritance and prevents
- * utility conflicts while maintaining predictable behavior.
- */
+/* Development Utilities */
+@import './debug.css';           /* Development debugging aids */

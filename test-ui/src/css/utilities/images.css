@@ -76,20 +76,13 @@
      POSTER SIZING UTILITIES
      =========================================== */
 
-  .poster-standard {
-    width: 156px;
-    height: 234px;
-  }
+  /* Systematic poster utilities */
+  .aspect-poster { aspect-ratio: 2 / 3; }
+  
+  .w-poster-sm { width: 7.5rem; }    /* 120px */
+  .w-poster-md { width: 8.125rem; }  /* 130px */
+  .w-poster-lg { width: 9.75rem; }   /* 156px */
 
-  .poster-mobile {
-    width: 120px;
-    height: 180px;
-  }
-
-  .poster-tablet {
-    width: 130px;
-    height: 195px;
-  }
 
   /* ===========================================
      RESPONSIVE POSTER UTILITIES
@@ -97,22 +90,22 @@
 
   @media (width <= 768px) {
     .poster-responsive {
-      width: 120px;
-      height: 180px;
+      width: 7.5rem;  /* 120px */
+      height: calc(7.5rem * 1.5);  /* 180px - aspect 2:3 */
     }
   }
 
   @media (width >= 481px) and (width <= 768px) {
     .poster-responsive {
-      width: 130px;
-      height: 195px;
+      width: 8.125rem;  /* 130px */
+      height: calc(8.125rem * 1.5);  /* 195px - aspect 2:3 */
     }
   }
 
   @media (width >= 769px) {
     .poster-responsive {
-      width: 156px;
-      height: 234px;
+      width: 9.75rem;  /* 156px */
+      height: calc(9.75rem * 1.5);  /* 234px - aspect 2:3 */
     }
   }
 
@@ -136,3 +129,19 @@
     }
   }
 }
+  /* Object utilities (moved from layout.css) */
+  .object-contain { object-fit: contain; }
+  .object-cover { object-fit: cover; }
+  .object-fill { object-fit: fill; }
+  .object-none { object-fit: none; }
+  .object-scale-down { object-fit: scale-down; }
+
+  .object-bottom { object-position: bottom; }
+  .object-center { object-position: center; }
+  .object-left { object-position: left; }
+  .object-left-bottom { object-position: left bottom; }
+  .object-left-top { object-position: left top; }
+  .object-right { object-position: right; }
+  .object-right-bottom { object-position: right bottom; }
+  .object-right-top { object-position: right top; }
+  .object-top { object-position: top; }

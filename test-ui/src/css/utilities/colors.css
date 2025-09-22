@@ -77,7 +77,7 @@
      =========================================== */
 
   /* Primary text colors from theme */
-  .text-primary { color: var(--text-color); }
+  .text-primary { color: var(--text-primary); }
   .text-secondary { color: var(--text-secondary); }
   .text-tertiary { color: var(--text-tertiary); }
   .text-disabled { color: var(--text-disabled); }
@@ -121,9 +121,9 @@
   /* Primary border colors */
   .border-primary { border-color: var(--primary); }
   .border-surface { border-color: var(--surface); }
-  .border-border { border-color: var(--border-color); }
-  .border-border-subtle { border-color: var(--border-subtle, var(--border-color)); }
-  .border-border-strong { border-color: var(--border-strong, var(--border-color)); }
+  .border-border { border-color: var(--border); }
+  .border-border-subtle { border-color: var(--border-subtle, var(--border)); }
+  .border-border-strong { border-color: var(--border-strong, var(--border)); }
   .border-sidebar-border { border-color: var(--sidebar-border); }
 
   /* State border colors */
@@ -140,10 +140,10 @@
 
   /* Focus and interactive border colors */
   .border-focus { border-color: var(--focus); }
-  .border-disabled { border-color: var(--border-disabled, var(--border-color)); }
+  .border-disabled { border-color: var(--border-disabled, var(--border)); }
 
   /* Input-specific border colors */
-  .border-input { border-color: var(--input-border-color, var(--border-color)); }
+  .border-input { border-color: var(--input-border-color, var(--border)); }
   .border-input-focus { border-color: var(--input-border-focus, var(--focus)); }
   .border-input-error { border-color: var(--input-border-error, var(--error)); }
   .border-input-success { border-color: var(--input-border-success, var(--success)); }
@@ -154,7 +154,7 @@
 
   /* Primary fill colors for SVG icons */
   .fill-primary { fill: var(--primary); }
-  .fill-text { fill: var(--text-color); }
+  .fill-text { fill: var(--text-primary); }
   .fill-text-secondary { fill: var(--text-secondary); }
   .fill-text-tertiary { fill: var(--text-tertiary); }
   .fill-text-disabled { fill: var(--text-disabled); }
@@ -202,7 +202,7 @@
 
   /* Fill hover utilities for icons */
   .hover\:fill-primary:hover { fill: var(--primary); }
-  .hover\:fill-text:hover { fill: var(--text-color); }
+  .hover\:fill-text:hover { fill: var(--text-primary); }
   .hover\:fill-success:hover { fill: var(--success); }
   .hover\:fill-error:hover { fill: var(--error); }
 
@@ -261,7 +261,7 @@
   }
 
   /* Border disabled utilities */
-  .disabled\:border-disabled:disabled { border-color: var(--border-disabled, var(--border-color)); }
+  .disabled\:border-disabled:disabled { border-color: var(--border-disabled, var(--border)); }
   .disabled\:border-transparent:disabled { border-color: transparent; }
 
   /* Fill disabled utilities */
@@ -303,26 +303,26 @@
   /* Card color patterns */
   .card-colors {
     background: var(--surface);
-    color: var(--text-color);
-    border-color: var(--border-color);
+    color: var(--text-primary);
+    border-color: var(--border);
   }
 
   .card-colors-elevated {
     background: var(--surface-elevated);
-    color: var(--text-color);
-    border-color: var(--border-color);
+    color: var(--text-primary);
+    border-color: var(--border);
   }
 
   /* Input color patterns */
   .input-colors {
     background: var(--input-bg, var(--surface));
-    color: var(--text-color);
-    border-color: var(--input-border-color, var(--border-color));
+    color: var(--text-primary);
+    border-color: var(--input-border-color, var(--border));
   }
 
   .input-colors-focus {
     background: var(--input-bg-focus, var(--surface));
-    color: var(--text-color);
+    color: var(--text-primary);
     border-color: var(--input-border-focus, var(--focus));
   }
 
@@ -335,8 +335,8 @@
 
   .btn-colors-secondary {
     background: var(--surface);
-    color: var(--text-color);
-    border-color: var(--border-color);
+    color: var(--text-primary);
+    border-color: var(--border);
   }
 
   .btn-colors-success {
@@ -371,7 +371,7 @@
     .text-primary,
     .text-secondary,
     .text-tertiary {
-      color: var(--text-color);
+      color: var(--text-primary);
     }
 
     .border-primary,
@@ -429,9 +429,9 @@
   .bg-error-20 { background: color-mix(in srgb, var(--error) 20%, transparent); }
 
   /* Text with opacity */
-  .text-primary-50 { color: color-mix(in srgb, var(--text-color) 50%, transparent); }
-  .text-primary-70 { color: color-mix(in srgb, var(--text-color) 70%, transparent); }
-  .text-primary-80 { color: color-mix(in srgb, var(--text-color) 80%, transparent); }
+  .text-primary-50 { color: color-mix(in srgb, var(--text-primary) 50%, transparent); }
+  .text-primary-70 { color: color-mix(in srgb, var(--text-primary) 70%, transparent); }
+  .text-primary-80 { color: color-mix(in srgb, var(--text-primary) 80%, transparent); }
 
   /* ===========================================
      DYNAMIC COLOR UTILITIES
@@ -439,11 +439,11 @@
 
   /* Contextual colors that adapt based on parent background */
   .text-adaptive {
-    color: var(--text-adaptive, var(--text-color));
+    color: var(--text-adaptive, var(--text-primary));
   }
 
   .border-adaptive {
-    border-color: var(--border-adaptive, var(--border-color));
+    border-color: var(--border-adaptive, var(--border));
   }
 
   /* Inverse colors for overlays and contrasts */
@@ -452,6 +452,6 @@
   }
 
   .bg-inverse {
-    background: var(--bg-inverse, var(--text-color));
+    background: var(--bg-inverse, var(--text-primary));
   }
 }

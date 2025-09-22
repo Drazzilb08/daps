@@ -185,7 +185,7 @@
 
   /* Disabled hover overrides - prevent hover effects when disabled */
   .disabled\:hover\:bg-surface-dim:disabled:hover { background: var(--surface-alt); }
-  .disabled\:hover\:border-border:disabled:hover { border-color: var(--border-color); }
+  .disabled\:hover\:border-border:disabled:hover { border-color: var(--border); }
 
   /* ===========================================
      FORM STATE UTILITIES - VALIDATION STATES

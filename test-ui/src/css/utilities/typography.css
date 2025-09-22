@@ -463,7 +463,7 @@
      PLACEHOLDER UTILITIES - THEME AWARE
      =========================================== */
 
-  .placeholder-text-primary::placeholder { color: var(--text-color); }
+  .placeholder-text-primary::placeholder { color: var(--text-primary); }
   .placeholder-text-secondary::placeholder { color: var(--text-secondary); }
   .placeholder-text-tertiary::placeholder { color: var(--text-tertiary); }
   .placeholder-text-muted::placeholder { color: var(--text-muted, var(--text-secondary)); }

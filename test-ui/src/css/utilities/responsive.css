@@ -8,151 +8,29 @@
      RESPONSIVE GRID UTILITIES
      =========================================== */
 
-  /* Small screens (481px and up) */
-  @media (width >= 481px) {
-    .sm\:grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
-    .sm\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-    .sm\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-    .sm\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-    .sm\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-
-    /* Grid Column Span - Responsive */
-    .sm\:col-span-1 { grid-column: span 1 / span 1; }
-    .sm\:col-span-2 { grid-column: span 2 / span 2; }
-    .sm\:col-span-3 { grid-column: span 3 / span 3; }
-    .sm\:col-span-4 { grid-column: span 4 / span 4; }
-    .sm\:col-span-full { grid-column: 1 / -1; }
-  }
-
-  /* Medium screens (769px and up) */
-  @media (width >= 769px) {
-    .md\:grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
-    .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-    .md\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-    .md\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-    .md\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-
-    .md\:col-span-1 { grid-column: span 1 / span 1; }
-    .md\:col-span-2 { grid-column: span 2 / span 2; }
-    .md\:col-span-3 { grid-column: span 3 / span 3; }
-    .md\:col-span-4 { grid-column: span 4 / span 4; }
-    .md\:col-span-full { grid-column: 1 / -1; }
-  }
-
-  /* Large screens (1024px and up) */
-  @media (width >= 1024px) {
-    .lg\:grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
-    .lg\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-    .lg\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-    .lg\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-    .lg\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-
-    .lg\:col-span-1 { grid-column: span 1 / span 1; }
-    .lg\:col-span-2 { grid-column: span 2 / span 2; }
-    .lg\:col-span-3 { grid-column: span 3 / span 3; }
-    .lg\:col-span-4 { grid-column: span 4 / span 4; }
-    .lg\:col-span-full { grid-column: 1 / -1; }
-  }
-
-  /* Extra large screens (1200px and up) */
-  @media (width >= 1200px) {
-    .xl\:grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
-    .xl\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-    .xl\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
-    .xl\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-    .xl\:grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-
-    .xl\:col-span-1 { grid-column: span 1 / span 1; }
-    .xl\:col-span-2 { grid-column: span 2 / span 2; }
-    .xl\:col-span-3 { grid-column: span 3 / span 3; }
-    .xl\:col-span-4 { grid-column: span 4 / span 4; }
-    .xl\:col-span-full { grid-column: 1 / -1; }
-  }
 
   /* ===========================================
      RESPONSIVE DISPLAY UTILITIES
      =========================================== */
 
-  @media (width >= 481px) {
-    .sm\:block { display: block; }
-    .sm\:inline-block { display: inline-block; }
-    .sm\:inline { display: inline; }
-    .sm\:flex { display: flex; }
-    .sm\:inline-flex { display: inline-flex; }
-    .sm\:grid { display: grid; }
-    .sm\:hidden { display: none; }
-  }
-
-  @media (width >= 769px) {
-    .md\:block { display: block; }
-    .md\:inline-block { display: inline-block; }
-    .md\:inline { display: inline; }
-    .md\:flex { display: flex; }
-    .md\:inline-flex { display: inline-flex; }
-    .md\:grid { display: grid; }
-    .md\:hidden { display: none; }
-  }
-
-  @media (width >= 1024px) {
-    .lg\:block { display: block; }
-    .lg\:inline-block { display: inline-block; }
-    .lg\:inline { display: inline; }
-    .lg\:flex { display: flex; }
-    .lg\:inline-flex { display: inline-flex; }
-    .lg\:grid { display: grid; }
-    .lg\:hidden { display: none; }
-  }
 
   /* ===========================================
      RESPONSIVE SPACING UTILITIES
      =========================================== */
 
   @media (width >= 481px) {
-    .sm\:p-0 { padding: 0; }
-    .sm\:p-2 { padding: 0.5rem; }
-    .sm\:p-4 { padding: 1rem; }
-    .sm\:p-6 { padding: 1.5rem; }
-    .sm\:p-8 { padding: 2rem; }
 
-    .sm\:m-0 { margin: 0; }
-    .sm\:m-2 { margin: 0.5rem; }
-    .sm\:m-4 { margin: 1rem; }
-    .sm\:m-6 { margin: 1.5rem; }
-    .sm\:m-8 { margin: 2rem; }
-    .sm\:m-auto { margin: auto; }
   }
 
   @media (width >= 769px) {
-    .md\:p-0 { padding: 0; }
-    .md\:p-2 { padding: 0.5rem; }
-    .md\:p-4 { padding: 1rem; }
-    .md\:p-6 { padding: 1.5rem; }
-    .md\:p-8 { padding: 2rem; }
 
     /* Responsive horizontal padding for Layout.jsx */
     .md\:px-4 { padding-left: 1rem; padding-right: 1rem; }
 
-    .md\:m-0 { margin: 0; }
-    .md\:m-2 { margin: 0.5rem; }
-    .md\:m-4 { margin: 1rem; }
-    .md\:m-6 { margin: 1.5rem; }
-    .md\:m-8 { margin: 2rem; }
-    .md\:m-auto { margin: auto; }
   }
 
   @media (width >= 1024px) {
-    .lg\:p-0 { padding: 0; }
-    .lg\:p-2 { padding: 0.5rem; }
-    .lg\:p-4 { padding: 1rem; }
-    .lg\:p-6 { padding: 1.5rem; }
-    .lg\:p-8 { padding: 2rem; }
 
-    .lg\:m-0 { margin: 0; }
-    .lg\:m-2 { margin: 0.5rem; }
-    .lg\:m-4 { margin: 1rem; }
-    .lg\:m-6 { margin: 1.5rem; }
-    .lg\:m-8 { margin: 2rem; }
-    .lg\:m-auto { margin: auto; }
   }
 
   /* ===========================================

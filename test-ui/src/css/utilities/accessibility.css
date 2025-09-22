@@ -290,7 +290,7 @@
     .high-contrast-opaque {
       opacity: 1 !important;
       background-color: var(--surface) !important;
-      color: var(--text-color) !important;
+      color: var(--text-primary) !important;
     }
 
     /* Enhanced text weight */

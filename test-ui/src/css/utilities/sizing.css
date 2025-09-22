@@ -84,9 +84,9 @@
   .w-fit-content { width: fit-content; }
 
   /* Layout-specific widths */
-  .w-sidebar { width: 210px; }
-  .w-container { width: 1200px; }
-  .w-content { width: 768px; }
+  .w-sidebar { width: 13.125rem; }
+  .w-container { width: 75rem;  /* 1200px */ }
+  .w-content { width: 48rem;  /* 768px */ }
 
   /* Touch target widths for accessibility */
   .w-touch { width: 44px; }
@@ -310,7 +310,7 @@
   .max-w-60ch { max-width: 60ch; }    /* Field test page description width */
 
   /* Container maximum widths */
-  .max-w-container { max-width: 1200px; }
+  .max-w-container { max-width: 75rem;  /* 1200px */ }
   .max-w-modal { max-width: 800px; }
   .max-w-500 { max-width: 500px; }
 
@@ -325,7 +325,7 @@
 
   /* Screen size maximum widths */
   .max-w-screen-sm { max-width: 640px; }
-  .max-w-screen-md { max-width: 768px; }
+  .max-w-screen-md { max-width: 48rem;  /* 768px */ }
   .max-w-screen-lg { max-width: 1024px; }
   .max-w-screen-xl { max-width: 1280px; }
   .max-w-screen-2xl { max-width: 1536px; }
@@ -553,5 +553,100 @@
   .force-touch {
     min-width: 44px;
     min-height: 44px;
+  }
+
+  /* Container utilities (moved from layout.css) */
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .container-sm {
+    max-width: 640px;
+  }
+
+  .container-md {
+    max-width: 768px;
+  }
+
+  .container-lg {
+    max-width: 1024px;
+  }
+
+  .container-xl {
+    max-width: 1280px;
+  }
+
+  .container-2xl {
+    max-width: 1536px;
+  }
+
+  /* Centered container patterns */
+  .container-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .container-center-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* ===========================================
+     ACCESSIBILITY UTILITIES
+     =========================================== */
+
+
+
+  /* Focus trap for modals */
+  .focus-trap {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* ===========================================
+     RESPONSIVE DESIGN HELPERS
+     =========================================== */
+
+  /* Responsive containers */
+  @media (width >= 640px) {
+    .container {
+      max-width: 640px;
+    }
+  }
+
+  @media (width >= 768px) {
+    .container {
+      max-width: 768px;
+    }
+  }
+
+  @media (width >= 1024px) {
+    .container {
+      max-width: 1024px;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (width >= 1280px) {
+    .container {
+      max-width: 1280px;
+    }
+  }
+
+  @media (width >= 1536px) {
+    .container {
+      max-width: 1536px;
+    }
   }
 }

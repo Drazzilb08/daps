@@ -135,3 +135,22 @@
 
   .hover\:border-primary:hover { border-color: var(--primary); }
 }
+  /* Complete Border Width System */
+  .border-l-1 { border-left: 1px solid var(--border); }
+  .border-l-2 { border-left: 2px solid var(--border); }
+  .border-l-3 { border-left: 3px solid var(--border); }
+
+  .border-r-1 { border-right: 1px solid var(--border); }
+  .border-r-2 { border-right: 2px solid var(--border); }
+  .border-r-3 { border-right: 3px solid var(--border); }
+  .border-r-4 { border-right: 4px solid var(--border); }
+
+  .border-t-1 { border-top: 1px solid var(--border); }
+  .border-t-2 { border-top: 2px solid var(--border); }
+  .border-t-3 { border-top: 3px solid var(--border); }
+  .border-t-4 { border-top: 4px solid var(--border); }
+
+  .border-b-1 { border-bottom: 1px solid var(--border); }
+  .border-b-2 { border-bottom: 2px solid var(--border); }
+  .border-b-3 { border-bottom: 3px solid var(--border); }
+  .border-b-4 { border-bottom: 4px solid var(--border); }

@@ -6,11 +6,13 @@
 /* Design tokens */
 @import url('./tokens.css');
 @import url('./base.css');
+
 /* layout.css removed - converted to utility classes */
 @import url('./theme/dark.css');
 @import url('./theme/light.css');
 
 /* Component system - MUST come before utilities for proper cascade */
+
 /* ui/index.css removed - all UI components converted to utility classes */
 @import url('./components/layout/index.css');
 @import url('./components/hamburger-button.css');
@@ -19,4 +21,5 @@
 @import url('./utilities/index.css');
 
 /* Page-specific styles */
+
 /* pages/dev/index.css removed - dev pages use utility classes */

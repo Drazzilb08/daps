@@ -603,10 +603,7 @@
   /* Focus trap for modals */
   .focus-trap {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     pointer-events: none;
   }
 
@@ -661,6 +658,7 @@
     .md\:justify-center { justify-content: center; }
     .md\:justify-between { justify-content: space-between; }
     .md\:items-center { align-items: center; }
+
     /* Grid responsive utilities moved to responsive.css for consolidation */
   }
 
@@ -674,6 +672,7 @@
     .lg\:justify-center { justify-content: center; }
     .lg\:justify-between { justify-content: space-between; }
     .lg\:items-center { align-items: center; }
+
     /* Grid responsive utilities moved to responsive.css for consolidation */
   }
 

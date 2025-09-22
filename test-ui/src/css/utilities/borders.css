@@ -88,34 +88,42 @@
     border-top-left-radius: 0;
     border-top-right-radius: 0;
   }
+
   .rounded-t {
     border-top-left-radius: 0.5rem;
     border-top-right-radius: 0.5rem;
   }
+
   .rounded-b-none {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
   }
+
   .rounded-b {
     border-bottom-left-radius: 0.5rem;
     border-bottom-right-radius: 0.5rem;
   }
+
   .rounded-l-none {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
   }
+
   .rounded-l {
     border-top-left-radius: 0.5rem;
     border-bottom-left-radius: 0.5rem;
   }
+
   .rounded-l-md {
     border-top-left-radius: 0.375rem;
     border-bottom-left-radius: 0.375rem;
   }
+
   .rounded-r-none {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
   }
+
   .rounded-r {
     border-top-right-radius: 0.5rem;
     border-bottom-right-radius: 0.5rem;

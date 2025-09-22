@@ -243,4 +243,24 @@
     .lg\:text-2xl { font-size: 1.5rem; }
     .lg\:text-3xl { font-size: 1.875rem; }
   }
+
+  /* ===========================================
+     RESPONSIVE "MAX-WIDTH" UTILITIES
+     Mobile-down breakpoints for hiding content
+     =========================================== */
+
+  /* Hide on small mobile and down (480px and below) */
+  @media (width <= 480px) {
+    .max-sm\:hidden { display: none; }
+  }
+
+  /* Hide on mobile and down (768px and below) */
+  @media (width <= 768px) {
+    .max-md\:hidden { display: none; }
+  }
+
+  /* Hide on tablet and down (1023px and below) */
+  @media (width <= 1023px) {
+    .max-lg\:hidden { display: none; }
+  }
 }

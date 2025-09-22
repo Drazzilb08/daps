@@ -12,7 +12,6 @@
 
 :root,
 [data-theme='dark'] {
-
     /* Brand & Semantic Colors */
     --primary: #ff7300;        /* Primary brand orange - consistent across themes */
     --accent: #3e7bfa;         /* Secondary brand blue for links and accents */

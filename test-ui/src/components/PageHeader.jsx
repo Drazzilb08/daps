@@ -86,24 +86,24 @@ const PageHeader = React.memo(() => {
 
     return (
         <header
-            className={`page-header ${isSearchPage ? 'search-page' : 'non-search-page'}`}
+            className={`shrink-0 h-header bg-header-bg z-sticky ${isSearchPage ? 'search-page' : 'non-search-page'}`}
             role="banner"
         >
-            <div className="page-header-content">
+            <div className={`flex items-center justify-between h-full px-4 max-w-full ${isSearchPage ? 'gap-4' : 'gap-3'}`}>
                 {/* Brand/Logo Section with Hamburger */}
-                <div className="page-header-brand">
+                <div className="flex items-center gap-3 shrink-0">
                     {/* DAPS Logo and Title - Clickable Link to Home */}
-                    <Link to="/" className="page-header-logo-section touch-target">
+                    <Link to="/" className="page-header-logo-section touch-target flex items-center gap-3 no-underline text-current cursor-pointer p-1 transition-colors hover:bg-surface-alt focus:outline-focus">
                         <img
                             src="/img/favicon-32x32.png"
                             alt="DAPS Logo"
-                            className="page-header-logo-image"
+                            className="shrink-0 w-icon-xl h-icon-xl"
                             width="32"
                             height="32"
                         />
-                        <h1 className="page-header-title m-0">
-                            <span className="page-header-logo-text">DAPS</span>
-                            <span className="page-header-subtitle">Media Automation</span>
+                        <h1 className="page-header-title max-md:hidden flex flex-col leading-tight m-0">
+                            <span className="text-xl font-bold text-primary">DAPS</span>
+                            <span className="text-xs text-secondary font-medium">Media Automation</span>
                         </h1>
                     </Link>
 
@@ -118,7 +118,7 @@ const PageHeader = React.memo(() => {
                 {/* Context-Aware Content Area */}
                 {isSearchPage ? (
                     /* Search Page Interface */
-                    <div className="page-header-search-area">
+                    <div className="flex-1 max-w-500 mx-auto flex items-center justify-center">
                         <SearchInterface
                             searchPageType={searchPageType}
                             searchSubtype={searchSubtype}
@@ -127,16 +127,16 @@ const PageHeader = React.memo(() => {
                     </div>
                 ) : (
                     /* Non-Search Page - Clean Spacer */
-                    <div className="page-header-spacer">
+                    <div className="flex-1">
                         {/* Clean minimal header for non-search pages */}
                     </div>
                 )}
 
                 {/* Actions Section - Always show theme toggle */}
-                <div className="page-header-actions">
+                <div className="flex items-center gap-3 shrink-0">
                     {/* Theme Toggle */}
                     <button
-                        className="theme-toggle-button"
+                        className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded-md text-primary text-sm font-medium cursor-pointer transition-fast min-h-touch whitespace-nowrap hover:bg-surface-alt focus:outline-focus focus:outline-offset-2 active:bg-surface-alt"
                         onClick={handleThemeToggle}
                         type="button"
                         aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`}
@@ -148,7 +148,7 @@ const PageHeader = React.memo(() => {
                         >
                             {getThemeIconName()}
                         </span>
-                        <span className="theme-toggle-text">{getThemeDisplayText()}</span>
+                        <span className="theme-toggle-text max-sm:hidden">{getThemeDisplayText()}</span>
                     </button>
                 </div>
             </div>

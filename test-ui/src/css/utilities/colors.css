@@ -39,8 +39,11 @@
 
   /* Special backgrounds */
   .bg-transparent { background: transparent; }
-  .bg-white { background: #ffffff; }
-  .bg-black { background: #000000; }
+  .bg-white { background: #fff; }
+  .bg-black { background: #000; }
+
+  /* Layout-specific backgrounds */
+  .bg-header-bg { background: var(--header-bg); }
 
   /* Text color backgrounds (for separators and borders) */
   .bg-text-secondary { background: var(--text-secondary); }
@@ -49,7 +52,7 @@
   .bg-focus { background: var(--focus); }
   .bg-overlay { background: var(--overlay); }
   .bg-overlay-strong { background: var(--overlay-strong); }
-  .bg-backdrop { background: var(--backdrop-bg, rgba(0, 0, 0, 0.3)); }
+  .bg-backdrop { background: var(--backdrop-bg, rgb(0 0 0 / 30%)); }
 
   /* Form input backgrounds */
   .bg-input { background: var(--input-bg); }
@@ -62,6 +65,7 @@
   .bg-gradient-primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-darker, var(--primary)));
   }
+
   .bg-gradient-surface {
     background: linear-gradient(135deg, var(--surface), var(--surface-elevated));
   }
@@ -85,10 +89,10 @@
 
   /* Special text colors */
   .text-inherit { color: inherit; }
-  .text-current { color: currentColor; }
+  .text-current { color: currentcolor; }
   .text-transparent { color: transparent; }
-  .text-white { color: #ffffff; }
-  .text-black { color: #000000; }
+  .text-white { color: #fff; }
+  .text-black { color: #000; }
 
   /* Focus and interactive text colors */
   .text-focus { color: var(--focus); }
@@ -101,6 +105,7 @@
     color: var(--text-muted, var(--text-secondary));
     opacity: 0.8;
   }
+
   .text-subtle {
     color: var(--text-subtle, var(--text-tertiary));
     opacity: 0.6;
@@ -125,9 +130,9 @@
 
   /* Special border colors */
   .border-transparent { border-color: transparent; }
-  .border-current { border-color: currentColor; }
-  .border-white { border-color: #ffffff; }
-  .border-black { border-color: #000000; }
+  .border-current { border-color: currentcolor; }
+  .border-white { border-color: #fff; }
+  .border-black { border-color: #000; }
 
   /* Focus and interactive border colors */
   .border-focus { border-color: var(--focus); }
@@ -157,10 +162,10 @@
   .fill-info { fill: var(--info); }
 
   /* Special fill colors */
-  .fill-current { fill: currentColor; }
+  .fill-current { fill: currentcolor; }
   .fill-none { fill: none; }
-  .fill-white { fill: #ffffff; }
-  .fill-black { fill: #000000; }
+  .fill-white { fill: #fff; }
+  .fill-black { fill: #000; }
 
   /* ===========================================
      HOVER STATE COLOR UTILITIES
@@ -182,7 +187,7 @@
   .hover\:text-success:hover { color: var(--success); }
   .hover\:text-warning:hover { color: var(--warning); }
   .hover\:text-error:hover { color: var(--error); }
-  .hover\:text-white:hover { color: #ffffff; }
+  .hover\:text-white:hover { color: #fff; }
 
   /* Border hover utilities */
   .hover\:border-primary:hover { border-color: var(--primary); }
@@ -228,7 +233,7 @@
 
   /* Text active utilities */
   .active\:text-primary:active { color: var(--primary); }
-  .active\:text-white:active { color: #ffffff; }
+  .active\:text-white:active { color: #fff; }
 
   /* Border active utilities */
   .active\:border-primary:active { border-color: var(--primary); }
@@ -245,6 +250,7 @@
 
   /* Text disabled utilities */
   .disabled\:text-disabled:disabled { color: var(--text-disabled); }
+
   .disabled\:text-muted:disabled {
     color: var(--text-disabled);
     opacity: 0.5;
@@ -264,13 +270,13 @@
   /* Selection highlight utilities */
   .selected\:bg-primary { background: var(--primary); }
   .selected\:bg-success { background: var(--success); }
-  .selected\:text-white { color: #ffffff; }
+  .selected\:text-white { color: #fff; }
   .selected\:border-primary { border-color: var(--primary); }
 
   /* Checkbox/radio selection states */
   .checked\:bg-primary:checked { background: var(--primary); }
   .checked\:border-primary:checked { border-color: var(--primary); }
-  .checked\:text-white:checked { color: #ffffff; }
+  .checked\:text-white:checked { color: #fff; }
 
   /* ===========================================
      GROUP COLOR UTILITIES
@@ -319,7 +325,7 @@
   /* Button color patterns */
   .btn-colors-primary {
     background: var(--primary);
-    color: var(--primary-text, #ffffff);
+    color: var(--primary-text, #fff);
     border-color: var(--primary);
   }
 
@@ -331,13 +337,13 @@
 
   .btn-colors-success {
     background: var(--success);
-    color: var(--success-text, #ffffff);
+    color: var(--success-text, #fff);
     border-color: var(--success);
   }
 
   .btn-colors-error {
     background: var(--error);
-    color: var(--error-text, #ffffff);
+    color: var(--error-text, #fff);
     border-color: var(--error);
   }
 
@@ -385,9 +391,9 @@
      =========================================== */
 
   @media print {
-    .print\:text-black { color: #000000 !important; }
-    .print\:bg-white { background: #ffffff !important; }
-    .print\:border-black { border-color: #000000 !important; }
+    .print\:text-black { color: #000 !important; }
+    .print\:bg-white { background: #fff !important; }
+    .print\:border-black { border-color: #000 !important; }
 
     /* Remove backgrounds for print efficiency */
     .print\:bg-none { background: none !important; }

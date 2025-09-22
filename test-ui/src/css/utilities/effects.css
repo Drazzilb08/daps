@@ -61,7 +61,7 @@
      SVG STROKE UTILITIES
      =========================================== */
 
-  .stroke-current { stroke: currentColor; }
+  .stroke-current { stroke: currentcolor; }
   .stroke-1 { stroke-width: 1; }
   .stroke-2 { stroke-width: 2; }
   .stroke-3 { stroke-width: 2.5; }
@@ -71,16 +71,16 @@
      =========================================== */
 
   .fill-none { fill: none; }
-  .fill-current { fill: currentColor; }
+  .fill-current { fill: currentcolor; }
 
   /* ===========================================
      RING UTILITIES (FOCUS RINGS)
      =========================================== */
 
-  .ring-0 { box-shadow: 0 0 0 0px rgba(0, 0, 0, 0); }
-  .ring-1 { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1); }
-  .ring-2 { box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1); }
-  .ring-4 { box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1); }
+  .ring-0 { box-shadow: 0 0 0 0 rgb(0 0 0 / 0%); }
+  .ring-1 { box-shadow: 0 0 0 1px rgb(0 0 0 / 10%); }
+  .ring-2 { box-shadow: 0 0 0 2px rgb(0 0 0 / 10%); }
+  .ring-4 { box-shadow: 0 0 0 4px rgb(0 0 0 / 10%); }
 
   /* Themed ring colors - ATOMIC UTILITIES */
   .ring-primary { box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }

@@ -49,17 +49,17 @@
      FONT FAMILY UTILITIES
      =========================================== */
 
-  .font-sans { font-family: 'Roboto', 'Open Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; }
+  .font-sans { font-family: Roboto, 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
   .font-serif { font-family: georgia, 'Times New Roman', serif; }
   .font-mono { font-family: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', consolas, monospace; }
 
   /* System font stacks for performance */
   .font-system {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   }
 
   .font-system-mono {
-    font-family: 'SF Mono', Monaco, 'Inconsolata', 'Roboto Mono', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+    font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
   }
 
   /* ===========================================
@@ -126,7 +126,7 @@
   /* Text decoration thickness */
   .decoration-auto { text-decoration-thickness: auto; }
   .decoration-from-font { text-decoration-thickness: from-font; }
-  .decoration-0 { text-decoration-thickness: 0px; }
+  .decoration-0 { text-decoration-thickness: 0; }
   .decoration-1 { text-decoration-thickness: 1px; }
   .decoration-2 { text-decoration-thickness: 2px; }
   .decoration-4 { text-decoration-thickness: 4px; }
@@ -134,7 +134,7 @@
 
   /* Text underline offset */
   .underline-offset-auto { text-underline-offset: auto; }
-  .underline-offset-0 { text-underline-offset: 0px; }
+  .underline-offset-0 { text-underline-offset: 0; }
   .underline-offset-1 { text-underline-offset: 1px; }
   .underline-offset-2 { text-underline-offset: 2px; }
   .underline-offset-4 { text-underline-offset: 4px; }
@@ -250,14 +250,14 @@
 
   .tracking-tighter { letter-spacing: -0.05em; }
   .tracking-tight { letter-spacing: -0.025em; }
-  .tracking-normal { letter-spacing: 0em; }
+  .tracking-normal { letter-spacing: 0; }
   .tracking-wide { letter-spacing: 0.025em; }
   .tracking-wider { letter-spacing: 0.05em; }
   .tracking-widest { letter-spacing: 0.1em; }
 
   /* Numeric letter spacing */
   .tracking-px { letter-spacing: 1px; }
-  .tracking-0 { letter-spacing: 0px; }
+  .tracking-0 { letter-spacing: 0; }
   .tracking-0\.5 { letter-spacing: 0.125rem; }
   .tracking-1 { letter-spacing: 0.25rem; }
 
@@ -401,7 +401,7 @@
      =========================================== */
 
   @media print {
-    .print\:text-black { color: #000000 !important; }
+    .print\:text-black { color: #000 !important; }
     .print\:text-sm { font-size: 12px !important; }
     .print\:text-base { font-size: 14px !important; }
     .print\:text-lg { font-size: 16px !important; }

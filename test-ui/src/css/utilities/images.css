@@ -22,6 +22,7 @@
     max-width: 100%;
     height: auto;
   }
+
   .img-fluid {
     max-width: 100%;
     height: auto;
@@ -59,6 +60,7 @@
     position: relative;
     overflow: hidden;
   }
+
   .img-loading::after {
     content: '';
     position: absolute;
@@ -78,10 +80,12 @@
     width: 156px;
     height: 234px;
   }
+
   .poster-mobile {
     width: 120px;
     height: 180px;
   }
+
   .poster-tablet {
     width: 130px;
     height: 195px;
@@ -97,12 +101,14 @@
       height: 180px;
     }
   }
+
   @media (width >= 481px) and (width <= 768px) {
     .poster-responsive {
       width: 130px;
       height: 195px;
     }
   }
+
   @media (width >= 769px) {
     .poster-responsive {
       width: 156px;

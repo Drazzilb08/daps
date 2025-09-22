@@ -77,7 +77,7 @@ const VersionTestComponent = React.memo(() => {
                 <button
                     onClick={execute}
                     disabled={isLoading}
-                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                    className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     {isLoading ? 'Loading...' : 'Get Version'}
                 </button>
@@ -144,7 +144,7 @@ const ConfigTestComponent = React.memo(() => {
                 <button
                     onClick={execute}
                     disabled={isLoading}
-                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                    className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     {isLoading ? 'Loading...' : 'Get Config'}
                 </button>
@@ -195,7 +195,7 @@ const JobStatsTestComponent = React.memo(() => {
                 <button
                     onClick={execute}
                     disabled={isLoading}
-                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                    className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     {isLoading ? 'Loading...' : 'Get Job Stats'}
                 </button>
@@ -270,7 +270,7 @@ const ErrorTestComponent = React.memo(() => {
                 <button
                     onClick={execute}
                     disabled={isLoading}
-                    className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                    className="touch-target bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     {isLoading ? 'Testing...' : 'Test Error'}
                 </button>
@@ -323,31 +323,31 @@ const ToastTestComponent = React.memo(() => {
             <div className="mb-3 flex flex-col md:flex-row md:items-center gap-2">
                 <button
                     onClick={testToasts}
-                    className="min-h-touch bg-info text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                    className="touch-target bg-info text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     Test All Toasts
                 </button>
                 <button
                     onClick={() => toast.success('Success toast!')}
-                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                    className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     Success
                 </button>
                 <button
                     onClick={() => toast.error('Error toast!')}
-                    className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                    className="touch-target bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     Error
                 </button>
                 <button
                     onClick={() => toast.warning('Warning toast!')}
-                    className="min-h-touch bg-warning text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                    className="touch-target bg-warning text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                 >
                     Warning
                 </button>
                 <button
                     onClick={() => toast.info('Info toast!')}
-                    className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
+                    className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                 >
                     Info
                 </button>

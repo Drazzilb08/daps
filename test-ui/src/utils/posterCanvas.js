@@ -4,26 +4,21 @@
  */
 
 /**
- * Get border thickness from CSS custom property
- * Converts rem value to pixels for canvas operations
+ * Get border thickness for poster canvas operations
  * @returns {number} Border thickness in pixels
  */
 const getBorderThickness = () => {
-    const remValue = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue('--poster-border-thickness')
-    );
-    return remValue * 16; // Convert rem to pixels (assuming 16px = 1rem)
+    return 5; // Hardcoded poster border thickness in pixels
 };
 
 /**
- * Get poster dimensions from CSS custom properties
+ * Get poster dimensions for canvas operations
  * @returns {Object} Object with width and height properties
  */
 export const getPosterDimensions = () => {
-    const styles = getComputedStyle(document.documentElement);
     return {
-        width: parseInt(styles.getPropertyValue('--poster-width-standard'), 10),
-        height: parseInt(styles.getPropertyValue('--poster-height-standard'), 10),
+        width: 156,  // Hardcoded poster width in pixels
+        height: 234, // Hardcoded poster height in pixels
     };
 };
 

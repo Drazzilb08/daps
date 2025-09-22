@@ -49,7 +49,7 @@ const FieldStatusOverview = React.memo(() => {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-auto-fit-md">
                 <div className="bg-surface border rounded-sm p-3">
                     <h3 className="text-base font-medium text-primary mb-2">✅ Working Fields</h3>
                     <div className="flex flex-wrap gap-1">
@@ -373,21 +373,21 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                             {isApproved ? (
                                 <button
                                     onClick={handleDisapprove}
-                                    className="min-h-touch bg-warning text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                                    className="touch-target bg-warning text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                                 >
                                     Unapprove
                                 </button>
                             ) : (
                                 <button
                                     onClick={handleApprove}
-                                    className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                                    className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                                 >
                                     Approve for Production
                                 </button>
                             )}
                             <button
                                 onClick={handleDisapprove}
-                                className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                                className="touch-target bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                             >
                                 Needs Work
                             </button>
@@ -540,7 +540,7 @@ const FieldTestPage = () => {
                             id="filter-select"
                             value={filter}
                             onChange={e => setFilter(e.target.value)}
-                            className="min-h-touch-target py-2 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm"
+                            className="touch-target-target py-2 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm"
                         >
                             <option value="all">All Field Types</option>
                             <option value="working">Working Only</option>
@@ -561,7 +561,7 @@ const FieldTestPage = () => {
                                 id="field-type-select"
                                 value={selectedFieldType}
                                 onChange={e => handleFieldTypeSelect(e.target.value)}
-                                className="min-h-touch-target py-2 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm"
+                                className="touch-target-target py-2 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm"
                             >
                                 {filteredFieldTypes.map(type => (
                                     <option key={type} value={type}>
@@ -606,19 +606,19 @@ const FieldTestPage = () => {
                                 setApprovedFields(prev => new Set([...prev, type]))
                             );
                         }}
-                        className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors"
+                        className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors"
                     >
                         Approve All Working Fields
                     </button>
                     <button
                         onClick={() => setApprovedFields(new Set())}
-                        className="min-h-touch bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors"
+                        className="touch-target bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors"
                     >
                         Reset All Approvals
                     </button>
                     <button
                         onClick={() => setFilter('unapproved')}
-                        className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover"
+                        className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover"
                     >
                         Show Fields Needing Testing
                     </button>

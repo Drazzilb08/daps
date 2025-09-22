@@ -136,7 +136,7 @@ const PageHeader = React.memo(() => {
                 <div className="flex items-center gap-3 shrink-0">
                     {/* Theme Toggle */}
                     <button
-                        className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded-md text-primary text-sm font-medium cursor-pointer transition-fast min-h-touch whitespace-nowrap hover:bg-surface-alt focus:outline-focus focus:outline-offset-2 active:bg-surface-alt"
+                        className="flex items-center gap-2 px-3 py-2 bg-surface border border-border rounded-md text-primary text-sm font-medium cursor-pointer transition-fast touch-target whitespace-nowrap hover:bg-surface-alt focus:outline-focus focus:outline-offset-2 active:bg-surface-alt"
                         onClick={handleThemeToggle}
                         type="button"
                         aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`}

@@ -237,7 +237,7 @@ const PageSidebar = React.memo(() => {
                                 <NavLink
                                     to={item.path}
                                     onClick={handleParentNavLinkClick}
-                                    className={`flex items-center gap-3 py-3 px-4 text-secondary no-underline text-sm font-medium transition-all duration-150 min-h-touch relative ${
+                                    className={`flex items-center gap-3 py-3 px-4 text-secondary no-underline text-sm font-medium transition-all duration-150 touch-target relative ${
                                         item.type === 'parent' && isParentActive(item)
                                             ? 'nav-link--parent-active'
                                             : ''
@@ -272,7 +272,7 @@ const PageSidebar = React.memo(() => {
                                                     <NavLink
                                                         to={child.path}
                                                         onClick={handleChildNavLinkClick}
-                                                        className={`flex items-center py-2 px-4 pl-10 text-sidebar-secondary no-underline text-sm font-normal transition-all duration-150 min-h-touch relative nav-link--child-in-active-section ${
+                                                        className={`flex items-center py-2 px-4 pl-10 text-sidebar-secondary no-underline text-sm font-normal transition-all duration-150 touch-target relative nav-link--child-in-active-section ${
                                                             isChildActive(child.path)
                                                                 ? 'nav-link--child-active'
                                                                 : ''

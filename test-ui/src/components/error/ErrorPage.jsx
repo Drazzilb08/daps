@@ -137,7 +137,7 @@ const ErrorPage = ({
                         {showHome && (
                             <Link
                                 to="/"
-                                className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                                className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                             >
                                 <span className="inline-block font-normal">🏠</span>
                                 Go Home
@@ -147,7 +147,7 @@ const ErrorPage = ({
                         {showBack && (
                             <button
                                 onClick={handleBack}
-                                className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
+                                className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                                 type="button"
                             >
                                 <span className="inline-block font-normal">←</span>
@@ -158,7 +158,7 @@ const ErrorPage = ({
                         {showRefresh && (
                             <button
                                 onClick={handleRefresh}
-                                className="min-h-touch bg-transparent text-primary px-3 py-2 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
+                                className="touch-target bg-transparent text-primary px-3 py-2 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                                 type="button"
                             >
                                 <span className="inline-block font-normal">🔄</span>

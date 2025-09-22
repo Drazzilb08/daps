@@ -258,7 +258,7 @@ class PageErrorBoundaryBase extends Component {
                                 {showRetry && (
                                     <button
                                         onClick={this.handleRetry}
-                                        className="min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none bg-primary text-white py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
+                                        className="touch-target leading-none no-underline whitespace-nowrap border border-transparent select-none bg-primary text-white py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                         type="button"
                                     >
                                         <span className="inline-block font-normal">🔄</span>
@@ -270,7 +270,7 @@ class PageErrorBoundaryBase extends Component {
                                     <>
                                         <button
                                             onClick={this.handleNavigateHome}
-                                            className="min-h-touch leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
+                                            className="touch-target leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                             type="button"
                                         >
                                             <span className="inline-block font-normal">
@@ -281,7 +281,7 @@ class PageErrorBoundaryBase extends Component {
 
                                         <button
                                             onClick={this.handleNavigateBack}
-                                            className="min-h-touch leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
+                                            className="touch-target leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                             type="button"
                                         >
                                             <span className="inline-block font-normal">
@@ -294,7 +294,7 @@ class PageErrorBoundaryBase extends Component {
 
                                 <button
                                     onClick={this.handleCopyError}
-                                    className={`min-h-touch leading-none no-underline whitespace-nowrap border border-transparent select-none py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center ${
+                                    className={`touch-target leading-none no-underline whitespace-nowrap border border-transparent select-none py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center ${
                                         this.state.copySuccess
                                             ? 'bg-success text-white'
                                             : this.state.copyError
@@ -324,7 +324,7 @@ class PageErrorBoundaryBase extends Component {
 
                                 <button
                                     onClick={this.handleRefresh}
-                                    className="min-h-touch leading-none no-underline whitespace-nowrap border border-border select-none bg-transparent text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
+                                    className="touch-target leading-none no-underline whitespace-nowrap border border-border select-none bg-transparent text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                     type="button"
                                 >
                                     <span className="inline-block font-normal">🔄</span>

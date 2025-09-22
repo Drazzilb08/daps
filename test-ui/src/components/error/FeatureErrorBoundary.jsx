@@ -214,7 +214,7 @@ class FeatureErrorBoundaryBase extends Component {
                         </span>
                         <button
                             onClick={this.handleRetry}
-                            className="min-h-touch bg-transparent text-primary px-2 py-1 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
+                            className="touch-target bg-transparent text-primary px-2 py-1 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
                             type="button"
                             title="Try to load this feature again"
                         >
@@ -257,7 +257,7 @@ class FeatureErrorBoundaryBase extends Component {
                                 <div className="flex flex-wrap gap-2">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="min-h-touch bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                                        className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                                         type="button"
                                     >
                                         <span className="inline-block font-normal">
@@ -267,7 +267,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     </button>
                                     <button
                                         onClick={this.handleCopyError}
-                                        className={`min-h-touch px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center ${
+                                        className={`touch-target px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center ${
                                             this.state.copySuccess
                                                 ? 'bg-success text-white'
                                                 : this.state.copyError
@@ -296,7 +296,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     </button>
                                     <button
                                         onClick={this.handleReload}
-                                        className="min-h-touch bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
+                                        className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                                         type="button"
                                     >
                                         <span className="inline-block font-normal">
@@ -368,7 +368,7 @@ class FeatureErrorBoundaryBase extends Component {
                                 <div className="flex flex-wrap gap-2 mb-0">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="min-h-touch bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
+                                        className="touch-target bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
                                         type="button"
                                     >
                                         <span className="inline-block font-normal">
@@ -380,7 +380,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     {!critical && (
                                         <button
                                             onClick={this.handleSkip}
-                                            className="min-h-touch bg-surface text-primary px-2 py-1 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
+                                            className="touch-target bg-surface text-primary px-2 py-1 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
                                             type="button"
                                         >
                                             <span className="inline-block font-normal">
@@ -392,7 +392,7 @@ class FeatureErrorBoundaryBase extends Component {
 
                                     <button
                                         onClick={this.handleCopyError}
-                                        className={`min-h-touch px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm ${
+                                        className={`touch-target px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm ${
                                             this.state.copySuccess
                                                 ? 'bg-success text-white'
                                                 : this.state.copyError
@@ -422,7 +422,7 @@ class FeatureErrorBoundaryBase extends Component {
 
                                     <button
                                         onClick={this.handleReload}
-                                        className="min-h-touch bg-transparent text-primary px-2 py-1 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
+                                        className="touch-target bg-transparent text-primary px-2 py-1 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
                                         type="button"
                                     >
                                         <span className="inline-block font-normal">
@@ -442,7 +442,7 @@ class FeatureErrorBoundaryBase extends Component {
                                             </p>
                                             <button
                                                 onClick={this.handleReload}
-                                                className="min-h-touch bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
+                                                className="touch-target bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
                                                 type="button"
                                             >
                                                 Reload Application

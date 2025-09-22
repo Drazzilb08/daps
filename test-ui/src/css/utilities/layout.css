@@ -188,6 +188,11 @@
   .place-content-evenly { place-content: space-evenly; }
   .place-content-stretch { place-content: stretch; }
 
+  /* Special flex pattern for page-main-content */
+  .flex-1-0-1px {
+    flex: 1 0 1px;
+  }
+
   /* Place items (align-items + justify-items) */
   .place-items-start { place-items: start; }
   .place-items-end { place-items: end; }

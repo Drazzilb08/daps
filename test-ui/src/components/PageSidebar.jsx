@@ -229,10 +229,10 @@ const PageSidebar = React.memo(() => {
         >
             <div className="flex flex-col h-full py-4">
                 {/* Hierarchical Navigation */}
-                <nav className="page-sidebar-nav">
-                    <ul className="nav-list" role="list">
+                <nav className="flex-1">
+                    <ul className="list-none" role="list">
                         {NAVIGATION_STRUCTURE.map(item => (
-                            <li key={item.id} className="nav-item">
+                            <li key={item.id} className="mb-0">
                                 {/* Parent Item or Single Item */}
                                 <NavLink
                                     to={item.path}
@@ -254,21 +254,21 @@ const PageSidebar = React.memo(() => {
                                     }
                                 >
                                     <span
-                                        className="nav-icon material-symbols-outlined"
+                                        className="text-base flex items-center justify-center w-5 shrink-0 material-symbols-outlined"
                                         aria-hidden="true"
                                     >
                                         {item.icon}
                                     </span>
-                                    <span className="nav-label">{item.label}</span>
+                                    <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
                                 </NavLink>
 
                                 {/* Child Items - Only Visible When Parent is Active */}
                                 {item.type === 'parent' &&
                                     item.children &&
                                     isParentActive(item) && (
-                                        <ul className="nav-children" role="list">
+                                        <ul className="list-none" role="list">
                                             {item.children.map(child => (
-                                                <li key={child.id} className="nav-child-item">
+                                                <li key={child.id} className="mb-0">
                                                     <NavLink
                                                         to={child.path}
                                                         onClick={handleChildNavLinkClick}
@@ -283,7 +283,7 @@ const PageSidebar = React.memo(() => {
                                                                 : undefined
                                                         }
                                                     >
-                                                        <span className="nav-label nav-label--child">
+                                                        <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis nav-label--child">
                                                             {child.label}
                                                         </span>
                                                     </NavLink>
@@ -297,7 +297,7 @@ const PageSidebar = React.memo(() => {
                 </nav>
 
                 {/* Footer section for future use */}
-                <div className="page-sidebar-footer">
+                <div className="shrink-0 p-4 border-t border-sidebar-border">
                     {/* Future: version info, user info, etc. */}
                 </div>
             </div>

@@ -93,7 +93,7 @@ const PageHeader = React.memo(() => {
                 {/* Brand/Logo Section with Hamburger */}
                 <div className="flex items-center gap-3 shrink-0">
                     {/* DAPS Logo and Title - Clickable Link to Home */}
-                    <Link to="/" className="page-header-logo-section touch-target flex items-center gap-3 no-underline text-current cursor-pointer p-1 transition-colors hover:bg-surface-alt focus:outline-focus">
+                    <Link to="/" className="touch-target flex items-center gap-3 no-underline text-current cursor-pointer p-1 transition-colors hover:bg-surface-alt focus:outline-focus">
                         <img
                             src="/img/favicon-32x32.png"
                             alt="DAPS Logo"
@@ -101,7 +101,7 @@ const PageHeader = React.memo(() => {
                             width="32"
                             height="32"
                         />
-                        <h1 className="page-header-title max-md:hidden flex flex-col leading-tight m-0">
+                        <h1 className="max-md:hidden flex flex-col leading-tight m-0">
                             <span className="text-xl font-bold text-primary">DAPS</span>
                             <span className="text-xs text-secondary font-medium">Media Automation</span>
                         </h1>

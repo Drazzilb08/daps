@@ -444,7 +444,7 @@
   .aria-required[aria-required="true"]::after {
     content: ' *';
     color: var(--error);
-    font-weight: var(--font-weight-bold);
+    font-weight: 700;
   }
 
   /* ===========================================

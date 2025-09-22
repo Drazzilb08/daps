@@ -3,8 +3,7 @@
  * Import Order: tokens, base, themes, utilities, components, pages
  */
 
-/* Design tokens */
-@import url('./tokens.css');
+/* Design tokens eliminated - utility-first architecture achieved */
 @import url('./base.css');
 
 /* layout.css removed - converted to utility classes */

@@ -34,7 +34,7 @@ const Layout = ({ children }) => {
     );
 
     return (
-        <div className="page-layout">
+        <div className="flex flex-col h-dvh overflow-hidden">
             <FeatureErrorBoundary
                 featureName="Page Header"
                 featureDescription="Main navigation and header"
@@ -43,7 +43,7 @@ const Layout = ({ children }) => {
                 <PageHeader />
             </FeatureErrorBoundary>
 
-            <div className="page-main">
+            <div className="flex flex-1 overflow-hidden">
                 <FeatureErrorBoundary
                     featureName="Sidebar Navigation"
                     featureDescription="Left navigation sidebar"
@@ -52,7 +52,7 @@ const Layout = ({ children }) => {
                     <PageSidebar />
                 </FeatureErrorBoundary>
 
-                <div className="page-main-content">
+                <div className="flex-1-0-1px flex flex-col overflow-hidden">
                     {/* Toolbar only shows on search pages */}
                     {isSearchPage && (
                         <FeatureErrorBoundary
@@ -68,7 +68,7 @@ const Layout = ({ children }) => {
                         </FeatureErrorBoundary>
                     )}
 
-                    <main className="page-content">
+                    <main className="flex-1 overflow-y-auto p-4 px-3 md:p-6 md:px-4 bg-bg">
                         <FeatureErrorBoundary
                             featureName="Page Content"
                             featureDescription="Main page content area"

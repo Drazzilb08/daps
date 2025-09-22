@@ -17,7 +17,7 @@
 
     .hamburger:disabled {
         cursor: not-allowed;
-        opacity: var(--opacity-disabled);
+        opacity: 0.5;
     }
 
     .hamburger:disabled:hover {
@@ -35,8 +35,8 @@
         stroke: var(--primary);
         stroke-width: 6;
         transition:
-            stroke-dasharray var(--duration-extra-slow) cubic-bezier(0.4, 0, 0.2, 1),
-            stroke-dashoffset var(--duration-extra-slow) cubic-bezier(0.4, 0, 0.2, 1);
+            stroke-dasharray 500ms cubic-bezier(0.4, 0, 0.2, 1),
+            stroke-dashoffset 500ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .line1 {

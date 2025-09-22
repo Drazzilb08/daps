@@ -82,20 +82,20 @@
   .nav-link--parent-active {
     background: var(--surface-alt);
     color: var(--text-primary);
-    font-weight: var(--font-weight-semibold);
+    font-weight: 600;
     position: relative;
   }
 
   .nav-link--active {
     background: var(--surface-alt);
     color: var(--text-primary);
-    font-weight: var(--font-weight-semibold);
+    font-weight: 600;
     position: relative;
   }
 
   .nav-link--child-active {
     color: var(--primary);
-    font-weight: var(--font-weight-semibold);
+    font-weight: 600;
   }
 
   .nav-link--child-in-active-section {

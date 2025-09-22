@@ -219,32 +219,32 @@
 
   /* Transition duration utilities using design tokens */
   .transition-fast {
-    transition: all var(--transition-fast); /* 150ms ease-in-out */
+    transition: all 150ms ease-in-out;
   }
 
   .transition-normal {
-    transition: all var(--transition-normal); /* 250ms ease-in-out */
+    transition: all 250ms ease-in-out;
   }
 
   .transition-slow {
-    transition: all var(--transition-slow); /* 400ms ease-in-out */
+    transition: all 350ms ease-in-out;
   }
 
   /* Specific transition properties */
   .transition-colors {
-    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+    transition: color 150ms ease-in-out, background-color 150ms ease-in-out, border-color 150ms ease-in-out;
   }
 
   .transition-opacity {
-    transition: opacity var(--transition-fast);
+    transition: opacity 150ms ease-in-out;
   }
 
   .transition-transform {
-    transition: transform var(--transition-fast);
+    transition: transform 150ms ease-in-out;
   }
 
   .transition-shadow {
-    transition: box-shadow var(--transition-fast);
+    transition: box-shadow 150ms ease-in-out;
   }
 
   /* No transition for accessibility */

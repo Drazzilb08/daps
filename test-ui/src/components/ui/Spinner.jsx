@@ -24,8 +24,7 @@ const Spinner = ({ size = 'medium', text, className = '', center = false }) => {
     const spinnerElement = (
         <div className={`inline-block ${className}`.trim()}>
             <div
-                className={`rounded-full animate-spin ${sizeClasses} border-2 border-border`}
-                style={{ borderTopColor: 'var(--color-primary)' }}
+                className={`rounded-full animate-spin ${sizeClasses} border-2 border-border border-t-primary`}
             />
         </div>
     );

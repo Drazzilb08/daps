@@ -129,6 +129,9 @@
     .md\:p-6 { padding: 1.5rem; }
     .md\:p-8 { padding: 2rem; }
 
+    /* Responsive horizontal padding for Layout.jsx */
+    .md\:px-4 { padding-left: 1rem; padding-right: 1rem; }
+
     .md\:m-0 { margin: 0; }
     .md\:m-2 { margin: 0.5rem; }
     .md\:m-4 { margin: 1rem; }
@@ -204,9 +207,6 @@
     .md\:relative { position: relative; }
     .md\:absolute { position: absolute; }
 
-    /* Z-index utilities for responsive behavior */
-    .md\:z-auto { z-index: auto; }
-    .md\:z-sticky { z-index: var(--z-sticky); }
 
     /* Top/bottom positioning for responsive layout */
     .md\:top-0 { top: 0; }

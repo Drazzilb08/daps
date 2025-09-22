@@ -249,7 +249,7 @@
 
     hr {
         border: none;
-        height: var(--border-width-thin);
+        height: 1px;
         background-color: var(--border);
         margin: 2rem 0;
     }
@@ -270,7 +270,7 @@
 
     :focus-visible {
         outline: 2px solid var(--focus);
-        outline-offset: var(--focus-ring-offset);
+        outline-offset: 2px;
         border-radius: 0.25rem;
     }
 
@@ -280,14 +280,14 @@
     select:focus-visible,
     a:focus-visible {
         outline: 2px solid var(--focus);
-        outline-offset: var(--focus-ring-offset);
+        outline-offset: 2px;
         box-shadow:
             0 0 0 2px var(--focus),
             0 0 0 4px var(--focus);
     }
 
     input:focus-visible {
-        border: var(--border-width-thin) solid var(--primary);
+        border: 1px solid var(--primary);
         outline: none;
     }
 
@@ -312,10 +312,10 @@
 
     .sr-only {
         position: absolute;
-        width: var(--border-width-thin);
-        height: var(--border-width-thin);
+        width: 1px;
+        height: 1px;
         padding: 0;
-        margin: calc(-1 * var(--border-width-thin));
+        margin: -1px;
         overflow: hidden;
         clip-path: inset(50%);
         white-space: nowrap;

@@ -18,13 +18,19 @@
     --success: #32d74b;        /* Success state green for positive feedback */
     --warning: #ff9f0a;        /* Warning state yellow for caution messages */
     --error: #ff375f;          /* Error state red for negative feedback */
+    --info: #4a9eff;           /* Info state blue for informational messages */
     --focus: #ff9500;          /* Focus indicator - brighter orange for visibility */
 
     /* Surface & Background Colors */
     --bg: #23272b;                    /* Main background - deepest surface level */
     --surface: #262a30;               /* Primary surface - cards, panels, dialogs */
     --surface-alt: #282c31;           /* Alternative surface - hover states, secondary */
-    --surface-elevated: #282c31;      /* Elevated surface - modals, dropdowns, tooltips */
+    --surface-elevated: #2c3037;      /* Elevated surface - modals, dropdowns, tooltips */
+    --surface-hover: #2d3138;         /* Hover surface interaction state */
+    --surface-active: #2e3239;        /* Active surface interaction state */
+    --surface-secondary: #242832;     /* Secondary surface areas */
+    --surface-variant: #2a2e34;       /* Alternative surface variant */
+    --surface-dim: #1f2328;           /* Dimmed/muted surface variant */
 
     /* Border & Separation Colors */
     --border: #292c30;                /* Standard border - form fields, cards */
@@ -53,15 +59,16 @@
     --success-text: #fff;                           /* White text on green background */
     --warning-text: #fff;                           /* White text on yellow background */
     --error-text: #fff;                             /* White text on red background */
+    --info-text: #fff;                              /* White text on info blue background */
 
     /* Link state colors */
     --link-hover: #5a96ff;                          /* Lighter blue for hover state */
     --link-visited: #5a96ff;                        /* Consistent visited link color */
 
     /* Form Control Colors */
-    --input-bg: #21242a;                           /* Primary input background */
+    --input-bg: #1a1d22;                          /* Primary input background */
     --input-bg-hover: #252830;                     /* Input hover background */
-    --input-bg-disabled: #1a1d22;                  /* Disabled input background */
+    --input-bg-disabled: #21242a;                  /* Disabled input background */
     --input-bg-readonly: #23262c;                  /* Readonly input background */
     --input-border-disabled: #202328;              /* Subtle disabled border */
     --checkbox-indicator-bg: #fff;                 /* White checkbox indicator */

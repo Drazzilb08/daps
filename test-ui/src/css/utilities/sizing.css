@@ -271,7 +271,6 @@
   .min-w-96 { min-width: 24rem; }
 
   /* Accessibility minimum widths */
-  .min-w-touch { min-width: 44px; }
   .min-w-input { min-width: 120px; }
   .min-w-control { min-width: 80px; }
   .min-w-200 { min-width: 200px; }
@@ -362,7 +361,6 @@
   .min-h-64 { min-height: 16rem; }
 
   /* Accessibility minimum heights */
-  .min-h-touch { min-height: 44px; }
   .min-h-input { min-height: 44px; }
   .min-h-input-sm { min-height: 36px; }
   .min-h-input-lg { min-height: 52px; }

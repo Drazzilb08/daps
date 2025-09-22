@@ -451,6 +451,16 @@
   }
 
   /* ===========================================
+     RESIZE UTILITIES - ELEMENT RESIZE BEHAVIOR
+     =========================================== */
+
+  /* Resize control utilities */
+  .resize-none { resize: none; }
+  .resize-y { resize: vertical; }
+  .resize-x { resize: horizontal; }
+  .resize { resize: both; }
+
+  /* ===========================================
      ATOMIC UTILITY ARCHITECTURE COMPLETE
      =========================================== */
 

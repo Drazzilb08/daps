@@ -56,10 +56,9 @@
   .bg-overlay-strong { background: var(--overlay-strong); }
   .bg-backdrop { background: var(--backdrop-bg, rgb(0 0 0 / 30%)); }
 
-  /* Form input backgrounds */
+  /* Form input backgrounds - using specific form control tokens */
   .bg-input { background: var(--input-bg); }
   .bg-input-hover { background: var(--input-bg-hover); }
-  .bg-input-focus { background: var(--input-bg); }
   .bg-input-disabled { background: var(--input-bg-disabled); }
   .bg-input-readonly { background: var(--input-bg-readonly); }
 
@@ -142,11 +141,12 @@
   .border-focus { border-color: var(--focus); }
   .border-disabled { border-color: var(--border-disabled, var(--border)); }
 
-  /* Input-specific border colors */
-  .border-input { border-color: var(--input-border-color, var(--border)); }
-  .border-input-focus { border-color: var(--input-border-focus, var(--focus)); }
-  .border-input-error { border-color: var(--input-border-error, var(--error)); }
-  .border-input-success { border-color: var(--input-border-success, var(--success)); }
+  /* Input-specific border colors - using form control tokens */
+  .border-input { border-color: var(--border); }
+  .border-input-disabled { border-color: var(--input-border-disabled); }
+  .border-input-focus { border-color: var(--focus); }
+  .border-input-error { border-color: var(--error); }
+  .border-input-success { border-color: var(--success); }
 
   /* ===========================================
      FILL COLOR UTILITIES - SVG ICONS
@@ -311,19 +311,6 @@
     background: var(--surface-elevated);
     color: var(--text-primary);
     border-color: var(--border);
-  }
-
-  /* Input color patterns */
-  .input-colors {
-    background: var(--input-bg, var(--surface));
-    color: var(--text-primary);
-    border-color: var(--input-border-color, var(--border));
-  }
-
-  .input-colors-focus {
-    background: var(--input-bg-focus, var(--surface));
-    color: var(--text-primary);
-    border-color: var(--input-border-focus, var(--focus));
   }
 
   /* Button color patterns */

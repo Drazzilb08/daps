@@ -54,26 +54,29 @@ export const TextareaBase = ({
             minLength={minLength}
             spellCheck={spellCheck}
             className={[
-                // Base textarea styling - atomic utilities only
+                // Base textarea styling - atomic utilities with proper form control tokens
                 'w-full',
                 'px-3 py-2', // Standard padding
-                'bg-input border border-border rounded-md',
+                'bg-input border border-input rounded-md',
                 'text-primary placeholder:text-secondary',
                 'resize-y', // Allow vertical resize only
-                'transition-colors',
+                'max-h-dropdown', // Prevent infinite expansion (300px max height)
+                'overflow-y-auto', // Handle content overflow with scrolling
+                'transition-colors duration-200',
 
-                // Focus states (atomic utilities)
-                'focus:outline-none focus:border-primary focus:ring-primary',
+                // Focus states (atomic utilities) - override global textarea:focus-visible outline
+                'focus:outline-none focus:border-input-focus',
+                'focus-visible:outline-none', // Explicitly override base.css textarea:focus-visible rule
 
                 // Hover states (atomic utilities)
-                !disabled && 'hover:border-primary hover:bg-surface-hover',
+                !disabled && 'hover:border-primary hover:bg-input-hover',
 
                 // Error states (atomic utilities)
-                invalid && 'border-error',
-                invalid && 'focus:ring-error',
+                invalid && 'border-input-error',
+                invalid && 'focus:border-input-error',
 
                 // Disabled states (atomic utilities)
-                disabled && 'opacity-60 cursor-not-allowed bg-surface-dim',
+                disabled && 'opacity-60 cursor-not-allowed bg-input-disabled border-input-disabled',
 
                 className,
             ]

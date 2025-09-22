@@ -53,7 +53,7 @@ export const InputBase = ({
             maxLength={maxLength}
             minLength={minLength}
             pattern={pattern}
-            className={`h-11 w-full px-3 py-2 bg-input border border-input rounded-md text-primary placeholder:text-secondary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary hover:border-primary transition-colors duration-200 ${invalid ? 'border-error focus:border-error focus:ring-error' : ''} ${disabled ? 'opacity-60 cursor-not-allowed bg-input-disabled' : ''} ${className}`.trim()}
+            className={`h-11 w-full px-3 py-2 bg-input border border-input rounded-md text-primary placeholder:text-secondary focus:outline-none focus:border-input-focus transition-colors duration-200 ${invalid ? 'border-input-error focus:border-input-error' : ''} ${disabled ? 'opacity-60 cursor-not-allowed bg-input-disabled border-input-disabled' : 'hover:bg-input-hover hover:border-primary'} ${className}`.trim()}
             aria-describedby={ariaDescribedby}
             aria-invalid={ariaInvalid}
             {...inputProps}

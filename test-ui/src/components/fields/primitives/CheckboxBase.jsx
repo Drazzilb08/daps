@@ -61,7 +61,7 @@ export const CheckboxBase = React.memo(
             // Background/border states matching backup CSS lines 136-138, 118
             checked
                 ? 'bg-primary border-primary text-white' // :checked state from backup
-                : 'bg-white border-border', // Default white background from backup line 118
+                : 'bg-white border-input', // Default white background using form control border
 
             // Hover states matching backup CSS lines 127-129
             !disabled && !checked && 'hover:border-primary',

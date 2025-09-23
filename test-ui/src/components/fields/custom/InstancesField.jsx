@@ -51,12 +51,13 @@ const SimpleInstanceSelector = React.memo(({
 
     if (serviceInstances.length === 0) {
         return (
-            <div className="flex flex-col items-center gap-3 p-6 text-center bg-surface border border-dashed rounded-md text-secondary">
-                <div className="font-medium text-primary">
+            <div className="flex flex-col items-center gap-4 p-8 text-center bg-surface-subtle border border-dashed border-border-subtle rounded-lg text-secondary">
+                <div className="text-3xl text-secondary opacity-60">📋</div>
+                <div className="font-semibold text-primary">
                     No {humanize(serviceType)} instances configured
                 </div>
-                <div className="text-sm text-tertiary">
-                    Configure instances in Settings → Instances
+                <div className="text-sm text-tertiary max-w-xs">
+                    Configure instances in Settings → Instances to get started
                 </div>
             </div>
         );
@@ -71,7 +72,7 @@ const SimpleInstanceSelector = React.memo(({
                 return (
                     <div key={instance.name}>
                         <div
-                            className="flex items-center gap-3 py-2 px-3 bg-surface border rounded-md hover:bg-surface-hover focus:border-primary cursor-pointer transition-colors duration-200 ease-in-out"
+                            className="flex items-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg hover:bg-surface-hover hover:border-border-hover hover:shadow-sm focus:border-primary cursor-pointer transition-all duration-200 ease-in-out"
                             onClick={(e) => {
                                 // Don't handle click if it came from the label or checkbox input
                                 if (disabled) return;
@@ -140,12 +141,36 @@ const PlexLibrarySelector = React.memo(({
         },
     });
 
-    // Extract libraries from API response
-    const libraries = useMemo(() => {
-        if (!librariesResponse?.data?.libraries) {
-            return [];
+    // Extract libraries from API response and categorize them
+    const { movieLibraries, tvLibraries, uncategorizedLibraries } = useMemo(() => {
+        // More robust null checking
+        const librariesData = librariesResponse?.data?.libraries;
+        if (!librariesData || !Array.isArray(librariesData)) {
+            return { movieLibraries: [], tvLibraries: [], uncategorizedLibraries: [] };
         }
-        return librariesResponse.data.libraries;
+
+        const movies = [];
+        const tv = [];
+        const uncategorized = [];
+
+        librariesData.forEach(library => {
+            if (!library || typeof library !== 'string') return; // Skip invalid entries
+
+            const lowerName = library.toLowerCase();
+            if (lowerName.includes('movie') || lowerName.includes('film')) {
+                movies.push(library);
+            } else if (lowerName.includes('series') || lowerName.includes('show') || lowerName.includes('tv')) {
+                tv.push(library);
+            } else {
+                uncategorized.push(library);
+            }
+        });
+
+        return {
+            movieLibraries: movies,
+            tvLibraries: tv,
+            uncategorizedLibraries: uncategorized
+        };
     }, [librariesResponse]);
 
     // Handle library selection toggle
@@ -159,7 +184,7 @@ const PlexLibrarySelector = React.memo(({
 
     if (librariesLoading) {
         return (
-            <div className="flex items-center gap-2 text-sm text-secondary bg-surface">
+            <div className="flex items-center gap-3 p-4 text-sm text-secondary bg-surface-subtle border border-border-subtle rounded-lg">
                 <div className="w-4 h-4 border-2 border-border border-t-primary rounded-full animate-spin" />
                 <span>Loading libraries...</span>
             </div>
@@ -168,17 +193,18 @@ const PlexLibrarySelector = React.memo(({
 
     if (librariesError) {
         return (
-            <div className="flex items-center gap-2 text-sm text-secondary bg-surface">
-                <span>⚠️</span>
+            <div className="flex items-center gap-3 p-4 text-sm text-error bg-error-subtle border border-error-subtle rounded-lg">
+                <span className="text-base">⚠️</span>
                 <span>Failed to load libraries: {librariesError.message}</span>
             </div>
         );
     }
 
-    if (!libraries || libraries.length === 0) {
+    const totalLibraries = movieLibraries.length + tvLibraries.length + uncategorizedLibraries.length;
+    if (totalLibraries === 0) {
         return (
-            <div className="flex items-center gap-2 text-sm text-secondary bg-surface">
-                <span>ℹ️</span>
+            <div className="flex items-center gap-3 p-4 text-sm text-secondary bg-surface-subtle border border-border-subtle rounded-lg">
+                <span className="text-base">ℹ️</span>
                 <span>No libraries found for this Plex instance</span>
             </div>
         );
@@ -186,82 +212,258 @@ const PlexLibrarySelector = React.memo(({
 
     return (
         <div>
-            <div className="text-base font-semibold text-primary">Select Libraries:</div>
+            <div className="text-base font-semibold text-primary mb-3 pb-2 border-b border-border-subtle">Select Libraries</div>
 
             {/* Mobile: Compact chip-style selection */}
             <div className="md:hidden">
-                <div className="grid gap-2 grid-cols-auto-fit-xs">
-                    {libraries.map(library => {
-                        const isSelected = selectedLibraries.includes(library);
-                        return (
-                            <button
-                                key={library}
-                                type="button"
-                                className={`relative flex items-center justify-center text-center py-2 px-3 min-h-11 rounded-md border-2 text-sm font-medium cursor-pointer transition-all duration-200 ${
-                                    isSelected
-                                        ? 'bg-surface-elevated border-primary text-primary shadow-md'
-                                        : 'bg-surface-elevated border-border text-primary hover:bg-surface-hover hover:border-border-hover hover:-translate-y-0.5 hover:shadow-sm'
-                                }`}
-                                onClick={() => handleLibraryToggle(library, !isSelected)}
-                                disabled={disabled}
-                            >
-                                {library}
-                                {isSelected && (
-                                    <span className="absolute top-0.5 right-1 text-xs">✓</span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
+                {movieLibraries.length > 0 && (
+                    <div className="mb-4">
+                        <div className="text-sm font-medium text-primary mb-2">Movies</div>
+                        <div className="grid gap-2 grid-cols-auto-fit-xs">
+                            {movieLibraries.map(library => {
+                                const isSelected = selectedLibraries.includes(library);
+                                return (
+                                    <button
+                                        key={library}
+                                        type="button"
+                                        className={`relative flex items-center justify-center text-center py-2 px-3 min-h-11 rounded-lg border-2 text-sm font-medium cursor-pointer transition-all duration-200 truncate ${
+                                            isSelected
+                                                ? 'bg-primary-subtle border-primary text-primary shadow-md scale-105'
+                                                : 'bg-surface-elevated border-border text-primary hover:bg-surface-hover hover:border-border-hover hover:-translate-y-0.5 hover:shadow-sm'
+                                        }`}
+                                        onClick={() => handleLibraryToggle(library, !isSelected)}
+                                        disabled={disabled}
+                                        title={library}
+                                    >
+                                        {library}
+                                        {isSelected && (
+                                            <span className="absolute top-0.5 right-1 text-xs">✓</span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {tvLibraries.length > 0 && (
+                    <div className="mb-4">
+                        <div className="text-sm font-medium text-primary mb-2">TV Shows</div>
+                        <div className="grid gap-2 grid-cols-auto-fit-xs">
+                            {tvLibraries.map(library => {
+                                const isSelected = selectedLibraries.includes(library);
+                                return (
+                                    <button
+                                        key={library}
+                                        type="button"
+                                        className={`relative flex items-center justify-center text-center py-2 px-3 min-h-11 rounded-lg border-2 text-sm font-medium cursor-pointer transition-all duration-200 truncate ${
+                                            isSelected
+                                                ? 'bg-primary-subtle border-primary text-primary shadow-md scale-105'
+                                                : 'bg-surface-elevated border-border text-primary hover:bg-surface-hover hover:border-border-hover hover:-translate-y-0.5 hover:shadow-sm'
+                                        }`}
+                                        onClick={() => handleLibraryToggle(library, !isSelected)}
+                                        disabled={disabled}
+                                        title={library}
+                                    >
+                                        {library}
+                                        {isSelected && (
+                                            <span className="absolute top-0.5 right-1 text-xs">✓</span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {uncategorizedLibraries.length > 0 && (
+                    <div>
+                        <div className="text-sm font-medium text-primary mb-2">Other</div>
+                        <div className="grid gap-2 grid-cols-auto-fit-xs">
+                            {uncategorizedLibraries.map(library => {
+                                const isSelected = selectedLibraries.includes(library);
+                                return (
+                                    <button
+                                        key={library}
+                                        type="button"
+                                        className={`relative flex items-center justify-center text-center py-2 px-3 min-h-11 rounded-lg border-2 text-sm font-medium cursor-pointer transition-all duration-200 truncate ${
+                                            isSelected
+                                                ? 'bg-primary-subtle border-primary text-primary shadow-md scale-105'
+                                                : 'bg-surface-elevated border-border text-primary hover:bg-surface-hover hover:border-border-hover hover:-translate-y-0.5 hover:shadow-sm'
+                                        }`}
+                                        onClick={() => handleLibraryToggle(library, !isSelected)}
+                                        disabled={disabled}
+                                        title={library}
+                                    >
+                                        {library}
+                                        {isSelected && (
+                                            <span className="absolute top-0.5 right-1 text-xs">✓</span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Desktop: Grid layout with checkboxes */}
-            <div className="hidden md:block">
-                <div className="grid gap-2 grid-cols-auto-fit-sm">
-                    {libraries.map(library => {
-                        const isSelected = selectedLibraries.includes(library);
-                        const libraryId = `library-${instanceName}-${library}`;
+            <div className="max-md:hidden">
+                {movieLibraries.length > 0 && (
+                    <div className="mb-6">
+                        <div className="text-sm font-semibold text-primary mb-3 pb-1 border-b border-border-subtle">Movies</div>
+                        <div className="grid gap-3 grid-cols-2">
+                            {movieLibraries.map(library => {
+                                const isSelected = selectedLibraries.includes(library);
+                                const libraryId = `library-${instanceName}-${library}`;
 
-                        return (
-                            <div key={library}>
-                                <div
-                                    className="flex items-center gap-3 py-2 px-3 bg-surface border rounded-md hover:bg-surface-hover focus:border-primary cursor-pointer transition-colors duration-200 ease-in-out"
-                                    onClick={(e) => {
-                                        // Don't handle click if it came from the label or checkbox input
-                                        if (disabled) return;
-                                        if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
-                                        handleLibraryToggle(library, !isSelected);
-                                    }}
-                                    role="button"
-                                    tabIndex={disabled ? -1 : 0}
-                                    onKeyDown={(e) => {
-                                        if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
-                                            e.preventDefault();
-                                            handleLibraryToggle(library, !isSelected);
-                                        }
-                                    }}
-                                    aria-pressed={isSelected}
-                                    aria-disabled={disabled}
-                                >
-                                    <CheckboxBase
-                                        id={libraryId}
-                                        name={`${instanceName}-libraries`}
-                                        checked={isSelected}
-                                        onChange={(e) => handleLibraryToggle(library, e.target.checked)}
-                                        disabled={disabled}
-                                    />
-                                    <div className="flex flex-col">
-                                        <FieldLabel
-                                            htmlFor={libraryId}
-                                            label={library}
-                                            className="text-sm font-medium leading-normal text-primary cursor-pointer select-none"
-                                        />
+                                return (
+                                    <div key={library}>
+                                        <div
+                                            className="flex items-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg hover:bg-surface-hover hover:border-border-hover hover:shadow-sm focus:border-primary cursor-pointer transition-all duration-200 ease-in-out"
+                                            onClick={(e) => {
+                                                // Don't handle click if it came from the label or checkbox input
+                                                if (disabled) return;
+                                                if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+                                                handleLibraryToggle(library, !isSelected);
+                                            }}
+                                            role="button"
+                                            tabIndex={disabled ? -1 : 0}
+                                            onKeyDown={(e) => {
+                                                if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
+                                                    e.preventDefault();
+                                                    handleLibraryToggle(library, !isSelected);
+                                                }
+                                            }}
+                                            aria-pressed={isSelected}
+                                            aria-disabled={disabled}
+                                        >
+                                            <CheckboxBase
+                                                id={libraryId}
+                                                name={`${instanceName}-libraries`}
+                                                checked={isSelected}
+                                                onChange={(e) => handleLibraryToggle(library, e.target.checked)}
+                                                disabled={disabled}
+                                            />
+                                            <div className="flex flex-col flex-1 min-w-0">
+                                                <FieldLabel
+                                                    htmlFor={libraryId}
+                                                    label={library}
+                                                    className="text-sm font-medium leading-normal text-primary cursor-pointer select-none truncate"
+                                                    title={library}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {tvLibraries.length > 0 && (
+                    <div className="mb-6">
+                        <div className="text-sm font-semibold text-primary mb-3 pb-1 border-b border-border-subtle">TV Shows</div>
+                        <div className="grid gap-3 grid-cols-2">
+                            {tvLibraries.map(library => {
+                                const isSelected = selectedLibraries.includes(library);
+                                const libraryId = `library-${instanceName}-${library}`;
+
+                                return (
+                                    <div key={library}>
+                                        <div
+                                            className="flex items-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg hover:bg-surface-hover hover:border-border-hover hover:shadow-sm focus:border-primary cursor-pointer transition-all duration-200 ease-in-out"
+                                            onClick={(e) => {
+                                                // Don't handle click if it came from the label or checkbox input
+                                                if (disabled) return;
+                                                if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+                                                handleLibraryToggle(library, !isSelected);
+                                            }}
+                                            role="button"
+                                            tabIndex={disabled ? -1 : 0}
+                                            onKeyDown={(e) => {
+                                                if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
+                                                    e.preventDefault();
+                                                    handleLibraryToggle(library, !isSelected);
+                                                }
+                                            }}
+                                            aria-pressed={isSelected}
+                                            aria-disabled={disabled}
+                                        >
+                                            <CheckboxBase
+                                                id={libraryId}
+                                                name={`${instanceName}-libraries`}
+                                                checked={isSelected}
+                                                onChange={(e) => handleLibraryToggle(library, e.target.checked)}
+                                                disabled={disabled}
+                                            />
+                                            <div className="flex flex-col flex-1 min-w-0">
+                                                <FieldLabel
+                                                    htmlFor={libraryId}
+                                                    label={library}
+                                                    className="text-sm font-medium leading-normal text-primary cursor-pointer select-none truncate"
+                                                    title={library}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {uncategorizedLibraries.length > 0 && (
+                    <div>
+                        <div className="text-sm font-semibold text-primary mb-3 pb-1 border-b border-border-subtle">Other</div>
+                        <div className="grid gap-3 grid-cols-2">
+                            {uncategorizedLibraries.map(library => {
+                                const isSelected = selectedLibraries.includes(library);
+                                const libraryId = `library-${instanceName}-${library}`;
+
+                                return (
+                                    <div key={library}>
+                                        <div
+                                            className="flex items-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg hover:bg-surface-hover hover:border-border-hover hover:shadow-sm focus:border-primary cursor-pointer transition-all duration-200 ease-in-out"
+                                            onClick={(e) => {
+                                                // Don't handle click if it came from the label or checkbox input
+                                                if (disabled) return;
+                                                if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+                                                handleLibraryToggle(library, !isSelected);
+                                            }}
+                                            role="button"
+                                            tabIndex={disabled ? -1 : 0}
+                                            onKeyDown={(e) => {
+                                                if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
+                                                    e.preventDefault();
+                                                    handleLibraryToggle(library, !isSelected);
+                                                }
+                                            }}
+                                            aria-pressed={isSelected}
+                                            aria-disabled={disabled}
+                                        >
+                                            <CheckboxBase
+                                                id={libraryId}
+                                                name={`${instanceName}-libraries`}
+                                                checked={isSelected}
+                                                onChange={(e) => handleLibraryToggle(library, e.target.checked)}
+                                                disabled={disabled}
+                                            />
+                                            <div className="flex flex-col flex-1 min-w-0">
+                                                <FieldLabel
+                                                    htmlFor={libraryId}
+                                                    label={library}
+                                                    className="text-sm font-medium leading-normal text-primary cursor-pointer select-none truncate"
+                                                    title={library}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -368,7 +570,7 @@ const PlexInstanceSelector = React.memo(({
                 return (
                     <div key={instance.name}>
                         <div
-                            className="flex items-center gap-3 py-2 px-3 bg-surface border rounded-md hover:bg-surface-hover focus:border-primary cursor-pointer transition-colors duration-200 ease-in-out"
+                            className="flex items-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg hover:bg-surface-hover hover:border-border-hover hover:shadow-sm focus:border-primary cursor-pointer transition-all duration-200 ease-in-out"
                             onClick={(e) => {
                                 // Don't handle click if it came from the label or checkbox input
                                 if (disabled) return;
@@ -406,12 +608,12 @@ const PlexInstanceSelector = React.memo(({
                         </div>
 
                         {isSelected && (
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-4 border-l-2 border-border-subtle">
                                 {/* Poster upload option */}
                                 {showPosterOption && (
                                     <div>
                                         <div
-                                            className="flex items-center gap-3 py-2 px-3 bg-surface border rounded-md hover:bg-surface-hover focus:border-primary cursor-pointer transition-colors duration-200 ease-in-out"
+                                            className="flex items-center gap-3 py-3 px-4 bg-surface border border-border rounded-lg hover:bg-surface-hover hover:border-border-hover hover:shadow-sm focus:border-primary cursor-pointer transition-all duration-200 ease-in-out"
                                             onClick={(e) => {
                                                 // Don't handle click if it came from the label or checkbox input
                                                 if (disabled) return;
@@ -646,15 +848,19 @@ export const InstancesField = React.memo(({
                 {instanceTypes.length === 1 ? (
                     // Single service type - simplified UI
                     <div className="flex flex-col gap-4">
-                        <h4 className="text-base font-semibold text-primary">{humanize(instanceTypes[0])}</h4>
+                        <h4 className="text-lg font-bold text-primary mb-2 border-b border-border pb-2">
+                            {humanize(instanceTypes[0])}
+                        </h4>
                         {renderServiceSelector(instanceTypes[0])}
                     </div>
                 ) : (
                     // Multiple service types - sectioned UI
-                    <div className="grid gap-3 grid-cols-auto-fit-md">
+                    <div className="grid gap-6 grid-cols-auto-fit-md">
                         {instanceTypes.map(serviceType => (
-                            <div key={serviceType} className="flex flex-col gap-2 bg-surface border">
-                                <h4 className="text-base font-semibold text-primary">{humanize(serviceType)}</h4>
+                            <div key={serviceType} className="flex flex-col gap-3 bg-surface border border-border rounded-lg p-4 shadow-sm">
+                                <h4 className="text-lg font-bold text-primary mb-1 border-b border-border pb-2">
+                                    {humanize(serviceType)}
+                                </h4>
                                 {renderServiceSelector(serviceType)}
                             </div>
                         ))}

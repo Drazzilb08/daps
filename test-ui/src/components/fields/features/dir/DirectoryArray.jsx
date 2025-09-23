@@ -72,11 +72,11 @@ const SortableDirectoryItem = React.memo(({
             {/* Desktop: Drag Handle (left side) */}
             {enableReordering && (
                 <div
-                    className="flex items-center justify-center w-8 h-8 text-gray-400 cursor-grab hover:text-gray-600 transition-colors"
+                    className="flex items-center justify-center w-11 h-11 text-accent cursor-grab hover:text-primary transition-colors touch-target"
                     {...attributes}
                     {...listeners}
                 >
-                    ≡
+                    <span className="material-symbols-outlined text-2xl">drag_indicator</span>
                 </div>
             )}
 
@@ -88,7 +88,7 @@ const SortableDirectoryItem = React.memo(({
                     ariaLabel={`Move ${directory || 'directory'} up`}
                     className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden"
                 >
-                    ↑
+                    <span className="material-symbols-outlined text-base">keyboard_arrow_up</span>
                 </FieldButton>
             )}
 
@@ -132,7 +132,7 @@ const SortableDirectoryItem = React.memo(({
                     ariaLabel={`Move ${directory || 'directory'} down`}
                     className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden"
                 >
-                    ↓
+                    <span className="material-symbols-outlined text-base">keyboard_arrow_down</span>
                 </FieldButton>
             )}
 

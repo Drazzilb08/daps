@@ -218,7 +218,7 @@ const PageSidebar = React.memo(() => {
     return (
         <aside
             ref={sidebarRef}
-            className={`flex-none w-sidebar bg-sidebar-bg border-r border-sidebar-border overflow-y-auto z-sticky fixed md:static top-16 md:top-0 left-0 bottom-0 md:bottom-auto z-modal md:z-sticky ${
+            className={`flex-none w-sidebar bg-sidebar-bg border-r border-sidebar-border overflow-y-auto fixed md:static top-16 md:top-0 left-0 bottom-0 md:bottom-auto z-fixed md:z-sticky ${
                 isMobile && mobileMenuOpen
                     ? 'translate-x-0'
                     : '-translate-x-full md:translate-x-0'

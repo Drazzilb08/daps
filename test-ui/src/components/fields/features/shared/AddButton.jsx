@@ -29,7 +29,7 @@ import React from 'react';
  * @param {string} props.text - Button text (e.g., "Add Color", "Add Item", "Add Tag")
  * @param {string} props.itemType - Type of item being added (for aria-label)
  * @param {string} props.disabledReason - Tooltip text when disabled
- * @param {string} props.icon - Icon to display (defaults to "+")
+ * @param {string} props.icon - Material Symbol icon name to display (defaults to "add")
  * @param {string} props.className - Additional CSS classes
  * @param {Object} props.ariaProps - Additional ARIA properties
  */
@@ -40,7 +40,7 @@ export const AddButton = React.memo(
         text = 'Add Item',
         itemType = 'item',
         disabledReason = 'Cannot add more items',
-        icon = '+',
+        icon = 'add',
         className = '',
         ariaProps = {},
         ...domProps // Only pass valid DOM props
@@ -85,7 +85,7 @@ export const AddButton = React.memo(
                 {...ariaProps}
                 {...domProps}
             >
-                <span className="inline-block mr-1" aria-hidden="true">
+                <span className="material-symbols-outlined mr-1" aria-hidden="true">
                     {icon}
                 </span>
                 <span className="inline-block">{text}</span>

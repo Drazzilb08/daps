@@ -169,8 +169,8 @@ export const JsonField = ({
                 <div role="status" aria-live="polite">
                     {jsonError && (
                         <div>
-                            <span aria-hidden="true">
-                                ❌
+                            <span className="material-symbols-outlined text-error mr-1" aria-hidden="true">
+                                error
                             </span>
                             {jsonError}
                         </div>
@@ -178,8 +178,8 @@ export const JsonField = ({
 
                     {!jsonError && textValue.trim() && (
                         <div>
-                            <span aria-hidden="true">
-                                ✅
+                            <span className="material-symbols-outlined text-success mr-1" aria-hidden="true">
+                                check_circle
                             </span>
                             Valid JSON
                         </div>

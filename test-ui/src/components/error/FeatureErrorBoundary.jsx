@@ -208,7 +208,7 @@ class FeatureErrorBoundaryBase extends Component {
             return (
                 <div className="bg-surface-alt border border-warning rounded-md my-2 font-sans">
                     <div className="p-3 text-sm text-secondary flex items-center gap-2">
-                        <span className="text-base shrink-0">⏭️</span>
+                        <span className="material-symbols-outlined text-base shrink-0">skip_next</span>
                         <span className="flex-1 font-medium">
                             {featureName} skipped due to error
                         </span>
@@ -218,7 +218,7 @@ class FeatureErrorBoundaryBase extends Component {
                             type="button"
                             title="Try to load this feature again"
                         >
-                            <span className="inline-block font-normal">🔄</span>
+                            <span className="material-symbols-outlined mr-1">refresh</span>
                             Retry
                         </button>
                     </div>
@@ -244,9 +244,8 @@ class FeatureErrorBoundaryBase extends Component {
             // Critical features get overlay mode
             if (critical) {
                 return (
-                    <div className="fixed inset-0 z-50 bg-overlay backdrop-blur-sm font-sans">
-                        <div className="absolute inset-0 bg-backdrop">
-                            <div className="relative bg-surface border-2 border-error rounded-lg p-6 m-4 max-w-lg w-full max-h-screen overflow-y-auto shadow-xl z-50">
+                    <div className="fixed inset-0 z-modal-backdrop bg-overlay backdrop-blur-sm font-sans flex items-center justify-center p-4">
+                            <div className="relative bg-surface border-2 border-error rounded-lg p-6 max-w-lg w-full max-h-screen overflow-y-auto shadow-xl z-modal">
                                 <h2 className="text-error text-2xl font-bold m-0 mb-4 text-center leading-tight">
                                     Critical Feature Error
                                 </h2>
@@ -260,8 +259,8 @@ class FeatureErrorBoundaryBase extends Component {
                                         className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                                         type="button"
                                     >
-                                        <span className="inline-block font-normal">
-                                            🔄
+                                        <span className="material-symbols-outlined mr-1">
+                                            refresh
                                         </span>
                                         Retry
                                     </button>
@@ -277,14 +276,14 @@ class FeatureErrorBoundaryBase extends Component {
                                         type="button"
                                         disabled={this.state.copying}
                                     >
-                                        <span className="inline-block font-normal">
+                                        <span className="material-symbols-outlined mr-1">
                                             {this.state.copying
-                                                ? '⏳'
+                                                ? 'hourglass_empty'
                                                 : this.state.copySuccess
-                                                  ? '✅'
+                                                  ? 'check_circle'
                                                   : this.state.copyError
-                                                    ? '❌'
-                                                    : '📋'}
+                                                    ? 'error'
+                                                    : 'content_copy'}
                                         </span>
                                         {this.state.copying
                                             ? 'Copying...'
@@ -299,14 +298,13 @@ class FeatureErrorBoundaryBase extends Component {
                                         className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                                         type="button"
                                     >
-                                        <span className="inline-block font-normal">
-                                            🔄
+                                        <span className="material-symbols-outlined mr-1">
+                                            refresh
                                         </span>
                                         Reload App
                                     </button>
                                 </div>
                             </div>
-                        </div>
                     </div>
                 );
             }
@@ -319,7 +317,7 @@ class FeatureErrorBoundaryBase extends Component {
                         title={`${featureName} is temporarily disabled due to repeated errors`}
                     >
                         <div className="p-3 text-sm text-disabled flex items-center gap-2">
-                            <span className="text-base shrink-0">⚠️</span>
+                            <span className="material-symbols-outlined text-base shrink-0">warning</span>
                             <span className="flex-1 font-medium">
                                 {featureName} temporarily disabled
                             </span>
@@ -333,14 +331,14 @@ class FeatureErrorBoundaryBase extends Component {
                 <>
                     <div className="bg-surface-alt border border-warning rounded-md my-2 mb-1 p-2 text-center text-xs text-warning font-medium font-sans">
                         <div className="m-0 p-0">
-                            ⚠️ {featureName} temporarily unavailable
+                            <span className="material-symbols-outlined text-warning mr-1">warning</span>{featureName} temporarily unavailable
                         </div>
                     </div>
 
                     <div className="bg-surface border border-error rounded-md my-2 font-sans">
                         <div className="p-4">
                             <div className="mb-4 flex items-center gap-3">
-                                <span className="text-xl shrink-0 mt-1">⚠️</span>
+                                <span className="material-symbols-outlined text-xl shrink-0 mt-1 text-warning">warning</span>
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-error text-lg font-semibold m-0 mb-1 leading-tight">
                                         {featureName} Error
@@ -371,8 +369,8 @@ class FeatureErrorBoundaryBase extends Component {
                                         className="touch-target bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
                                         type="button"
                                     >
-                                        <span className="inline-block font-normal">
-                                            🔄
+                                        <span className="material-symbols-outlined mr-1">
+                                            refresh
                                         </span>
                                         Retry
                                     </button>
@@ -383,8 +381,8 @@ class FeatureErrorBoundaryBase extends Component {
                                             className="touch-target bg-surface text-primary px-2 py-1 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
                                             type="button"
                                         >
-                                            <span className="inline-block font-normal">
-                                                ⏭️
+                                            <span className="material-symbols-outlined mr-1">
+                                                skip_next
                                             </span>
                                             Skip
                                         </button>
@@ -402,14 +400,14 @@ class FeatureErrorBoundaryBase extends Component {
                                         type="button"
                                         disabled={this.state.copying}
                                     >
-                                        <span className="inline-block font-normal">
+                                        <span className="material-symbols-outlined mr-1">
                                             {this.state.copying
-                                                ? '⏳'
+                                                ? 'hourglass_empty'
                                                 : this.state.copySuccess
-                                                  ? '✅'
+                                                  ? 'check_circle'
                                                   : this.state.copyError
-                                                    ? '❌'
-                                                    : '📋'}
+                                                    ? 'error'
+                                                    : 'content_copy'}
                                         </span>
                                         {this.state.copying
                                             ? 'Copying...'
@@ -425,8 +423,8 @@ class FeatureErrorBoundaryBase extends Component {
                                         className="touch-target bg-transparent text-primary px-2 py-1 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
                                         type="button"
                                     >
-                                        <span className="inline-block font-normal">
-                                            🔄
+                                        <span className="material-symbols-outlined mr-1">
+                                            refresh
                                         </span>
                                         Reload
                                     </button>

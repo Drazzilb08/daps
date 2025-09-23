@@ -31,7 +31,7 @@ import React from 'react';
  * @param {string} props.itemName - Name of specific item being removed (for aria-label)
  * @param {string} props.itemType - Type of item being removed (for aria-label)
  * @param {string} props.text - Optional button text (for text variant)
- * @param {string} props.icon - Icon to display (defaults to "×")
+ * @param {string} props.icon - Icon to display (defaults to "close" using Material Symbols)
  * @param {boolean} props.iconOnly - Show only icon without text
  * @param {string} props.variant - Visual style variant ('default', 'danger', 'subtle')
  * @param {string} props.size - Size variant ('small', 'medium', 'large')
@@ -45,7 +45,7 @@ export const RemoveButton = React.memo(
         itemName = '',
         itemType = 'item',
         text = 'Remove',
-        icon = '×',
+        icon = 'close',
         iconOnly = true,
         variant = 'default',
         size = 'medium',
@@ -107,9 +107,7 @@ export const RemoveButton = React.memo(
                 {...ariaProps}
                 {...domProps}
             >
-                <span aria-hidden="true">
-                    {icon}
-                </span>
+                <span className="material-symbols-outlined text-lg">{icon}</span>
                 {!iconOnly && <span>{text}</span>}
                 {iconOnly && <span className="sr-only">{text}</span>}
             </button>

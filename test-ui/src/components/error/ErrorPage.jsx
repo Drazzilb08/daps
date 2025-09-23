@@ -93,13 +93,13 @@ const ErrorPage = ({
     const getStatusIcon = code => {
         switch (code) {
             case 404:
-                return '🔍';
+                return 'search';
             case 500:
-                return '🔧';
+                return 'build';
             case 403:
-                return '🔒';
+                return 'lock';
             default:
-                return '⚠️';
+                return 'warning';
         }
     };
 
@@ -119,7 +119,7 @@ const ErrorPage = ({
         <div className="min-h-content p-4 font-sans">
             <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-8 shadow-xl mx-auto">
                 <div className="text-center mb-8">
-                    <div className="text-4xl mb-3 block">{getStatusIcon(statusCode)}</div>
+                    <div className="material-symbols-outlined text-4xl mb-3 block text-error">{getStatusIcon(statusCode)}</div>
                     <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">
                         {statusCode} - {finalTitle}
                     </h1>
@@ -139,7 +139,7 @@ const ErrorPage = ({
                                 to="/"
                                 className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                             >
-                                <span className="inline-block font-normal">🏠</span>
+                                <span className="material-symbols-outlined mr-1">home</span>
                                 Go Home
                             </Link>
                         )}
@@ -150,7 +150,7 @@ const ErrorPage = ({
                                 className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                                 type="button"
                             >
-                                <span className="inline-block font-normal">←</span>
+                                <span className="material-symbols-outlined mr-1">arrow_back</span>
                                 Go Back
                             </button>
                         )}
@@ -161,7 +161,7 @@ const ErrorPage = ({
                                 className="touch-target bg-transparent text-primary px-3 py-2 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                                 type="button"
                             >
-                                <span className="inline-block font-normal">🔄</span>
+                                <span className="material-symbols-outlined mr-1">refresh</span>
                                 Refresh
                             </button>
                         )}

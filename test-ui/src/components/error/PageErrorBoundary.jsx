@@ -210,7 +210,7 @@ class PageErrorBoundaryBase extends Component {
                 <div className="min-h-content p-4 font-sans">
                     <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-8 shadow-xl mx-auto">
                         <div className="text-center mb-8">
-                            <div className="text-4xl mb-3 block">🔧</div>
+                            <div className="material-symbols-outlined text-4xl mb-3 block text-error">build</div>
                             <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">{pageName} Page Error</h1>
                             <p className="text-secondary text-lg leading-relaxed">
                                 {pageDescription
@@ -261,7 +261,7 @@ class PageErrorBoundaryBase extends Component {
                                         className="touch-target leading-none no-underline whitespace-nowrap border border-transparent select-none bg-primary text-white py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                         type="button"
                                     >
-                                        <span className="inline-block font-normal">🔄</span>
+                                        <span className="material-symbols-outlined mr-1">refresh</span>
                                         Try Again
                                     </button>
                                 )}
@@ -273,8 +273,8 @@ class PageErrorBoundaryBase extends Component {
                                             className="touch-target leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                             type="button"
                                         >
-                                            <span className="inline-block font-normal">
-                                                🏠
+                                            <span className="material-symbols-outlined mr-1">
+                                                home
                                             </span>
                                             Go Home
                                         </button>
@@ -284,8 +284,8 @@ class PageErrorBoundaryBase extends Component {
                                             className="touch-target leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                             type="button"
                                         >
-                                            <span className="inline-block font-normal">
-                                                ←
+                                            <span className="material-symbols-outlined mr-1">
+                                                arrow_back
                                             </span>
                                             Go Back
                                         </button>
@@ -304,14 +304,14 @@ class PageErrorBoundaryBase extends Component {
                                     type="button"
                                     disabled={this.state.copying}
                                 >
-                                    <span className="inline-block font-normal">
+                                    <span className="material-symbols-outlined mr-1">
                                         {this.state.copying
-                                            ? '⏳'
+                                            ? 'hourglass_empty'
                                             : this.state.copySuccess
-                                              ? '✅'
+                                              ? 'check_circle'
                                               : this.state.copyError
-                                                ? '❌'
-                                                : '📋'}
+                                                ? 'error'
+                                                : 'content_copy'}
                                     </span>
                                     {this.state.copying
                                         ? 'Copying...'
@@ -327,7 +327,7 @@ class PageErrorBoundaryBase extends Component {
                                     className="touch-target leading-none no-underline whitespace-nowrap border border-border select-none bg-transparent text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                     type="button"
                                 >
-                                    <span className="inline-block font-normal">🔄</span>
+                                    <span className="material-symbols-outlined mr-1">refresh</span>
                                     Refresh Page
                                 </button>
                             </div>

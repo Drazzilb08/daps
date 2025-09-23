@@ -74,7 +74,7 @@ export const NumberField = React.memo(
                         variant="left"
                         className="text-accent"
                     >
-                        −
+                        <span className="material-symbols-outlined text-lg">remove</span>
                     </FieldButton>
 
                     <InputBase
@@ -99,7 +99,7 @@ export const NumberField = React.memo(
                         variant="right"
                         className="text-accent"
                     >
-                        +
+                        <span className="material-symbols-outlined text-lg">add</span>
                     </FieldButton>
                 </div>
 

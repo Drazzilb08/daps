@@ -343,6 +343,12 @@
     padding-bottom: 0.5rem;
   }
 
+  /* Missing py-2.5 utility for select dropdown touch targets */
+  .py-2\.5 {
+    padding-top: 0.625rem;  /* 10px - increased from py-2 for WCAG compliance */
+    padding-bottom: 0.625rem;
+  }
+
   .py-3 {
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
@@ -472,36 +478,18 @@
   }
 
   /* ===========================================
-     FORM-SPECIFIC SPACING SHORTCUTS
+     FORM-SPECIFIC SPACING SHORTCUTS - REMOVED
      =========================================== */
 
-  /* Input padding shortcuts using design tokens */
-  .py-input {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
-  }
-
-  .px-input {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-  }
-
-  .p-input {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .p-input-sm {
-    padding: calc(0.5rem * 0.75) calc(0.75rem * 0.875);
-  }
-
-  .p-input-lg {
-    padding: calc(0.5rem * 1.25) calc(0.75rem * 1.125);
-  }
-
-  /* Field spacing patterns */
-  .space-field { margin-bottom: 0.75rem; } /* Standard field spacing */
-  .space-field-group { margin-bottom: 1.5rem; } /* Field group spacing */
-  .space-field-section { margin-bottom: 2rem; } /* Section spacing */
+  /* NOTE: Simple compositional utilities removed for utility-first compliance.
+   * Use atomic utilities instead:
+   * .p-input → py-2 px-3
+   * .p-input-sm → py-1.5 px-2.5
+   * .p-input-lg → py-3 px-4
+   * .space-field → mb-3
+   * .space-field-group → mb-6
+   * .space-field-section → mb-8
+   */
 
   /* ===========================================
      RESPONSIVE SPACING VARIANTS

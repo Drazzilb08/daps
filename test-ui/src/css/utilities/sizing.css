@@ -92,6 +92,9 @@
   .w-touch { width: 44px; }
   .w-touch-lg { width: 48px; }
 
+  /* Missing w-11 utility for 44px compliance (2.75rem = 44px) */
+  .w-11 { width: 2.75rem; }   /* 44px - WCAG 2.1 AA minimum */
+
   /* Icon and control widths */
   .w-icon { width: 24px; }
   .w-icon-sm { width: 16px; }
@@ -156,6 +159,8 @@
 
   /* Viewport height units */
   .h-screen { height: 100vh; }
+  .h-screen-75 { height: 75vh; }
+  .h-screen-50 { height: 50vh; }
   .h-svh { height: 100svh; }     /* Small viewport height */
   .h-lvh { height: 100lvh; }     /* Large viewport height */
   .h-dvh { height: 100dvh; }     /* Dynamic viewport height */
@@ -169,6 +174,9 @@
   /* Touch target heights for accessibility */
   .h-touch { height: 44px; }
   .h-touch-lg { height: 48px; }
+
+  /* Missing h-11 utility for 44px compliance (2.75rem = 44px) */
+  .h-11 { height: 2.75rem; }   /* 44px - WCAG 2.1 AA minimum */
 
   /* Control and input heights */
   .h-input { height: 44px; }
@@ -274,6 +282,9 @@
   .min-w-input { min-width: 120px; }
   .min-w-control { min-width: 80px; }
   .min-w-200 { min-width: 200px; }
+
+  /* Missing min-w-11 for 44px touch targets */
+  .min-w-11 { min-width: 2.75rem; }   /* 44px - WCAG 2.1 AA minimum */
 
   /* Component-specific minimum widths */
   .min-w-dropdown { min-width: 120px; }

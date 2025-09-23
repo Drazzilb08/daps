@@ -141,7 +141,7 @@
     top: -100px;
     left: 1rem;
     z-index: 800; /* .z-tooltip level for accessibility announcements */
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem; /* Increased padding for 44px minimum height */
     background: var(--primary);
     color: var(--primary-text);
     text-decoration: none;

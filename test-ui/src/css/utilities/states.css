@@ -14,10 +14,7 @@
     pointer-events: none;
   }
 
-  .state-readonly {
-    background: var(--surface-alt);
-    cursor: default;
-  }
+  /* .state-readonly removed - use atomic utilities: bg-surface-alt cursor-default */
 
   .disabled-input {
     background: var(--input-bg-disabled);

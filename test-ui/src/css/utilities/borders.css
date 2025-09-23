@@ -135,6 +135,7 @@
 
   .hover\:border-primary:hover { border-color: var(--primary); }
 }
+
   /* Complete Border Width System */
   .border-l-1 { border-left: 1px solid var(--border); }
   .border-l-2 { border-left: 2px solid var(--border); }

@@ -68,11 +68,11 @@ const SortableDirectoryItem = React.memo(({
     };
 
     return (
-        <div className="flex gap-2 items-center" ref={setNodeRef} style={style}>
+        <div className="flex gap-2 items-start" ref={setNodeRef} style={style}>
             {/* Desktop: Drag Handle (left side) */}
             {enableReordering && (
                 <div
-                    className="flex items-center justify-center w-11 h-11 text-accent cursor-grab hover:text-primary transition-colors touch-target"
+                    className="flex items-center justify-center w-11 h-11 text-accent cursor-grab hover:text-primary transition-colors touch-target flex-shrink-0"
                     {...attributes}
                     {...listeners}
                 >
@@ -86,13 +86,13 @@ const SortableDirectoryItem = React.memo(({
                     onClick={() => onMoveUp && onMoveUp(index)}
                     disabled={!canMoveUp}
                     ariaLabel={`Move ${directory || 'directory'} up`}
-                    className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden"
+                    className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden flex-shrink-0"
                 >
                     <span className="material-symbols-outlined text-base">keyboard_arrow_up</span>
                 </FieldButton>
             )}
 
-            <div className={`flex ${modeOptions ? 'flex-col md:flex-row md:gap-3' : ''} flex-1`}>
+            <div className={`flex ${modeOptions ? 'flex-col gap-2 md:flex-row md:gap-3' : ''} flex-1 min-w-0`}>
                 <InputBase
                     id={itemId}
                     type="text"
@@ -118,7 +118,7 @@ const SortableDirectoryItem = React.memo(({
                         invalid={invalid}
                         options={modeOptions}
                         placeholder="Select mode..."
-                        className="mt-2 md:mt-0 md:flex-[1_1_0%] md:min-w-[100px] md:max-w-[150px]"
+                        className="md:flex-[1_1_0%] md:min-w-[100px] md:max-w-[150px]"
                         aria-label={`Mode for ${label} ${index + 1}`}
                     />
                 )}
@@ -130,7 +130,7 @@ const SortableDirectoryItem = React.memo(({
                     onClick={() => onMoveDown && onMoveDown(index)}
                     disabled={!canMoveDown}
                     ariaLabel={`Move ${directory || 'directory'} down`}
-                    className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden"
+                    className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden flex-shrink-0"
                 >
                     <span className="material-symbols-outlined text-base">keyboard_arrow_down</span>
                 </FieldButton>
@@ -145,6 +145,7 @@ const SortableDirectoryItem = React.memo(({
                 variant="default"
                 size="medium"
                 title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
+                className="flex-shrink-0 self-start"
             />
         </div>
     );
@@ -176,8 +177,8 @@ const DirectoryItem = React.memo(({
     onModeChange
 }) => {
     return (
-        <div className="flex gap-2 items-center">
-            <div className={`flex ${modeOptions ? 'flex-col md:flex-row md:gap-3' : ''} flex-1`}>
+        <div className="flex gap-2 items-start">
+            <div className={`flex ${modeOptions ? 'flex-col gap-2 md:flex-row md:gap-3' : ''} flex-1 min-w-0`}>
                 <InputBase
                     id={itemId}
                     type="text"
@@ -203,7 +204,7 @@ const DirectoryItem = React.memo(({
                         invalid={invalid}
                         options={modeOptions}
                         placeholder="Select mode..."
-                        className="mt-2 md:mt-0 md:flex-[1_1_0%] md:min-w-[100px] md:max-w-[150px]"
+                        className="md:flex-[1_1_0%] md:min-w-[100px] md:max-w-[150px]"
                         aria-label={`Mode for ${label} ${index + 1}`}
                     />
                 )}
@@ -218,6 +219,7 @@ const DirectoryItem = React.memo(({
                 variant="default"
                 size="medium"
                 title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
+                className="flex-shrink-0 self-start"
             />
         </div>
     );

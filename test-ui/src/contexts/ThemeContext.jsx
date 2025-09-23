@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 /**
  * Theme context for managing dark/light theme state
- * Provides system preference detection and localStorage persistence
  */
 
 // Available theme options
@@ -98,11 +97,6 @@ const applyTheme = theme => {
 
 /**
  * Theme Provider component
- * Manages theme state with system preference detection and persistence
- *
- * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - Child components
- * @param {string} props.defaultTheme - Default theme if no preference stored
  */
 export const ThemeProvider = ({ children, defaultTheme = THEMES.SYSTEM }) => {
     const [themePreference, setThemePreference] = useState(defaultTheme);

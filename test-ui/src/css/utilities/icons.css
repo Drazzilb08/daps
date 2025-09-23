@@ -1,12 +1,6 @@
-/**
- * Icon Utilities
- * Consistent icon sizing, display, and semantic color utilities.
- */
 
 @layer utilities {
-  /* ===========================================
-     ICON SIZING UTILITIES
-     =========================================== */
+  /* Icon sizing */
 
   .icon-xs {
     width: 12px;

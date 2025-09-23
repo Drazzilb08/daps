@@ -4,37 +4,7 @@ import { useGlobalError } from '../../contexts/GlobalErrorContext.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
 
 /**
- * Page-level Error Boundary for route protection - Ported from Main UI
- *
- * Specialized error boundary designed to wrap entire page routes. Provides
- * page-specific error handling with navigation recovery options and integration
- * with the existing GlobalErrorProvider system.
- *
- * @param {Object} props - Component props
- * @param {string} props.pageName - Name of the page for error context
- * @param {string} [props.pageDescription] - Brief description of page functionality
- * @param {Function} [props.onError] - Callback when error occurs (error, errorInfo) => void
- * @param {Function} [props.onNavigateHome] - Custom navigation handler for home button
- * @param {Function} [props.onNavigateBack] - Custom navigation handler for back button
- * @param {boolean} [props.showNavigation=true] - Whether to show navigation buttons
- * @param {boolean} [props.showRetry=true] - Whether to show retry button
- * @param {React.ReactNode} props.children - Child components (page content) to protect
- *
- * @example
- * // Basic page protection
- * <PageErrorBoundary pageName="Dashboard" pageDescription="Dashboard overview">
- *   <DashboardPage />
- * </PageErrorBoundary>
- *
- * @example
- * // With custom navigation
- * <PageErrorBoundary
- *   pageName="Settings"
- *   onNavigateHome={() => navigate('/')}
- *   onNavigateBack={() => navigate(-1)}
- * >
- *   <SettingsPage />
- * </PageErrorBoundary>
+ * Page-level Error Boundary for route protection
  */
 class PageErrorBoundaryBase extends Component {
     constructor(props) {
@@ -64,7 +34,7 @@ class PageErrorBoundaryBase extends Component {
 
         this.setState({ errorInfo });
 
-        // Enhanced page error context
+        // Page error context
         const errorContext = {
             context: `Page: ${pageName}`,
             errorInfo,
@@ -87,7 +57,7 @@ class PageErrorBoundaryBase extends Component {
             onError(error, errorInfo);
         }
 
-        // Enhanced console logging for development
+        // Console logging for development
         console.group(`🚨 PAGE ERROR: ${pageName}`);
         console.error('Page:', pageName);
         console.error('Error:', error);

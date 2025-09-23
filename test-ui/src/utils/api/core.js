@@ -1,21 +1,8 @@
-/**
- * DAPS API Core Module - Caching, Error Handling, and Request Management
- *
- * Provides centralized API communication with:
- * - Intelligent caching with TTL
- * - Comprehensive error handling
- * - Request deduplication
- * - Response standardization
- * - Toast notification integration
- */
 
 const API_BASE = '/api';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const REQUEST_TIMEOUT = 30000; // 30 seconds
 
-/**
- * Cache entry structure for request deduplication and TTL management
- */
 class CacheEntry {
     constructor(data, ttl = CACHE_TTL) {
         this.data = data;
@@ -23,10 +10,6 @@ class CacheEntry {
         this.ttl = ttl;
     }
 
-    /**
-     * Check if cache entry is still valid
-     * @returns {boolean} True if entry is still fresh
-     */
     isValid() {
         return Date.now() - this.timestamp < this.ttl;
     }

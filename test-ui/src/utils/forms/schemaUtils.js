@@ -1,20 +1,4 @@
-/**
- * Schema Utilities - Functions for parsing, normalizing, and working with form schemas
- *
- * Provides comprehensive utilities for schema-driven form generation including:
- * - Schema parsing and normalization
- * - Default value generation
- * - Field dependency resolution
- * - Conditional field processing
- */
 
-/**
- * Normalize a field schema to ensure all required properties are present
- *
- * @param {Object} fieldSchema - Raw field schema
- * @param {string} fieldKey - Field key/identifier
- * @returns {Object} Normalized field schema
- */
 export const normalizeFieldSchema = (fieldSchema, fieldKey) => {
     // Handle string shorthand (just field type)
     if (typeof fieldSchema === 'string') {

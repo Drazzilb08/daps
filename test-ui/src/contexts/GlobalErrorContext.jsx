@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { useToast, TOAST_TYPES } from './ToastContext.jsx';
 
 /**
- * Global error context for managing application-wide error state
- * Provides error boundaries, user-friendly messages, and recovery options
+ * Global error context for application-wide error state
  */
 
 // Error types
@@ -107,13 +106,6 @@ const determineErrorSeverity = error => {
 
 /**
  * Global Error Provider component
- * Manages global error state and provides error handling utilities
- * Now uses elegant toast notifications instead of intrusive modals
- *
- * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - Child components
- * @param {Function} props.onError - Optional error callback
- * @param {boolean} props.enableLogging - Whether to log errors to console
  */
 export const GlobalErrorProvider = ({ children, onError, enableLogging = true }) => {
     const [currentError, setCurrentError] = useState(null);
@@ -343,10 +335,6 @@ GlobalErrorProvider.propTypes = {
     enableLogging: PropTypes.bool,
 };
 
-/**
- * Toast-based error display utility
- * Provides helpful recovery actions through toast interactions
- */
 export const showErrorWithRecovery = (toast, error, recoveryFn) => {
     const recoveryMessage = error.recoverable
         ? `${error.userMessage}\n\nTip: You can try refreshing the page to recover.`
@@ -357,7 +345,6 @@ export const showErrorWithRecovery = (toast, error, recoveryFn) => {
 
 /**
  * Error Boundary component
- * Catches React component errors and reports them to GlobalError
  */
 export class ErrorBoundary extends React.Component {
     static propTypes = {

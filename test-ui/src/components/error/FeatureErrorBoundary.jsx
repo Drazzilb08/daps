@@ -4,36 +4,7 @@ import { useGlobalError } from '../../contexts/GlobalErrorContext.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
 
 /**
- * Feature-level Error Boundary for component protection - Ported from Main UI
- *
- * Specialized error boundary designed to wrap individual features or sections.
- * Provides inline error handling with graceful degradation and recovery options.
- *
- * @param {Object} props - Component props
- * @param {string} props.featureName - Name of the feature for error context
- * @param {string} [props.featureDescription] - Brief description of feature functionality
- * @param {boolean} [props.critical=false] - Whether this feature is critical to app function
- * @param {Function} [props.onError] - Callback when error occurs (error, errorInfo) => void
- * @param {Function} [props.fallback] - Custom fallback component
- * @param {React.ReactNode} props.children - Child components (feature content) to protect
- *
- * @example
- * // Basic feature protection
- * <FeatureErrorBoundary
- *   featureName="Search Interface"
- *   featureDescription="Media search and filtering"
- * >
- *   <SearchInterface />
- * </FeatureErrorBoundary>
- *
- * @example
- * // Critical feature with overlay mode
- * <FeatureErrorBoundary
- *   featureName="Navigation"
- *   critical={true}
- * >
- *   <MainNavigation />
- * </FeatureErrorBoundary>
+ * Feature-level Error Boundary for component protection
  */
 class FeatureErrorBoundaryBase extends Component {
     constructor(props) {
@@ -65,7 +36,7 @@ class FeatureErrorBoundaryBase extends Component {
 
         this.setState({ errorInfo });
 
-        // Enhanced feature error context
+        // Feature error context
         const errorContext = {
             context: `Feature: ${featureName}`,
             errorInfo,
@@ -88,7 +59,7 @@ class FeatureErrorBoundaryBase extends Component {
             onError(error, errorInfo);
         }
 
-        // Enhanced console logging for development
+        // Console logging for development
         console.group(`⚠️ FEATURE ERROR: ${featureName}`);
         console.error('Feature:', featureName);
         console.error('Error:', error);

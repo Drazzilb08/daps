@@ -1,12 +1,5 @@
-/**
- * Hamburger Button Component Styles
- *
- * Essential hamburger-specific styles that cannot be achieved with utilities.
- * Focus on animation logic and responsive behavior.
- */
 
 @layer components {
-    /* Essential hamburger behavior - only what utilities can't handle */
     .hamburger:hover {
         background: var(--surface-alt);
     }

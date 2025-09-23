@@ -1,12 +1,5 @@
 /**
- * API Test Page - Real DAPS Backend Integration Testing
- *
- * Tests actual DAPS API endpoints with real backend integration:
- * - /api/version - Get application version
- * - /api/config - Configuration management
- * - /api/jobs/stats - Job statistics
- * - /api/instances - Service instances
- * - Error handling and toast integration
+ * API testing page
  */
 
 import React, { useState, useCallback } from 'react';

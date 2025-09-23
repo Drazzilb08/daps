@@ -1,22 +1,11 @@
 /**
  * Hook for API calls with loading/error states
- *
- * Features: automatic loading states, error toasts, retry, cancellation
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { APIError } from '../utils/api/core.js';
 
-/**
- * Hook for API calls with loading/error states
- *
- * @param {Object} config - Hook configuration
- * @param {Function} config.apiFunction - API call function
- * @param {Object} config.options - Options (immediate, showErrorToast, transform, retry settings)
- * @param {Array} config.dependencies - Dependencies for re-execution
- * @returns {Object} Hook state and methods
- */
 export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => {
     const {
         immediate = true,

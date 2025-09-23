@@ -1,7 +1,4 @@
-/**
- * Border and Radius Utilities
- * Complete border system with semantic colors and responsive patterns.
- */
+ /* Border utilities */
 
 @layer utilities {
   /* ===========================================
@@ -71,6 +68,7 @@
      =========================================== */
 
   .rounded-none { border-radius: 0; }
+  .rounded-xs { border-radius: 0.125rem; }    /* 2px - smaller than sm for fine details */
   .rounded-sm { border-radius: 0.25rem; }
   .rounded { border-radius: 0.5rem; }
   .rounded-md { border-radius: 0.5rem; }

@@ -1,12 +1,6 @@
-/**
- * Image and Media Utilities
- * Responsive images, object-fit utilities, and poster sizing for media content.
- */
 
 @layer utilities {
-  /* ===========================================
-     OBJECT-FIT UTILITIES
-     =========================================== */
+  /* Object-fit */
 
   .img-cover { object-fit: cover; }
   .img-contain { object-fit: contain; }

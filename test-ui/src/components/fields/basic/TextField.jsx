@@ -1,24 +1,7 @@
-/**
- * TextField Component
- *
- * Basic text input field component using primitive composition.
- * Supports placeholder text, validation states, and accessibility features.
- */
 
 import React, { useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
 
-/**
- * TextField component for text input
- *
- * @param {Object} props - Component props
- * @param {Object} props.field - Field configuration object
- * @param {string} props.value - Current field value
- * @param {Function} props.onChange - Value change handler
- * @param {boolean} props.disabled - Field disabled state
- * @param {boolean} props.highlightInvalid - Show validation error state
- * @param {string} props.errorMessage - Error message to display
- */
 export const TextField = React.memo(
     ({
         field,

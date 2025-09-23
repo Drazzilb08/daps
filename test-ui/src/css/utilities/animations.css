@@ -1,15 +1,6 @@
-/**
- * Animation & Transition Utilities - Consolidated System
- *
- * Centralized animation utilities consolidating 24+ scattered transition
- * definitions from across 6 utility files. Provides comprehensive motion
- * system with accessibility support and consistent timing patterns.
- */
 
 @layer utilities {
-  /* ===========================================
-     TRANSITION DURATION UTILITIES
-     =========================================== */
+  /* Transition duration */
 
   .duration-75 { transition-duration: 75ms; }
   .duration-100 { transition-duration: 100ms; }
@@ -20,9 +11,7 @@
   .duration-700 { transition-duration: 700ms; }
   .duration-1000 { transition-duration: 1000ms; }
 
-  /* ===========================================
-     TRANSITION TIMING FUNCTIONS
-     =========================================== */
+  /* Timing functions */
 
   .ease-linear { transition-timing-function: linear; }
   .ease-in { transition-timing-function: cubic-bezier(0.4, 0, 1, 1); }

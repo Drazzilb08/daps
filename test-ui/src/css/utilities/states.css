@@ -1,19 +1,5 @@
-/**
- * Component State Utilities
- * Interactive states, validation states, and component behavior utilities.
- */
 
 @layer utilities {
-  /* ===========================================
-     COMPONENT STATE UTILITIES
-     =========================================== */
-
-  /* NOTE: Disabled state composition removed - use atomic utilities instead:
-   * OLD: state-disabled → NEW: opacity-60 cursor-not-allowed pointer-events-none
-   */
-
-  /* .state-readonly removed - use atomic utilities: bg-surface-alt cursor-default */
-
   .disabled-input {
     background: var(--input-bg-disabled);
     color: var(--text-disabled);

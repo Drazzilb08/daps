@@ -3,28 +3,9 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useUIState } from '../contexts/UIStateContext.jsx';
 
 /**
- * PageSidebar component for DAPS application
- *
- * Provides hierarchical navigation for the DAPS media automation system.
- * Features collapsible hierarchy with full-width background active states.
- * Mobile overlay at 768px breakpoint with touch-optimized interface.
- *
- * Features:
- * - Collapsible hierarchical navigation (children show/hide based on parent active state)
- * - Full-width background active states (no border stripes)
- * - Mobile overlay with backdrop at 768px breakpoint
- * - Touch-optimized navigation targets (44px minimum)
- * - Material Design icons for visual hierarchy
- * - Professional media management interface styling
- * - WCAG 2.1 AA compliant accessibility
- * - Smooth expand/collapse animations
- * - Outside click and navigation link click closes mobile menu
+ * Sidebar navigation component with collapsible hierarchy
  */
 
-/**
- * Clean 5-item navigation structure for DAPS
- * Updated structure with administrative functions moved to Settings context
- */
 const NAVIGATION_STRUCTURE = [
     {
         id: 'dashboard',
@@ -124,26 +105,17 @@ const PageSidebar = React.memo(() => {
     const { mobileMenuOpen, closeMobileMenu, isMobile } = useUIState();
     const sidebarRef = useRef(null);
 
-    /**
-     * Handle parent navigation link click - do NOT close mobile menu (shows children)
-     */
     const handleParentNavLinkClick = useCallback(() => {
         // Parent clicks should not close the mobile menu
         // This allows users to see the children items
     }, []);
 
-    /**
-     * Handle child navigation link click - close mobile menu on mobile
-     */
     const handleChildNavLinkClick = useCallback(() => {
         if (isMobile && mobileMenuOpen) {
             closeMobileMenu();
         }
     }, [isMobile, mobileMenuOpen, closeMobileMenu]);
 
-    /**
-     * Handle outside click to close mobile menu
-     */
     useEffect(() => {
         const handleClickOutside = event => {
             if (
@@ -164,24 +136,7 @@ const PageSidebar = React.memo(() => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isMobile, mobileMenuOpen, closeMobileMenu]);
 
-    /**
-     * Collapsible Hierarchy Logic - Full-Width Background Active States
-     *
-     * PARENT ACTIVE: Gets full-width background when any child path is active
-     * CHILD ACTIVE: Gets full-width background when specific path matches
-     * COLLAPSIBLE: Children only visible when parent section is active
-     *
-     * Examples:
-     * - /media/search: "Media" parent shows children AND "Search" child gets full background
-     * - /media: "Media" parent shows children (direct parent navigation)
-     * - /dashboard: Single item active with full background, no children
-     * - /posters: Children hidden when not in posters section
-     */
 
-    /**
-     * Check if a parent section is active (any child path matches)
-     * Used for parent background highlighting and children visibility
-     */
     const isParentActive = useCallback(
         item => {
             if (item.type !== 'parent') return false;
@@ -193,10 +148,6 @@ const PageSidebar = React.memo(() => {
         [location.pathname]
     );
 
-    /**
-     * Check if a specific child item is active
-     * Used for child background highlighting
-     */
     const isChildActive = useCallback(
         childPath => {
             return location.pathname === childPath;
@@ -204,10 +155,6 @@ const PageSidebar = React.memo(() => {
         [location.pathname]
     );
 
-    /**
-     * Check if a single navigation item is active
-     * Used for single items without children
-     */
     const isSingleActive = useCallback(
         path => {
             return location.pathname === path;
@@ -218,11 +165,11 @@ const PageSidebar = React.memo(() => {
     return (
         <aside
             ref={sidebarRef}
-            className={`flex-none w-sidebar bg-sidebar-bg border-r border-sidebar-border overflow-y-auto ${
-                isMobile && mobileMenuOpen
-                    ? 'translate-x-0'
-                    : '-translate-x-full md:translate-x-0'
-            } transition-transform ${isMobile && mobileMenuOpen ? 'page-sidebar--mobile-open' : ''}`}
+            className={`bg-sidebar-bg border-r border-sidebar-border overflow-y-auto transition-transform
+                ${isMobile
+                    ? `fixed inset-y-0 left-0 w-sidebar z-50 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
+                    : 'flex-none w-sidebar translate-x-0'
+                } ${isMobile && mobileMenuOpen ? 'page-sidebar--mobile-open' : ''}`}
             role="navigation"
             aria-label="Main navigation"
             aria-hidden={isMobile && !mobileMenuOpen}

@@ -1,15 +1,6 @@
-/**
- * Layout Utilities - Comprehensive Layout System
- *
- * Complete layout utility system covering display, flexbox, grid, positioning,
- * and alignment. Eliminates layout-related duplication across components
- * with mobile-first responsive patterns and accessibility considerations.
- */
 
 @layer utilities {
-  /* ===========================================
-     DISPLAY UTILITIES - COMPREHENSIVE COVERAGE
-     =========================================== */
+  /* Display */
 
   .block { display: block; }
   .inline-block { display: inline-block; }
@@ -32,11 +23,7 @@
   .list-item { display: list-item; }
   .hidden { display: none; }
 
-  /* ===========================================
-     FLEXBOX UTILITIES - COMPLETE SYSTEM
-     =========================================== */
-
-  /* Flex direction */
+  /* Flexbox */
   .flex-row { flex-direction: row; }
   .flex-row-reverse { flex-direction: row-reverse; }
   .flex-col { flex-direction: column; }
@@ -126,18 +113,6 @@
   .self-stretch { align-self: stretch; }
   .self-baseline { align-self: baseline; }
 
-  /* ===========================================
-     FLEXBOX UTILITIES - ATOMIC APPROACH
-     =========================================== */
-
-  /* NOTE: Compositional utilities removed - use atomic utilities instead:
-   * OLD: flex-center-both → NEW: flex items-center justify-center
-   * OLD: flex-center-start → NEW: flex items-center justify-start
-   * OLD: flex-center-end → NEW: flex items-center justify-end
-   * OLD: inline-flex-center-both → NEW: inline-flex items-center justify-center
-   * OLD: flex-between → NEW: flex items-center justify-between
-   */
-
   /* Place content (align-content + justify-content) */
   .place-content-center { place-content: center; }
   .place-content-start { place-content: start; }
@@ -147,29 +122,22 @@
   .place-content-evenly { place-content: space-evenly; }
   .place-content-stretch { place-content: stretch; }
 
-  /* Special flex pattern for page-main-content */
   .flex-1-0-1px {
     flex: 1 0 1px;
   }
 
-  /* Place items (align-items + justify-items) */
   .place-items-start { place-items: start; }
   .place-items-end { place-items: end; }
   .place-items-center { place-items: center; }
   .place-items-stretch { place-items: stretch; }
 
-  /* Place self (align-self + justify-self) */
   .place-self-auto { place-self: auto; }
   .place-self-start { place-self: start; }
   .place-self-end { place-self: end; }
   .place-self-center { place-self: center; }
   .place-self-stretch { place-self: stretch; }
 
-  /* ===========================================
-     GRID UTILITIES - COMPREHENSIVE SYSTEM
-     =========================================== */
-
-  /* Grid template columns - Practical responsive set */
+  /* Grid */
   .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
   .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -544,17 +512,17 @@
      =========================================== */
 
   /* Hide on mobile (smaller than sm) */
-  @media (max-width: 639px) {
+  @media (width <= 639px) {
     .max-sm\:hidden { display: none; }
   }
 
   /* Hide on mobile and small screens (smaller than md) */
-  @media (max-width: 767px) {
+  @media (width <= 767px) {
     .max-md\:hidden { display: none; }
   }
 
   /* Hide on screens smaller than desktop (smaller than lg) */
-  @media (max-width: 1023px) {
+  @media (width <= 1023px) {
     .max-lg\:hidden { display: none; }
   }
 

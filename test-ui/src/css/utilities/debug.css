@@ -1,13 +1,5 @@
-/**
- * Debug Utilities
- * Development and debugging utilities for layout and accessibility testing.
- */
 
 @layer utilities {
-  /* ===========================================
-     LAYOUT DEBUG UTILITIES
-     =========================================== */
-
   .debug-grid {
     background-image: linear-gradient(rgb(255 0 0 / 10%) 1px, transparent 1px),
                       linear-gradient(90deg, rgb(255 0 0 / 10%) 1px, transparent 1px);

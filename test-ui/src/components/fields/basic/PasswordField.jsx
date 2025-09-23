@@ -1,25 +1,8 @@
-/**
- * PasswordField Component
- *
- * Password input field with show/hide toggle using primitive composition.
- * Follows standard field interface with additional security considerations.
- */
 
 import React, { useState, useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
 import { FieldButton } from '../features/shared';
 
-/**
- * PasswordField component for password input
- *
- * @param {Object} props - Component props
- * @param {Object} props.field - Field configuration object
- * @param {string} props.value - Current field value
- * @param {Function} props.onChange - Value change handler
- * @param {boolean} props.disabled - Field disabled state
- * @param {boolean} props.highlightInvalid - Show validation error state
- * @param {string} props.errorMessage - Error message to display
- */
 export const PasswordField = React.memo(
     ({
         field,

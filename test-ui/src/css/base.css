@@ -1,9 +1,3 @@
-/**
- * DAPS Base Styles
- * Foundation styles including CSS reset, base typography, and accessibility features.
- */
-
-/* CSS layers definition */
 @layer reset, base, components, utilities, pages;
 
 @layer reset {

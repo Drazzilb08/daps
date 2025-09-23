@@ -1,15 +1,6 @@
-/**
- * FormValidator - Validation engine for schema-driven forms
- *
- * Provides field-level and form-level validation with real-time feedback.
- * Integrates with field system and error primitives.
- */
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
-/**
- * Validation rule types and their implementations
- */
 const VALIDATION_RULES = {
     // Basic required validation
     required: (value, rule) => {

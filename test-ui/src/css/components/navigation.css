@@ -1,12 +1,3 @@
-/**
- * Navigation Component CSS - Pseudo-elements Only
- *
- * This file contains only CSS that CANNOT be converted to utilities:
- * - Pseudo-elements (::before, ::after)
- * - Complex selectors that require component CSS
- *
- * All other navigation styles have been migrated to utility classes.
- */
 
 @layer components {
   /* ===========================================

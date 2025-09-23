@@ -1,12 +1,6 @@
 import React from 'react';
 import { ToolBar, Section, Button, Separator } from '../../components/ToolBar';
 
-/**
- * Toolbar Test Page - Demonstrates overflow behavior
- *
- * Used to test the Section component's overflow calculation
- * and responsive button handling at different viewport sizes.
- */
 const ToolbarTestPage = () => {
     const handleButtonClick = buttonName => {
         console.log(`${buttonName} button clicked`);

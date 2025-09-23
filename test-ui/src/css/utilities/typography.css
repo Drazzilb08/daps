@@ -1,23 +1,12 @@
-/**
- * Typography Utilities - Comprehensive Text System
- *
- * Complete typography utility system covering font sizes, weights, line heights,
- * alignment, decoration, and transformation. Eliminates text-related duplication
- * across components with design token integration and accessibility compliance.
- */
 
 @layer utilities {
-  /* ===========================================
-     FONT SIZE UTILITIES - DESIGN TOKEN BASED
-     =========================================== */
-
-  /* Font sizes using design tokens */
-  .text-xs { font-size: 0.75rem; }     /* 12px */
-  .text-sm { font-size: 0.875rem; }    /* 14px */
-  .text-base { font-size: 1rem; }      /* 16px - accessibility base */
-  .text-lg { font-size: 1.125rem; }    /* 18px */
-  .text-xl { font-size: 1.25rem; }     /* 20px */
-  .text-2xl { font-size: 1.5rem; }     /* 24px */
+  /* Font sizes */
+  .text-xs { font-size: 0.75rem; }
+  .text-sm { font-size: 0.875rem; }
+  .text-base { font-size: 1rem; }
+  .text-lg { font-size: 1.125rem; }
+  .text-xl { font-size: 1.25rem; }
+  .text-2xl { font-size: 1.5rem; }
   .text-3xl { font-size: 1.875rem; }   /* 30px */
   .text-4xl { font-size: 2.25rem; }    /* 36px */
   .text-5xl { font-size: 3rem; }       /* 48px */
@@ -27,10 +16,10 @@
    * OLD: text-caption (0.75rem) → NEW: text-xs
    * OLD: text-title (1.5rem) → NEW: text-2xl
    * OLD: text-display (3rem) → NEW: text-5xl
-   * KEPT: text-body, text-lead, text-heading (unique sizes)
+   * OLD: text-body (1rem) → NEW: text-base
+   * OLD: text-lead (1.125rem) → NEW: text-lg
+   * KEPT: text-heading (unique size)
    */
-  .text-body { font-size: 1rem; }
-  .text-lead { font-size: 1.125rem; }
   .text-heading { font-size: 1.875rem; }
 
   /* ===========================================
@@ -161,7 +150,6 @@
     white-space: nowrap;
   }
 
-  .text-ellipsis { text-overflow: ellipsis; }
   .text-clip { text-overflow: clip; }
 
   /* Multi-line truncation utilities */

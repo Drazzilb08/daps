@@ -1,18 +1,9 @@
-/**
- * Transform and Animation Utilities
- * Motion utilities with accessibility considerations and performance optimization.
- */
 
 @layer utilities {
-  /* ===========================================
-     TRANSFORM UTILITIES
-     =========================================== */
-
   /* Transform base */
   .transform { transform: none; }
   .transform-none { transform: none; }
 
-  /* Scale transforms */
   .scale-75 { transform: scale(0.75); }
   .scale-95 { transform: scale(0.95); }
   .scale-98 { transform: scale(0.98); }

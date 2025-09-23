@@ -1,18 +1,4 @@
-/**
- * Form Validation Utilities
- *
- * Provides validation functions for form fields and complete forms.
- * Handles common validation patterns and field-specific validation.
- */
 
-/**
- * Validate a single field based on its configuration
- *
- * @param {Object} field - Field configuration object
- * @param {*} value - Field value to validate
- * @param {Object} allValues - All form values for cross-field validation
- * @returns {string|null} Error message or null if valid
- */
 export function validateField(field, value, allValues = {}) {
     // Check required fields
     if (field.required && (value === undefined || value === null || value === '')) {

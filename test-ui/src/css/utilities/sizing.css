@@ -1,9 +1,8 @@
-/**
- * Sizing Utilities - Comprehensive Dimension System
- *
- * Complete sizing utility system covering width, height, min/max dimensions,
- * aspect ratios, and viewport sizing. Eliminates sizing-related duplication
- * across components with design token integration and accessibility compliance.
+ /* Sizing utilities
+ * SIZE: size-0 through size-96 (square - sets width AND height)
+ * AUTO: w-auto, h-auto available
+ * MIN/MAX: Complete min-w-*, max-w-*, min-h-*, max-h-* utilities
+ * PERCENTAGES: Fractional utilities (1/2, 1/3, 2/3, 1/4, 3/4, etc.)
  */
 
 @layer utilities {
@@ -22,6 +21,7 @@
   .w-6 { width: 1.5rem; }      /* 24px */
   .w-7 { width: 1.75rem; }      /* 28px */
   .w-8 { width: 2rem; }      /* 32px */
+  .w-9 { width: 2.25rem; }             /* 36px - fills critical gap for AI pattern recognition */
   .w-10 { width: 2.5rem; }             /* 40px */
   .w-12 { width: 3rem; }               /* 48px */
   .w-14 { width: 3.5rem; }             /* 56px */
@@ -118,6 +118,7 @@
   .h-6 { height: 1.5rem; }     /* 24px */
   .h-7 { height: 1.75rem; }     /* 28px */
   .h-8 { height: 2rem; }     /* 32px */
+  .h-9 { height: 2.25rem; }            /* 36px - fills critical gap for AI pattern recognition */
   .h-10 { height: 2.5rem; }            /* 40px */
   .h-12 { height: 3rem; }              /* 48px */
   .h-14 { height: 3.5rem; }            /* 56px */
@@ -220,6 +221,7 @@
   .size-6 { width: 1.5rem; height: 1.5rem; }
   .size-7 { width: 1.75rem; height: 1.75rem; }
   .size-8 { width: 2rem; height: 2rem; }
+  .size-9 { width: 2.25rem; height: 2.25rem; }    /* 36px - fills critical gap for AI pattern recognition */
   .size-10 { width: 2.5rem; height: 2.5rem; }
   .size-12 { width: 3rem; height: 3rem; }
   .size-14 { width: 3.5rem; height: 3.5rem; }
@@ -594,6 +596,7 @@
   }
 
   /* Centered container patterns */
+
   /* NOTE: Container composition utilities removed - use atomic utilities instead:
    * OLD: container-center → NEW: flex items-center justify-center min-h-screen
    * OLD: container-center-content → NEW: flex items-center justify-center flex-col gap-4

@@ -1,11 +1,5 @@
 /**
- * DAPS Field Test Page - Clean Development Testing Interface
- *
- * Focused interface for field development and testing:
- * - Field status overview (working vs placeholder)
- * - Individual field testing with various states
- * - Approval workflow for field implementations
- * - Clean, minimal interface for actual development work
+ * Field component testing page
  */
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
@@ -13,10 +7,6 @@ import { FieldRegistry } from '../../components/fields/FieldRegistry.jsx';
 import { FormRenderer } from '../../utils/forms/FormRenderer.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
 
-/**
- * Field Status Overview Component
- * Simple display of implemented vs placeholder field types
- */
 const FieldStatusOverview = React.memo(() => {
     const workingTypes = FieldRegistry.getWorkingFieldTypes();
     const placeholderTypes = FieldRegistry.getPlaceholderFieldTypes();

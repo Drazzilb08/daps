@@ -5,17 +5,6 @@ import { FieldDescription } from '../primitives/FieldDescription';
 import { FieldError } from '../primitives/FieldError';
 import { TextareaBase } from '../primitives/TextareaBase';
 
-/**
- * JSON editor with validation and formatting
- *
- * @param {Object} props - Component props
- * @param {Object} props.field - Field configuration
- * @param {string|Object} props.value - Current JSON value
- * @param {Function} props.onChange - Change handler
- * @param {boolean} [props.disabled=false] - Disabled state
- * @param {boolean} [props.highlightInvalid=false] - Show validation errors
- * @param {string} [props.errorMessage] - Error message
- */
 export const JsonField = ({
     field,
     value,

@@ -1,17 +1,6 @@
-/**
- * Color Utilities - Comprehensive Theme-Aware Color System
- *
- * Systematic color utilities for backgrounds, borders, text, and states.
- * Eliminates color-related duplication across components by providing
- * comprehensive utilities for all theme colors and interaction states.
- */
 
 @layer utilities {
-  /* ===========================================
-     BACKGROUND COLOR UTILITIES - THEME AWARE
-     =========================================== */
-
-  /* Primary surface backgrounds */
+  /* Background colors */
   .bg-primary { background: var(--primary); }
   .bg-primary-hover { background: var(--focus); }
   .bg-primary-surface { background: color-mix(in srgb, var(--primary) 10%, transparent); }
@@ -25,13 +14,11 @@
   .bg-surface-secondary { background: var(--surface-secondary); }
   .bg-surface-dim { background: var(--surface-dim); }
 
-  /* State color backgrounds */
   .bg-success { background: var(--success); }
   .bg-warning { background: var(--warning); }
   .bg-error { background: var(--error); }
   .bg-info { background: var(--info); }
 
-  /* Subtle/opacity state backgrounds for badges and cards */
   .bg-success-subtle { background: var(--surface); }
   .bg-warning-subtle { background: var(--surface); }
   .bg-error-subtle { background: var(--surface); }

@@ -1,21 +1,11 @@
 /**
- * DAPS Spinner Test Page - Development Testing Interface
- *
- * Comprehensive testing interface for spinner components:
- * - Different spinner sizes and variants
- * - Loading state demonstrations
- * - Performance and animation testing
- * - Accessibility compliance validation
+ * Spinner component testing page
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { Spinner } from '../../components/ui';
 import { useToast } from '../../contexts/ToastContext.jsx';
 
-/**
- * Spinner Size Demo Component
- * Tests different spinner sizes with various configurations
- */
 const SpinnerSizeDemo = React.memo(() => {
     const sizes = ['small', 'medium', 'large'];
 
@@ -46,10 +36,6 @@ const SpinnerSizeDemo = React.memo(() => {
     );
 });
 
-/**
- * Spinner with Text Demo Component
- * Tests spinners with accompanying text
- */
 const SpinnerTextDemo = React.memo(() => {
     const configurations = [
         { size: 'small', text: 'Loading...' },
@@ -74,10 +60,6 @@ const SpinnerTextDemo = React.memo(() => {
     );
 });
 
-/**
- * Centered Spinner Demo Component
- * Tests centered spinner layout for suspense fallbacks
- */
 const CenteredSpinnerDemo = React.memo(() => {
     return (
         <div className="bg-surface-elevated rounded border">
@@ -100,10 +82,6 @@ const CenteredSpinnerDemo = React.memo(() => {
     );
 });
 
-/**
- * Loading State Simulation Component
- * Interactive demonstration of loading states
- */
 const LoadingStateSimulation = React.memo(() => {
     const [loadingStates, setLoadingStates] = useState({
         button: false,
@@ -186,10 +164,6 @@ const LoadingStateSimulation = React.memo(() => {
     );
 });
 
-/**
- * Animation Performance Test Component
- * Tests spinner performance under various conditions
- */
 const AnimationPerformanceTest = React.memo(() => {
     const [spinnerCount, setSpinnerCount] = useState(1);
     const [isStressed, setIsStressed] = useState(false);
@@ -254,10 +228,6 @@ const AnimationPerformanceTest = React.memo(() => {
     );
 });
 
-/**
- * Accessibility Test Component
- * Tests spinner accessibility features
- */
 const AccessibilityTest = React.memo(() => {
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -319,9 +289,6 @@ const AccessibilityTest = React.memo(() => {
     );
 });
 
-/**
- * Main Spinner Test Page Component
- */
 const SpinnerTestPage = () => {
     const [activeTest, setActiveTest] = useState('overview');
 

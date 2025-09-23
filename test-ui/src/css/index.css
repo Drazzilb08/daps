@@ -1,24 +1,7 @@
-/**
- * DAPS CSS Entry Point
- * Import Order: tokens, base, themes, utilities, components, pages
- */
-
-/* Design tokens eliminated - utility-first architecture achieved */
 @import url('./base.css');
-
-/* layout.css removed - converted to utility classes */
 @import url('./theme/dark.css');
 @import url('./theme/light.css');
-
-/* Component system - MUST come before utilities for proper cascade */
-
 @import url('./components/hamburger-button.css');
 @import url('./components/interactions.css');
 @import url('./components/navigation.css');
-
-/* Complete utility system - fully decomposed into 18 specialized modules */
 @import url('./utilities/index.css');
-
-/* Page-specific styles */
-
-/* pages/dev/index.css removed - dev pages use utility classes */

@@ -6,18 +6,12 @@ import PageHeader from './PageHeader.jsx';
 import PageSidebar from './PageSidebar.jsx';
 import SearchToolbar from './Search/SearchToolbar.jsx';
 import useSearchPageDetection from '../hooks/useSearchPageDetection.js';
+import { useUIState } from '../contexts/UIStateContext.jsx';
 
-/**
- * Main layout with responsive sidebar and toolbar
- *
- * Shows SearchToolbar on search pages only. Sidebar collapses to overlay on mobile.
- *
- * @param {Object} props - Component props
- * @param {React.ReactNode} [props.children] - Optional children (overrides Outlet if provided)
- */
 const Layout = ({ children }) => {
     // Detect if we're on a search page to show toolbar
     const { isSearchPage, searchPageType, searchSubtype } = useSearchPageDetection();
+    const { mobileMenuOpen, closeMobileMenu, isMobile } = useUIState();
 
     /**
      * Handle toolbar actions (refresh, scan, export, etc.)
@@ -48,6 +42,15 @@ const Layout = ({ children }) => {
             >
                 <PageHeader />
             </FeatureErrorBoundary>
+
+            {/* Mobile Menu Backdrop */}
+            {isMobile && mobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-40"
+                    onClick={closeMobileMenu}
+                    aria-hidden="true"
+                />
+            )}
 
             {/* Content Area - remaining height after header */}
             <div className="flex flex-1 overflow-hidden">

@@ -1,17 +1,6 @@
-/**
- * Spacing Utilities - Complete System
- *
- * Comprehensive spacing utilities using design tokens.
- * Fills gaps in current system and provides complete 0-8 scale coverage.
- * Mobile-first responsive design with consistent spacing patterns.
- */
 
 @layer utilities {
-  /* ===========================================
-     MARGIN UTILITIES - COMPLETE 0-8 SCALE
-     =========================================== */
-
-  /* All sides */
+  /* Margin */
   .m-0 { margin: 0; }
   .m-1 { margin: 0.25rem; }
   .m-2 { margin: 0.5rem; }
@@ -21,11 +10,11 @@
   .m-6 { margin: 1.5rem; }
   .m-7 { margin: 1.75rem; }
   .m-8 { margin: 2rem; }
+  .m-9 { margin: 2.25rem; }
   .m-10 { margin: 2.5rem; }
   .m-12 { margin: 3rem; }
   .m-auto { margin: auto; }
 
-  /* Margin Top */
   .mt-0 { margin-top: 0; }
   .mt-1 { margin-top: 0.25rem; }
   .mt-2 { margin-top: 0.5rem; }
@@ -35,11 +24,11 @@
   .mt-6 { margin-top: 1.5rem; }
   .mt-7 { margin-top: 1.75rem; }
   .mt-8 { margin-top: 2rem; }
+  .mt-9 { margin-top: 2.25rem; }
   .mt-10 { margin-top: 2.5rem; }
   .mt-12 { margin-top: 3rem; }
   .mt-auto { margin-top: auto; }
 
-  /* Margin Bottom */
   .mb-0 { margin-bottom: 0; }
   .mb-1 { margin-bottom: 0.25rem; }
   .mb-2 { margin-bottom: 0.5rem; }
@@ -49,11 +38,11 @@
   .mb-6 { margin-bottom: 1.5rem; }
   .mb-7 { margin-bottom: 1.75rem; }
   .mb-8 { margin-bottom: 2rem; }
+  .mb-9 { margin-bottom: 2.25rem; }
   .mb-10 { margin-bottom: 2.5rem; }
   .mb-12 { margin-bottom: 3rem; }
   .mb-auto { margin-bottom: auto; }
 
-  /* Margin Left */
   .ml-0 { margin-left: 0; }
   .ml-1 { margin-left: 0.25rem; }
   .ml-2 { margin-left: 0.5rem; }
@@ -63,11 +52,11 @@
   .ml-6 { margin-left: 1.5rem; }
   .ml-7 { margin-left: 1.75rem; }
   .ml-8 { margin-left: 2rem; }
+  .ml-9 { margin-left: 2.25rem; }
   .ml-10 { margin-left: 2.5rem; }
   .ml-12 { margin-left: 3rem; }
   .ml-auto { margin-left: auto; }
 
-  /* Margin Right */
   .mr-0 { margin-right: 0; }
   .mr-1 { margin-right: 0.25rem; }
   .mr-2 { margin-right: 0.5rem; }
@@ -77,11 +66,11 @@
   .mr-6 { margin-right: 1.5rem; }
   .mr-7 { margin-right: 1.75rem; }
   .mr-8 { margin-right: 2rem; }
+  .mr-9 { margin-right: 2.25rem; }
   .mr-10 { margin-right: 2.5rem; }
   .mr-12 { margin-right: 3rem; }
   .mr-auto { margin-right: auto; }
 
-  /* Margin X/Y Axis */
   .mx-0 {
     margin-left: 0;
     margin-right: 0;
@@ -125,6 +114,11 @@
   .mx-8 {
     margin-left: 2rem;
     margin-right: 2rem;
+  }
+
+  .mx-9 {
+    margin-left: 2.25rem;
+    margin-right: 2.25rem;
   }
 
   .mx-10 {
@@ -187,6 +181,11 @@
     margin-bottom: 2rem;
   }
 
+  .my-9 {
+    margin-top: 2.25rem;
+    margin-bottom: 2.25rem;
+  }
+
   .my-10 {
     margin-top: 2.5rem;
     margin-bottom: 2.5rem;
@@ -202,11 +201,7 @@
     margin-bottom: auto;
   }
 
-  /* ===========================================
-     PADDING UTILITIES - COMPLETE 0-8 SCALE
-     =========================================== */
-
-  /* All sides */
+  /* Padding */
   .p-0 { padding: 0; }
   .p-1 { padding: 0.25rem; }
   .p-2 { padding: 0.5rem; }
@@ -216,10 +211,10 @@
   .p-6 { padding: 1.5rem; }
   .p-7 { padding: 1.75rem; }
   .p-8 { padding: 2rem; }
+  .p-9 { padding: 2.25rem; }
   .p-10 { padding: 2.5rem; }
   .p-12 { padding: 3rem; }
 
-  /* Padding Top */
   .pt-0 { padding-top: 0; }
   .pt-1 { padding-top: 0.25rem; }
   .pt-2 { padding-top: 0.5rem; }
@@ -229,10 +224,10 @@
   .pt-6 { padding-top: 1.5rem; }
   .pt-7 { padding-top: 1.75rem; }
   .pt-8 { padding-top: 2rem; }
+  .pt-9 { padding-top: 2.25rem; }
   .pt-10 { padding-top: 2.5rem; }
   .pt-12 { padding-top: 3rem; }
 
-  /* Padding Bottom */
   .pb-0 { padding-bottom: 0; }
   .pb-1 { padding-bottom: 0.25rem; }
   .pb-2 { padding-bottom: 0.5rem; }
@@ -242,10 +237,10 @@
   .pb-6 { padding-bottom: 1.5rem; }
   .pb-7 { padding-bottom: 1.75rem; }
   .pb-8 { padding-bottom: 2rem; }
+  .pb-9 { padding-bottom: 2.25rem; }
   .pb-10 { padding-bottom: 2.5rem; }
   .pb-12 { padding-bottom: 3rem; }
 
-  /* Padding Left */
   .pl-0 { padding-left: 0; }
   .pl-1 { padding-left: 0.25rem; }
   .pl-2 { padding-left: 0.5rem; }
@@ -255,10 +250,10 @@
   .pl-6 { padding-left: 1.5rem; }
   .pl-7 { padding-left: 1.75rem; }
   .pl-8 { padding-left: 2rem; }
+  .pl-9 { padding-left: 2.25rem; }
   .pl-10 { padding-left: 2.5rem; }
   .pl-12 { padding-left: 3rem; }
 
-  /* Padding Right */
   .pr-0 { padding-right: 0; }
   .pr-1 { padding-right: 0.25rem; }
   .pr-2 { padding-right: 0.5rem; }
@@ -268,11 +263,10 @@
   .pr-6 { padding-right: 1.5rem; }
   .pr-7 { padding-right: 1.75rem; }
   .pr-8 { padding-right: 2rem; }
+  .pr-9 { padding-right: 2.25rem; }
   .pr-10 { padding-right: 2.5rem; }
-  /* .pr-11 removed - scale inconsistency (only pr-11 existed, no mr-11, etc.) */
   .pr-12 { padding-right: 3rem; }
 
-  /* Padding X/Y Axis */
   .px-0 {
     padding-left: 0;
     padding-right: 0;
@@ -318,6 +312,11 @@
     padding-right: 2rem;
   }
 
+  .px-9 {
+    padding-left: 2.25rem;
+    padding-right: 2.25rem;
+  }
+
   .px-10 {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
@@ -343,9 +342,8 @@
     padding-bottom: 0.5rem;
   }
 
-  /* Missing py-2.5 utility for select dropdown touch targets */
   .py-2\.5 {
-    padding-top: 0.625rem;  /* 10px - increased from py-2 for WCAG compliance */
+    padding-top: 0.625rem;
     padding-bottom: 0.625rem;
   }
 
@@ -379,6 +377,11 @@
     padding-bottom: 2rem;
   }
 
+  .py-9 {
+    padding-top: 2.25rem;
+    padding-bottom: 2.25rem;
+  }
+
   .py-10 {
     padding-top: 2.5rem;
     padding-bottom: 2.5rem;
@@ -389,9 +392,7 @@
     padding-bottom: 3rem;
   }
 
-  /* ===========================================
-     GAP UTILITIES - COMPLETE 0-8 SCALE
-     =========================================== */
+  /* Gap */
 
   .gap-0 { gap: 0; }
   .gap-px { gap: 1px; }
@@ -404,6 +405,7 @@
   .gap-6 { gap: 1.5rem; }
   .gap-7 { gap: 1.75rem; }
   .gap-8 { gap: 2rem; }
+  .gap-9 { gap: 2.25rem; }
   .gap-10 { gap: 2.5rem; }
   .gap-12 { gap: 3rem; }
   .gap-16 { gap: 4rem; }
@@ -411,7 +413,6 @@
   .gap-24 { gap: 6rem; }
   .gap-32 { gap: 8rem; }
 
-  /* Gap X/Y Axis */
   .gap-x-0 { column-gap: 0; }
   .gap-x-px { column-gap: 1px; }
   .gap-x-0\.5 { column-gap: 0.125rem; }
@@ -423,6 +424,7 @@
   .gap-x-6 { column-gap: 1.5rem; }
   .gap-x-7 { column-gap: 1.75rem; }
   .gap-x-8 { column-gap: 2rem; }
+  .gap-x-9 { column-gap: 2.25rem; }
 
   .gap-y-0 { row-gap: 0; }
   .gap-y-px { row-gap: 1px; }
@@ -435,12 +437,9 @@
   .gap-y-6 { row-gap: 1.5rem; }
   .gap-y-7 { row-gap: 1.75rem; }
   .gap-y-8 { row-gap: 2rem; }
+  .gap-y-9 { row-gap: 2.25rem; }
 
-  /* ===========================================
-     SPACE UTILITIES - CHILD ELEMENT SPACING
-     =========================================== */
-
-  /* Space between children - Y axis (vertical) */
+  /* Space between children */
   .space-y-0 > * + * { margin-top: 0; }
   .space-y-1 > * + * { margin-top: 0.25rem; }
   .space-y-2 > * + * { margin-top: 0.5rem; }
@@ -450,10 +449,10 @@
   .space-y-6 > * + * { margin-top: 1.5rem; }
   .space-y-7 > * + * { margin-top: 1.75rem; }
   .space-y-8 > * + * { margin-top: 2rem; }
+  .space-y-9 > * + * { margin-top: 2.25rem; }
   .space-y-10 > * + * { margin-top: 2.5rem; }
   .space-y-12 > * + * { margin-top: 3rem; }
 
-  /* Space between children - X axis (horizontal) */
   .space-x-0 > * + * { margin-left: 0; }
   .space-x-1 > * + * { margin-left: 0.25rem; }
   .space-x-2 > * + * { margin-left: 0.5rem; }
@@ -463,10 +462,10 @@
   .space-x-6 > * + * { margin-left: 1.5rem; }
   .space-x-7 > * + * { margin-left: 1.75rem; }
   .space-x-8 > * + * { margin-left: 2rem; }
+  .space-x-9 > * + * { margin-left: 2.25rem; }
   .space-x-10 > * + * { margin-left: 2.5rem; }
   .space-x-12 > * + * { margin-left: 3rem; }
 
-  /* Reverse space utilities for RTL or reverse flex order */
   .space-y-reverse > * + * {
     margin-top: 0;
     margin-bottom: 0;
@@ -477,25 +476,8 @@
     margin-right: 0;
   }
 
-  /* ===========================================
-     FORM-SPECIFIC SPACING SHORTCUTS - REMOVED
-     =========================================== */
 
-  /* NOTE: Simple compositional utilities removed for utility-first compliance.
-   * Use atomic utilities instead:
-   * .p-input → py-2 px-3
-   * .p-input-sm → py-1.5 px-2.5
-   * .p-input-lg → py-3 px-4
-   * .space-field → mb-3
-   * .space-field-group → mb-6
-   * .space-field-section → mb-8
-   */
-
-  /* ===========================================
-     RESPONSIVE SPACING VARIANTS
-     =========================================== */
-
-  /* Small screens and up (481px+) */
+  /* Responsive variants */
   @media (width >= 481px) {
     .sm\:m-0 { margin: 0; }
     .sm\:m-1 { margin: 0.25rem; }
@@ -528,7 +510,6 @@
     .sm\:gap-8 { gap: 2rem; }
   }
 
-  /* Medium screens and up (769px+) */
   @media (width >= 769px) {
     .md\:m-0 { margin: 0; }
     .md\:m-1 { margin: 0.25rem; }
@@ -561,7 +542,6 @@
     .md\:gap-8 { gap: 2rem; }
   }
 
-  /* Large screens and up (1024px+) */
   @media (width >= 1024px) {
     .lg\:m-0 { margin: 0; }
     .lg\:m-1 { margin: 0.25rem; }

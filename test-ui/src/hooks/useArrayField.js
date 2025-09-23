@@ -1,7 +1,5 @@
 /**
- * Generic array field management hook - FIXED VERSION
- * Eliminates bidirectional synchronization to prevent infinite loops
- * Implements unidirectional data flow: data flows down via props, changes flow up via callbacks
+ * Array field management hook
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';

@@ -14,6 +14,7 @@
 
 @import url('./components/hamburger-button.css');
 @import url('./components/interactions.css');
+@import url('./components/navigation.css');
 
 /* Complete utility system - fully decomposed into 18 specialized modules */
 @import url('./utilities/index.css');

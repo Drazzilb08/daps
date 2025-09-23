@@ -34,12 +34,13 @@ const Layout = ({ children }) => {
     );
 
     return (
-        <div className="flex flex-col h-dvh overflow-hidden">
+        <div className="h-screen flex flex-col overflow-hidden">
             {/* Skip link for keyboard navigation - WCAG 2.1 AA requirement */}
             <a href="#main-content" className="skip-link">
                 Skip to main content
             </a>
 
+            {/* Fixed Header - full width */}
             <FeatureErrorBoundary
                 featureName="Page Header"
                 featureDescription="Main navigation and header"
@@ -48,6 +49,7 @@ const Layout = ({ children }) => {
                 <PageHeader />
             </FeatureErrorBoundary>
 
+            {/* Content Area - remaining height after header */}
             <div className="flex flex-1 overflow-hidden">
                 <FeatureErrorBoundary
                     featureName="Sidebar Navigation"
@@ -57,7 +59,8 @@ const Layout = ({ children }) => {
                     <PageSidebar />
                 </FeatureErrorBoundary>
 
-                <div className="flex-1-0-1px flex flex-col overflow-hidden">
+                {/* Main Content Area - remaining width after sidebar */}
+                <div className="flex-1 flex flex-col overflow-hidden">
                     {/* Toolbar only shows on search pages */}
                     {isSearchPage && (
                         <FeatureErrorBoundary

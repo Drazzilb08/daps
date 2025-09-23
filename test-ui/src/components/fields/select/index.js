@@ -7,3 +7,4 @@
 
 export { CheckboxField } from './CheckboxField.jsx';
 export { DropdownField } from './DropdownField.jsx';
+export { DateRangeField } from './DateRangeField.jsx';

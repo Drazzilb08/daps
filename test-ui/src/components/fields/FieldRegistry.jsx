@@ -42,8 +42,8 @@ const FIELD_COMPONENTS = {
     dirlist_dragdrop: DirFields.DirListDragDropField,
     dirlist_options: DirFields.DirListOptionsField,
 
-    // Placeholders from DAPS settings schema
-    holiday_schedule: CustomFields.HolidayScheduleField,
+    // Date/Schedule fields
+    holiday_schedule: SelectFields.DateRangeField,
     holiday_presets: CustomFields.HolidayPresetsField,
 
     gdrive_custom: CustomFields.GDriveCustomField,
@@ -114,6 +114,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'dirlist_options',
     'gdrive_presets',
     'holiday_presets',
+    'holiday_schedule',
     'instances',
 ]);
 

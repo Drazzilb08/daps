@@ -23,13 +23,15 @@
   .text-5xl { font-size: 3rem; }       /* 48px */
   .text-6xl { font-size: 3.75rem; }    /* 60px */
 
-  /* Additional semantic sizes */
-  .text-caption { font-size: 0.75rem; }
+  /* NOTE: Semantic typography duplicates removed - use size-based utilities instead:
+   * OLD: text-caption (0.75rem) → NEW: text-xs
+   * OLD: text-title (1.5rem) → NEW: text-2xl
+   * OLD: text-display (3rem) → NEW: text-5xl
+   * KEPT: text-body, text-lead, text-heading (unique sizes)
+   */
   .text-body { font-size: 1rem; }
   .text-lead { font-size: 1.125rem; }
-  .text-title { font-size: 1.5rem; }
   .text-heading { font-size: 1.875rem; }
-  .text-display { font-size: 3rem; }
 
   /* ===========================================
      FONT WEIGHT UTILITIES - DESIGN TOKEN BASED

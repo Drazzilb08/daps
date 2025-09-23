@@ -180,6 +180,7 @@
   .hover\:bg-surface:hover { background: var(--surface); }
   .hover\:bg-surface-hover:hover { background: var(--surface-hover); }
   .hover\:bg-surface-active:hover { background: var(--surface-active); }
+  .hover\:bg-surface-alt:hover { background: var(--surface-alt); }
   .hover\:bg-success:hover { background: var(--success); }
   .hover\:bg-warning:hover { background: var(--warning); }
   .hover\:bg-error:hover { background: var(--error); }

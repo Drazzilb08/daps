@@ -127,57 +127,16 @@
   .self-baseline { align-self: baseline; }
 
   /* ===========================================
-     FLEXBOX CONVENIENCE UTILITIES - COMMON PATTERNS
+     FLEXBOX UTILITIES - ATOMIC APPROACH
      =========================================== */
 
-  /* Centered flex patterns - frequently used combinations */
-  .inline-flex-center-both {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .flex-center-both {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .inline-flex-center-start {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  .flex-center-start {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  .inline-flex-center-end {
-    display: inline-flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-
-  .flex-center-end {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
-
-  .inline-flex-between {
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .flex-between {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+  /* NOTE: Compositional utilities removed - use atomic utilities instead:
+   * OLD: flex-center-both → NEW: flex items-center justify-center
+   * OLD: flex-center-start → NEW: flex items-center justify-start
+   * OLD: flex-center-end → NEW: flex items-center justify-end
+   * OLD: inline-flex-center-both → NEW: inline-flex items-center justify-center
+   * OLD: flex-between → NEW: flex items-center justify-between
+   */
 
   /* Place content (align-content + justify-content) */
   .place-content-center { place-content: center; }
@@ -384,6 +343,7 @@
   .top-6 { top: 1.5rem; }
   .top-8 { top: 2rem; }
   .top-16 { top: 4rem; }
+  .top-header { top: 64px; } /* Header height for mobile sidebar positioning */
   .top-auto { top: auto; }
   .top-1\/2 { top: 50%; }
   .top-1\/3 { top: 33.333333%; }
@@ -518,6 +478,24 @@
      MOBILE-FIRST RESPONSIVE VARIANTS
      =========================================== */
 
+  /* Small screens and up: 640px */
+  @media (width >= 640px) {
+    .sm\:flex { display: flex; }
+    .sm\:grid { display: grid; }
+    .sm\:hidden { display: none; }
+    .sm\:flex-row { flex-direction: row; }
+    .sm\:flex-col { flex-direction: column; }
+    .sm\:justify-center { justify-content: center; }
+    .sm\:justify-between { justify-content: space-between; }
+    .sm\:items-center { align-items: center; }
+
+    /* Grid responsive utilities */
+    .sm\:grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .sm\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
   /* Tablet and up: 768px */
   @media (width >= 768px) {
     .md\:flex { display: flex; }
@@ -529,7 +507,18 @@
     .md\:justify-between { justify-content: space-between; }
     .md\:items-center { align-items: center; }
 
-    /* Grid responsive utilities moved to responsive.css for consolidation */
+    /* Grid responsive utilities */
+    .md\:grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    /* Responsive positioning utilities */
+    .md\:static { position: static; }
+    .md\:relative { position: relative; }
+    .md\:absolute { position: absolute; }
+    .md\:fixed { position: fixed; }
+    .md\:sticky { position: sticky; }
   }
 
   /* Desktop and up: 1024px */
@@ -543,7 +532,30 @@
     .lg\:justify-between { justify-content: space-between; }
     .lg\:items-center { align-items: center; }
 
-    /* Grid responsive utilities moved to responsive.css for consolidation */
+    /* Grid responsive utilities */
+    .lg\:grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  /* ===========================================
+     MAX-WIDTH RESPONSIVE UTILITIES (MOBILE-FIRST)
+     =========================================== */
+
+  /* Hide on mobile (smaller than sm) */
+  @media (max-width: 639px) {
+    .max-sm\:hidden { display: none; }
+  }
+
+  /* Hide on mobile and small screens (smaller than md) */
+  @media (max-width: 767px) {
+    .max-md\:hidden { display: none; }
+  }
+
+  /* Hide on screens smaller than desktop (smaller than lg) */
+  @media (max-width: 1023px) {
+    .max-lg\:hidden { display: none; }
   }
 
   /* ===========================================

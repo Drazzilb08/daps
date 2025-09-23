@@ -60,10 +60,16 @@ const Button = React.forwardRef(
             'rounded-sm',
             'transition-fast',
             'touch-target',
-            'state-hover-toolbar',
-            'state-focus-ring',
+            'transition-colors',
+            'hover:text-primary',
+            'hover:bg-surface-alt',
+            'focus:outline-none',
+            'focus:border-primary',
+            'focus:shadow-focus',
             // btn class removed - now using atomic utilities
-            isDisabled && 'state-disabled',
+            isDisabled && 'opacity-60',
+            isDisabled && 'cursor-not-allowed',
+            isDisabled && 'pointer-events-none',
             isSpinning && 'pointer-events-none',
         ]
             .filter(Boolean)

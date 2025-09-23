@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useUIState } from '../contexts/UIStateContext.jsx';
 
@@ -218,7 +218,7 @@ const PageSidebar = React.memo(() => {
     return (
         <aside
             ref={sidebarRef}
-            className={`flex-none w-sidebar bg-sidebar-bg border-r border-sidebar-border overflow-y-auto fixed md:static top-16 md:top-0 left-0 bottom-0 md:bottom-auto z-fixed md:z-sticky ${
+            className={`flex-none w-sidebar bg-sidebar-bg border-r border-sidebar-border overflow-y-auto ${
                 isMobile && mobileMenuOpen
                     ? 'translate-x-0'
                     : '-translate-x-full md:translate-x-0'

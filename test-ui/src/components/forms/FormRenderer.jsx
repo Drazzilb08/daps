@@ -301,7 +301,7 @@ export const FormRenderer = React.memo(
                         {onSubmit && (
                             <button
                                 type="submit"
-                                className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex-center-both"
+                                className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                                 disabled={disabled || isSubmitting}
                             >
                                 {isSubmitting ? 'Submitting...' : schema.submitLabel || 'Submit'}
@@ -311,7 +311,7 @@ export const FormRenderer = React.memo(
                         {schema.cancelLabel && (
                             <button
                                 type="button"
-                                className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex-center-both"
+                                className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
                                 disabled={isSubmitting}
                                 onClick={() => {
                                     // Reset to initial data

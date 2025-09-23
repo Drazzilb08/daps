@@ -65,7 +65,9 @@ export const TextareaBase = ({
                 'transition-colors duration-200',
 
                 // Focus states (atomic utilities)
-                'state-focus-ring',
+                'focus:outline-none',
+                'focus:border-primary',
+                'focus:shadow-focus',
 
                 // Hover states (atomic utilities)
                 !disabled && 'hover:border-primary hover:bg-input-hover',

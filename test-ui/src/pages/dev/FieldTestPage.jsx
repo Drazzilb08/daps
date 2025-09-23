@@ -324,7 +324,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                     <div className="mb-4 p-3 bg-surface-elevated border rounded-sm">
                         <h4 className="text-base font-medium text-primary mb-2">Field Configuration</h4>
                         <div className="flex gap-4 flex-wrap">
-                            <label className="flex items-center gap-2 text-sm text-primary cursor-pointer touch-target">
+                            <label className="flex items-center justify-center gap-2 text-sm text-primary cursor-pointer touch-target px-2 py-2">
                                 <input
                                     type="checkbox"
                                     checked={testConfig.required}
@@ -333,7 +333,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                                 />
                                 Required
                             </label>
-                            <label className="flex items-center gap-2 text-sm text-primary cursor-pointer touch-target">
+                            <label className="flex items-center justify-center gap-2 text-sm text-primary cursor-pointer touch-target px-2 py-2">
                                 <input
                                     type="checkbox"
                                     checked={testConfig.disabled}
@@ -342,7 +342,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                                 />
                                 Disabled
                             </label>
-                            <label className="flex items-center gap-2 text-sm text-primary cursor-pointer touch-target">
+                            <label className="flex items-center justify-center gap-2 text-sm text-primary cursor-pointer touch-target px-2 py-2">
                                 <input
                                     type="checkbox"
                                     checked={showError}
@@ -540,7 +540,7 @@ const FieldTestPage = () => {
                             id="filter-select"
                             value={filter}
                             onChange={e => setFilter(e.target.value)}
-                            className="touch-target-target py-2 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm"
+                            className="touch-target-target py-2.5 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm min-h-11"
                         >
                             <option value="all">All Field Types</option>
                             <option value="working">Working Only</option>
@@ -561,7 +561,7 @@ const FieldTestPage = () => {
                                 id="field-type-select"
                                 value={selectedFieldType}
                                 onChange={e => handleFieldTypeSelect(e.target.value)}
-                                className="touch-target-target py-2 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm"
+                                className="touch-target-target py-2.5 px-3 border bg-surface text-primary text-sm min-w-200 rounded-sm min-h-11"
                             >
                                 {filteredFieldTypes.map(type => (
                                     <option key={type} value={type}>

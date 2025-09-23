@@ -35,6 +35,11 @@ const Layout = ({ children }) => {
 
     return (
         <div className="flex flex-col h-dvh overflow-hidden">
+            {/* Skip link for keyboard navigation - WCAG 2.1 AA requirement */}
+            <a href="#main-content" className="skip-link">
+                Skip to main content
+            </a>
+
             <FeatureErrorBoundary
                 featureName="Page Header"
                 featureDescription="Main navigation and header"
@@ -68,7 +73,7 @@ const Layout = ({ children }) => {
                         </FeatureErrorBoundary>
                     )}
 
-                    <main className="flex-1 overflow-y-auto p-4 px-3 md:p-6 md:px-4 bg-bg">
+                    <main id="main-content" className="flex-1 overflow-y-auto p-4 px-3 md:p-6 md:px-4 bg-bg">
                         <FeatureErrorBoundary
                             featureName="Page Content"
                             featureDescription="Main page content area"

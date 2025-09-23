@@ -38,79 +38,18 @@
   .rotate-270 { transform: rotate(270deg); }
 
   /* ===========================================
-     TRANSITION UTILITIES
+     TRANSITION UTILITIES - MOVED TO ANIMATIONS.CSS
      =========================================== */
 
-  .transition-fast { transition: all 150ms ease-in-out; }
-  .transition { transition: all 250ms ease-in-out; }
-  .transition-slow { transition: all 350ms ease-in-out; }
-
-  /* Duration utilities */
-  .duration-200 { transition-duration: 200ms; }
-
-  /* Easing utilities */
-  .ease-in-out { transition-timing-function: ease-in-out; }
-
-  /* Form input transitions */
-  .transition-input { transition: all 150ms ease-in-out; }
-
-  .transition-textarea {
-    transition:
-      border-color 150ms ease-in-out,
-      background-color 150ms ease-in-out,
-      box-shadow 150ms ease-in-out;
-  }
-
-  /* Specific property transitions */
-  .transition-colors {
-    transition: color 250ms ease-in-out,
-                background-color 250ms ease-in-out,
-                border-color 250ms ease-in-out;
-  }
-  .transition-opacity { transition: opacity 250ms ease-in-out; }
-  .transition-transform { transition: transform 250ms ease-in-out; }
+  /* NOTE: All transition utilities consolidated in animations.css */
 
   /* ===========================================
-     ANIMATION UTILITIES
+     ANIMATION UTILITIES - MOVED TO ANIMATIONS.CSS
      =========================================== */
 
-  .animate-spin { animation: spin 1s linear infinite; }
-  .animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
-  .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-  .animate-bounce { animation: bounce 1s infinite; }
+  /* NOTE: All animation utilities consolidated in animations.css */
 
-  /* Animation keyframes */
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  @keyframes ping {
-    75%, 100% {
-      transform: scale(2);
-      opacity: 0;
-    }
-  }
-
-  @keyframes pulse {
-    50% {
-      opacity: 0.5;
-    }
-  }
-
-  @keyframes bounce {
-    0%, 100% {
-      transform: translateY(-25%);
-      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-    }
-
-    50% {
-      transform: none;
-      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-    }
-  }
-
-  /* Shimmer animation for loading states */
+  /* Shimmer animation for loading states - kept here as specific to transforms */
   @keyframes shimmer {
     0% { left: -100%; }
     100% { left: 100%; }
@@ -120,21 +59,5 @@
      ACCESSIBILITY CONSIDERATIONS
      =========================================== */
 
-  @media (prefers-reduced-motion: reduce) {
-    .animate-spin,
-    .animate-ping,
-    .animate-pulse,
-    .animate-bounce {
-      animation: none;
-    }
-
-    .transition-fast,
-    .transition,
-    .transition-slow,
-    .transition-colors,
-    .transition-opacity,
-    .transition-transform {
-      transition: none;
-    }
-  }
+  /* NOTE: Reduced motion support now handled in animations.css */
 }

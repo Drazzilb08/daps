@@ -269,7 +269,7 @@
   .pr-7 { padding-right: 1.75rem; }
   .pr-8 { padding-right: 2rem; }
   .pr-10 { padding-right: 2.5rem; }
-  .pr-11 { padding-right: 2.75rem; }
+  /* .pr-11 removed - scale inconsistency (only pr-11 existed, no mr-11, etc.) */
   .pr-12 { padding-right: 3rem; }
 
   /* Padding X/Y Axis */

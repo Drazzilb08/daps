@@ -92,6 +92,11 @@
   .ring-primary\/20 { box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
   .ring-error\/20 { box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent); }
   .ring-success\/20 { box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent); }
+
+  /* Focus shadow utilities for state management */
+  .focus\:shadow-focus:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
+  .focus\:shadow-error:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent); }
+  .focus\:shadow-success:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent); }
   .contrast-50 { filter: contrast(0.5); }
   .contrast-75 { filter: contrast(0.75); }
   .contrast-100 { filter: contrast(1); }

@@ -594,20 +594,10 @@
   }
 
   /* Centered container patterns */
-  .container-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-  }
-
-  .container-center-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 1rem;
-  }
+  /* NOTE: Container composition utilities removed - use atomic utilities instead:
+   * OLD: container-center → NEW: flex items-center justify-center min-h-screen
+   * OLD: container-center-content → NEW: flex items-center justify-center flex-col gap-4
+   */
 
   /* ===========================================
      ACCESSIBILITY UTILITIES

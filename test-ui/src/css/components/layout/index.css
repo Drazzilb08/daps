@@ -4,6 +4,8 @@
  */
 
 /* MIGRATION COMPLETE: All component-specific CSS converted to atomic utilities */
+
 /* page-layout.css DELETED - all classes converted to atomic utility classes */
+
 /* layout.css removed - converted to utility classes */
 @import url('./navigation.css');

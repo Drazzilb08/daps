@@ -13,6 +13,9 @@
   .bg-surface-alt { background: var(--surface-alt); }
   .bg-surface-secondary { background: var(--surface-secondary); }
   .bg-surface-dim { background: var(--surface-dim); }
+  .bg-accent { background: var(--accent); }
+  .bg-accent-hover { background: var(--accent-hover); }
+  .bg-accent-surface { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 
   .bg-success { background: var(--success); }
   .bg-warning { background: var(--warning); }

@@ -138,6 +138,27 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                 'Testing instances field with multiple service types and poster upload options';
         }
 
+        // Add configuration for tag fields
+        if (fieldType === 'tag_input') {
+            baseConfig.suggestions = ['action', 'adventure', 'animation', 'comedy', 'drama', 'documentary', 'family', 'fantasy', 'horror', 'kids', 'mystery', 'romance', 'sci-fi', 'thriller', 'western'];
+
+            // Custom filter function for "starts with" behavior
+            baseConfig.filterFunction = (suggestion, input) => {
+                const suggestionText = suggestion.toLowerCase();
+                const inputText = input.toLowerCase();
+                return suggestionText.startsWith(inputText); // Type "r" → shows "romance"
+            };
+            baseConfig.allowCustom = true;
+            baseConfig.placeholder = 'Type "r" to see romance, "a" for action...';
+            baseConfig.description = 'Testing "starts with" filtering - type "r" and only items beginning with "r" appear';
+        }
+
+        if (fieldType === 'tag_display') {
+            baseConfig.disabled = true;
+            baseConfig.placeholder = 'Read-only tag display';
+            baseConfig.description = 'Testing tag display field in read-only mode';
+        }
+
         return baseConfig;
     });
 
@@ -154,6 +175,12 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
         }
         if (fieldType === 'check_box') {
             return false; // Boolean for checkbox
+        }
+        if (fieldType === 'tag_input') {
+            return []; // Array for tag input field
+        }
+        if (fieldType === 'tag_display') {
+            return ['action', 'comedy', 'kids']; // Array with sample tags for display
         }
         return ''; // String for most fields
     });
@@ -213,6 +240,27 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                 'Testing instances field with multiple service types and poster upload options';
         }
 
+        // Add configuration for tag fields
+        if (fieldType === 'tag_input') {
+            baseConfig.suggestions = ['action', 'adventure', 'animation', 'comedy', 'drama', 'documentary', 'family', 'fantasy', 'horror', 'kids', 'mystery', 'romance', 'sci-fi', 'thriller', 'western'];
+
+            // Custom filter function for "starts with" behavior
+            baseConfig.filterFunction = (suggestion, input) => {
+                const suggestionText = suggestion.toLowerCase();
+                const inputText = input.toLowerCase();
+                return suggestionText.startsWith(inputText); // Type "r" → shows "romance"
+            };
+            baseConfig.allowCustom = true;
+            baseConfig.placeholder = 'Type "r" to see romance, "a" for action...';
+            baseConfig.description = 'Testing "starts with" filtering - type "r" and only items beginning with "r" appear';
+        }
+
+        if (fieldType === 'tag_display') {
+            baseConfig.disabled = true;
+            baseConfig.placeholder = 'Read-only tag display';
+            baseConfig.description = 'Testing tag display field in read-only mode';
+        }
+
         setTestConfig(baseConfig);
 
         // Reset test value based on field type
@@ -224,6 +272,10 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
             setTestValue([]); // Array for directory list fields
         } else if (fieldType === 'check_box') {
             setTestValue(false); // Boolean for checkbox
+        } else if (fieldType === 'tag_input') {
+            setTestValue([]); // Array for tag input field
+        } else if (fieldType === 'tag_display') {
+            setTestValue(['action', 'comedy', 'kids']); // Array with sample tags for display
         } else {
             setTestValue(''); // String for most fields
         }

@@ -48,8 +48,10 @@ export const DirListOptionsField = React.memo(props => <UnavailableField {...pro
 
 // Additional field types from original vision - currently placeholders
 export const ScheduleField = React.memo(props => <UnavailableField {...props} />);
-export const TagSelectField = React.memo(props => <UnavailableField {...props} />);
-export const TagDisplayField = React.memo(props => <UnavailableField {...props} />);
+// TagSelectField and TagDisplayField replaced by tag_input and tag_display field types
+// which use the configurable TagInputField component
+// export const TagSelectField = React.memo(props => <UnavailableField {...props} />);
+// export const TagDisplayField = React.memo(props => <UnavailableField {...props} />);
 export const TagMultiSelectField = React.memo(props => <UnavailableField {...props} />);
 export const MediaInfoDisplayField = React.memo(props => <UnavailableField {...props} />);
 export const MediaDisplayField = React.memo(props => <UnavailableField {...props} />);

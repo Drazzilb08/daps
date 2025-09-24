@@ -55,8 +55,8 @@ const FIELD_COMPONENTS = {
     instances: CustomFields.InstancesField,
     instance_dropdown: CustomFields.InstanceDropdownField,
     schedule: CustomFields.ScheduleField,
-    tag_select: CustomFields.TagSelectField,
-    tag_display: CustomFields.TagDisplayField,
+    tag_input: CustomFields.TagInputField,
+    tag_display: CustomFields.TagInputField, // Same component, different config
     tag_multiselect: CustomFields.TagMultiSelectField,
     media_info_display: CustomFields.MediaInfoDisplayField,
     media_display: CustomFields.MediaDisplayField,
@@ -116,6 +116,8 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'holiday_presets',
     'holiday_schedule',
     'instances',
+    'tag_input',
+    'tag_display',
 ]);
 
 /**

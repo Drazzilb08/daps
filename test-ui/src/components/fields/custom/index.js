@@ -10,6 +10,7 @@ export { JsonField } from './JsonField.jsx';
 export { GDrivePresetsField } from './GDrivePresetsField.jsx';
 export { HolidayPresetsField } from './HolidayPresetsField.jsx';
 export { InstancesField } from './InstancesField.jsx';
+export { TagInputField } from './TagInputField.jsx';
 
 // Placeholder implementations
 export {
@@ -24,9 +25,7 @@ export {
     DirListOptionsField,
     // Additional field types from original vision
     ScheduleField,
-    TagSelectField,
-    TagDisplayField,
-    TagMultiSelectField,
+    TagMultiSelectField, // Note: TagSelectField and TagDisplayField replaced by tag_input/tag_display
     MediaInfoDisplayField,
     MediaDisplayField,
     DirPickerField,

@@ -15,3 +15,6 @@ export * from './shared';
 
 // Color features - shared between color field types
 export * from './color';
+
+// Tag features - agnostic string collection components
+export * from './tag';

@@ -117,6 +117,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'instances',
     'tag_input',
     'tag_display',
+    'schedule',
 ]);
 
 /**

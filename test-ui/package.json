@@ -12,6 +12,10 @@
     "stylelint": "stylelint 'src/**/*.css' --fix"
   },
   "dependencies": {
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "cron-validator": "^1.4.0",
+    "cronstrue": "^3.3.0",
     "prop-types": "15.8.1",
     "react": "19.1.1",
     "react-dom": "19.1.1",

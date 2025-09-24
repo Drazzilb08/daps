@@ -18,3 +18,6 @@ export * from './color';
 
 // Tag features - agnostic string collection components
 export * from './tag';
+
+// Schedule features - time-based configuration components
+export * from './schedule';

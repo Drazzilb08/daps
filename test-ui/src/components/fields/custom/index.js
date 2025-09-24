@@ -11,6 +11,7 @@ export { GDrivePresetsField } from './GDrivePresetsField.jsx';
 export { HolidayPresetsField } from './HolidayPresetsField.jsx';
 export { InstancesField } from './InstancesField.jsx';
 export { TagInputField } from './TagInputField.jsx';
+export { ScheduleField } from './ScheduleField.jsx';
 
 // Placeholder implementations
 export {
@@ -24,7 +25,6 @@ export {
     DirListDragDropField,
     DirListOptionsField,
     // Additional field types from original vision
-    ScheduleField,
     TagMultiSelectField, // Note: TagSelectField and TagDisplayField replaced by tag_input/tag_display
     MediaInfoDisplayField,
     MediaDisplayField,

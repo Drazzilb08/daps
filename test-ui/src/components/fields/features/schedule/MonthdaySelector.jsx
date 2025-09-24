@@ -31,7 +31,9 @@ export const MonthdaySelector = React.memo(({
             <div className="text-sm font-medium text-text-secondary mb-2">
                 Select Days of Month
             </div>
-            <div className="grid grid-cols-7 gap-2 mb-2">
+
+            {/* Mobile: Responsive grid layout for touch accessibility */}
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2 mb-2">
                 {days.map(day => {
                     const isSelected = selectedDays.includes(day);
 

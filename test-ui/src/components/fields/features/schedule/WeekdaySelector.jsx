@@ -38,7 +38,40 @@ export const WeekdaySelector = React.memo(({
             <div className="text-sm font-medium text-text-secondary mb-2">
                 Select Days
             </div>
-            <div className="grid grid-cols-7 gap-2">
+
+            {/* Mobile: Stack layout for touch accessibility */}
+            <div className="md:hidden space-y-2">
+                {WEEKDAYS.map(day => {
+                    const isSelected = selectedDays.includes(day.key);
+
+                    return (
+                        <button
+                            key={day.key}
+                            type="button"
+                            onClick={() => handleDayToggle(day.key)}
+                            disabled={disabled}
+                            className={`
+                                w-full min-h-11 px-4 py-3 text-sm font-medium rounded transition-colors
+                                flex items-center justify-between
+                                ${disabled
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : 'cursor-pointer'
+                                }
+                                ${isSelected
+                                    ? 'bg-primary text-primary-text border border-primary shadow-sm'
+                                    : 'bg-surface text-text-primary border border-border hover:bg-primary hover:border-border-light'
+                                }
+                            `}
+                        >
+                            <span>{day.fullName}</span>
+                            <span className="text-xs opacity-70">{day.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+
+            {/* Desktop: Grid layout (768px and up) */}
+            <div className="hidden md:grid grid-cols-7 gap-2">
                 {WEEKDAYS.map(day => {
                     const isSelected = selectedDays.includes(day.key);
 
@@ -67,6 +100,7 @@ export const WeekdaySelector = React.memo(({
                     );
                 })}
             </div>
+
             {selectedDays.length > 0 && (
                 <div className="text-xs text-text-tertiary mt-2">
                     Selected: {selectedDays.map(day =>

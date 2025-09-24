@@ -12,7 +12,7 @@ const SCHEDULE_TYPES = [
     { type: 'daily', label: 'Daily' },
     { type: 'weekly', label: 'Weekly' },
     { type: 'monthly', label: 'Monthly' },
-    { type: 'cron', label: 'Custom (Cron)' }
+    { type: 'cron', label: 'Cron' }
 ];
 
 /**

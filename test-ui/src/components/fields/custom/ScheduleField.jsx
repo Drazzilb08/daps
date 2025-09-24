@@ -43,8 +43,8 @@ export const ScheduleField = React.memo(({
         }
 
         try {
-            // Parse strings like "hourly(30)", "daily(09:00|17:00)", "cron(0 0 * * *)"
-            const match = val.match(/^(\w+)\((.+)\)$/);
+            // Parse strings like "hourly(30)", "daily(09:00|17:00)", "cron(0 0 * * *)", "cron()"
+            const match = val.match(/^(\w+)\((.*)\)$/);
             if (!match) {
                 return { type: 'daily', data: {} };
             }
@@ -132,7 +132,7 @@ export const ScheduleField = React.memo(({
 
                 case 'cron': {
                     const expression = data.expression || '';
-                    if (!expression.trim()) return '';
+                    if (!expression.trim()) return 'cron()';
                     return `cron(${expression})`;
                 }
 
@@ -154,6 +154,9 @@ export const ScheduleField = React.memo(({
 
     // Handle schedule type change
     const handleTypeChange = useCallback((newType) => {
+        if (newType === scheduleType) {
+            return; // Prevent unnecessary updates
+        }
         setScheduleType(newType);
 
         // Reset data when switching types
@@ -181,7 +184,7 @@ export const ScheduleField = React.memo(({
         // Compose and emit new value
         const newValue = composeScheduleString(newType, newData);
         onChange(newValue);
-    }, [onChange]); // Remove composeScheduleString - it's now a stable function
+    }, [scheduleType, onChange]); // Include scheduleType dependency
 
     // Handle schedule data change
     const handleDataChange = useCallback((newDataOrUpdater) => {

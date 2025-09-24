@@ -38,7 +38,7 @@ export const WeekdaySelector = React.memo(({
             <div className="text-sm font-medium text-text-secondary mb-2">
                 Select Days
             </div>
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-2">
                 {WEEKDAYS.map(day => {
                     const isSelected = selectedDays.includes(day.key);
 
@@ -57,8 +57,8 @@ export const WeekdaySelector = React.memo(({
                                     : 'cursor-pointer'
                                 }
                                 ${isSelected
-                                    ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
-                                    : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                                    ? 'bg-primary text-primary-text border border-primary shadow-sm'
+                                    : 'bg-surface text-text-primary border border-border hover:bg-primary hover:border-border-light'
                                 }
                             `}
                         >

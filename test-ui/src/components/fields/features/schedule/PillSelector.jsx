@@ -21,17 +21,23 @@ export const PillSelector = React.memo(({
                 <button
                     key={option.type}
                     type="button"
-                    onClick={() => !disabled && onTypeChange(option.type)}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!disabled) {
+                            onTypeChange(option.type);
+                        }
+                    }}
                     disabled={disabled}
                     className={`
-                        px-4 py-2 text-sm font-medium rounded-full transition-colors min-h-11
+                        px-3 py-1 text-sm font-medium rounded transition-colors min-h-8
                         ${disabled
                             ? 'opacity-50 cursor-not-allowed'
                             : 'cursor-pointer'
                         }
                         ${selectedType === option.type
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-primary text-primary-text border border-primary shadow-sm'
+                            : 'bg-surface text-text-primary border border-border hover:bg-primary hover:border-border-light'
                         }
                     `}
                 >

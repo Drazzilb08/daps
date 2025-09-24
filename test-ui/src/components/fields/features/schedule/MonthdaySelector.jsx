@@ -31,7 +31,7 @@ export const MonthdaySelector = React.memo(({
             <div className="text-sm font-medium text-text-secondary mb-2">
                 Select Days of Month
             </div>
-            <div className="grid grid-cols-7 gap-1 mb-2">
+            <div className="grid grid-cols-7 gap-2 mb-2">
                 {days.map(day => {
                     const isSelected = selectedDays.includes(day);
 
@@ -42,15 +42,15 @@ export const MonthdaySelector = React.memo(({
                             onClick={() => handleDayToggle(day)}
                             disabled={disabled}
                             className={`
-                                px-2 py-1 text-sm rounded transition-colors min-h-11
+                                px-2 py-2 text-sm font-medium rounded transition-colors min-h-11
                                 flex items-center justify-center
                                 ${disabled
                                     ? 'opacity-50 cursor-not-allowed'
                                     : 'cursor-pointer'
                                 }
                                 ${isSelected
-                                    ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
-                                    : 'bg-gray-50 hover:bg-gray-100 border-2 border-transparent'
+                                    ? 'bg-primary text-primary-text border border-primary shadow-sm'
+                                    : 'bg-surface text-text-primary border border-border hover:bg-primary hover:border-border-light'
                                 }
                             `}
                         >

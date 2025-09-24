@@ -57,7 +57,6 @@ const FIELD_COMPONENTS = {
     schedule: CustomFields.ScheduleField,
     tag_input: CustomFields.TagInputField,
     tag_display: CustomFields.TagInputField, // Same component, different config
-    tag_multiselect: CustomFields.TagMultiSelectField,
     media_info_display: CustomFields.MediaInfoDisplayField,
     media_display: CustomFields.MediaDisplayField,
     dir_picker: CustomFields.DirPickerField,

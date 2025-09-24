@@ -60,11 +60,6 @@ lint: ## Lint all code
 	@cd $(UI) && $(NPM) run lint
 	@echo "Linting complete"
 
-test: ## Run tests
-	@echo "Running tests..."
-	@$(VENV)/bin/pytest
-	@echo "Tests complete"
-
 # ---- Cleanup ----
 clean: ## Clean build artifacts
 	@echo "Cleaning..."

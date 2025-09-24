@@ -16,7 +16,7 @@ export const PillSelector = React.memo(({
     className = ''
 }) => {
     return (
-        <div className={`flex flex-wrap gap-2 mb-4 ${className}`}>
+        <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-4 ${className}`}>
             {options.map(option => (
                 <button
                     key={option.type}
@@ -30,7 +30,8 @@ export const PillSelector = React.memo(({
                     }}
                     disabled={disabled}
                     className={`
-                        px-3 py-1 text-sm font-medium rounded transition-colors min-h-8
+                        px-3 py-2 text-sm font-medium rounded transition-colors min-h-11
+                        flex items-center justify-center
                         ${disabled
                             ? 'opacity-50 cursor-not-allowed'
                             : 'cursor-pointer'

@@ -12,6 +12,7 @@ import FieldTestPage from './pages/dev/FieldTestPage.jsx';
 import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 import ToolbarTestPage from './pages/dev/ToolbarTestPage.jsx';
 import SpinnerTestPage from './pages/dev/SpinnerTestPage.jsx';
+import SettingsMockPage from './pages/dev/SettingsMockPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -293,6 +294,17 @@ const App = () => {
                                                         pageDescription="Spinner component testing and development"
                                                     >
                                                         <SpinnerTestPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/settings"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Settings Mock"
+                                                        pageDescription="Settings accordion interface mockup and design exploration"
+                                                    >
+                                                        <SettingsMockPage />
                                                     </PageErrorBoundary>
                                                 }
                                             />

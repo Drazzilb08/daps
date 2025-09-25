@@ -89,6 +89,12 @@ const NAVIGATION_STRUCTURE = [
                 label: 'Notifications',
                 path: '/settings/notifications',
             },
+            {
+                id: 'settings-modules',
+                label: 'Modules',
+                path: '/settings/modules',
+            
+            }
         ],
     },
     {
@@ -230,7 +236,7 @@ const PageSidebar = React.memo(() => {
                                                                 : undefined
                                                         }
                                                     >
-                                                        <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis nav-label--child">
+                                                        <span className="flex-1 ml-4  whitespace-nowrap overflow-hidden text-ellipsis nav-label--child">
                                                             {child.label}
                                                         </span>
                                                     </NavLink>

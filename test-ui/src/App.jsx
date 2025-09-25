@@ -215,7 +215,17 @@ const App = () => {
                                                     </div>
                                                 }
                                             />
-
+                                            <Route
+                                                path="settings/modules"
+                                                element={
+                                                    <div className="grid gap-12 max-w-full">
+                                                        <h1>Module Settings</h1>
+                                                        <p>
+                                                            Configure module settings
+                                                        </p>
+                                                    </div>
+                                                }
+                                            />
                                             {/* Logs Route */}
                                             <Route
                                                 path="logs"

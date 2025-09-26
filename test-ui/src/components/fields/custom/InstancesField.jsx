@@ -731,11 +731,12 @@ export const InstancesField = React.memo(({
     // Parse current value into service-specific selections
     const serviceSelections = useMemo(() => {
         const selections = {};
+        const safeValue = Array.isArray(value) ? value : [];
 
         instanceTypes.forEach(serviceType => {
             if (serviceType === 'plex') {
                 // Plex handles complex objects
-                selections[serviceType] = value.filter(item => {
+                selections[serviceType] = safeValue.filter(item => {
                     if (!instances || !Array.isArray(instances)) {
                         return false;
                     }
@@ -751,7 +752,7 @@ export const InstancesField = React.memo(({
                 });
             } else {
                 // Other services use simple strings
-                selections[serviceType] = value.filter(item => {
+                selections[serviceType] = safeValue.filter(item => {
                     if (!instances || !Array.isArray(instances)) {
                         return false;
                     }
@@ -854,16 +855,31 @@ export const InstancesField = React.memo(({
                         {renderServiceSelector(instanceTypes[0])}
                     </div>
                 ) : (
-                    // Multiple service types - sectioned UI
-                    <div className="grid gap-6 grid-cols-auto-fit-md">
-                        {instanceTypes.map(serviceType => (
-                            <div key={serviceType} className="flex flex-col gap-3 bg-surface border border-border rounded-lg p-4 shadow-sm">
+                    // Multiple service types - custom layout: Radarr/Sonarr side by side, Plex below
+                    <div className="flex flex-col gap-6">
+                        {/* Radarr and Sonarr in a 2-column grid */}
+                        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                            {instanceTypes
+                                .filter(serviceType => serviceType === 'radarr' || serviceType === 'sonarr')
+                                .map(serviceType => (
+                                    <div key={serviceType} className="flex flex-col gap-3 bg-surface border border-border rounded-lg p-4 shadow-sm">
+                                        <h4 className="text-lg font-bold text-primary mb-1 border-b border-border pb-2">
+                                            {humanize(serviceType)}
+                                        </h4>
+                                        {renderServiceSelector(serviceType)}
+                                    </div>
+                                ))}
+                        </div>
+
+                        {/* Plex full width below */}
+                        {instanceTypes.includes('plex') && (
+                            <div className="flex flex-col gap-3 bg-surface border border-border rounded-lg p-4 shadow-sm">
                                 <h4 className="text-lg font-bold text-primary mb-1 border-b border-border pb-2">
-                                    {humanize(serviceType)}
+                                    {humanize('plex')}
                                 </h4>
-                                {renderServiceSelector(serviceType)}
+                                {renderServiceSelector('plex')}
                             </div>
-                        ))}
+                        )}
                     </div>
                 )}
             </div>

@@ -6,6 +6,9 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { FieldRegistry } from '../../components/fields/FieldRegistry.jsx';
 import { FormRenderer } from '../../utils/forms/FormRenderer.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
+import { useApiData } from '../../hooks/useApiData.js';
+import { instancesAPI } from '../../utils/api';
+import { InstancesField } from '../../components/fields/custom/InstancesField.jsx';
 
 const FieldStatusOverview = React.memo(() => {
     const workingTypes = FieldRegistry.getWorkingFieldTypes();
@@ -85,7 +88,18 @@ FieldStatusOverview.displayName = 'FieldStatusOverview';
  * Individual Field Tester Component
  * Test a single field type with different configurations and states
  */
-const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved }) => {
+const FieldTester = React.memo(({
+    fieldType,
+    onApprove,
+    onDisapprove,
+    isApproved,
+    instances = [],
+    instancesLoading = false,
+    instancesError = null,
+    plexLibraries = {},
+    librariesLoading = false,
+    librariesError = null,
+}) => {
     const [testConfig, setTestConfig] = useState(() => {
         const baseConfig = {
             label: `Test ${fieldType} Field`,
@@ -398,15 +412,37 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
 
                     <div className="mb-4 p-3 bg-surface-elevated border rounded-sm">
                         <h4 className="text-base font-medium text-primary mb-2">Field Test</h4>
-                        <FormRenderer
-                            schema={testSchema}
-                            initialValues={testFormValues}
-                            onSubmit={handleTestSubmit}
-                            onChange={values => setTestValue(values[`test_${fieldType}`])}
-                            submitText="Test Submit"
-                            validateOnChange={false}
-                            customErrors={testErrors}
-                        />
+
+                        {fieldType === 'instances' ? (
+                            // Special handling for InstancesField with API data
+                            <div className="field-wrapper">
+                                <InstancesField
+                                    field={testConfig}
+                                    value={testValue}
+                                    onChange={setTestValue}
+                                    disabled={testConfig.disabled}
+                                    highlightInvalid={showError}
+                                    errorMessage={showError ? 'Test error message' : null}
+                                    instances={instances}
+                                    instancesLoading={instancesLoading}
+                                    instancesError={instancesError}
+                                    plexLibraries={plexLibraries}
+                                    librariesLoading={librariesLoading}
+                                    librariesError={librariesError}
+                                />
+                            </div>
+                        ) : (
+                            // Standard FormRenderer for other field types
+                            <FormRenderer
+                                schema={testSchema}
+                                initialValues={testFormValues}
+                                onSubmit={handleTestSubmit}
+                                onChange={values => setTestValue(values[`test_${fieldType}`])}
+                                submitText="Test Submit"
+                                validateOnChange={false}
+                                customErrors={testErrors}
+                            />
+                        )}
                     </div>
 
                     <div className="p-3 bg-surface-elevated border border-primary rounded-sm">
@@ -488,6 +524,79 @@ const FieldTestPage = () => {
 
     const allFieldTypes = FieldRegistry.getFieldTypes();
     const workingFieldTypes = FieldRegistry.getWorkingFieldTypes();
+
+    // Load instances data for InstancesField testing
+    const {
+        data: instancesResponse,
+        isLoading: instancesLoading,
+        error: instancesError
+    } = useApiData({
+        apiFunction: instancesAPI.fetchInstances,
+        options: {
+            immediate: true,
+            showErrorToast: false,
+        },
+    });
+
+    // Transform instances data to expected format
+    const instances = useMemo(() => {
+        if (!instancesResponse?.data) {
+            return [];
+        }
+
+        const instancesData = instancesResponse.data;
+        const transformedInstances = [];
+
+        // Transform nested object structure to flat array
+        Object.entries(instancesData).forEach(([serviceType, serviceInstances]) => {
+            Object.entries(serviceInstances || {}).forEach(([instanceName, instanceConfig]) => {
+                transformedInstances.push({
+                    type: serviceType,
+                    name: instanceName,
+                    url: instanceConfig.url,
+                    api: instanceConfig.api
+                });
+            });
+        });
+
+        return transformedInstances;
+    }, [instancesResponse]);
+
+    // Load Plex libraries for all Plex instances
+    const plexInstances = useMemo(() => {
+        return instances.filter(instance => instance.type === 'plex');
+    }, [instances]);
+
+    const {
+        data: librariesResponse,
+        isLoading: librariesLoading,
+        error: librariesError
+    } = useApiData({
+        apiFunction: async () => {
+            if (plexInstances.length === 0) {
+                return { data: {} };
+            }
+
+            const librariesByInstance = {};
+            for (const instance of plexInstances) {
+                try {
+                    const response = await instancesAPI.fetchPlexLibraries(instance.name);
+                    librariesByInstance[instance.name] = response?.data?.libraries || [];
+                } catch (error) {
+                    console.warn(`Failed to load libraries for ${instance.name}:`, error);
+                    librariesByInstance[instance.name] = [];
+                }
+            }
+            return { data: librariesByInstance };
+        },
+        dependencies: [plexInstances.map(i => i.name).join(',')],
+        options: {
+            immediate: plexInstances.length > 0,
+            showErrorToast: false,
+        },
+    });
+
+    const plexLibraries = librariesResponse?.data || {};
 
     // Save approved fields to localStorage whenever the set changes
     useEffect(() => {
@@ -634,6 +743,12 @@ const FieldTestPage = () => {
                             onApprove={handleApproveField}
                             onDisapprove={handleDisapproveField}
                             isApproved={approvedFields.has(selectedFieldType)}
+                            instances={instances}
+                            instancesLoading={instancesLoading}
+                            instancesError={instancesError}
+                            plexLibraries={plexLibraries}
+                            librariesLoading={librariesLoading}
+                            librariesError={librariesError}
                         />
                     )}
                 </div>

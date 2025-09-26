@@ -22,6 +22,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { InputBase, SelectBase } from '../../primitives';
 import { AddButton, RemoveButton, ItemCounter, EmptyState, FieldButton } from '../shared';
+import { useTouchDevice } from '../../../../utils/touchDetection';
 
 /**
  * SortableDirectoryItem - Directory item with drag and drop support
@@ -67,10 +68,12 @@ const SortableDirectoryItem = React.memo(({
         opacity: isDragging ? 0.5 : 1,
     };
 
+    const isTouch = useTouchDevice();
+
     return (
         <div className="flex gap-2 items-start" ref={setNodeRef} style={style}>
-            {/* Desktop: Drag Handle (left side) */}
-            {enableReordering && (
+            {/* Non-touch devices: Drag Handle (left side) */}
+            {enableReordering && !isTouch && (
                 <div
                     className="flex items-center justify-center w-11 h-11 text-accent cursor-grab hover:text-primary transition-colors touch-target flex-shrink-0"
                     {...attributes}
@@ -80,13 +83,13 @@ const SortableDirectoryItem = React.memo(({
                 </div>
             )}
 
-            {/* Mobile: Up Button (left side) */}
-            {enableReordering && (
+            {/* Touch devices: Up Button (left side) */}
+            {enableReordering && isTouch && (
                 <FieldButton
                     onClick={() => onMoveUp && onMoveUp(index)}
                     disabled={!canMoveUp}
                     ariaLabel={`Move ${directory || 'directory'} up`}
-                    className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden flex-shrink-0"
+                    className="flex-shrink-0"
                 >
                     <span className="material-symbols-outlined text-base">keyboard_arrow_up</span>
                 </FieldButton>
@@ -124,13 +127,13 @@ const SortableDirectoryItem = React.memo(({
                 )}
             </div>
 
-            {/* Mobile: Down Button (right side) */}
-            {enableReordering && (
+            {/* Touch devices: Down Button (right side) */}
+            {enableReordering && isTouch && (
                 <FieldButton
                     onClick={() => onMoveDown && onMoveDown(index)}
                     disabled={!canMoveDown}
                     ariaLabel={`Move ${directory || 'directory'} down`}
-                    className="flex items-center justify-center w-8 h-8 text-xs bg-surface border rounded hover:bg-surface-hover transition-colors md:hidden flex-shrink-0"
+                    className="flex-shrink-0"
                 >
                     <span className="material-symbols-outlined text-base">keyboard_arrow_down</span>
                 </FieldButton>

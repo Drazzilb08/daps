@@ -14,7 +14,7 @@ const ModuleSettingsContent = () => {
   const config = useConfig(); // Clean access to configuration data
 
   // Simplified state management for the UI
-  const [expandedModules, setExpandedModules] = useState(['sync_gdrive']);
+  const [expandedModules, setExpandedModules] = useState([]);
   const [formData, setFormData] = useState({});
   const [lastSaved, setLastSaved] = useState('{}');
   const [isDirty, setIsDirty] = useState(false);

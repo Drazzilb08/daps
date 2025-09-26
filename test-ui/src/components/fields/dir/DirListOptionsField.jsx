@@ -99,7 +99,25 @@ export const DirListOptionsField = React.memo(
         const label = field.label || 'Directories with Options';
 
         // Extract mode options from field configuration
-        const modeOptions = field.mode_options || field.modeOptions || [];
+        // Support multiple field schema formats: options, mode_options, modeOptions
+        const rawOptions = field.options || field.mode_options || field.modeOptions || [];
+
+        // Convert to expected format: [{value, label}, ...]
+        const modeOptions = useMemo(() => {
+            if (!Array.isArray(rawOptions)) return [];
+
+            return rawOptions.map(option => {
+                // If already in object format, use as-is
+                if (typeof option === 'object' && option.value !== undefined) {
+                    return option;
+                }
+                // Convert string to {value, label} format
+                return {
+                    value: option,
+                    label: option
+                };
+            });
+        }, [rawOptions]);
 
         return (
             <FieldWrapper invalid={highlightInvalid}>

@@ -444,23 +444,12 @@ export const ColorListPosterField = React.memo(({
         </div>
       )}
 
-      {/* Status messages */}
-      {(posterAssets.length === 0 || loadingPreviews) && (
-        <div className="flex flex-col gap-2">
-          {posterAssets.length === 0 && (
-            <div className="p-2 px-3 bg-warning rounded border border-warning">
-              <span className="text-sm text-bg italic">
-                No poster files found in /posters/ directory.
-              </span>
-            </div>
-          )}
-          {loadingPreviews && (
-            <div className="p-2 px-3 bg-info rounded border border-info">
-              <span className="text-sm text-bg italic">
-                Generating poster previews...
-              </span>
-            </div>
-          )}
+      {/* Status messages - only show critical errors */}
+      {posterAssets.length === 0 && (
+        <div className="p-2 px-3 bg-warning rounded border border-warning">
+          <span className="text-sm text-bg italic">
+            No poster files found in /posters/ directory.
+          </span>
         </div>
       )}
 

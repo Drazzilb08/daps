@@ -8,7 +8,7 @@
  * @returns {JSX.Element} AccordionItem component
  */
 export const AccordionItem = ({ title, children, isExpanded, onToggle }) => (
-  <div className="border border-border-subtle rounded-lg overflow-hidden">
+  <div className="border border-border-subtle rounded-lg">
     <button
       onClick={onToggle}
       className="w-full px-6 py-4 text-left bg-surface hover:bg-surface-hover flex items-center justify-between"

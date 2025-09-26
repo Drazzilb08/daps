@@ -255,7 +255,7 @@ const SettingsMockPage = () => {
                                                 inbox
                                             </span>
                                             <p className="text-text-secondary">
-                                                This module requires no configuration
+                                                This module's configuration is still being developed
                                             </p>
                                             <p className="text-sm text-text-tertiary mt-2">
                                                 Module key: <code className="px-2 py-1 bg-surface border border-border-subtle rounded text-xs">{module.key}</code>

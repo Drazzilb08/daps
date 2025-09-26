@@ -7,6 +7,33 @@ import { AccordionItem } from '../../../components/AccordionItem.jsx';
 import { ConfigProvider, useConfig } from '../../../contexts/ConfigContext.jsx';
 
 /**
+ * Memoized field component for better performance
+ * Only re-renders when field value or key changes
+ */
+const MemoizedFieldComponent = React.memo(({ field, value, onChange, ...props }) => {
+  const FieldComponent = FieldRegistry.getField(field.type);
+
+  if (!FieldComponent) {
+    return (
+      <div className="p-2 bg-warning-bg text-warning rounded">
+        Unknown field type: {field.type}
+      </div>
+    );
+  }
+
+  return <FieldComponent field={field} value={value} onChange={onChange} {...props} />;
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.value === nextProps.value &&
+    prevProps.field.key === nextProps.field.key &&
+    prevProps.disabled === nextProps.disabled &&
+    prevProps.highlightInvalid === nextProps.highlightInvalid
+  );
+});
+
+MemoizedFieldComponent.displayName = 'MemoizedFieldComponent';
+
+/**
  * Internal component that uses ConfigContext for optimal data access
  * @returns {JSX.Element} Module settings content component
  */
@@ -21,6 +48,10 @@ const ModuleSettingsContent = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredModules, setFilteredModules] = useState(SETTINGS_SCHEMA);
 
   // Initialize form data from context when config loads
   useEffect(() => {
@@ -47,6 +78,51 @@ const ModuleSettingsContent = () => {
       return () => clearTimeout(timer);
     }
   }, [saveSuccess]);
+
+  // Search and filter functionality
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredModules(SETTINGS_SCHEMA);
+    } else {
+      const filtered = SETTINGS_SCHEMA.filter(module =>
+        module.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        module.fields?.some(field =>
+          field.label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          field.key?.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+      setFilteredModules(filtered);
+    }
+  }, [searchTerm]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyboard = (e) => {
+      // Ctrl/Cmd + S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (isDirty && !isSaving) {
+          handleSave();
+        }
+      }
+
+      // Ctrl/Cmd + R to reset
+      if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        if (isDirty) {
+          handleReset();
+        }
+      }
+
+      // Escape to collapse all
+      if (e.key === 'Escape') {
+        setExpandedModules([]);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyboard);
+    return () => window.removeEventListener('keydown', handleKeyboard);
+  }, [isDirty, isSaving]);
 
   const toggleModule = (moduleKey) => {
     setExpandedModules(prev =>
@@ -101,57 +177,62 @@ const ModuleSettingsContent = () => {
   // No loading state needed - data comes from ConfigProvider
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-4 md:p-6 max-w-4xl mx-auto">
       {/* Header with save controls */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold mb-2 text-text-primary">Module Settings</h1>
-            <p className="text-text-secondary">Configure DAPS module settings</p>
+            <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Module Settings</h1>
+            <p className="text-sm md:text-base text-text-secondary">Configure DAPS module settings</p>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Status indicator */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            {/* Status indicators - responsive text */}
             {isDirty && (
               <span className="text-sm text-warning flex items-center gap-1">
                 <span className="material-symbols-outlined text-sm">edit</span>
-                Unsaved changes
+                <span className="hidden sm:inline">Unsaved changes</span>
+                <span className="sm:hidden">Unsaved</span>
               </span>
             )}
 
             {saveSuccess && (
               <span className="text-sm text-success flex items-center gap-1">
                 <span className="material-symbols-outlined text-sm">check_circle</span>
-                Saved successfully
+                <span className="hidden sm:inline">Saved successfully</span>
+                <span className="sm:hidden">Saved</span>
               </span>
             )}
 
-            {/* Action buttons */}
-            <button
-              onClick={handleReset}
-              disabled={!isDirty || isSaving}
-              className="px-3 py-1 text-sm border border-border rounded hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed text-text-primary"
-            >
-              Reset
-            </button>
+            {/* Mobile-optimized buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleReset}
+                disabled={!isDirty || isSaving}
+                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-border rounded hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] text-text-primary"
+              >
+                Reset
+              </button>
 
-            <button
-              onClick={handleSave}
-              disabled={!isDirty || isSaving}
-              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {isSaving ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-sm">save</span>
-                  Save Changes
-                </>
-              )}
-            </button>
+              <button
+                onClick={handleSave}
+                disabled={!isDirty || isSaving}
+                className="flex-1 sm:flex-none px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[44px]"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    <span className="hidden sm:inline">Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-sm">save</span>
+                    <span className="hidden sm:inline">Save Changes</span>
+                    <span className="sm:hidden">Save</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -166,9 +247,25 @@ const ModuleSettingsContent = () => {
         )}
       </div>
 
+      {/* Search functionality */}
+      <div className="mb-6">
+        <div className="relative">
+          <span className="material-symbols-outlined absolute left-3 top-3 text-text-secondary">
+            search
+          </span>
+          <input
+            type="text"
+            placeholder="Search modules and fields..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px] bg-surface text-text-primary"
+          />
+        </div>
+      </div>
+
       {/* Module accordion */}
       <Accordion>
-        {SETTINGS_SCHEMA.map((module, moduleIndex) => (
+        {filteredModules.map((module, moduleIndex) => (
           <AccordionItem
             key={`module-${module.key}-${moduleIndex}`}
             title={module.label}
@@ -181,21 +278,11 @@ const ModuleSettingsContent = () => {
                   e.preventDefault();
                   handleSave();
                 }}
-                className="space-y-4"
+                className="space-y-4 md:space-y-6"
                 noValidate
               >
                 {module.fields.map((field, fieldIndex) => {
                   try {
-                    // Get field component from registry
-                    const FieldComponent = FieldRegistry.getField(field.type);
-
-                    if (!FieldComponent) {
-                      return (
-                        <div key={`missing-${module.key}-${field.key}-${fieldIndex}`} className="p-2 bg-warning-bg text-warning rounded">
-                          Unknown field type: {field.type}
-                        </div>
-                      );
-                    }
 
                     // Generate unique IDs for this field instance
                     const uniqueId = `field-${module.key}-${field.key}-${fieldIndex}`;
@@ -242,7 +329,7 @@ const ModuleSettingsContent = () => {
 
                     return (
                       <div key={`field-${module.key}-${field.key}-${fieldIndex}`} className="settings-field-row">
-                        <FieldComponent
+                        <MemoizedFieldComponent
                           field={{
                             ...field,
                             id: uniqueId,

@@ -26,10 +26,10 @@ export const AccordionItem = ({ title, children, isExpanded, onToggle }) => {
                 className="accordion-header list-none cursor-pointer"
                 onClick={handleToggle}
             >
-                <div className="w-full px-6 py-4 bg-surface hover:bg-surface-hover flex items-center justify-between">
-                    <span className="font-medium text-text-primary">{title}</span>
+                <div className="w-full px-4 py-4 md:px-6 bg-surface hover:bg-surface-hover flex items-center justify-between min-h-[44px] touch-manipulation">
+                    <span className="font-medium text-sm md:text-base text-text-primary pr-2">{title}</span>
                     <span
-                        className="material-symbols-outlined transition-transform duration-200 text-text-secondary"
+                        className="material-symbols-outlined transition-transform duration-200 text-xl text-text-secondary flex-shrink-0"
                         style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
                     >
                         chevron_right
@@ -37,7 +37,7 @@ export const AccordionItem = ({ title, children, isExpanded, onToggle }) => {
                 </div>
             </summary>
             <div className="accordion-content bg-surface-elevated border-t border-border-subtle">
-                <div className="px-6 py-4">
+                <div className="px-4 py-4 md:px-6">
                     {children}
                 </div>
             </div>

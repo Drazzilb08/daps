@@ -498,11 +498,23 @@ const PlexInstanceSelector = React.memo(({
             if (typeof item === 'string') {
                 return { name: item, upload_posters: false, libraries: [] };
             }
-            return {
-                name: item.name,
-                upload_posters: item.upload_posters || false,
-                libraries: item.libraries || []
-            };
+            if (typeof item === 'object' && item.name) {
+                return {
+                    name: item.name,
+                    upload_posters: item.upload_posters || false,
+                    libraries: item.libraries || []
+                };
+            }
+            if (typeof item === 'object' && !item.name) {
+                // Handle config format: {plex_1: {library_names: [...], add_posters: true}}
+                const [plexName, plexConfig] = Object.entries(item)[0];
+                return {
+                    name: plexName,
+                    upload_posters: plexConfig.add_posters || false,
+                    libraries: plexConfig.library_names || []
+                };
+            }
+            return { name: 'unknown', upload_posters: false, libraries: [] };
         });
     }, [selectedInstances]);
 
@@ -747,6 +759,13 @@ export const InstancesField = React.memo(({
                     if (typeof item === 'object' && item.name) {
                         // Check if this object refers to a plex instance
                         return instances.some(inst => inst.type === 'plex' && inst.name === item.name);
+                    }
+                    if (typeof item === 'object' && !item.name) {
+                        // Handle config format: {plex_1: {library_names: [...], add_posters: true}}
+                        const plexInstanceNames = Object.keys(item);
+                        return plexInstanceNames.some(plexName =>
+                            instances.some(inst => inst.type === 'plex' && inst.name === plexName)
+                        );
                     }
                     return false;
                 });

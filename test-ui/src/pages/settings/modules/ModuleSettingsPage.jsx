@@ -4,45 +4,33 @@ import { SETTINGS_SCHEMA } from '../../../utils/constants/settings_schema.js';
 import { FieldRegistry } from '../../../components/fields/FieldRegistry.jsx';
 import { Accordion } from '../../../components/Accordion.jsx';
 import { AccordionItem } from '../../../components/AccordionItem.jsx';
+import { ConfigProvider, useConfig } from '../../../contexts/ConfigContext.jsx';
 
 /**
- * Schema-driven accordion interface with real configuration loading and state management
- * @returns {JSX.Element} Module settings page component
+ * Internal component that uses ConfigContext for optimal data access
+ * @returns {JSX.Element} Module settings content component
  */
-export const ModuleSettingsPage = () => {
-  const [expandedModules, setExpandedModules] = useState(['sync_gdrive']);
+const ModuleSettingsContent = () => {
+  const config = useConfig(); // Clean access to configuration data
 
-  // Configuration state
-  const [config, setConfig] = useState(null);
+  // Simplified state management for the UI
+  const [expandedModules, setExpandedModules] = useState(['sync_gdrive']);
   const [formData, setFormData] = useState({});
   const [lastSaved, setLastSaved] = useState('{}');
   const [isDirty, setIsDirty] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Load configuration on mount
+  // Initialize form data from context when config loads
   useEffect(() => {
-    const loadConfig = async () => {
-      try {
-        setIsLoading(true);
-        const cfg = await configAPI.fetchConfig();
-        setConfig(cfg);
-        setFormData(cfg || {});
-        setLastSaved(JSON.stringify(cfg || {}));
-        setIsDirty(false);
-        setSaveError(null);
-      } catch (error) {
-        console.error('Failed to load config:', error);
-        setSaveError('Failed to load configuration');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadConfig();
-  }, []);
+    if (config && Object.keys(config).length > 0) {
+      setFormData(config);
+      setLastSaved(JSON.stringify(config));
+      setIsDirty(false);
+      setSaveError(null);
+    }
+  }, [config]);
 
   // Track changes for dirty state
   useEffect(() => {
@@ -68,7 +56,7 @@ export const ModuleSettingsPage = () => {
     );
   };
 
-  // Handle field changes
+  // Handle field changes following main UI pattern
   const handleFieldChange = useCallback((moduleKey, fieldKey, value) => {
     setFormData(prev => ({
       ...prev,
@@ -80,7 +68,7 @@ export const ModuleSettingsPage = () => {
     setSaveError(null);
   }, []);
 
-  // Save configuration
+  // Save configuration - simplified with Context
   const handleSave = async () => {
     if (!isDirty || isSaving) return;
 
@@ -91,7 +79,6 @@ export const ModuleSettingsPage = () => {
       await configAPI.updateConfig(formData);
 
       // Update tracking after successful save
-      setConfig(formData);
       setLastSaved(JSON.stringify(formData));
       setIsDirty(false);
       setSaveSuccess(true);
@@ -104,28 +91,14 @@ export const ModuleSettingsPage = () => {
     }
   };
 
-  // Reset to last saved state
+  // Reset to last saved state - simplified with Context
   const handleReset = () => {
-    if (config) {
-      setFormData(config);
-      setIsDirty(false);
-      setSaveError(null);
-    }
+    setFormData(config);
+    setIsDirty(false);
+    setSaveError(null);
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-text-secondary">Loading configuration...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // No loading state needed - data comes from ConfigProvider
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -205,28 +178,77 @@ export const ModuleSettingsPage = () => {
             {module.fields && module.fields.length > 0 ? (
               <div className="space-y-4">
                 {module.fields.map(field => {
-                  const FieldComponent = FieldRegistry.getField(field.type);
-                  const currentValue = formData[module.key]?.[field.key];
+                  try {
+                    // Get field component from registry
+                    const FieldComponent = FieldRegistry.getField(field.type);
 
-                  if (!FieldComponent) {
+                    if (!FieldComponent) {
+                      return (
+                        <div key={field.key} className="p-2 bg-warning-bg text-warning rounded">
+                          Unknown field type: {field.type}
+                        </div>
+                      );
+                    }
+
+                    // Get field value from current module data - CORRECTED VALUE MAPPING
+                    // formData structure is flat: sync_gdrive, poster_renamerr, etc. are direct properties
+                    const moduleData = formData[module.key] || {};
+                    let fieldValue = moduleData[field.key];
+
+                    // DEBUG: Detailed logging for sync_gdrive
+                    if (module.key === 'sync_gdrive' && field.key === 'log_level') {
+                      console.log('FULL DEBUG DATA:', {
+                        'formData': formData,
+                        'formDataKeys': Object.keys(formData),
+                        'actualFormDataKeys': Object.keys(formData).map(key => `${key}: ${typeof formData[key]}`),
+                        'moduleKey': module.key,
+                        'moduleData': moduleData,
+                        'moduleDataKeys': Object.keys(moduleData),
+                        'directAccess': formData['sync_gdrive'],
+                        'directAccessKeys': formData['sync_gdrive'] ? Object.keys(formData['sync_gdrive']) : 'undefined',
+                        'fieldKey': field.key,
+                        'rawFieldValue': fieldValue,
+                        'fieldDefaultValue': field.defaultValue,
+                        'fullFormDataStructure': JSON.stringify(formData, null, 2)
+                      });
+                    }
+
+                    // Handle special case for nested values (like token)
+                    if (fieldValue === undefined) {
+                      fieldValue = field.defaultValue;
+                    }
+
+                    // Handle null values - convert to empty string for form fields
+                    if (fieldValue === null) {
+                      fieldValue = '';
+                    }
+
+                    // Handle object values - stringify for JSON fields
+                    if (fieldValue && typeof fieldValue === 'object' && field.type === 'json') {
+                      fieldValue = JSON.stringify(fieldValue, null, 2);
+                    }
+
+                    return (
+                      <div key={field.key} className="settings-field-row">
+                        <FieldComponent
+                          field={field}
+                          value={fieldValue}
+                          onChange={(value) => handleFieldChange(module.key, field.key, value)}
+                          disabled={isSaving}
+                          highlightInvalid={false}
+                          errorMessage={null}
+                          rootConfig={formData}
+                        />
+                      </div>
+                    );
+                  } catch (error) {
+                    console.error(`Error rendering field ${field.key}:`, error);
                     return (
                       <div key={field.key} className="p-2 bg-warning-bg text-warning rounded">
-                        Field type '{field.type}' not implemented
+                        Field type '{field.type}' error: {error.message}
                       </div>
                     );
                   }
-
-                  return (
-                    <FieldComponent
-                      key={field.key}
-                      field={field}
-                      value={currentValue}
-                      onChange={(value) => handleFieldChange(module.key, field.key, value)}
-                      disabled={isSaving}
-                      highlightInvalid={false} // Phase 2: no validation yet
-                      errorMessage="" // Phase 2: no validation yet
-                    />
-                  );
                 })}
               </div>
             ) : (
@@ -239,6 +261,58 @@ export const ModuleSettingsPage = () => {
         ))}
       </Accordion>
     </div>
+  );
+};
+
+/**
+ * Main module settings page with optimal ConfigProvider architecture
+ * This provides clean separation of concerns:
+ * - ConfigProvider handles API data loading
+ * - ModuleSettingsContent handles UI state and form interaction
+ * @returns {JSX.Element} Module settings page component
+ */
+export const ModuleSettingsPage = () => {
+  const [config, setConfig] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load configuration data
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        setIsLoading(true);
+        const response = await configAPI.fetchConfig();
+        console.log('RAW API RESPONSE:', response);
+        console.log('EXTRACTED DATA:', response?.data);
+        // Extract the actual config data from the API response
+        setConfig(response?.data || {});
+      } catch (error) {
+        console.error('Failed to load config:', error);
+        setConfig({});
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-text-secondary">Loading configuration...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <ConfigProvider config={config}>
+      <ModuleSettingsContent />
+    </ConfigProvider>
   );
 };
 

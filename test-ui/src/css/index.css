@@ -1,6 +1,7 @@
 @import url('./base.css');
 @import url('./theme/dark.css');
 @import url('./theme/light.css');
+@import url('./components/accordion.css');
 @import url('./components/hamburger-button.css');
 @import url('./components/interactions.css');
 @import url('./components/navigation.css');

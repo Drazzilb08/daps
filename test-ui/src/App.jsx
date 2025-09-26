@@ -13,6 +13,7 @@ import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 import ToolbarTestPage from './pages/dev/ToolbarTestPage.jsx';
 import SpinnerTestPage from './pages/dev/SpinnerTestPage.jsx';
 import SettingsMockPage from './pages/dev/SettingsMockPage.jsx';
+import ArrayObjectFieldPage from './pages/dev/ArrayObjectFieldPage.jsx';
 import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
 
 /**
@@ -299,6 +300,17 @@ const App = () => {
                                                         pageDescription="Settings accordion interface mockup and design exploration"
                                                     >
                                                         <SettingsMockPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/array-object-field"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Array Object Field"
+                                                        pageDescription="Unified ArrayObjectField component demonstration"
+                                                    >
+                                                        <ArrayObjectFieldPage />
                                                     </PageErrorBoundary>
                                                 }
                                             />

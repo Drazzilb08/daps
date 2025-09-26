@@ -62,6 +62,7 @@
   .animate-ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
   .animate-fade-in { animation: fadeIn 150ms ease-in-out; }
   .animate-fade-out { animation: fadeOut 150ms ease-in-out; }
+  .animate-slide-down { animation: slideDown 240ms ease-out; }
 
   /* ===========================================
      KEYFRAME DEFINITIONS
@@ -103,6 +104,19 @@
   @keyframes fadeOut {
     from { opacity: 1; }
     to { opacity: 0; }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-0.5rem);
+      max-height: 0;
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      max-height: 500px;
+    }
   }
 
   /* ===========================================
@@ -154,7 +168,8 @@
     .animate-bounce,
     .animate-ping,
     .animate-fade-in,
-    .animate-fade-out {
+    .animate-fade-out,
+    .animate-slide-down {
       animation: none !important;
     }
   }

@@ -28,7 +28,7 @@ const Layout = ({ children }) => {
     );
 
     return (
-        <div className="h-screen flex flex-col overflow-hidden">
+        <div className="h-screen flex flex-col">
             {/* Skip link for keyboard navigation - WCAG 2.1 AA requirement */}
             <a href="#main-content" className="skip-link">
                 Skip to main content

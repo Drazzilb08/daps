@@ -13,6 +13,7 @@ import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 import ToolbarTestPage from './pages/dev/ToolbarTestPage.jsx';
 import SpinnerTestPage from './pages/dev/SpinnerTestPage.jsx';
 import SettingsMockPage from './pages/dev/SettingsMockPage.jsx';
+import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -218,14 +219,7 @@ const App = () => {
                                             />
                                             <Route
                                                 path="settings/modules"
-                                                element={
-                                                    <div className="grid gap-12 max-w-full">
-                                                        <h1>Module Settings</h1>
-                                                        <p>
-                                                            Configure module settings
-                                                        </p>
-                                                    </div>
-                                                }
+                                                element={<ModuleSettingsPage />}
                                             />
                                             {/* Logs Route */}
                                             <Route

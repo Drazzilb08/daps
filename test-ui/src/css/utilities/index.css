@@ -30,9 +30,6 @@
 @import url('./icons.css');           /* Icon sizing and display */
 @import url('./images.css');          /* Responsive images, object utilities */
 
-/* NOTE: Responsive utilities consolidated into base files
- * (responsive.css deleted - duplicated utilities across breakpoints)
- */
 
 /* Development Utilities */
 @import url('./debug.css');           /* Development debugging aids */

@@ -21,17 +21,12 @@
     --info: #1976d2;           /* Info state blue for informational messages */
     --focus: #ff9500;          /* Focus indicator - bright orange for visibility */
 
-    /* Surface & Background Colors */
+    /* Surface & Background Colors - Simplified */
 
     --bg: #fafbfe;                    /* Main background - soft white base */
     --surface: #fff;                  /* Primary surface - pure white for cards, panels */
     --surface-alt: #f7f7fa;           /* Alternative surface - subtle gray for secondary areas */
     --surface-elevated: #f8f9fc;      /* Elevated surface - subtle blue-tint for depth */
-    --surface-hover: #f0f2f5;         /* Hover surface interaction state */
-    --surface-active: #e8eaf0;        /* Active surface interaction state */
-    --surface-secondary: #f3f4f6;     /* Secondary surface areas */
-    --surface-variant: #f5f6f8;       /* Alternative surface variant */
-    --surface-dim: #e9ecef;           /* Dimmed/muted surface variant */
 
     /* Border & Separation Colors */
 
@@ -42,8 +37,7 @@
 
     --text-primary: #1a1a1a;          /* Primary text - dark for maximum contrast */
     --text-secondary: #28292c;        /* Secondary text - slightly lighter for labels */
-    --text-tertiary: #5e5e5e;         /* Tertiary text - medium gray for placeholders */
-    --text-disabled: #5e5e5e;         /* Disabled text - same as tertiary for consistency */
+    --text-tertiary: #5e5e5e;         /* Tertiary text - medium gray for placeholders, disabled states */
 
     /* Layout Specific Colors */
 
@@ -61,12 +55,7 @@
     --sidebar-text-secondary: #737378;              /* Subdued sidebar text */
 
     /* Text-on-Color Utilities */
-    --primary-text: #fff;                           /* White text on orange background */
-    --accent-text: #fff;                            /* White text on blue background */
-    --success-text: #fff;                           /* White text on green background */
-    --warning-text: #fff;                           /* White text on yellow background */
-    --error-text: #fff;                             /* White text on red background */
-    --info-text: #fff;                              /* White text on info blue background */
+    --on-color-text: #fff;                          /* White text on all colored backgrounds */
 
     /* Link state colors */
     --link-hover: #4a85e8;                          /* Lighter blue for hover state */
@@ -85,8 +74,8 @@
 
 @media (prefers-contrast: more) {
     [data-theme='light'] {
-        --color-border: #000;          /* Pure black border for maximum contrast */
-        --color-text-primary: #000;    /* Pure black text for maximum contrast */
-        --color-background: #fff;      /* Pure white background for maximum contrast */
+        --border: #000;          /* Pure black border for maximum contrast */
+        --text-primary: #000;    /* Pure black text for maximum contrast */
+        --bg: #fff;              /* Pure white background for maximum contrast */
     }
 }

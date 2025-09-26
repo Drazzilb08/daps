@@ -1,5 +1,9 @@
 
 @layer utilities {
+  /* Badge-specific typography utilities */
+  .badge-text-size { font-size: 0.875rem; }
+  .badge-text-weight { font-weight: 500; }
+
   /* Font sizes */
   .text-xs { font-size: 0.75rem; }
   .text-sm { font-size: 0.875rem; }
@@ -12,14 +16,6 @@
   .text-5xl { font-size: 3rem; }       /* 48px */
   .text-6xl { font-size: 3.75rem; }    /* 60px */
 
-  /* NOTE: Semantic typography duplicates removed - use size-based utilities instead:
-   * OLD: text-caption (0.75rem) → NEW: text-xs
-   * OLD: text-title (1.5rem) → NEW: text-2xl
-   * OLD: text-display (3rem) → NEW: text-5xl
-   * OLD: text-body (1rem) → NEW: text-base
-   * OLD: text-lead (1.125rem) → NEW: text-lg
-   * KEPT: text-heading (unique size)
-   */
   .text-heading { font-size: 1.875rem; }
 
   /* ===========================================
@@ -301,9 +297,6 @@
      TYPOGRAPHY UTILITIES - ATOMIC ONLY
      =========================================== */
 
-  /* NOTE: Typography component patterns (.heading-*, .body-text, .caption, .label, .code)
-     have been moved to components/typography.css for proper architectural separation.
-     This section now contains only atomic utilities for individual CSS properties. */
 
   /* Atomic utilities for common typography combinations */
   .heading-base { line-height: 1.25; }

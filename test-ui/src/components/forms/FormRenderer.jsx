@@ -250,7 +250,7 @@ export const FormRenderer = React.memo(
 
         if (!schema) {
             return (
-                <div className="p-6 text-center bg-error-subtle border border-error rounded-lg text-error-text">
+                <div className="p-6 text-center bg-surface border border-error rounded-lg text-error-text">
                     <h3>Form Configuration Error</h3>
                     <p>The form schema is invalid or missing. Please check the configuration.</p>
                 </div>
@@ -291,7 +291,7 @@ export const FormRenderer = React.memo(
 
                     {/* Submit error display */}
                     {submitError && (
-                        <div className="mb-4 p-3 bg-error-subtle text-error-text border border-error rounded-md text-sm" role="alert">
+                        <div className="mb-4 p-3 bg-surface text-error-text border border-error rounded-md text-sm" role="alert">
                             <strong>Submission Error:</strong> {submitError}
                         </div>
                     )}

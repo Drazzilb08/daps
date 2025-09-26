@@ -218,7 +218,7 @@ const AnimationPerformanceTest = React.memo(() => {
                 </div>
 
                 {isStressed && (
-                    <div className="text-sm text-warning bg-warning-subtle border border-warning rounded p-2">
+                    <div className="text-sm text-warning bg-surface border border-warning rounded p-2">
                         <strong>Stress Test Active:</strong> Rendering {spinnerCount} spinners to test performance.
                         Watch for frame drops or animation stuttering.
                     </div>
@@ -255,7 +255,7 @@ const AccessibilityTest = React.memo(() => {
                         </label>
                         <div className={`p-2 rounded text-sm ${
                             prefersReducedMotion
-                                ? 'bg-success-subtle text-success border border-success'
+                                ? 'bg-surface text-success border border-success'
                                 : 'bg-info-subtle text-info border border-info'
                         }`}>
                             {prefersReducedMotion ? 'Detected (animations disabled)' : 'Not detected (animations enabled)'}

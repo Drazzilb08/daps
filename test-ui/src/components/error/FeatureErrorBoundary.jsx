@@ -287,7 +287,7 @@ class FeatureErrorBoundaryBase extends Component {
                         className="bg-surface-alt border border-text-disabled rounded-md my-2 opacity-70 font-sans"
                         title={`${featureName} is temporarily disabled due to repeated errors`}
                     >
-                        <div className="p-3 text-sm text-disabled flex items-center gap-2">
+                        <div className="p-3 text-sm text-tertiary flex items-center gap-2">
                             <span className="material-symbols-outlined text-base shrink-0">warning</span>
                             <span className="flex-1 font-medium">
                                 {featureName} temporarily disabled

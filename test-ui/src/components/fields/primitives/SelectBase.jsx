@@ -46,7 +46,7 @@ export const SelectBase = React.memo(
             // Base styling - atomic utilities only
             'h-11 w-full', // Consistent height (44px minimum)
             'px-3 py-2', // Padding using spacing utilities
-            'bg-input border border-input rounded-md',
+            'bg-input border border-default rounded-md',
             'text-primary',
             'appearance-none', // Remove default styling
             'transition-colors',
@@ -105,7 +105,7 @@ export const SelectBase = React.memo(
                 </select>
                 {/* Dropdown chevron icon using Material Design icon */}
                 <span
-                    className={`material-symbols-outlined absolute top-1/2 right-3 pointer-events-none transition-colors -translate-y-1/2 text-accent leading-none ${disabled ? 'text-disabled' : 'text-secondary'}`}
+                    className={`material-symbols-outlined absolute top-1/2 right-3 pointer-events-none transition-colors -translate-y-1/2 text-accent leading-none ${disabled ? 'text-tertiary' : 'text-secondary'}`}
                     aria-hidden="true"
                 >
                     keyboard_arrow_down

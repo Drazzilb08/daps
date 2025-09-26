@@ -240,7 +240,7 @@ export const FormRenderer = React.memo(
             >
                 {/* Render form validation summary if there are errors */}
                 {Object.keys(validationErrors).length > 0 && (
-                    <div className="mb-4 p-3 bg-error-subtle border border-error rounded-md">
+                    <div className="mb-4 p-3 bg-surface border border-error rounded-md">
                         <h4 className="m-0 mb-2 text-sm font-medium text-error-text">
                             Please fix the following errors:
                         </h4>

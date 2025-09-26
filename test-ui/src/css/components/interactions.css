@@ -4,17 +4,11 @@
      COMPLEX DISABLED STATE PATTERNS
      =========================================== */
 
-  /* NOTE: Basic disabled state moved to utilities - use atomic utilities instead:
-   * OLD: state-disabled → NEW: opacity-60 cursor-not-allowed pointer-events-none
-   */
 
   /* ===========================================
      COMPLEX HOVER PATTERNS
      =========================================== */
 
-  /* NOTE: Basic hover toolbar moved to utilities - use atomic utilities instead:
-   * OLD: state-hover-toolbar → NEW: transition-colors hover:text-primary hover:bg-surface-alt
-   */
 
   /* Hover with loading state prevention */
   .state-hover-loading {
@@ -30,11 +24,6 @@
      COMPLEX FOCUS RING PATTERNS
      =========================================== */
 
-  /* NOTE: Basic focus rings moved to utilities - use atomic utilities instead:
-   * OLD: state-focus-ring → NEW: focus:outline-none focus:border-primary focus:shadow-focus
-   * OLD: state-focus-ring-error → NEW: focus:outline-none focus:border-error focus:shadow-error
-   * OLD: state-focus-ring-success → NEW: focus:outline-none focus:border-success focus:shadow-success
-   */
 
   /* Focus with validation states */
   .state-focus-ring-validation:focus:invalid {

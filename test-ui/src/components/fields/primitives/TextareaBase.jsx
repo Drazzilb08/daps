@@ -57,7 +57,7 @@ export const TextareaBase = ({
                 // Base textarea styling - atomic utilities with proper form control tokens
                 'w-full',
                 'px-3 py-2', // Standard padding
-                'bg-input border border-input rounded-md',
+                'bg-input border border-default rounded-md',
                 'text-primary placeholder:text-secondary',
                 'resize-y', // Allow vertical resize only
                 'max-h-dropdown', // Prevent infinite expansion (300px max height)

@@ -597,10 +597,6 @@
 
   /* Centered container patterns */
 
-  /* NOTE: Container composition utilities removed - use atomic utilities instead:
-   * OLD: container-center → NEW: flex items-center justify-center min-h-screen
-   * OLD: container-center-content → NEW: flex items-center justify-center flex-col gap-4
-   */
 
   /* ===========================================
      ACCESSIBILITY UTILITIES

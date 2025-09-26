@@ -62,7 +62,7 @@
 
     /* Disabled state - color override */
     .hamburger.disabled .line {
-        stroke: var(--text-disabled);
+        stroke: var(--text-tertiary);
     }
 
     /* Mobile display - responsive behavior (no utility alternative) */

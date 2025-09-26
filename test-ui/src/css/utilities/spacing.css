@@ -1,5 +1,9 @@
 
 @layer utilities {
+  /* Badge-specific spacing utilities - ATOMIC */
+  .badge-py { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+  .badge-px { padding-left: 0.5rem; padding-right: 0.5rem; }
+
   /* Margin */
   .m-0 { margin: 0; }
   .m-1 { margin: 0.25rem; }

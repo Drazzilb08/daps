@@ -26,15 +26,15 @@ const FieldStatusOverview = React.memo(() => {
             </h2>
 
             <div className="grid grid-cols-auto gap-3 mb-4">
-                <div className="bg-surface border rounded-sm p-3 text-center border-success bg-success-subtle">
+                <div className="bg-surface border rounded-sm p-3 text-center border-success">
                     <div className="text-xl font-bold text-primary mb-1">{workingCount}</div>
                     <div className="text-sm text-secondary">Working Fields</div>
                 </div>
-                <div className="bg-surface border rounded-sm p-3 text-center border-error bg-error-subtle">
+                <div className="bg-surface border rounded-sm p-3 text-center border-error">
                     <div className="text-xl font-bold text-primary mb-1">{placeholderCount}</div>
                     <div className="text-sm text-secondary">Placeholder Fields</div>
                 </div>
-                <div className="bg-surface border rounded-sm p-3 text-center border-primary bg-primary-subtle">
+                <div className="bg-surface border rounded-sm p-3 text-center border-primary">
                     <div className="text-xl font-bold text-primary mb-1">
                         {completionPercentage}%
                     </div>

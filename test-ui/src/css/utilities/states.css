@@ -2,16 +2,13 @@
 @layer utilities {
   .disabled-input {
     background: var(--input-bg-disabled);
-    color: var(--text-disabled);
+    color: var(--text-tertiary);
     border-color: var(--input-border-disabled);
   }
 
   .state-hover-dim { transition: opacity 150ms ease-in-out; }
   .state-hover-dim:hover:not(:disabled) { opacity: 0.9; }
 
-  /* NOTE: Hover toolbar composition removed - use atomic utilities instead:
-   * OLD: state-hover-toolbar → NEW: transition-colors hover:text-primary hover:bg-surface-alt
-   */
 
   .state-active:active:not(:disabled) {
     transform: scale(0.98);
@@ -32,16 +29,6 @@
   .focus\:border-primary:focus { border-color: var(--primary); }
   .focus-within\:border-primary:focus-within { border-color: var(--primary); }
 
-  /* NOTE: Focus ring compositions removed - use atomic utilities instead:
-   * OLD: state-focus-ring → NEW: focus:outline-none focus:border-primary focus:shadow-focus
-   * OLD: state-focus-ring-error → NEW: focus:outline-none focus:border-error focus:shadow-error
-   * OLD: state-focus-ring-success → NEW: focus:outline-none focus:border-success focus:shadow-success
-   *
-   * Required new utilities in effects.css:
-   * .focus\:shadow-focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
-   * .focus\:shadow-error { box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent); }
-   * .focus\:shadow-success { box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent); }
-   */
 
   /* ===========================================
      VALIDATION STATE UTILITIES

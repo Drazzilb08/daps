@@ -4,17 +4,11 @@
   .bg-primary { background: var(--primary); }
   .bg-primary-hover { background: var(--focus); }
   .bg-primary-surface { background: color-mix(in srgb, var(--primary) 10%, transparent); }
-  .bg-bg { background: var(--bg); }
+  .bg-page { background: var(--bg); }
   .bg-surface { background: var(--surface); }
   .bg-surface-elevated { background: var(--surface-elevated); }
-  .bg-surface-hover { background: var(--surface-hover); }
-  .bg-surface-active { background: var(--surface-active); }
-  .bg-surface-variant { background: var(--surface-variant); }
   .bg-surface-alt { background: var(--surface-alt); }
-  .bg-surface-secondary { background: var(--surface-secondary); }
-  .bg-surface-dim { background: var(--surface-dim); }
   .bg-accent { background: var(--accent); }
-  .bg-accent-hover { background: var(--accent-hover); }
   .bg-accent-surface { background: color-mix(in srgb, var(--accent) 10%, transparent); }
 
   .bg-success { background: var(--success); }
@@ -22,10 +16,6 @@
   .bg-error { background: var(--error); }
   .bg-info { background: var(--info); }
 
-  .bg-success-subtle { background: var(--surface); }
-  .bg-warning-subtle { background: var(--surface); }
-  .bg-error-subtle { background: var(--surface); }
-  .bg-primary-subtle { background: var(--surface); }
 
   /* Special backgrounds */
   .bg-transparent { background: transparent; }
@@ -44,7 +34,7 @@
   .bg-focus { background: var(--focus); }
   .bg-overlay { background: var(--overlay); }
   .bg-overlay-strong { background: var(--overlay-strong); }
-  .bg-backdrop { background: var(--backdrop-bg, rgb(0 0 0 / 30%)); }
+  .bg-backdrop { background: rgb(0 0 0 / 30%); }
 
   /* Form input backgrounds - using specific form control tokens */
   .bg-input { background: var(--input-bg); }
@@ -54,7 +44,7 @@
 
   /* Gradient backgrounds for advanced use cases */
   .bg-gradient-primary {
-    background: linear-gradient(135deg, var(--primary), var(--primary-darker, var(--primary)));
+    background: linear-gradient(135deg, var(--primary), var(--primary));
   }
 
   .bg-gradient-surface {
@@ -69,7 +59,6 @@
   .text-primary { color: var(--text-primary); }
   .text-secondary { color: var(--text-secondary); }
   .text-tertiary { color: var(--text-tertiary); }
-  .text-disabled { color: var(--text-disabled); }
   .text-accent { color: var(--primary); }
   .text-sidebar-secondary { color: var(--sidebar-text-secondary); }
 
@@ -92,15 +81,13 @@
   .text-link-hover { color: var(--link-hover); }
   .text-link-visited { color: var(--link-visited); }
 
-  /* Muted text variants for hierarchy */
+  /* Muted text variants for hierarchy - single opacity method */
   .text-muted {
-    color: var(--text-muted, var(--text-secondary));
-    opacity: 0.8;
+    color: var(--text-secondary);
   }
 
   .text-subtle {
-    color: var(--text-subtle, var(--text-tertiary));
-    opacity: 0.6;
+    color: var(--text-tertiary);
   }
 
   /* ===========================================
@@ -110,10 +97,8 @@
   /* Primary border colors */
   .border-primary { border-color: var(--primary); }
   .border-surface { border-color: var(--surface); }
-  .border-border { border-color: var(--border); }
-  .border-border-subtle { border-color: var(--border-subtle, var(--border)); }
-  .border-border-strong { border-color: var(--border-strong, var(--border)); }
-  .border-sidebar-border { border-color: var(--sidebar-border); }
+  .border-default { border-color: var(--border); }
+  .border-sidebar { border-color: var(--sidebar-border); }
 
   /* State border colors */
   .border-success { border-color: var(--success); }
@@ -129,10 +114,8 @@
 
   /* Focus and interactive border colors */
   .border-focus { border-color: var(--focus); }
-  .border-disabled { border-color: var(--border-disabled, var(--border)); }
 
   /* Input-specific border colors - using form control tokens */
-  .border-input { border-color: var(--border); }
   .border-input-disabled { border-color: var(--input-border-disabled); }
   .border-input-focus { border-color: var(--focus); }
   .border-input-error { border-color: var(--error); }
@@ -147,7 +130,6 @@
   .fill-text { fill: var(--text-primary); }
   .fill-text-secondary { fill: var(--text-secondary); }
   .fill-text-tertiary { fill: var(--text-tertiary); }
-  .fill-text-disabled { fill: var(--text-disabled); }
 
   /* State fill colors */
   .fill-success { fill: var(--success); }
@@ -168,147 +150,38 @@
   /* ALL HOVER UTILITIES MOVED TO interactions.css FOR PROPER SEPARATION OF CONCERNS */
 
   /* ===========================================
-     FOCUS STATE COLOR UTILITIES
+     ALL INTERACTION UTILITIES MOVED TO interactions.css
+     (focus, hover, active, disabled, group states)
      =========================================== */
-
-  /* Background focus utilities */
-  .focus\:bg-primary:focus { background: var(--primary); }
-  .focus\:bg-surface-hover:focus { background: var(--surface-hover); }
-  .focus\:bg-focus:focus { background: var(--focus-bg, var(--surface-hover)); }
-
-  /* Text focus utilities */
-  .focus\:text-primary:focus { color: var(--primary); }
-  .focus\:text-focus:focus { color: var(--focus); }
-
-  /* Border focus utilities */
-  .focus\:border-primary:focus { border-color: var(--primary); }
-  .focus\:border-focus:focus { border-color: var(--focus); }
-  .focus\:border-success:focus { border-color: var(--success); }
-  .focus\:border-error:focus { border-color: var(--error); }
 
   /* ===========================================
-     ACTIVE STATE COLOR UTILITIES
+     ATOMIC COLOR UTILITIES ONLY
      =========================================== */
 
-  /* Background active utilities */
-  .active\:bg-primary:active { background: var(--primary); }
-  .active\:bg-surface-active:active { background: var(--surface-active); }
-  .active\:bg-success:active { background: var(--success); }
-  .active\:bg-error:active { background: var(--error); }
+  /* Replace multi-property classes with atomic composition:
+   *
+   * OLD: .card-colors
+   * NEW: bg-surface text-primary border-default
+   *
+   * OLD: .card-colors-elevated
+   * NEW: bg-surface-elevated text-primary border-default
+   *
+   * OLD: .btn-colors-primary
+   * NEW: bg-primary text-on-color border-primary
+   *
+   * OLD: .btn-colors-secondary
+   * NEW: bg-surface text-primary border-default
+   *
+   * OLD: .btn-colors-success
+   * NEW: bg-success text-on-color border-success
+   *
+   * OLD: .btn-colors-error
+   * NEW: bg-error text-on-color border-error
+   */
 
-  /* Text active utilities */
-  .active\:text-primary:active { color: var(--primary); }
-  .active\:text-white:active { color: #fff; }
+  /* Single-property color utilities for composition */
+  .text-on-color { color: var(--on-color-text); }
 
-  /* Border active utilities */
-  .active\:border-primary:active { border-color: var(--primary); }
-  .active\:border-success:active { border-color: var(--success); }
-  .active\:border-error:active { border-color: var(--error); }
-
-  /* ===========================================
-     DISABLED STATE COLOR UTILITIES
-     =========================================== */
-
-  /* Background disabled utilities */
-  .disabled\:bg-disabled:disabled { background: var(--surface-disabled, var(--surface-dim)); }
-  .disabled\:bg-transparent:disabled { background: transparent; }
-
-  /* Text disabled utilities */
-  .disabled\:text-disabled:disabled { color: var(--text-disabled); }
-
-  .disabled\:text-muted:disabled {
-    color: var(--text-disabled);
-    opacity: 0.5;
-  }
-
-  /* Border disabled utilities */
-  .disabled\:border-disabled:disabled { border-color: var(--border-disabled, var(--border)); }
-  .disabled\:border-transparent:disabled { border-color: transparent; }
-
-  /* Fill disabled utilities */
-  .disabled\:fill-disabled:disabled { fill: var(--text-disabled); }
-
-  /* ===========================================
-     SELECTION STATE COLOR UTILITIES
-     =========================================== */
-
-  /* Selection highlight utilities */
-  .selected\:bg-primary { background: var(--primary); }
-  .selected\:bg-success { background: var(--success); }
-  .selected\:text-white { color: #fff; }
-  .selected\:border-primary { border-color: var(--primary); }
-
-  /* Checkbox/radio selection states */
-  .checked\:bg-primary:checked { background: var(--primary); }
-  .checked\:border-primary:checked { border-color: var(--primary); }
-  .checked\:text-white:checked { color: #fff; }
-
-  /* ===========================================
-     GROUP COLOR UTILITIES
-     =========================================== */
-
-  /* Group hover effects for cards/items */
-  .group:hover .group-hover\:bg-surface-hover { background: var(--surface-hover); }
-  .group:hover .group-hover\:text-primary { color: var(--primary); }
-  .group:hover .group-hover\:border-primary { border-color: var(--primary); }
-  .group:hover .group-hover\:fill-primary { fill: var(--primary); }
-
-  /* Group focus effects */
-  .group:focus-within .group-focus\:border-primary { border-color: var(--primary); }
-  .group:focus-within .group-focus\:text-primary { color: var(--primary); }
-
-  /* ===========================================
-     THEME-SPECIFIC COLOR PATTERNS
-     =========================================== */
-
-  /* Card color patterns */
-  .card-colors {
-    background: var(--surface);
-    color: var(--text-primary);
-    border-color: var(--border);
-  }
-
-  .card-colors-elevated {
-    background: var(--surface-elevated);
-    color: var(--text-primary);
-    border-color: var(--border);
-  }
-
-  /* Button color patterns */
-  .btn-colors-primary {
-    background: var(--primary);
-    color: var(--primary-text, #fff);
-    border-color: var(--primary);
-  }
-
-  .btn-colors-secondary {
-    background: var(--surface);
-    color: var(--text-primary);
-    border-color: var(--border);
-  }
-
-  .btn-colors-success {
-    background: var(--success);
-    color: var(--success-text, #fff);
-    border-color: var(--success);
-  }
-
-  .btn-colors-error {
-    background: var(--error);
-    color: var(--error-text, #fff);
-    border-color: var(--error);
-  }
-
-  /* ===========================================
-     BADGE UTILITIES - ATOMIC UTILITIES ONLY
-     =========================================== */
-
-  /* Badge-specific atomic utilities (single-property only) */
-  .badge-spacing { padding: 0.25rem 0.5rem; }
-  .badge-text-size { font-size: 0.875rem; }
-  .badge-text-weight { font-weight: 500; }
-
-  /* NOTE: Badge patterns converted to utility-first approach in FieldTestPage.jsx */
 
   /* ===========================================
      ACCESSIBILITY COLOR UTILITIES
@@ -330,11 +203,13 @@
     }
   }
 
-  /* Reduced transparency in high contrast */
+  /* High contrast mode text hierarchy maintained */
   @media (prefers-contrast: high) {
-    .text-muted,
+    .text-muted {
+      color: var(--text-primary);
+    }
     .text-subtle {
-      opacity: 1;
+      color: var(--text-secondary);
     }
   }
 
@@ -343,12 +218,12 @@
      =========================================== */
 
   @media print {
-    .print\:text-black { color: #000 !important; }
-    .print\:bg-white { background: #fff !important; }
-    .print\:border-black { border-color: #000 !important; }
+    .print\:text-black { color: #000; }
+    .print\:bg-white { background: #fff; }
+    .print\:border-black { border-color: #000; }
 
     /* Remove backgrounds for print efficiency */
-    .print\:bg-none { background: none !important; }
+    .print\:bg-none { background: none; }
   }
 
   /* ===========================================
@@ -362,24 +237,21 @@
 
   .bg-success\/10 { background: color-mix(in srgb, var(--success) 10%, transparent); }
   .bg-success\/20 { background: color-mix(in srgb, var(--success) 20%, transparent); }
+  .bg-success\/50 { background: color-mix(in srgb, var(--success) 50%, transparent); }
 
   .bg-warning\/10 { background: color-mix(in srgb, var(--warning) 10%, transparent); }
   .bg-warning\/20 { background: color-mix(in srgb, var(--warning) 20%, transparent); }
+  .bg-warning\/50 { background: color-mix(in srgb, var(--warning) 50%, transparent); }
 
   .bg-error\/10 { background: color-mix(in srgb, var(--error) 10%, transparent); }
   .bg-error\/20 { background: color-mix(in srgb, var(--error) 20%, transparent); }
+  .bg-error\/50 { background: color-mix(in srgb, var(--error) 50%, transparent); }
 
-  /* Legacy opacity utilities (removed from themes) */
-  .bg-primary-10 { background: color-mix(in srgb, var(--primary) 10%, transparent); }
-  .bg-primary-20 { background: color-mix(in srgb, var(--primary) 20%, transparent); }
-  .bg-success-20 { background: color-mix(in srgb, var(--success) 20%, transparent); }
-  .bg-warning-20 { background: color-mix(in srgb, var(--warning) 20%, transparent); }
-  .bg-error-20 { background: color-mix(in srgb, var(--error) 20%, transparent); }
 
-  /* Text with opacity */
-  .text-primary-50 { color: color-mix(in srgb, var(--text-primary) 50%, transparent); }
-  .text-primary-70 { color: color-mix(in srgb, var(--text-primary) 70%, transparent); }
-  .text-primary-80 { color: color-mix(in srgb, var(--text-primary) 80%, transparent); }
+  /* Text with opacity - standardized slash syntax */
+  .text-primary\/50 { color: color-mix(in srgb, var(--text-primary) 50%, transparent); }
+  .text-primary\/70 { color: color-mix(in srgb, var(--text-primary) 70%, transparent); }
+  .text-primary\/80 { color: color-mix(in srgb, var(--text-primary) 80%, transparent); }
 
   /* ===========================================
      DYNAMIC COLOR UTILITIES
@@ -387,19 +259,19 @@
 
   /* Contextual colors that adapt based on parent background */
   .text-adaptive {
-    color: var(--text-adaptive, var(--text-primary));
+    color: var(--text-primary);
   }
 
   .border-adaptive {
-    border-color: var(--border-adaptive, var(--border));
+    border-color: var(--border);
   }
 
   /* Inverse colors for overlays and contrasts */
   .text-inverse {
-    color: var(--text-inverse, var(--bg));
+    color: var(--bg);
   }
 
   .bg-inverse {
-    background: var(--bg-inverse, var(--text-primary));
+    background: var(--text-primary);
   }
 }

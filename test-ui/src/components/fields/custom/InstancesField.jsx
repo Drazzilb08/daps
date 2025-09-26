@@ -193,7 +193,7 @@ const PlexLibrarySelector = React.memo(({
 
     if (librariesError) {
         return (
-            <div className="flex items-center gap-3 p-4 text-sm text-error bg-error-subtle border border-error-subtle rounded-lg">
+            <div className="flex items-center gap-3 p-4 text-sm text-error bg-surface border border-error rounded-lg">
                 <span className="text-base">⚠️</span>
                 <span>Failed to load libraries: {librariesError.message}</span>
             </div>
@@ -228,7 +228,7 @@ const PlexLibrarySelector = React.memo(({
                                         type="button"
                                         className={`relative flex items-center justify-center text-center py-2 px-3 min-h-11 rounded-lg border-2 text-sm font-medium cursor-pointer transition-all duration-200 truncate ${
                                             isSelected
-                                                ? 'bg-primary-subtle border-primary text-primary shadow-md scale-105'
+                                                ? 'bg-surface border-primary text-primary shadow-md scale-105'
                                                 : 'bg-surface-elevated border-border text-primary hover:bg-surface-hover hover:border-border-hover hover:-translate-y-0.5 hover:shadow-sm'
                                         }`}
                                         onClick={() => handleLibraryToggle(library, !isSelected)}
@@ -258,7 +258,7 @@ const PlexLibrarySelector = React.memo(({
                                         type="button"
                                         className={`relative flex items-center justify-center text-center py-2 px-3 min-h-11 rounded-lg border-2 text-sm font-medium cursor-pointer transition-all duration-200 truncate ${
                                             isSelected
-                                                ? 'bg-primary-subtle border-primary text-primary shadow-md scale-105'
+                                                ? 'bg-surface border-primary text-primary shadow-md scale-105'
                                                 : 'bg-surface-elevated border-border text-primary hover:bg-surface-hover hover:border-border-hover hover:-translate-y-0.5 hover:shadow-sm'
                                         }`}
                                         onClick={() => handleLibraryToggle(library, !isSelected)}
@@ -288,7 +288,7 @@ const PlexLibrarySelector = React.memo(({
                                         type="button"
                                         className={`relative flex items-center justify-center text-center py-2 px-3 min-h-11 rounded-lg border-2 text-sm font-medium cursor-pointer transition-all duration-200 truncate ${
                                             isSelected
-                                                ? 'bg-primary-subtle border-primary text-primary shadow-md scale-105'
+                                                ? 'bg-surface border-primary text-primary shadow-md scale-105'
                                                 : 'bg-surface-elevated border-border text-primary hover:bg-surface-hover hover:border-border-hover hover:-translate-y-0.5 hover:shadow-sm'
                                         }`}
                                         onClick={() => handleLibraryToggle(library, !isSelected)}
@@ -800,7 +800,7 @@ export const InstancesField = React.memo(({
         return (
             <FieldWrapper invalid={true}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={isRequired} />
-                <div className="flex flex-col items-center gap-3 text-center bg-error-subtle border-2 border-error">
+                <div className="flex flex-col items-center gap-3 text-center bg-surface border-2 border-error">
                     <div>⚠️</div>
                     <div className="flex flex-col gap-2">
                         <div className="font-semibold text-base">Failed to load instances</div>

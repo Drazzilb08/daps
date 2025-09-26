@@ -32,13 +32,11 @@
      TRANSITION UTILITIES - MOVED TO ANIMATIONS.CSS
      =========================================== */
 
-  /* NOTE: All transition utilities consolidated in animations.css */
 
   /* ===========================================
      ANIMATION UTILITIES - MOVED TO ANIMATIONS.CSS
      =========================================== */
 
-  /* NOTE: All animation utilities consolidated in animations.css */
 
   /* Shimmer animation for loading states - kept here as specific to transforms */
   @keyframes shimmer {
@@ -78,5 +76,4 @@
      ACCESSIBILITY CONSIDERATIONS
      =========================================== */
 
-  /* NOTE: Reduced motion support now handled in animations.css */
 }

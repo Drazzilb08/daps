@@ -7,11 +7,11 @@
 
 // Working implementations
 export { JsonField } from './JsonField.jsx';
-export { GDrivePresetsField } from './GDrivePresetsField.jsx';
-export { HolidayPresetsField } from './HolidayPresetsField.jsx';
+export { PresetsField } from './PresetsField.jsx';
 export { InstancesField } from './InstancesField.jsx';
 export { TagInputField } from './TagInputField.jsx';
 export { ScheduleField } from './ScheduleField.jsx';
+export { ArrayObjectField } from './ArrayObjectField.jsx';
 
 // Placeholder implementations
 export {

@@ -41,6 +41,26 @@ const FieldRenderer = React.memo(({ field, value, onChange, disabled }) => {
         markTouched();
     }, [markTouched]);
 
+    // For preset fields, provide multi-field update capability
+    const handlePresetSelected = useCallback(
+        presetFieldUpdates => {
+            // Update multiple fields at once for preset selection
+            Object.entries(presetFieldUpdates).forEach(([fieldKey, fieldValue]) => {
+                onChange(fieldKey, fieldValue);
+            });
+        },
+        [onChange]
+    );
+
+    // Additional props for specific field types
+    const additionalProps = {};
+    if (field.type === 'presets') {
+        additionalProps.onPresetSelected = handlePresetSelected;
+        console.log('[FormRenderer] Adding onPresetSelected for presets field:', field.key);
+    } else {
+        console.log('[FormRenderer] Field type check - field:', field.key, 'type:', field.type, 'is presets:', field.type === 'presets');
+    }
+
     return (
         <div className="relative" data-field-type={field.type} data-field-key={field.key}>
             <FieldComponent
@@ -51,6 +71,7 @@ const FieldRenderer = React.memo(({ field, value, onChange, disabled }) => {
                 disabled={disabled || field.disabled}
                 highlightInvalid={hasError}
                 errorMessage={error}
+                {...additionalProps}
             />
         </div>
     );

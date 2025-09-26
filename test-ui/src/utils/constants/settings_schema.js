@@ -46,7 +46,8 @@ export const SETTINGS_SCHEMA = [
             {
                 key: 'gdrive_list',
                 label: 'Google Drive List',
-                type: 'gdrive_custom',
+                type: 'object_array',
+                displayType: 'gdrive',
                 required: false,
                 description: 'Each entry contains id, location, and name.',
 
@@ -54,7 +55,12 @@ export const SETTINGS_SCHEMA = [
                     {
                         key: 'preset',
                         label: 'Gdrive Presets',
-                        type: 'gdrive_presets',
+                        type: 'presets',
+                        presetType: 'gdrive',
+                        presetUrl: 'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/CL2K/presets.json',
+                        identifierField: 'name',
+                        moduleConfigKey: 'gdrive_list',
+                        targetFields: ['name', 'id'],
                         required: false,
                         exclude_on_save: true,
                         description: 'Select a preset configuration for Google Drive.',
@@ -234,14 +240,19 @@ export const SETTINGS_SCHEMA = [
             {
                 key: 'holidays',
                 label: 'Holidays',
-                type: 'replacerr_custom',
+                type: 'object_array',
+                displayType: 'replacerr',
 
                 description: 'Add holiday color overrides.',
                 fields: [
                     {
                         key: 'preset',
                         label: 'Holiday Presets',
-                        type: 'holiday_presets',
+                        type: 'presets',
+                        presetType: 'holiday',
+                        identifierField: 'name',
+                        moduleConfigKey: 'holidays',
+                        targetFields: ['name', 'schedule', 'colors'],
                         description: 'Select a preset for holiday color overrides.',
                         presetHandler: true,
                     },
@@ -293,7 +304,8 @@ export const SETTINGS_SCHEMA = [
             {
                 key: 'instances_list',
                 label: 'Instances List',
-                type: 'upgradinatorr_custom',
+                type: 'object_array',
+                displayType: 'upgradinatorr',
 
                 description: 'List of instance configs.',
                 fields: [
@@ -501,7 +513,8 @@ export const SETTINGS_SCHEMA = [
             {
                 key: 'mappings',
                 label: 'Mappings',
-                type: 'labelarr_custom',
+                type: 'object_array',
+                displayType: 'labelarr',
 
                 description: 'Mappings of app_type, app_instance, labels, plex_instances.',
                 fields: [

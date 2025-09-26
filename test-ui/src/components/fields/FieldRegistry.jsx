@@ -44,11 +44,13 @@ const FIELD_COMPONENTS = {
 
     // Date/Schedule fields
     holiday_schedule: SelectFields.DateRangeField,
-    holiday_presets: CustomFields.HolidayPresetsField,
+
+    // New unified presets field
+    presets: CustomFields.PresetsField,
 
     gdrive_custom: CustomFields.GDriveCustomField,
-    gdrive_presets: CustomFields.GDrivePresetsField,
 
+    object_array: CustomFields.ArrayObjectField,
     replacerr_custom: CustomFields.ReplacerCustomField,
     upgradinatorr_custom: CustomFields.UpgradinatorCustomField,
     labelarr_custom: CustomFields.LabelarrCustomField,
@@ -111,9 +113,9 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'dirlist',
     'dirlist_dragdrop',
     'dirlist_options',
-    'gdrive_presets',
-    'holiday_presets',
+    'presets',
     'holiday_schedule',
+    'object_array',
     'instances',
     'tag_input',
     'tag_display',

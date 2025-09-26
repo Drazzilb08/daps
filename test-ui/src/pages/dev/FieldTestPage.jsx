@@ -173,6 +173,43 @@ const FieldTester = React.memo(({
             baseConfig.description = 'Testing tag display field in read-only mode';
         }
 
+        // Add configuration for presets fields
+        if (fieldType === 'presets') {
+            baseConfig.presetType = 'holiday'; // Default to holiday presets for testing
+            baseConfig.identifierField = 'name';
+            baseConfig.moduleConfigKey = 'holidays';
+            baseConfig.targetFields = ['name', 'schedule', 'colors'];
+            baseConfig.placeholder = 'Select a preset...';
+            baseConfig.description = 'Testing unified PresetsField with holiday preset configuration (schema-driven)';
+        }
+
+        // Add configuration for object_array fields
+        if (fieldType === 'object_array') {
+            baseConfig.displayType = 'replacerr'; // Use holiday mapping display for testing
+            baseConfig.fields = [
+                {
+                    key: 'name',
+                    type: 'text',
+                    label: 'Holiday Name',
+                    required: true,
+                    placeholder: 'Enter holiday name...'
+                },
+                {
+                    key: 'colors',
+                    type: 'color_list',
+                    label: 'Color Palette',
+                    description: 'Colors to use for this holiday mapping'
+                },
+                {
+                    key: 'schedule',
+                    type: 'text',
+                    label: 'Schedule Period',
+                    placeholder: 'e.g., 2024-12-20 to 2024-12-26'
+                }
+            ];
+            baseConfig.description = 'Testing ArrayObjectField with holiday mapping display template and color swatches';
+        }
+
         return baseConfig;
     });
 
@@ -195,6 +232,23 @@ const FieldTester = React.memo(({
         }
         if (fieldType === 'tag_display') {
             return ['action', 'comedy', 'kids']; // Array with sample tags for display
+        }
+        if (fieldType === 'presets') {
+            return ''; // String for preset selection
+        }
+        if (fieldType === 'object_array') {
+            return [
+                {
+                    name: 'Christmas',
+                    colors: ['#ff0000', '#00ff00', '#ffffff'],
+                    schedule: '2024-12-20 to 2024-12-26'
+                },
+                {
+                    name: 'Halloween',
+                    colors: ['#ff8c00', '#000000', '#8b4513'],
+                    schedule: '2024-10-25 to 2024-10-31'
+                }
+            ]; // Array with sample holiday mapping objects
         }
         return ''; // String for most fields
     });
@@ -275,6 +329,43 @@ const FieldTester = React.memo(({
             baseConfig.description = 'Testing tag display field in read-only mode';
         }
 
+        // Add configuration for presets fields
+        if (fieldType === 'presets') {
+            baseConfig.presetType = 'holiday'; // Default to holiday presets for testing
+            baseConfig.identifierField = 'name';
+            baseConfig.moduleConfigKey = 'holidays';
+            baseConfig.targetFields = ['name', 'schedule', 'colors'];
+            baseConfig.placeholder = 'Select a preset...';
+            baseConfig.description = 'Testing unified PresetsField with holiday preset configuration (schema-driven)';
+        }
+
+        // Add configuration for object_array fields
+        if (fieldType === 'object_array') {
+            baseConfig.displayType = 'replacerr'; // Use holiday mapping display for testing
+            baseConfig.fields = [
+                {
+                    key: 'name',
+                    type: 'text',
+                    label: 'Holiday Name',
+                    required: true,
+                    placeholder: 'Enter holiday name...'
+                },
+                {
+                    key: 'colors',
+                    type: 'color_list',
+                    label: 'Color Palette',
+                    description: 'Colors to use for this holiday mapping'
+                },
+                {
+                    key: 'schedule',
+                    type: 'text',
+                    label: 'Schedule Period',
+                    placeholder: 'e.g., 2024-12-20 to 2024-12-26'
+                }
+            ];
+            baseConfig.description = 'Testing ArrayObjectField with holiday mapping display template and color swatches';
+        }
+
         setTestConfig(baseConfig);
 
         // Reset test value based on field type
@@ -290,6 +381,21 @@ const FieldTester = React.memo(({
             setTestValue([]); // Array for tag input field
         } else if (fieldType === 'tag_display') {
             setTestValue(['action', 'comedy', 'kids']); // Array with sample tags for display
+        } else if (fieldType === 'presets') {
+            setTestValue(''); // String for preset selection
+        } else if (fieldType === 'object_array') {
+            setTestValue([
+                {
+                    name: 'Christmas',
+                    colors: ['#ff0000', '#00ff00', '#ffffff'],
+                    schedule: '2024-12-20 to 2024-12-26'
+                },
+                {
+                    name: 'Halloween',
+                    colors: ['#ff8c00', '#000000', '#8b4513'],
+                    schedule: '2024-10-25 to 2024-10-31'
+                }
+            ]); // Array with sample holiday mapping objects
         } else {
             setTestValue(''); // String for most fields
         }
@@ -307,19 +413,49 @@ const FieldTester = React.memo(({
 
     // Test form schema with error injection for testing
     const testSchema = useMemo(
-        () => ({
-            label: `${fieldType} Field Test`,
-            fields: [testField],
-        }),
-        [testField]
+        () => {
+            const baseSchema = {
+                label: `${fieldType} Field Test`,
+                fields: [testField],
+            };
+
+            // For presets field, add target fields that can be populated
+            if (fieldType === 'presets') {
+                const targetFields = testConfig.targetFields || [];
+                const additionalFields = targetFields.map(fieldKey => ({
+                    key: fieldKey,
+                    type: fieldKey === 'colors' ? 'color_list' : 'text',
+                    label: fieldKey.charAt(0).toUpperCase() + fieldKey.slice(1),
+                    placeholder: `Enter ${fieldKey}...`,
+                    description: `This field will be populated when a preset is selected`,
+                }));
+
+                baseSchema.fields = [testField, ...additionalFields];
+            }
+
+            return baseSchema;
+        },
+        [testField, fieldType, testConfig.targetFields]
     );
 
     // Test form values with error state simulation
     const testFormValues = useMemo(
-        () => ({
-            [`test_${fieldType}`]: testValue,
-        }),
-        [fieldType, testValue]
+        () => {
+            const baseValues = {
+                [`test_${fieldType}`]: testValue,
+            };
+
+            // For presets field, add default values for target fields
+            if (fieldType === 'presets') {
+                const targetFields = testConfig.targetFields || [];
+                targetFields.forEach(fieldKey => {
+                    baseValues[fieldKey] = fieldKey === 'colors' ? [] : '';
+                });
+            }
+
+            return baseValues;
+        },
+        [fieldType, testValue, testConfig.targetFields]
     );
 
     // Error state simulation - inject error if showError is true

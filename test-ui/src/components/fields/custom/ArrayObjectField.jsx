@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primitives';
-import { RemoveButton, AddButton, EmptyState } from '../features/shared';
+import { RemoveButton, AddButton, EmptyState, ColorSwatches } from '../features/shared';
 import { FieldRegistry } from '../FieldRegistry';
+
 
 /**
  * Unified ArrayObjectField - Replaces gdrive_custom, replacerr_custom, upgradinatorr_custom, labelarr_custom
@@ -28,7 +29,7 @@ export const ArrayObjectField = ({
     const inputId = `field-${field.key}`;
 
     // Get display template for this field type
-    const displayTemplate = getDisplayTemplate(field.type || field.displayType);
+    const displayTemplate = getDisplayTemplate(field.displayType || field.type);
 
     const handleAdd = useCallback(() => {
         const newIndex = value.length;
@@ -37,9 +38,15 @@ export const ArrayObjectField = ({
     }, [value.length]);
 
     const handleEdit = useCallback((index) => {
-        setExpandedIndex(index);
-        setEditingData({ ...value[index] });
-    }, [value]);
+        // Toggle behavior: if clicking on already expanded item, close it
+        if (expandedIndex === index) {
+            setExpandedIndex(null);
+            setEditingData({});
+        } else {
+            setExpandedIndex(index);
+            setEditingData({ ...value[index] });
+        }
+    }, [value, expandedIndex]);
 
     const handleSave = useCallback(() => {
         if (expandedIndex === null) return;
@@ -79,8 +86,18 @@ export const ArrayObjectField = ({
         }));
     }, []);
 
+    // Handle preset selection for fields that support multi-field updates
+    const handlePresetSelected = useCallback((presetFieldUpdates) => {
+        console.log('[ArrayObjectField] handlePresetSelected called with:', presetFieldUpdates);
+        setEditingData(prev => ({
+            ...prev,
+            ...presetFieldUpdates
+        }));
+    }, []);
+
     const renderDisplayItem = (item, index) => {
         const { primary, secondary, badge } = displayTemplate.display(item);
+        const isExpanded = expandedIndex === index;
 
         return (
             <div key={index} className="border-b border-border last:border-b-0">
@@ -106,7 +123,12 @@ export const ArrayObjectField = ({
                         )}
                         {badge && (
                             <div className="inline-flex items-center px-2 py-0.5 bg-accent-bg text-accent-text rounded text-xs font-medium whitespace-nowrap self-start md:ml-auto md:flex-shrink-0">
-                                {badge}
+                                {/* Show color swatches for items with colors array */}
+                                {item.colors && Array.isArray(item.colors) ? (
+                                    <ColorSwatches colors={item.colors} size="sm" maxDisplay={3} />
+                                ) : (
+                                    badge
+                                )}
                             </div>
                         )}
                     </div>
@@ -121,6 +143,9 @@ export const ArrayObjectField = ({
                         />
                     </div>
                 </div>
+
+                {/* Render edit form directly below this item if expanded */}
+                {isExpanded && renderEditForm()}
             </div>
         );
     };
@@ -143,6 +168,14 @@ export const ArrayObjectField = ({
                     {field.fields.map((subField) => {
                         const FieldComponent = getFieldComponent(subField.type);
 
+                        // Additional props for specific field types
+                        const additionalProps = {};
+                        if (subField.type === 'presets') {
+                            additionalProps.onPresetSelected = handlePresetSelected;
+                            additionalProps.moduleConfig = value; // Pass current array as moduleConfig for duplicate detection
+                            console.log('[ArrayObjectField] Adding onPresetSelected for presets field:', subField.key);
+                        }
+
                         return (
                             <div key={subField.key}>
                                 <FieldComponent
@@ -150,6 +183,7 @@ export const ArrayObjectField = ({
                                     value={editingData[subField.key] || ''}
                                     onChange={(value) => handleFieldChange(subField.key, value)}
                                     disabled={disabled}
+                                    {...additionalProps}
                                 />
                             </div>
                         );
@@ -196,8 +230,8 @@ export const ArrayObjectField = ({
                     </div>
                 )}
 
-                {/* Edit form (accordion style) */}
-                {renderEditForm()}
+                {/* Add form (only show when adding new item at bottom) */}
+                {expandedIndex !== null && expandedIndex >= value.length && renderEditForm()}
 
                 {/* Add button */}
                 {expandedIndex === null && (
@@ -231,11 +265,22 @@ const DISPLAY_TEMPLATES = {
     },
     replacerr: {
         itemName: 'Holiday Mapping',
-        display: (item) => ({
-            primary: item.name || 'Unknown Holiday',
-            secondary: item.schedule ? `${item.schedule.start} to ${item.schedule.end}` : 'No schedule',
-            badge: item.colors ? `${item.colors.length} colors` : 'No colors'
-        })
+        display: (item) => {
+            let scheduleText = 'No schedule';
+            if (item.schedule) {
+                if (typeof item.schedule === 'string') {
+                    scheduleText = item.schedule;
+                } else if (item.schedule.start && item.schedule.end) {
+                    scheduleText = `${item.schedule.start} to ${item.schedule.end}`;
+                }
+            }
+
+            return {
+                primary: item.name || 'Unknown Holiday',
+                secondary: scheduleText,
+                badge: item.colors ? `${item.colors.length} colors` : 'No colors'
+            };
+        }
     },
     upgradinatorr: {
         itemName: 'Instance Mapping',
@@ -259,16 +304,17 @@ const DISPLAY_TEMPLATES = {
  * Get display template for field type
  */
 function getDisplayTemplate(fieldType) {
-    // Map field types to display templates
+    // Direct mapping for displayType, fallback to legacy custom types
+    if (DISPLAY_TEMPLATES[fieldType]) {
+        return DISPLAY_TEMPLATES[fieldType];
+    }
+
+    // Legacy support for *_custom types
     const typeMapping = {
         'gdrive_custom': 'gdrive',
         'replacerr_custom': 'replacerr',
         'upgradinatorr_custom': 'upgradinatorr',
-        'labelarr_custom': 'labelarr',
-        'object_array_gdrive': 'gdrive',
-        'object_array_holiday': 'replacerr',
-        'object_array_instance': 'upgradinatorr',
-        'object_array_mapping': 'labelarr'
+        'labelarr_custom': 'labelarr'
     };
 
     return DISPLAY_TEMPLATES[typeMapping[fieldType]] || DISPLAY_TEMPLATES.gdrive;

@@ -59,7 +59,6 @@ export const DirListField = React.memo(
         const inputId = `field-${field.key}`;
 
         // Extract field configuration options
-        const maxDirectories = field.max_directories || field.maxDirectories || 20;
         const minDirectories = field.min_directories || field.minDirectories || 1; // Default to 1 for dir lists
         const label = field.label || 'Directories';
 
@@ -79,7 +78,6 @@ export const DirListField = React.memo(
                     invalid={highlightInvalid}
                     baseId={inputId}
                     label={label.toLowerCase()}
-                    maxDirectories={maxDirectories}
                     minDirectories={minDirectories}
                     addButtonText={field.add_button_text || 'Add Directory'}
                     removeButtonText={field.remove_button_text || 'Remove'}

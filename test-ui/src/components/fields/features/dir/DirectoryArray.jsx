@@ -240,7 +240,6 @@ DirectoryItem.displayName = 'DirectoryItem';
  * @param {boolean} props.invalid - Invalid/error state
  * @param {string} props.baseId - Base ID for generating input IDs
  * @param {string} props.label - Label text for ARIA descriptions
- * @param {number} props.maxDirectories - Maximum number of directories allowed
  * @param {number} props.minDirectories - Minimum number of directories required
  * @param {string} props.addButtonText - Text for add button
  * @param {string} props.removeButtonText - Text for remove button
@@ -264,7 +263,6 @@ export const DirectoryArray = React.memo(
         invalid = false,
         baseId,
         label = 'directories',
-        maxDirectories = 20,
         minDirectories = 0,
         addButtonText = 'Add Directory',
         removeButtonText = 'Remove',
@@ -284,11 +282,9 @@ export const DirectoryArray = React.memo(
     }) => {
         // Handle adding a new directory
         const handleAddDirectory = useCallback(() => {
-            if (directories.length >= maxDirectories) return;
-
             const newDirectories = [...directories, ''];
             onChange?.(newDirectories);
-        }, [directories, maxDirectories, onChange]);
+        }, [directories, onChange]);
 
         // Handle removing a directory at specific index
         const handleRemoveDirectory = useCallback(
@@ -323,7 +319,7 @@ export const DirectoryArray = React.memo(
         );
 
 
-        const canAddDirectory = directories.length < maxDirectories && !disabled;
+        const canAddDirectory = !disabled;
         const canRemoveDirectory = index => directories.length > minDirectories && !disabled;
 
         return (
@@ -347,7 +343,7 @@ export const DirectoryArray = React.memo(
                                 disabled={!canAddDirectory}
                                 text={addButtonText}
                                 itemType="directory"
-                                disabledReason={`Maximum ${maxDirectories} directories allowed`}
+                                disabledReason="Field is disabled"
                             />
                         </EmptyState>
                     ) : (
@@ -427,20 +423,9 @@ export const DirectoryArray = React.memo(
                             disabled={!canAddDirectory}
                             text={addButtonText}
                             itemType="directory"
-                            disabledReason={`Maximum ${maxDirectories} directories allowed`}
+                            disabledReason="Field is disabled"
                         />
 
-                        {maxDirectories && (
-                            <ItemCounter
-                                current={directories.length}
-                                total={maxDirectories}
-                                itemType="directory"
-                                itemTypePlural="directories"
-                                format="fraction"
-                                showWarning={true}
-                                warningThreshold={0.8}
-                            />
-                        )}
                     </div>
                 )}
             </div>

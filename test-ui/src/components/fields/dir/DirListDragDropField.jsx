@@ -113,7 +113,6 @@ export const DirListDragDropField = React.memo(({
     const inputId = `field-${field.key}`;
 
     // Extract field configuration options
-    const maxDirectories = field.max_directories || field.maxDirectories || 20;
     const minDirectories = field.min_directories || field.minDirectories || 1;
     const label = field.label || 'Directories';
     const addButtonText = field.add_button_text || 'Add Directory';
@@ -147,7 +146,6 @@ export const DirListDragDropField = React.memo(({
                         invalid={highlightInvalid}
                         baseId={inputId}
                         label={label}
-                        maxDirectories={maxDirectories}
                         minDirectories={minDirectories}
                         addButtonText={addButtonText}
                         removeButtonText={removeButtonText}

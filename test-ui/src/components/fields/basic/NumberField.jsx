@@ -58,7 +58,7 @@ export const NumberField = React.memo(
             onChange(newValue);
         }, [numValue, step, max, onChange]);
 
-        const inputId = `field-${field.key}`;
+        const inputId = field.id || `field-${field.key}`;
         const decrementDisabled = disabled || (min !== undefined && numValue <= min);
         const incrementDisabled = disabled || (max !== undefined && numValue >= max);
 
@@ -88,7 +88,7 @@ export const NumberField = React.memo(
                         placeholder={field.placeholder}
                         invalid={highlightInvalid}
                         className="flex-1 border-t border-b border-l-0 border-r-0 border-default bg-input text-center"
-                        aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+                        aria-describedby={`${field.descId || `${inputId}-desc`} ${field.errorId || `${inputId}-error`}`.trim()}
                         aria-invalid={highlightInvalid}
                     />
 
@@ -103,8 +103,8 @@ export const NumberField = React.memo(
                     </FieldButton>
                 </div>
 
-                <FieldDescription id={`${inputId}-desc`} description={field.description} />
-                <FieldError id={`${inputId}-error`} message={errorMessage} />
+                <FieldDescription id={field.descId || `${inputId}-desc`} description={field.description} />
+                <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
             </FieldWrapper>
         );
     }

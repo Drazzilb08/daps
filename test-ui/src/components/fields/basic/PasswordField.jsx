@@ -25,7 +25,7 @@ export const PasswordField = React.memo(
             setShowPassword(prev => !prev);
         }, []);
 
-        const inputId = `field-${field.key}`;
+        const inputId = field.id || `field-${field.key}`;
         const inputValue = value || '';
 
         return (
@@ -46,7 +46,7 @@ export const PasswordField = React.memo(
                         onChange={handleChange}
                         invalid={highlightInvalid}
                         autoComplete="current-password"
-                        aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+                        aria-describedby={`${field.descId || `${inputId}-desc`} ${field.errorId || `${inputId}-error`}`.trim()}
                         aria-invalid={highlightInvalid}
                         className="flex-1 border border-r-0 border-default bg-input rounded-l-md"
                     />
@@ -66,8 +66,8 @@ export const PasswordField = React.memo(
                     </FieldButton>
                 </div>
 
-                <FieldDescription id={`${inputId}-desc`} description={field.description} />
-                <FieldError id={`${inputId}-error`} message={errorMessage} />
+                <FieldDescription id={field.descId || `${inputId}-desc`} description={field.description} />
+                <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
             </FieldWrapper>
         );
     }

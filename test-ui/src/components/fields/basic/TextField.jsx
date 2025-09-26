@@ -18,7 +18,7 @@ export const TextField = React.memo(
             [onChange]
         );
 
-        const inputId = `field-${field.key}`;
+        const inputId = field.id || `field-${field.key}`;
 
         return (
             <FieldWrapper invalid={highlightInvalid}>
@@ -36,11 +36,11 @@ export const TextField = React.memo(
                     pattern={field.pattern}
                     onChange={handleChange}
                     invalid={highlightInvalid}
-                    aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+                    aria-describedby={`${field.descId || `${inputId}-desc`} ${field.errorId || `${inputId}-error`}`.trim()}
                     aria-invalid={highlightInvalid}
                 />
-                <FieldDescription id={`${inputId}-desc`} description={field.description} />
-                <FieldError id={`${inputId}-error`} message={errorMessage} />
+                <FieldDescription id={field.descId || `${inputId}-desc`} description={field.description} />
+                <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
             </FieldWrapper>
         );
     }

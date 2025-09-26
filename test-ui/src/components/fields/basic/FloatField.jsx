@@ -69,7 +69,7 @@ export const FloatField = React.memo(
             onChange(Math.round((newPercentValue / 100) * 1000) / 1000);
         }, [percentageValue, step, max, onChange]);
 
-        const inputId = `field-${field.key}`;
+        const inputId = field.id || `field-${field.key}`;
         const percentMin = min !== undefined ? min : 0;
         const percentMax = max !== undefined ? max : 100;
         const decrementDisabled = disabled || percentageValue <= percentMin;
@@ -101,7 +101,7 @@ export const FloatField = React.memo(
                         placeholder={field.placeholder}
                         invalid={highlightInvalid}
                         className="flex-1 border-t border-b border-l-0 border-r-0 border-default bg-input text-center"
-                        aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+                        aria-describedby={`${field.descId || `${inputId}-desc`} ${field.errorId || `${inputId}-error`}`.trim()}
                         aria-invalid={highlightInvalid}
                     />
 
@@ -116,8 +116,8 @@ export const FloatField = React.memo(
                     </FieldButton>
                 </div>
 
-                <FieldDescription id={`${inputId}-desc`} description={field.description} />
-                <FieldError id={`${inputId}-error`} message={errorMessage} />
+                <FieldDescription id={field.descId || `${inputId}-desc`} description={field.description} />
+                <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
             </FieldWrapper>
         );
     }

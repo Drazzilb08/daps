@@ -43,7 +43,7 @@ export const CheckboxField = React.memo(
             onChange(e.target.checked);
         }, [onChange, disabled]);
 
-        const inputId = `field-${field.key}`;
+        const inputId = field.id || `field-${field.key}`;
         const isChecked = Boolean(value);
 
         return (
@@ -62,7 +62,7 @@ export const CheckboxField = React.memo(
                     }}
                     aria-pressed={isChecked}
                     aria-disabled={disabled}
-                    aria-describedby={errorMessage ? `${inputId}-error` : undefined}
+                    aria-describedby={errorMessage ? field.errorId || `${inputId}-error` : undefined}
                 >
                     {/* Use existing CheckboxBase primitive - WRITE ONCE, USE EVERYWHERE */}
                     <CheckboxBase
@@ -73,7 +73,7 @@ export const CheckboxField = React.memo(
                         disabled={disabled}
                         required={field.required}
                         invalid={highlightInvalid}
-                        ariaDescribedby={errorMessage ? `${inputId}-error` : undefined}
+                        ariaDescribedby={errorMessage ? field.errorId || `${inputId}-error` : undefined}
                     />
 
                     {/* Field content */}
@@ -87,7 +87,7 @@ export const CheckboxField = React.memo(
 
                         {field.description && (
                             <FieldDescription
-                                id={`${inputId}-desc`}
+                                id={field.descId || `${inputId}-desc`}
                                 description={field.description}
                             />
                         )}
@@ -95,7 +95,7 @@ export const CheckboxField = React.memo(
                 </div>
 
                 {errorMessage && (
-                    <FieldError id={`${inputId}-error`} message={errorMessage} />
+                    <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
                 )}
             </FieldWrapper>
         );

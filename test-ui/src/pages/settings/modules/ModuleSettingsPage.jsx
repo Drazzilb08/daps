@@ -168,27 +168,39 @@ const ModuleSettingsContent = () => {
 
       {/* Module accordion */}
       <Accordion>
-        {SETTINGS_SCHEMA.map(module => (
+        {SETTINGS_SCHEMA.map((module, moduleIndex) => (
           <AccordionItem
-            key={module.key}
+            key={`module-${module.key}-${moduleIndex}`}
             title={module.label}
             isExpanded={expandedModules.includes(module.key)}
             onToggle={() => toggleModule(module.key)}
           >
             {module.fields && module.fields.length > 0 ? (
-              <div className="space-y-4">
-                {module.fields.map(field => {
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSave();
+                }}
+                className="space-y-4"
+                noValidate
+              >
+                {module.fields.map((field, fieldIndex) => {
                   try {
                     // Get field component from registry
                     const FieldComponent = FieldRegistry.getField(field.type);
 
                     if (!FieldComponent) {
                       return (
-                        <div key={field.key} className="p-2 bg-warning-bg text-warning rounded">
+                        <div key={`missing-${module.key}-${field.key}-${fieldIndex}`} className="p-2 bg-warning-bg text-warning rounded">
                           Unknown field type: {field.type}
                         </div>
                       );
                     }
+
+                    // Generate unique IDs for this field instance
+                    const uniqueId = `field-${module.key}-${field.key}-${fieldIndex}`;
+                    const errorId = `${uniqueId}-error`;
+                    const descId = `${uniqueId}-desc`;
 
                     // Get field value from current module data - CORRECTED VALUE MAPPING
                     // formData structure is flat: sync_gdrive, poster_renamerr, etc. are direct properties
@@ -229,9 +241,14 @@ const ModuleSettingsContent = () => {
                     }
 
                     return (
-                      <div key={field.key} className="settings-field-row">
+                      <div key={`field-${module.key}-${field.key}-${fieldIndex}`} className="settings-field-row">
                         <FieldComponent
-                          field={field}
+                          field={{
+                            ...field,
+                            id: uniqueId,
+                            errorId,
+                            descId
+                          }}
                           value={fieldValue}
                           onChange={(value) => handleFieldChange(module.key, field.key, value)}
                           disabled={isSaving}
@@ -244,13 +261,13 @@ const ModuleSettingsContent = () => {
                   } catch (error) {
                     console.error(`Error rendering field ${field.key}:`, error);
                     return (
-                      <div key={field.key} className="p-2 bg-warning-bg text-warning rounded">
+                      <div key={`error-${module.key}-${field.key}-${fieldIndex}`} className="p-2 bg-warning-bg text-warning rounded">
                         Field type '{field.type}' error: {error.message}
                       </div>
                     );
                   }
                 })}
-              </div>
+              </form>
             ) : (
               <div className="text-center py-8 text-text-tertiary">
                 <span className="material-symbols-outlined text-4xl mb-2 block">inbox</span>

@@ -5,34 +5,33 @@
      =========================================== */
 
   /* Background hover variants - Complete coverage for all interactive colors */
+  .hover\:bg-primary:hover { background: var(--primary); }
   .hover\:bg-surface:hover { background: var(--surface); }
   .hover\:bg-surface-elevated:hover { background: var(--surface-elevated); }
-  .hover\:bg-surface-hover:hover { background: var(--surface-alt); }
-  .hover\:bg-surface-active:hover { background: var(--surface-alt); }
-  .hover\:bg-surface-variant:hover { background: var(--surface-alt); }
+  .hover\:bg-surface-hover:hover { background: var(--surface-hover); }
+  .hover\:bg-surface-active:hover { background: var(--surface-active); }
   .hover\:bg-surface-alt:hover { background: var(--surface-alt); }
+  .hover\:bg-surface-variant:hover { background: var(--surface-alt); }
   .hover\:bg-surface-secondary:hover { background: var(--surface-alt); }
+  .hover\:bg-success:hover { background: var(--success); }
+  .hover\:bg-warning:hover { background: var(--warning); }
+  .hover\:bg-error:hover { background: var(--error); }
+  .hover\:bg-transparent:hover { background: transparent; }
 
   /* Primary/accent hover variants */
-  .hover\:bg-primary:hover { background: var(--primary); }
   .hover\:bg-primary-hover:hover { background: var(--focus); }
   .hover\:bg-primary-subtle:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
   .hover\:bg-primary-surface:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
 
   /* State color hover variants */
-  .hover\:bg-success:hover { background: var(--success); }
   .hover\:bg-success-subtle:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
   .hover\:bg-success-surface:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
 
-  .hover\:bg-warning:hover { background: var(--warning); }
   .hover\:bg-warning-subtle:hover { background: color-mix(in srgb, var(--warning) 20%, transparent); }
   .hover\:bg-warning-surface:hover { background: color-mix(in srgb, var(--warning) 20%, transparent); }
 
-  .hover\:bg-error:hover { background: var(--error); }
   .hover\:bg-error-subtle:hover { background: color-mix(in srgb, var(--error) 10%, transparent); }
   .hover\:bg-danger-surface:hover { background: color-mix(in srgb, var(--error) 10%, transparent); }
-
-  .hover\:bg-transparent:hover { background: transparent; }
 
   /* Border hover variants - Complete coverage */
   .hover\:border-primary:hover { border-color: var(--primary); }
@@ -41,11 +40,20 @@
   .hover\:border-error:hover { border-color: var(--error); }
   .hover\:border-transparent:hover { border-color: transparent; }
 
-  /* Text hover variants */
+  /* Fill hover utilities for icons */
+  .hover\:fill-primary:hover { fill: var(--primary); }
+  .hover\:fill-text:hover { fill: var(--text-primary); }
+  .hover\:fill-success:hover { fill: var(--success); }
+  .hover\:fill-error:hover { fill: var(--error); }
+
+  /* Text hover variants - consolidated from other files */
   .hover\:text-primary:hover { color: var(--primary); }
+  .hover\:text-text-primary:hover { color: var(--text-primary); }
+  .hover\:text-secondary:hover { color: var(--text-secondary); }
   .hover\:text-success:hover { color: var(--success); }
   .hover\:text-warning:hover { color: var(--warning); }
   .hover\:text-error:hover { color: var(--error); }
+  .hover\:text-white:hover { color: #fff; }
   .hover\:text-inherit:hover { color: inherit; }
 
   /* Transform hover variants */

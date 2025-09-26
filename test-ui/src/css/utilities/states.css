@@ -23,7 +23,6 @@
      =========================================== */
 
   .hover\:bg-surface-hover:hover { background: var(--surface-alt); }
-  .hover\:text-primary:hover { color: var(--text-primary); }
 
   /* ===========================================
      FOCUS STATE UTILITIES

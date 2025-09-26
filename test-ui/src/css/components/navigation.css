@@ -85,7 +85,6 @@
   }
 
   .nav-link--child-active {
-    color: var(--primary);
     font-weight: 600;
   }
 

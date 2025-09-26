@@ -165,37 +165,7 @@
      HOVER STATE COLOR UTILITIES
      =========================================== */
 
-  /* Background hover utilities */
-  .hover\:bg-primary:hover { background: var(--primary); }
-  .hover\:bg-surface:hover { background: var(--surface); }
-  .hover\:bg-surface-hover:hover { background: var(--surface-hover); }
-  .hover\:bg-surface-active:hover { background: var(--surface-active); }
-  .hover\:bg-surface-alt:hover { background: var(--surface-alt); }
-  .hover\:bg-success:hover { background: var(--success); }
-  .hover\:bg-warning:hover { background: var(--warning); }
-  .hover\:bg-error:hover { background: var(--error); }
-  .hover\:bg-transparent:hover { background: transparent; }
-
-  /* Text hover utilities */
-  .hover\:text-primary:hover { color: var(--primary); }
-  .hover\:text-secondary:hover { color: var(--text-secondary); }
-  .hover\:text-success:hover { color: var(--success); }
-  .hover\:text-warning:hover { color: var(--warning); }
-  .hover\:text-error:hover { color: var(--error); }
-  .hover\:text-white:hover { color: #fff; }
-
-  /* Border hover utilities */
-  .hover\:border-primary:hover { border-color: var(--primary); }
-  .hover\:border-success:hover { border-color: var(--success); }
-  .hover\:border-warning:hover { border-color: var(--warning); }
-  .hover\:border-error:hover { border-color: var(--error); }
-  .hover\:border-transparent:hover { border-color: transparent; }
-
-  /* Fill hover utilities for icons */
-  .hover\:fill-primary:hover { fill: var(--primary); }
-  .hover\:fill-text:hover { fill: var(--text-primary); }
-  .hover\:fill-success:hover { fill: var(--success); }
-  .hover\:fill-error:hover { fill: var(--error); }
+  /* ALL HOVER UTILITIES MOVED TO interactions.css FOR PROPER SEPARATION OF CONCERNS */
 
   /* ===========================================
      FOCUS STATE COLOR UTILITIES

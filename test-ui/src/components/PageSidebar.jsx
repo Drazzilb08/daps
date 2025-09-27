@@ -94,6 +94,16 @@ const NAVIGATION_STRUCTURE = [
                 label: 'Modules',
                 path: '/settings/modules',
             
+            },
+            {
+                id: 'settings-interface',
+                label: 'Interface',
+                path: '/settings/interface',
+            },
+            {
+                id: 'settings-general',
+                label: 'General',
+                path: '/settings/general'
             }
         ],
     },

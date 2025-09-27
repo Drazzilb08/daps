@@ -606,48 +606,6 @@ export const SETTINGS_SCHEMA = [
         ],
     },
 
-    {
-        key: 'general',
-        label: 'General',
-        fields: [
-            {
-                key: 'log_level',
-                label: 'Log Level',
-                type: 'dropdown',
-                options: ['debug', 'info'],
-                required: true,
-                description: 'Set the logging verbosity for general settings.',
-            },
-            {
-                key: 'max_logs',
-                label: 'Maximum Logs',
-                type: 'number',
-                placeholder: '9',
-                required: true,
-                description: 'Set the maximum number of logs to keep.',
-            },
-            {
-                key: 'update_notifications',
-                label: 'Update Notifications',
-                type: 'check_box',
-                description: 'Enable notifications for available updates.',
-            },
-        ],
-    },
-    {
-        key: 'user_interface',
-        label: 'User Interface',
-        fields: [
-            {
-                key: 'theme',
-                label: 'Theme',
-                type: 'dropdown',
-                options: ['auto', 'dark', 'light'],
-                required: true,
-                description: 'Choose the UI theme. Auto follows your system preference.',
-            },
-        ],
-    },
 ];
 
 export const SETTINGS_MODULES = [
@@ -703,6 +661,4 @@ export const SETTINGS_MODULES = [
         description: 'Remove Radarr/Sonarr entries that are no longer in sync with TMDb/TVDb',
     },
     { name: 'Jduparr', key: 'jduparr', description: 'Find and handle duplicates in your files.' },
-    { name: 'UI', key: 'user_interface', description: 'User Interface Settings.' },
-    { name: 'General', key: 'general', description: 'General DAPS settings.' },
 ];

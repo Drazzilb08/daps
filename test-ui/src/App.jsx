@@ -15,6 +15,8 @@ import SpinnerTestPage from './pages/dev/SpinnerTestPage.jsx';
 import SettingsMockPage from './pages/dev/SettingsMockPage.jsx';
 import ArrayObjectFieldPage from './pages/dev/ArrayObjectFieldPage.jsx';
 import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
+import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
+import UISettingsPage from './pages/settings/UISettingsPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -173,54 +175,78 @@ const App = () => {
                                                 }
                                             />
 
-                                            {/* Settings Section - Hierarchical Routes */}
+                                            {/* Settings Section - Direct Routes */}
                                             <Route
-                                                path="settings"
+                                                path="settings/general"
                                                 element={
-                                                    <div className="grid gap-12 max-w-full">
-                                                        <h1>Settings</h1>
-                                                        <p>Configuration and system settings</p>
-                                                    </div>
+                                                    <PageErrorBoundary
+                                                        pageName="General Settings"
+                                                        pageDescription="General DAPS application settings"
+                                                    >
+                                                        <GeneralSettingsPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="settings/interface"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="User Interface Settings"
+                                                        pageDescription="UI theme and appearance settings"
+                                                    >
+                                                        <UISettingsPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="settings/modules"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Module Settings"
+                                                        pageDescription="Module-specific configuration settings"
+                                                    >
+                                                        <ModuleSettingsPage />
+                                                    </PageErrorBoundary>
                                                 }
                                             />
                                             <Route
                                                 path="settings/schedule"
                                                 element={
-                                                    <div className="grid gap-12 max-w-full">
-                                                        <h1>Schedule Settings</h1>
-                                                        <p>
-                                                            Configure job scheduling and automation
-                                                        </p>
+                                                    <div className="p-4 md:p-6 max-w-4xl mx-auto">
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Schedule Settings</h1>
+                                                        <p className="text-sm md:text-base text-text-secondary mb-6">Configure job scheduling and automation</p>
+                                                        <div className="text-center py-8 text-text-tertiary">
+                                                            <span className="material-symbols-outlined text-4xl mb-2 block">schedule</span>
+                                                            <p>Schedule configuration coming soon</p>
+                                                        </div>
                                                     </div>
                                                 }
                                             />
                                             <Route
                                                 path="settings/instances"
                                                 element={
-                                                    <div className="grid gap-12 max-w-full">
-                                                        <h1>Instance Settings</h1>
-                                                        <p>
-                                                            Configure service instances and
-                                                            connections
-                                                        </p>
+                                                    <div className="p-4 md:p-6 max-w-4xl mx-auto">
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Instance Settings</h1>
+                                                        <p className="text-sm md:text-base text-text-secondary mb-6">Configure service instances and connections</p>
+                                                        <div className="text-center py-8 text-text-tertiary">
+                                                            <span className="material-symbols-outlined text-4xl mb-2 block">hub</span>
+                                                            <p>Instance configuration coming soon</p>
+                                                        </div>
                                                     </div>
                                                 }
                                             />
                                             <Route
                                                 path="settings/notifications"
                                                 element={
-                                                    <div className="grid gap-12 max-w-full">
-                                                        <h1>Notification Settings</h1>
-                                                        <p>
-                                                            Configure notification providers and
-                                                            alerts
-                                                        </p>
+                                                    <div className="p-4 md:p-6 max-w-4xl mx-auto">
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Notification Settings</h1>
+                                                        <p className="text-sm md:text-base text-text-secondary mb-6">Configure notification providers and alerts</p>
+                                                        <div className="text-center py-8 text-text-tertiary">
+                                                            <span className="material-symbols-outlined text-4xl mb-2 block">notifications</span>
+                                                            <p>Notification configuration coming soon</p>
+                                                        </div>
                                                     </div>
                                                 }
-                                            />
-                                            <Route
-                                                path="settings/modules"
-                                                element={<ModuleSettingsPage />}
                                             />
                                             {/* Logs Route */}
                                             <Route

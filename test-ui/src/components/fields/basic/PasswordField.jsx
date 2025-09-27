@@ -48,7 +48,7 @@ export const PasswordField = React.memo(
                         autoComplete="current-password"
                         aria-describedby={`${field.descId || `${inputId}-desc`} ${field.errorId || `${inputId}-error`}`.trim()}
                         aria-invalid={highlightInvalid}
-                        className="flex-1 border border-r-0 border-default bg-input rounded-l-md"
+                        className="flex-1 border border-default bg-input rounded-l-md"
                     />
 
                     <FieldButton

@@ -72,7 +72,7 @@ export const NumberField = React.memo(
                         disabled={decrementDisabled}
                         ariaLabel={`Decrease ${field.label}`}
                         variant="left"
-                        className="text-accent"
+                        className="text-brand-primary"
                     >
                         <span className="material-symbols-outlined text-lg">remove</span>
                     </FieldButton>
@@ -97,7 +97,7 @@ export const NumberField = React.memo(
                         disabled={incrementDisabled}
                         ariaLabel={`Increase ${field.label}`}
                         variant="right"
-                        className="text-accent"
+                        className="text-brand-primary"
                     >
                         <span className="material-symbols-outlined text-lg">add</span>
                     </FieldButton>

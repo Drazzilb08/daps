@@ -56,9 +56,10 @@ export const PasswordField = React.memo(
                         disabled={disabled}
                         ariaLabel={showPassword ? 'Hide password' : 'Show password'}
                         variant="right"
+                        className="text-brand-primary"
                     >
                         <span
-                            className="material-symbols-outlined text-accent text-base leading-none"
+                            className="material-symbols-outlined text-lg"
                             aria-hidden="true"
                         >
                             {showPassword ? 'visibility_off' : 'visibility'}

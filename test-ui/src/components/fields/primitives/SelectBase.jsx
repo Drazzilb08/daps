@@ -105,7 +105,7 @@ export const SelectBase = React.memo(
                 </select>
                 {/* Dropdown chevron icon using Material Design icon */}
                 <span
-                    className={`material-symbols-outlined absolute top-1/2 right-3 pointer-events-none transition-colors -translate-y-1/2 text-accent leading-none ${disabled ? 'text-tertiary' : 'text-secondary'}`}
+                    className={`material-symbols-outlined absolute top-1/2 right-3 pointer-events-none transition-colors -translate-y-1/2 text-brand-primary leading-none ${disabled ? 'text-tertiary' : 'text-secondary'}`}
                     aria-hidden="true"
                 >
                     keyboard_arrow_down

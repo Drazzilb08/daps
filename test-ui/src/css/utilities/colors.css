@@ -59,7 +59,8 @@
   .text-primary { color: var(--text-primary); }
   .text-secondary { color: var(--text-secondary); }
   .text-tertiary { color: var(--text-tertiary); }
-  .text-accent { color: var(--primary); }
+  .text-brand-primary { color: var(--primary); }
+  .text-accent { color: var(--accent); }
   .text-sidebar-secondary { color: var(--sidebar-text-secondary); }
 
   /* State text colors */

@@ -237,7 +237,7 @@ const PageSidebar = React.memo(() => {
                                                         onClick={handleChildNavLinkClick}
                                                         className={`flex items-center py-2 px-4 pl-10 no-underline text-sm font-normal transition-all duration-150 touch-target relative nav-link--child-in-active-section hover:text-primary ${
                                                             isChildActive(child.path)
-                                                                ? 'nav-link--child-active text-accent'
+                                                                ? 'nav-link--child-active text-brand-primary'
                                                                 : 'text-sidebar-secondary'
                                                         }`}
                                                         aria-current={

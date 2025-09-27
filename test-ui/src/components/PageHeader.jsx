@@ -102,7 +102,7 @@ const PageHeader = React.memo(() => {
                             height="32"
                         />
                         <h1 className="max-md:hidden flex flex-col leading-tight m-0">
-                            <span className="text-xl font-bold text-accent">DAPS</span>
+                            <span className="text-xl font-bold text-brand-primary">DAPS</span>
                             <span className="text-sm text-primary font-medium opacity-75">Media Automation</span>
                         </h1>
                     </Link>

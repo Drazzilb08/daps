@@ -75,7 +75,7 @@ const SortableDirectoryItem = React.memo(({
             {/* Non-touch devices: Drag Handle (left side) */}
             {enableReordering && !isTouch && (
                 <div
-                    className="flex items-center justify-center w-11 h-11 text-accent cursor-grab hover:text-primary transition-colors touch-target flex-shrink-0"
+                    className="flex items-center justify-center w-11 h-11 text-brand-primary cursor-grab hover:text-primary transition-colors touch-target flex-shrink-0"
                     {...attributes}
                     {...listeners}
                 >

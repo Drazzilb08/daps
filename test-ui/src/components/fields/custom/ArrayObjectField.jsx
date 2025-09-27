@@ -5,7 +5,7 @@ import { FieldRegistry } from '../FieldRegistry';
 
 
 /**
- * Unified ArrayObjectField - Replaces gdrive_custom, replacerr_custom, upgradinatorr_custom, labelarr_custom
+ * Unified ArrayObjectField - Handles dynamic array of objects with configurable schemas
  * Uses accordion-style expansion for mobile-first design without modal dependency
  * @param {Object} props - Component props
  * @param {Object} props.field - Field configuration with schema for object fields
@@ -304,20 +304,13 @@ const DISPLAY_TEMPLATES = {
  * Get display template for field type
  */
 function getDisplayTemplate(fieldType) {
-    // Direct mapping for displayType, fallback to legacy custom types
+    // Direct mapping for displayType
     if (DISPLAY_TEMPLATES[fieldType]) {
         return DISPLAY_TEMPLATES[fieldType];
     }
 
-    // Legacy support for *_custom types
-    const typeMapping = {
-        'gdrive_custom': 'gdrive',
-        'replacerr_custom': 'replacerr',
-        'upgradinatorr_custom': 'upgradinatorr',
-        'labelarr_custom': 'labelarr'
-    };
-
-    return DISPLAY_TEMPLATES[typeMapping[fieldType]] || DISPLAY_TEMPLATES.gdrive;
+    // Default fallback to gdrive template
+    return DISPLAY_TEMPLATES.gdrive;
 }
 
 /**

@@ -3,7 +3,7 @@ import { ArrayObjectField } from '../../components/fields/custom/ArrayObjectFiel
 
 /**
  * Development page showcasing the unified ArrayObjectField
- * Demonstrates how it replaces gdrive_custom, replacerr_custom, upgradinatorr_custom, labelarr_custom
+ * Demonstrates unified object_array field with different schema configurations
  */
 export default function ArrayObjectFieldPage() {
     // Sample data for each field type
@@ -79,7 +79,7 @@ export default function ArrayObjectFieldPage() {
     const gdriveField = {
         key: 'gdrive_list',
         label: 'Google Drive List',
-        type: 'gdrive_custom',
+        type: 'object_array',
         description: 'Each entry contains id, location, and name.',
         fields: [
             {
@@ -118,7 +118,7 @@ export default function ArrayObjectFieldPage() {
     const replacerField = {
         key: 'holidays',
         label: 'Holidays',
-        type: 'replacerr_custom',
+        type: 'object_array',
         description: 'Add holiday color overrides.',
         fields: [
             {
@@ -156,7 +156,7 @@ export default function ArrayObjectFieldPage() {
     const upgradinatorField = {
         key: 'instances_list',
         label: 'Instance Upgrade Mappings',
-        type: 'upgradinatorr_custom',
+        type: 'object_array',
         description: 'List of instance configs.',
         fields: [
             {
@@ -206,7 +206,7 @@ export default function ArrayObjectFieldPage() {
     const labelarrField = {
         key: 'mappings',
         label: 'ARR to Plex Tag Mappings',
-        type: 'labelarr_custom',
+        type: 'object_array',
         description: 'Mappings of app_type, app_instance, labels, plex_instances.',
         fields: [
             {
@@ -255,7 +255,7 @@ export default function ArrayObjectFieldPage() {
                                 Google Drive Configuration
                             </h2>
                             <p className="text-sm text-secondary mt-1">
-                                Replaces: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">gdrive_custom</code> field type
+                                Schema: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">object_array</code> for Google Drive configuration
                             </p>
                         </div>
                         <div>
@@ -274,7 +274,7 @@ export default function ArrayObjectFieldPage() {
                                 Holiday Border Configuration
                             </h2>
                             <p className="text-sm text-secondary mt-1">
-                                Replaces: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">replacerr_custom</code> field type
+                                Schema: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">object_array</code> for poster replacement configuration
                             </p>
                         </div>
                         <div>
@@ -293,7 +293,7 @@ export default function ArrayObjectFieldPage() {
                                 Instance Upgrade Mappings
                             </h2>
                             <p className="text-sm text-secondary mt-1">
-                                Replaces: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">upgradinatorr_custom</code> field type
+                                Schema: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">object_array</code> for media upgrade configuration
                             </p>
                         </div>
                         <div>
@@ -312,7 +312,7 @@ export default function ArrayObjectFieldPage() {
                                 Tag Synchronization Mappings
                             </h2>
                             <p className="text-sm text-secondary mt-1">
-                                Replaces: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">labelarr_custom</code> field type
+                                Schema: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">object_array</code> for labeling configuration
                             </p>
                         </div>
                         <div>
@@ -369,7 +369,7 @@ export default function ArrayObjectFieldPage() {
                             <pre className="text-xs p-3 bg-surface-alt rounded border overflow-auto">
 {`{
   key: 'gdrive_list',
-  type: 'gdrive_custom',  // ← Remove *_custom pattern
+  type: 'object_array',  // ← Modern unified field type
   fields: [...]
 }`}</pre>
                         </div>

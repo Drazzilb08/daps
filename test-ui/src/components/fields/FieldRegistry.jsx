@@ -48,12 +48,7 @@ const FIELD_COMPONENTS = {
     // New unified presets field
     presets: CustomFields.PresetsField,
 
-    gdrive_custom: CustomFields.GDriveCustomField,
-
     object_array: CustomFields.ArrayObjectField,
-    replacerr_custom: CustomFields.ReplacerCustomField,
-    upgradinatorr_custom: CustomFields.UpgradinatorCustomField,
-    labelarr_custom: CustomFields.LabelarrCustomField,
     instances: CustomFields.InstancesField,
     instance_dropdown: CustomFields.InstanceDropdownField,
     schedule: CustomFields.ScheduleField,

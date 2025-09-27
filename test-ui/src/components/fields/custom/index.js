@@ -17,10 +17,6 @@ export { ArrayObjectField } from './ArrayObjectField.jsx';
 export {
     DirListField,
     InstanceDropdownField,
-    GDriveCustomField,
-    ReplacerCustomField,
-    UpgradinatorCustomField,
-    LabelarrCustomField,
     HolidayScheduleField,
     DirListDragDropField,
     DirListOptionsField,

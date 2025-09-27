@@ -143,10 +143,6 @@ export const getFieldTypeDefaultValue = fieldType => {
         // Custom field defaults
         instance_dropdown: null,
         instances: [],
-        gdrive_custom: {},
-        replacerr_custom: {},
-        upgradinatorr_custom: {},
-        labelarr_custom: {},
         gdrive_presets: null,
         holiday_presets: null,
         holiday_schedule: [],

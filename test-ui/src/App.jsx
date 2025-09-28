@@ -177,6 +177,19 @@ const App = () => {
 
                                             {/* Settings Section - Direct Routes */}
                                             <Route
+                                                path="settings"
+                                                element={
+                                                    <div className="p-4 md:p-6 max-w-4xl mx-auto">
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Settings Splash</h1>
+                                                        <p className="text-sm md:text-base text-text-secondary mb-6">Splash page for all settings links</p>
+                                                        <div className="text-center py-8 text-text-tertiary">
+                                                            <span className="material-symbols-outlined text-4xl mb-2 block">schedule</span>
+                                                            <p>Splash page coming soon</p>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            />
+                                            <Route
                                                 path="settings/general"
                                                 element={
                                                     <PageErrorBoundary

@@ -2,6 +2,8 @@ import { useState, useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primitives';
 import { RemoveButton, AddButton, EmptyState, ColorSwatches } from '../features/shared';
 import { FieldRegistry } from '../FieldRegistry';
+import { shouldShowField, generateInstanceOptions } from '../../../utils/forms/conditionalFields';
+import { useInstancesData } from '../../../hooks/useInstancesData';
 
 
 /**
@@ -25,6 +27,17 @@ export const ArrayObjectField = ({
 }) => {
     const [expandedIndex, setExpandedIndex] = useState(null);
     const [editingData, setEditingData] = useState({});
+
+    // Load instances data for conditional field evaluation and dynamic dropdowns
+    const { instancesData, isLoading: instancesLoading, error: instancesError } = useInstancesData();
+
+    console.log('[ArrayObjectField] Instance data state:', {
+        fieldKey: field.key,
+        hasInstancesData: !!instancesData,
+        instancesLoading,
+        hasInstancesError: !!instancesError,
+        instancesDataKeys: instancesData ? Object.keys(instancesData) : []
+    });
 
     const inputId = `field-${field.key}`;
 
@@ -158,6 +171,18 @@ export const ArrayObjectField = ({
             ? `Edit ${displayTemplate.itemName} ${expandedIndex + 1}`
             : `Add New ${displayTemplate.itemName}`;
 
+        // Prepare API data for conditional field evaluation
+        const apiData = {
+            instances: instancesData
+        };
+
+        console.log('[ArrayObjectField] Rendering edit form with conditional support:', {
+            fieldKey: field.key,
+            totalFields: field.fields.length,
+            editingDataKeys: Object.keys(editingData),
+            hasApiData: !!apiData.instances
+        });
+
         return (
             <div className="border border-border rounded-md bg-surface-alt overflow-hidden animate-slide-down">
                 <div className="p-4 border-b border-border bg-surface">
@@ -165,29 +190,61 @@ export const ArrayObjectField = ({
                 </div>
 
                 <div className="p-4 flex flex-col gap-4">
-                    {field.fields.map((subField) => {
-                        const FieldComponent = getFieldComponent(subField.type);
+                    {field.fields
+                        .filter(subField => shouldShowField(subField, editingData, apiData))
+                        .map((subField) => {
+                            const FieldComponent = getFieldComponent(subField.type);
 
-                        // Additional props for specific field types
-                        const additionalProps = {};
-                        if (subField.type === 'presets') {
-                            additionalProps.onPresetSelected = handlePresetSelected;
-                            additionalProps.moduleConfig = value; // Pass current array as moduleConfig for duplicate detection
-                            console.log('[ArrayObjectField] Adding onPresetSelected for presets field:', subField.key);
-                        }
+                            // Additional props for specific field types
+                            const additionalProps = {};
+                            if (subField.type === 'presets') {
+                                additionalProps.onPresetSelected = handlePresetSelected;
+                                additionalProps.moduleConfig = value; // Pass current array as moduleConfig for duplicate detection
+                                console.log('[ArrayObjectField] Adding onPresetSelected for presets field:', subField.key);
+                            }
 
-                        return (
-                            <div key={subField.key}>
-                                <FieldComponent
-                                    field={subField}
-                                    value={editingData[subField.key] || ''}
-                                    onChange={(value) => handleFieldChange(subField.key, value)}
-                                    disabled={disabled}
-                                    {...additionalProps}
-                                />
-                            </div>
-                        );
-                    })}
+                            // Enhanced dropdown with API integration
+                            let enhancedField = subField;
+                            if (subField.options_source === 'api_instances') {
+                                const instanceOptions = generateInstanceOptions(
+                                    apiData?.instances,
+                                    subField.options_filter,
+                                    false // Don't include placeholder in options array since we set it on field
+                                );
+                                // Create enhanced field with dynamic options and placeholder
+                                enhancedField = {
+                                    ...subField,
+                                    options: instanceOptions,
+                                    placeholder: '— Select instance... —' // Override DropdownField default
+                                };
+                                console.log('[ArrayObjectField] Adding dynamic instance options for field:', {
+                                    fieldKey: subField.key,
+                                    optionsFilter: subField.options_filter,
+                                    optionCount: instanceOptions.length,
+                                    options: instanceOptions
+                                });
+                            }
+
+                            console.log('[ArrayObjectField] Rendering field:', {
+                                fieldKey: subField.key,
+                                fieldType: subField.type,
+                                hasAdditionalProps: Object.keys(additionalProps).length > 0,
+                                additionalPropsKeys: Object.keys(additionalProps),
+                                isVisible: shouldShowField(subField, editingData, apiData)
+                            });
+
+                            return (
+                                <div key={subField.key}>
+                                    <FieldComponent
+                                        field={enhancedField}
+                                        value={editingData[subField.key] || ''}
+                                        onChange={(value) => handleFieldChange(subField.key, value)}
+                                        disabled={disabled}
+                                        {...additionalProps}
+                                    />
+                                </div>
+                            );
+                        })}
                 </div>
 
                 <div className="flex gap-3 p-4 border-t border-border bg-surface justify-end flex-col-reverse md:flex-row">

@@ -312,8 +312,9 @@ export const SETTINGS_SCHEMA = [
                     {
                         key: 'instance',
                         label: 'Instance',
-                        type: 'instance_dropdown',
-                        from: ['radarr', 'sonarr'],
+                        type: 'dropdown',
+                        options_source: 'api_instances',
+                        options_filter: ['radarr', 'sonarr'],
                         required: true,
                         description: 'Select the instance to upgrade (Radarr or Sonarr).',
                     },
@@ -348,7 +349,12 @@ export const SETTINGS_SCHEMA = [
                         label: 'Season Monitored Threshold',
                         type: 'float',
                         required: true,
-                        show_if_instance_type: 'sonarr',
+                        conditional: {
+                            field: 'instance',
+                            condition: 'instance_type_equals',
+                            value: 'sonarr',
+                            api_lookup: 'instances'
+                        },
                         description:
                             'Minimum percentage of monitored seasons required (Sonarr only).',
                     },
@@ -521,8 +527,9 @@ export const SETTINGS_SCHEMA = [
                     {
                         key: 'app_instance',
                         label: 'App Instance',
-                        type: 'instance_dropdown',
-                        from: ['radarr', 'sonarr'],
+                        type: 'dropdown',
+                        options_source: 'api_instances',
+                        options_filter: ['radarr', 'sonarr'],
                         required: true,
                         description: 'Select the specific app instance for this mapping.',
                     },

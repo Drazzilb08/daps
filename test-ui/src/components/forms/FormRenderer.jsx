@@ -13,6 +13,8 @@ import {
     groupFieldsBySections,
     validateSchema,
 } from '../../utils/forms/schemaUtils';
+import { shouldShowField, generateInstanceOptions } from '../../utils/forms/conditionalFields';
+import { useInstancesData } from '../../hooks/useInstancesData';
 
 /**
  * Renders individual field from schema
@@ -22,8 +24,16 @@ import {
  * @param {*} props.value - Current value
  * @param {Function} props.onChange - Change handler
  * @param {boolean} props.disabled - Disabled state
+ * @param {Object} props.formData - Complete form data for conditional evaluation
+ * @param {Object} props.apiData - API data for conditional evaluation
  */
-const FieldRenderer = React.memo(({ field, value, onChange, disabled }) => {
+const FieldRenderer = React.memo(({ field, value, onChange, disabled, formData, apiData }) => {
+    // Conditional field evaluation
+    if (!shouldShowField(field, formData, apiData)) {
+        console.log('[FormRenderer] Hiding field due to conditional evaluation:', field.key);
+        return null;
+    }
+
     const { error, hasError, markTouched } = useFieldValidation(field.key);
 
     // Get field component from registry
@@ -57,9 +67,29 @@ const FieldRenderer = React.memo(({ field, value, onChange, disabled }) => {
     if (field.type === 'presets') {
         additionalProps.onPresetSelected = handlePresetSelected;
         console.log('[FormRenderer] Adding onPresetSelected for presets field:', field.key);
-    } else {
-        console.log('[FormRenderer] Field type check - field:', field.key, 'type:', field.type, 'is presets:', field.type === 'presets');
     }
+
+    // Enhanced dropdown with API integration
+    if (field.options_source === 'api_instances') {
+        const instanceOptions = generateInstanceOptions(
+            apiData?.instances,
+            field.options_filter
+        );
+        additionalProps.options = instanceOptions;
+        console.log('[FormRenderer] Adding dynamic instance options for field:', {
+            fieldKey: field.key,
+            optionsFilter: field.options_filter,
+            optionCount: instanceOptions.length,
+            options: instanceOptions
+        });
+    }
+
+    console.log('[FormRenderer] Field rendering context:', {
+        fieldKey: field.key,
+        fieldType: field.type,
+        hasAdditionalProps: Object.keys(additionalProps).length > 0,
+        additionalPropsKeys: Object.keys(additionalProps)
+    });
 
     return (
         <div className="relative" data-field-type={field.type} data-field-key={field.key}>
@@ -87,8 +117,9 @@ FieldRenderer.displayName = 'FieldRenderer';
  * @param {Object} props.formData - Form data
  * @param {Function} props.onFieldChange - Change handler
  * @param {boolean} props.disabled - Disabled state
+ * @param {Object} props.apiData - API data for conditional evaluation
  */
-const FormSection = React.memo(({ section, formData, onFieldChange, disabled }) => {
+const FormSection = React.memo(({ section, formData, onFieldChange, disabled, apiData }) => {
     const [collapsed, setCollapsed] = useState(section.collapsed || false);
 
     const toggleCollapsed = useCallback(() => {
@@ -128,15 +159,19 @@ const FormSection = React.memo(({ section, formData, onFieldChange, disabled }) 
 
             {(!section.collapsible || !collapsed) && (
                 <div className="gap-3">
-                    {section.fields.map(field => (
-                        <FieldRenderer
-                            key={field.key}
-                            field={field}
-                            value={formData[field.key]}
-                            onChange={onFieldChange}
-                            disabled={disabled}
-                        />
-                    ))}
+                    {section.fields
+                        .filter(field => shouldShowField(field, formData, apiData))
+                        .map(field => (
+                            <FieldRenderer
+                                key={field.key}
+                                field={field}
+                                value={formData[field.key]}
+                                onChange={onFieldChange}
+                                disabled={disabled}
+                                formData={formData}
+                                apiData={apiData}
+                            />
+                        ))}
                 </div>
             )}
         </div>
@@ -171,6 +206,15 @@ export const FormRenderer = React.memo(
         options = {},
         className = '',
     }) => {
+        // Load instances data for conditional field evaluation and dynamic dropdowns
+        const { instancesData, isLoading: instancesLoading, error: instancesError } = useInstancesData();
+
+        console.log('[FormRenderer] Instance data state:', {
+            hasInstancesData: !!instancesData,
+            instancesLoading,
+            hasInstancesError: !!instancesError,
+            instancesDataKeys: instancesData ? Object.keys(instancesData) : []
+        });
         // Parse and validate schema
         const schema = useMemo(() => {
             try {
@@ -246,6 +290,18 @@ export const FormRenderer = React.memo(
             [formData, onSubmit, disabled, isSubmitting]
         );
 
+        // Prepare API data for conditional field evaluation
+        const apiData = useMemo(() => {
+            return {
+                instances: instancesData
+            };
+        }, [instancesData]);
+
+        console.log('[FormRenderer] API data prepared:', {
+            hasInstances: !!apiData.instances,
+            instancesKeys: apiData.instances ? Object.keys(apiData.instances) : []
+        });
+
         // Group fields by sections
         const sections = useMemo(() => {
             return groupFieldsBySections(schema, formData);
@@ -306,6 +362,7 @@ export const FormRenderer = React.memo(
                                 formData={formData}
                                 onFieldChange={handleFieldChange}
                                 disabled={disabled}
+                                apiData={apiData}
                             />
                         ))}
                     </div>

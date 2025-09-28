@@ -50,7 +50,7 @@ const FIELD_COMPONENTS = {
 
     object_array: CustomFields.ArrayObjectField,
     instances: CustomFields.InstancesField,
-    instance_dropdown: CustomFields.InstanceDropdownField,
+    instance_dropdown: SelectFields.DropdownField, // Map to existing DropdownField
     schedule: CustomFields.ScheduleField,
     tag_input: CustomFields.TagInputField,
     tag_display: CustomFields.TagInputField, // Same component, different config
@@ -112,6 +112,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
     'holiday_schedule',
     'object_array',
     'instances',
+    'instance_dropdown', // Now implemented using DropdownField
     'tag_input',
     'tag_display',
     'schedule',

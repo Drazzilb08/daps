@@ -173,21 +173,6 @@ export const SchedulePage = () => {
     }, [executeModule]);
 
 
-    /**
-     * Handle bulk operations placeholder
-     */
-    const handleBulkOperations = useCallback(() => {
-        // Phase 2: Placeholder for bulk schedule operations
-        alert(
-            `🚧 Bulk Schedule Operations\n\n` +
-            `This will open bulk schedule management when the modal system is implemented.\n\n` +
-            `Features:\n` +
-            `- Import/Export schedules\n` +
-            `- Schedule templates\n` +
-            `- Bulk enable/disable\n` +
-            `- Mass schedule updates`
-        );
-    }, []);
 
     // Loading state
     if (loading) {
@@ -201,36 +186,15 @@ export const SchedulePage = () => {
     return (
         <div className="p-6 max-w-screen-xl mx-auto">
             {/* Page Header */}
-            <div className="flex justify-between items-start mb-8">
-                <div>
-                    <h1 className="text-3xl font-semibold mb-2 text-primary">Module Scheduling</h1>
-                    <p className="text-secondary text-lg">
-                        Configure when DAPS modules should run automatically
-                    </p>
-
-                    {/* Real-time monitoring indicator */}
-                    {polling && runningModules.size > 0 && (
-                        <div className="flex items-center gap-2 mt-2 p-2 px-4 bg-info\/10 border border-info rounded-md w-fit">
-                            <span className="material-symbols-outlined animate-pulse text-info">sync</span>
-                            <span className="text-sm text-info">
-                                Monitoring {runningModules.size} running module{runningModules.size !== 1 ? 's' : ''}
-                            </span>
-                        </div>
-                    )}
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={handleBulkOperations}
-                        className="px-4 py-2 bg-surface text-primary rounded-lg border border-default hover:border-primary active:bg-surface-hover active:scale-98 transition-all duration-150 min-h-11 cursor-pointer select-none"
-                    >
-                        <span className="material-symbols-outlined text-lg mr-2">schedule</span>
-                        Bulk Actions
-                    </button>
-                </div>
+            <div className="mb-8">
+                <h1 className="text-3xl font-semibold mb-2 text-primary">Module Scheduling</h1>
+                <p className="text-secondary text-lg">
+                    Configure when DAPS modules should run automatically
+                </p>
             </div>
 
             {/* Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <div className="bg-surface rounded-lg border border-default p-4">
                     <div className="text-2xl font-bold text-success">
                         {Object.keys(schedules).length}
@@ -242,12 +206,6 @@ export const SchedulePage = () => {
                         {availableModules.length - Object.keys(schedules).length}
                     </div>
                     <div className="text-sm text-secondary">Unscheduled Modules</div>
-                </div>
-                <div className="bg-surface rounded-lg border border-default p-4">
-                    <div className={`text-2xl font-bold ${runningModules.size > 0 ? 'text-info' : 'text-secondary'}`}>
-                        {runningModules.size}
-                    </div>
-                    <div className="text-sm text-secondary">Running Now</div>
                 </div>
                 <div className="bg-surface rounded-lg border border-default p-4">
                     <div className="text-2xl font-bold text-brand-primary">

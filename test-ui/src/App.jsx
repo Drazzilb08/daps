@@ -17,6 +17,7 @@ import ArrayObjectFieldPage from './pages/dev/ArrayObjectFieldPage.jsx';
 import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
 import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import UISettingsPage from './pages/settings/UISettingsPage.jsx';
+import { SchedulePage } from './pages/settings/SchedulePage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -225,14 +226,12 @@ const App = () => {
                                             <Route
                                                 path="settings/schedule"
                                                 element={
-                                                    <div className="p-4 md:p-6 max-w-4xl mx-auto">
-                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Schedule Settings</h1>
-                                                        <p className="text-sm md:text-base text-text-secondary mb-6">Configure job scheduling and automation</p>
-                                                        <div className="text-center py-8 text-text-tertiary">
-                                                            <span className="material-symbols-outlined text-4xl mb-2 block">schedule</span>
-                                                            <p>Schedule configuration coming soon</p>
-                                                        </div>
-                                                    </div>
+                                                    <PageErrorBoundary
+                                                        pageName="Schedule Settings"
+                                                        pageDescription="Module scheduling and automation configuration"
+                                                    >
+                                                        <SchedulePage />
+                                                    </PageErrorBoundary>
                                                 }
                                             />
                                             <Route

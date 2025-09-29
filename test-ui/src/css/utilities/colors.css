@@ -97,6 +97,7 @@
 
   /* Primary border colors */
   .border-primary { border-color: var(--primary); }
+  .border-primary\/25 { border-color: color-mix(in srgb, var(--primary) 25%, transparent); }
   .border-surface { border-color: var(--surface); }
   .border-default { border-color: var(--border); }
   .border-sidebar { border-color: var(--sidebar-border); }
@@ -247,6 +248,10 @@
   .bg-error\/10 { background: color-mix(in srgb, var(--error) 10%, transparent); }
   .bg-error\/20 { background: color-mix(in srgb, var(--error) 20%, transparent); }
   .bg-error\/50 { background: color-mix(in srgb, var(--error) 50%, transparent); }
+
+  .bg-info\/10 { background: color-mix(in srgb, var(--info) 10%, transparent); }
+  .bg-info\/20 { background: color-mix(in srgb, var(--info) 20%, transparent); }
+  .bg-info\/50 { background: color-mix(in srgb, var(--info) 50%, transparent); }
 
 
   /* Text with opacity - standardized slash syntax */

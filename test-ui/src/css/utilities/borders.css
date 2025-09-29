@@ -70,6 +70,7 @@
   .rounded-none { border-radius: 0; }
   .rounded-xs { border-radius: 0.125rem; }    /* 2px - smaller than sm for fine details */
   .rounded-sm { border-radius: 0.25rem; }
+  .rounded-md-sm { border-radius: 0.375rem; }    /* 6px - between sm and md */
   .rounded { border-radius: 0.5rem; }
   .rounded-md { border-radius: 0.5rem; }
   .rounded-lg { border-radius: 0.75rem; }

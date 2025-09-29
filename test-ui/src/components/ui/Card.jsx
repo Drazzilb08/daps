@@ -48,7 +48,7 @@ export const Card = ({
 
         if (typeof value === 'object' && value !== null) {
             return (
-                <pre className="bg-surface-elevated border border-border rounded-sm p-2 m-0 font-mono text-sm overflow-x-auto whitespace-pre-wrap">
+                <pre className="bg-surface-elevated border border-default rounded-md p-3 m-0 font-mono text-sm overflow-x-auto whitespace-pre-wrap text-tertiary">
                     {JSON.stringify(value, null, 2)}
                 </pre>
             );
@@ -71,12 +71,12 @@ export const Card = ({
     }
 
     // Build CSS classes using utilities
-    const baseClasses = 'flex flex-col gap-2 p-3 bg-surface rounded-md mt-3';
+    const baseClasses = 'flex flex-col gap-3 p-4 bg-surface rounded-md';
     const variantClasses = {
-        standard: '',
-        compact: 'gap-1 p-2 text-sm',
-        bordered: 'border border-border',
-        minimal: 'bg-transparent py-2 px-0 rounded-none',
+        standard: 'border border-default',
+        compact: 'gap-2 p-3 text-sm',
+        bordered: 'border border-primary',
+        minimal: 'bg-transparent p-2 rounded-none gap-2',
     };
 
     const cardClasses = [
@@ -89,16 +89,21 @@ export const Card = ({
 
     return (
         <div className={cardClasses}>
-            {entries.map(([key, value]) => (
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-start" key={key}>
-                    <span className="font-medium text-secondary shrink-0 min-w-20">
-                        {keyFormatter(key)}:
-                    </span>
-                    <span className="text-primary flex-1 break-words">
-                        {valueFormatter(value)}
-                    </span>
-                </div>
-            ))}
+            {entries.map(([key, value]) => {
+                const formattedKey = keyFormatter(key);
+                return (
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-4" key={key}>
+                        {formattedKey && (
+                            <span className="font-semibold text-primary shrink-0 sm:min-w-24 text-sm">
+                                {formattedKey}:
+                            </span>
+                        )}
+                        <span className={`text-secondary flex-1 break-words text-base leading-relaxed ${!formattedKey ? 'sm:ml-0' : ''}`}>
+                            {valueFormatter(value)}
+                        </span>
+                    </div>
+                );
+            })}
         </div>
     );
 };
@@ -116,10 +121,12 @@ export const CardRow = ({ label, children, className = '' }) => {
 
     return (
         <div className={rowClasses}>
-            <span className="font-medium text-secondary shrink-0 min-w-20">
-                {label}:
-            </span>
-            <span className="text-primary flex-1 break-words">
+            {label && (
+                <span className="font-semibold text-primary shrink-0 sm:min-w-24 text-sm">
+                    {label}:
+                </span>
+            )}
+            <span className={`text-secondary flex-1 break-words text-base leading-relaxed ${!label ? 'sm:ml-0' : ''}`}>
                 {children}
             </span>
         </div>

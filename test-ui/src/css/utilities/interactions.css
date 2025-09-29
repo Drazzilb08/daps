@@ -22,6 +22,7 @@
   .hover\:bg-primary-hover:hover { background: var(--focus); }
   .hover\:bg-primary-subtle:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
   .hover\:bg-primary-surface:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+  .hover\:bg-primary\/15:hover { background: color-mix(in srgb, var(--primary) 15%, transparent); }
 
   /* State color hover variants */
   .hover\:bg-success-subtle:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
@@ -35,6 +36,7 @@
 
   /* Border hover variants - Complete coverage */
   .hover\:border-primary:hover { border-color: var(--primary); }
+  .hover\:border-primary\/40:hover { border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
   .hover\:border-success:hover { border-color: var(--success); }
   .hover\:border-warning:hover { border-color: var(--warning); }
   .hover\:border-error:hover { border-color: var(--error); }
@@ -65,6 +67,7 @@
   /* Shadow hover variants */
   .hover\:shadow-sm:hover { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%); }
   .hover\:shadow-md:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%); }
+  .hover\:shadow-primary-sm:hover { box-shadow: 0 2px 4px color-mix(in srgb, var(--primary) 20%, transparent); }
   .hover\:shadow-lg:hover { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 10%); }
   .hover\:shadow-xl:hover { box-shadow: 0 20px 25px -5px rgb(0 0 0 / 10%), 0 8px 10px -6px rgb(0 0 0 / 10%); }
   .hover\:shadow-none:hover { box-shadow: none; }
@@ -293,6 +296,7 @@
   /* Atomic transform utilities (Y translation) */
   .hover\:translate-y-negative-1:hover { transform: translateY(-1px); }
   .active\:translate-y-0:active { transform: translateY(0); }
+  .active\:shadow-primary-xs:active { box-shadow: 0 1px 2px color-mix(in srgb, var(--primary) 15%, transparent); }
 
   /* Atomic scale utilities */
   .hover\:scale-102:hover { transform: scale(1.02); }

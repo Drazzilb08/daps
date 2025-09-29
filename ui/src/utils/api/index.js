@@ -68,12 +68,7 @@ export {
 } from './logs.js';
 
 // ========== MODULE EXECUTION ==========
-export {
-    fetchAllRunStates,
-    fetchModuleStatus,
-    runModule,
-    cancelScheduledModule,
-} from './modules.js';
+export { fetchAllRunStates, fetchModuleStatus, runModule } from './modules.js';
 
 // ========== NOTIFICATIONS ==========
 export { runTestNotification } from './notifications.js';

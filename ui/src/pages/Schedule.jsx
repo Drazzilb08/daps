@@ -6,7 +6,6 @@ import {
     fetchAllRunStates,
     fetchModuleStatus,
     runModule,
-    cancelScheduledModule,
 } from '../utils/api';
 import { humanize, getIcon } from '../utils/tools';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -303,7 +302,7 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
 
     const humanSchedule = scheduleToHuman(scheduleTime);
 
-    const tooltipText = running ? `Cancel ${humanize(module)} Run` : `Run ${humanize(module)} Now!`;
+    const tooltipText = running ? `${humanize(module)} is Running` : `Run ${humanize(module)} Now!`;
 
     return (
         <div className="card" tabIndex={0} onClick={handleCardClick}>
@@ -335,7 +334,7 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
                 </div>
                 <div className="schedule-btn-wrap">
                     <button
-                        className={`btn--icon card-action-btn${running ? ' btn--danger' : ''}`}
+                        className="btn--icon card-action-btn"
                         type="button"
                         aria-label={tooltipText}
                         disabled={polling || running}
@@ -357,18 +356,6 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
                                     reload(); // Refresh run states
                                 } catch (error) {
                                     toast(`Error running module: ${error.message}`, 'error');
-                                } finally {
-                                    setPolling(false);
-                                }
-                            } else {
-                                setPolling(true);
-                                try {
-                                    await cancelScheduledModule(module);
-                                    toast('Module run cancelled.', 'info');
-                                    setRunning(false);
-                                    reload();
-                                } catch (error) {
-                                    toast(`Error cancelling module: ${error.message}`, 'error');
                                 } finally {
                                     setPolling(false);
                                 }

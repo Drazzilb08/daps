@@ -1,6 +1,6 @@
 /**
  * Module Management API Functions
- * Handles module execution, status monitoring, and cancellation
+ * Handles module execution and status monitoring
  */
 
 import { handleApiResponse, extractData, clearCache } from './core.js';
@@ -47,36 +47,6 @@ export async function runModule(module) {
         const data = await handleApiResponse(res);
 
         // Clear relevant cache after running module
-        clearCache('job');
-        clearCache('run_state');
-
-        return {
-            success: true,
-            message: data.message,
-            data: extractData(data),
-        };
-    } catch (error) {
-        return {
-            success: false,
-            message: error.message,
-            error_code: error.code,
-        };
-    }
-}
-
-// Cancel scheduled module (not cached - action)
-export async function cancelScheduledModule(module) {
-    if (!module) return { success: false, message: 'Module name required' };
-
-    try {
-        const res = await fetch('/api/modules/cancel', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ module }),
-        });
-        const data = await handleApiResponse(res);
-
-        // Clear relevant cache after canceling
         clearCache('job');
         clearCache('run_state');
 

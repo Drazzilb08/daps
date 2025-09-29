@@ -43,9 +43,10 @@ class ModuleOrchestrator:
         Used for API endpoints that need synchronous behavior.
         """
         try:
-            # Enqueue job with high priority
-            with DapsDB(self.logger) as db:
-                result = db.worker.enqueue_job(
+            # Use shared database or create new context
+            if self.db is not None:
+                # Use shared database context
+                result = self.db.worker.enqueue_job(
                     table_name="jobs",
                     payload={
                         "module_name": module_name,
@@ -55,6 +56,21 @@ class ModuleOrchestrator:
                     job_type="module_run",
                     extra_fields={"priority": 10},  # High priority for immediate runs
                 )
+            else:
+                # Fallback: create new context
+                with DapsDB(self.logger, quiet=True) as db:
+                    result = db.worker.enqueue_job(
+                        table_name="jobs",
+                        payload={
+                            "module_name": module_name,
+                            "origin": origin,
+                            "immediate": True,
+                        },
+                        job_type="module_run",
+                        extra_fields={
+                            "priority": 10
+                        },  # High priority for immediate runs
+                    )
 
             if not result["success"]:
                 return {
@@ -91,8 +107,10 @@ class ModuleOrchestrator:
         Used for scheduled runs and fire-and-forget execution.
         """
         try:
-            with DapsDB(self.logger) as db:
-                result = db.worker.enqueue_job(
+            # Use shared database or create new context
+            if self.db is not None:
+                # Use shared database context
+                result = self.db.worker.enqueue_job(
                     table_name="jobs",
                     payload={
                         "module_name": module_name,
@@ -102,6 +120,19 @@ class ModuleOrchestrator:
                     job_type="module_run",
                     extra_fields={"priority": 0},  # Normal priority
                 )
+            else:
+                # Fallback: create new context
+                with DapsDB(self.logger, quiet=True) as db:
+                    result = db.worker.enqueue_job(
+                        table_name="jobs",
+                        payload={
+                            "module_name": module_name,
+                            "origin": origin,
+                            "immediate": False,
+                        },
+                        job_type="module_run",
+                        extra_fields={"priority": 0},  # Normal priority
+                    )
 
             if result["success"]:
                 job_id = result["data"]["job_id"]
@@ -161,7 +192,7 @@ class ModuleOrchestrator:
                 running_job = self.db.worker.get_running_module_job(module_name)
             else:
                 # Create own context
-                with DapsDB(self.logger) as db:
+                with DapsDB(self.logger, quiet=True) as db:
                     running_job = db.worker.get_running_module_job(module_name)
 
             if running_job:
@@ -188,42 +219,6 @@ class ModuleOrchestrator:
                 "origin": None,
             }
 
-    def cancel_module(self, module_name: str) -> Dict[str, Any]:
-        """
-        Cancel a running module by terminating its job.
-        """
-        try:
-            status = self.get_module_status(module_name)
-
-            if not status["running"]:
-                return {
-                    "success": False,
-                    "message": "Module not running",
-                    "error_code": "MODULE_NOT_RUNNING",
-                }
-
-            job_id = status["job_id"]
-            # For now, we'll mark the job as failed to stop it
-            # In a more sophisticated implementation, we could send signals
-            with DapsDB(self.logger) as db:
-                db.worker.mark_job_failed("jobs", job_id, "Cancelled by user")
-
-            self._log("info", f"Cancelled module {module_name} (job {job_id})")
-
-            return {
-                "success": True,
-                "message": f"Module {module_name} cancelled successfully",
-                "data": {"module": module_name, "job_id": job_id},
-            }
-
-        except Exception as e:
-            self._log("error", f"Error cancelling module: {e}", exc_info=True)
-            return {
-                "success": False,
-                "message": f"Error cancelling module: {str(e)}",
-                "error_code": "CANCEL_ERROR",
-            }
-
     def _wait_for_job_completion(
         self, job_id: int, timeout: int = 300
     ) -> Dict[str, Any]:
@@ -235,7 +230,7 @@ class ModuleOrchestrator:
 
         while (time.time() - start_time) < timeout:
             try:
-                with DapsDB(self.logger) as db:
+                with DapsDB(self.logger, quiet=True) as db:
                     job = db.worker.get_job_by_id("jobs", job_id)
 
                     if not job:

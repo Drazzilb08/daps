@@ -85,15 +85,20 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         if log:
             log.debug("Starting database workers...")
 
-        # FIXED: Use unified process_job function with consistent signature
+        # Create wrapper function that passes shared database context
+        def shared_db_process_job(job, logger):
+            """Wrapper that passes shared database context to process_job"""
+            return process_job(job, logger, app.state.db)
+
+        # FIXED: Use wrapper function that passes shared database context
         app.state.webhook_worker.start(
             table_name="jobs",
-            process_fn=process_job,
+            process_fn=shared_db_process_job,
             job_type_filter="webhook_process",
         )
 
         app.state.background_worker.start(
-            table_name="jobs", process_fn=process_job, job_type_filter=None
+            table_name="jobs", process_fn=shared_db_process_job, job_type_filter=None
         )
 
         if log:

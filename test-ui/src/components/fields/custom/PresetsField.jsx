@@ -63,8 +63,8 @@ const HOLIDAY_PRESETS = [
     },
 ];
 
-const GDRIVE_PRESETS_URL =
-    'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/CL2K/presets.json';
+// const GDRIVE_PRESETS_URL =
+//     'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/CL2K/presets.json';
 
 /**
  * PresetsField component for schema-driven preset selection
@@ -97,7 +97,7 @@ export const PresetsField = React.memo(
         const presetType = field.presetType || 'holiday'; // Default to holiday
         const presetUrl = field.presetUrl;
         const presetData = field.presetData;
-        const targetFields = field.targetFields || [];
+        const targetFields = useMemo(() => field.targetFields || [], [field.targetFields]);
         const identifierField = field.identifierField || 'name'; // Field used to identify presets
         const moduleConfigKey = field.moduleConfigKey; // Key in moduleConfig to check for duplicates
 
@@ -194,7 +194,7 @@ export const PresetsField = React.memo(
 
                         // Map preset data to target field names
                         targetFields.forEach(targetField => {
-                            if (selectedPreset.hasOwnProperty(targetField)) {
+                            if (Object.hasOwn(selectedPreset, targetField)) {
                                 presetFieldUpdates[targetField] = selectedPreset[targetField];
                             }
                         });
@@ -223,7 +223,15 @@ export const PresetsField = React.memo(
                     );
                 }
             },
-            [onChange, onPresetSelected, presets, field.key, identifierField, targetFields]
+            [
+                onChange,
+                onPresetSelected,
+                presets,
+                field.key,
+                identifierField,
+                targetFields,
+                presetType,
+            ]
         );
 
         const inputId = `field-${field.key}`;

@@ -16,7 +16,7 @@ export const JsonField = ({
 }) => {
     const inputId = useId();
     const [jsonError, setJsonError] = useState(null);
-    const [showFormatted, setShowFormatted] = useState(true);
+    const [, setShowFormatted] = useState(true);
 
     // Convert value to string representation
     const getStringValue = useCallback(() => {
@@ -25,7 +25,7 @@ export const JsonField = ({
         } else if (typeof value === 'object' && value !== null) {
             try {
                 return JSON.stringify(value, null, 2);
-            } catch (e) {
+            } catch {
                 return String(value);
             }
         }
@@ -56,7 +56,7 @@ export const JsonField = ({
 
             // Try to parse as JSON
             try {
-                const parsed = JSON.parse(newTextValue);
+                JSON.parse(newTextValue);
                 onChange(newTextValue); // Store as string for form handling
                 setJsonError(null);
             } catch (error) {

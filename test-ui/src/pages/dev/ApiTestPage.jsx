@@ -224,7 +224,6 @@ JobStatsTestComponent.displayName = 'JobStatsTestComponent';
  */
 const ErrorTestComponent = React.memo(() => {
     const [errorType, setErrorType] = useState('404');
-    const toast = useToast();
 
     const errorApiFunction = useCallback(() => {
         switch (errorType) {

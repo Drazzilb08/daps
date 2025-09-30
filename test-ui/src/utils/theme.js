@@ -420,50 +420,12 @@ export { THEMES };
  *
  * @returns {Object} Theme state and controls
  */
-export function useTheme() {
-    // Import React dynamically to avoid bundle issues
-    let React;
-    try {
-        React = require('react');
-    } catch {
-        // If React isn't available, return basic functionality
-        return {
-            currentTheme: themeManager.getCurrentTheme(),
-            appliedTheme: themeManager.getAppliedTheme(),
-            isSystemTheme: themeManager.getCurrentTheme() === THEMES.SYSTEM,
-            setTheme: themeManager.setTheme.bind(themeManager),
-            toggleTheme: themeManager.toggleTheme.bind(themeManager),
-            themes: THEMES,
-        };
-    }
-
-    const [currentTheme, setCurrentTheme] = React.useState(themeManager.getCurrentTheme());
-    const [appliedTheme, setAppliedTheme] = React.useState(themeManager.getAppliedTheme());
-    const [isSystemTheme, setIsSystemTheme] = React.useState(
-        themeManager.getCurrentTheme() === THEMES.SYSTEM
-    );
-
-    React.useEffect(() => {
-        // Initialize theme manager if not already done
-        if (!themeManager.initialized) {
-            themeManager.init();
-        }
-
-        // Subscribe to theme changes
-        const unsubscribe = themeManager.onChange(eventData => {
-            setCurrentTheme(eventData.theme);
-            setAppliedTheme(eventData.appliedTheme);
-            setIsSystemTheme(eventData.isSystemTheme);
-        });
-
-        // Cleanup subscription
-        return unsubscribe;
-    }, []);
-
+// React hook implementation moved to contexts/ThemeProvider.jsx to avoid conditional hook calls
+export function getThemeAPI() {
     return {
-        currentTheme,
-        appliedTheme,
-        isSystemTheme,
+        currentTheme: themeManager.getCurrentTheme(),
+        appliedTheme: themeManager.getAppliedTheme(),
+        isSystemTheme: themeManager.getCurrentTheme() === THEMES.SYSTEM,
         setTheme: themeManager.setTheme.bind(themeManager),
         toggleTheme: themeManager.toggleTheme.bind(themeManager),
         themes: THEMES,

@@ -25,14 +25,14 @@ const SettingsMockPage = () => {
         );
     }, []);
 
-    // Handle expand/collapse all
-    const expandAll = useCallback(() => {
-        setExpandedModules(SETTINGS_SCHEMA.map(module => module.key));
-    }, []);
+    // TODO: Handle expand/collapse all (not implemented in UI yet)
+    // const expandAll = useCallback(() => {
+    //     setExpandedModules(SETTINGS_SCHEMA.map(module => module.key));
+    // }, []);
 
-    const collapseAll = useCallback(() => {
-        setExpandedModules([]);
-    }, []);
+    // const collapseAll = useCallback(() => {
+    //     setExpandedModules([]);
+    // }, []);
 
     // Mock header search integration
     const handleSettingsSearch = useCallback(query => {
@@ -70,26 +70,26 @@ const SettingsMockPage = () => {
         return () => window.removeEventListener('message', handleSearchMessage);
     }, [handleSettingsSearch]);
 
-    // Get field type summary for mock display
-    const getFieldTypeSummary = fields => {
-        if (!fields || fields.length === 0) return 'No fields configured';
+    // TODO: Get field type summary for mock display (not used in current UI)
+    // const getFieldTypeSummary = fields => {
+    //     if (!fields || fields.length === 0) return 'No fields configured';
 
-        const types = fields.reduce((acc, field) => {
-            acc[field.type] = (acc[field.type] || 0) + 1;
-            return acc;
-        }, {});
+    //     const types = fields.reduce((acc, field) => {
+    //         acc[field.type] = (acc[field.type] || 0) + 1;
+    //         return acc;
+    //     }, {});
 
-        const summary = Object.entries(types)
-            .map(([type, count]) => `${count} ${type}`)
-            .slice(0, 3) // Show first 3 types
-            .join(', ');
+    //     const summary = Object.entries(types)
+    //         .map(([type, count]) => `${count} ${type}`)
+    //         .slice(0, 3) // Show first 3 types
+    //         .join(', ');
 
-        const total = fields.length;
-        const remaining =
-            Object.keys(types).length > 3 ? ` (+${Object.keys(types).length - 3} more)` : '';
+    //     const total = fields.length;
+    //     const remaining =
+    //         Object.keys(types).length > 3 ? ` (+${Object.keys(types).length - 3} more)` : '';
 
-        return `${total} fields: ${summary}${remaining}`;
-    };
+    //     return `${total} fields: ${summary}${remaining}`;
+    // };
 
     return (
         <div className="p-6 max-w-4xl mx-auto min-h-screen">
@@ -125,7 +125,6 @@ const SettingsMockPage = () => {
             {/* Module Accordion List */}
             <div className="space-y-3">
                 {filteredModules.map(module => {
-                    const fieldCount = module.fields?.length || 0;
 
                     return (
                         <AccordionItem
@@ -172,7 +171,7 @@ const SettingsMockPage = () => {
 
                                             {/* Clean vertical field layout */}
                                             <div className="space-y-4">
-                                                {module.fields.map((field, index) => (
+                                                {module.fields.map(field => (
                                                     <div
                                                         key={`${module.key}-${field.key}`}
                                                         className="flex flex-col gap-2 p-4 bg-surface-elevated border border-border-subtle rounded-md"
@@ -291,7 +290,7 @@ const SettingsMockPage = () => {
                                             inbox
                                         </span>
                                         <p className="text-secondary">
-                                            This module's configuration is still being developed
+                                            This module&apos;s configuration is still being developed
                                         </p>
                                         <p className="text-sm text-tertiary mt-2">
                                             Module key:{' '}

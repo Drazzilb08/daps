@@ -13,7 +13,7 @@
  */
 
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primitives';
+import { FieldLabel, FieldError, FieldDescription } from '../primitives';
 import { ColorPicker } from '../features/color/ColorPicker';
 import { AddButton, RemoveButton } from '../features/shared';
 import { postersAPI } from '../../../utils/api/posters';
@@ -338,7 +338,7 @@ export const ColorListPosterField = React.memo(
 
         // Check constraints
         const canAddColor = colorsArray.length < maxColors && !disabled;
-        const canRemoveColor = index => colorsArray.length > minColors && !disabled;
+        const canRemoveColor = () => colorsArray.length > minColors && !disabled;
 
         return (
             <div className="flex flex-col gap-4">
@@ -375,7 +375,6 @@ export const ColorListPosterField = React.memo(
                     <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                         {colorsArray.map((color, index) => {
                             const previewUrl = previews[index];
-                            const poster = getPosterByIndex(posterAssets, index);
 
                             return (
                                 <div key={index} className="flex flex-col gap-2">

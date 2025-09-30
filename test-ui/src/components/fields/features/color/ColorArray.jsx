@@ -86,7 +86,7 @@ export const ColorArray = React.memo(
         );
 
         const canAddColor = colors.length < maxColors && !disabled;
-        const canRemoveColor = index => colors.length > minColors && !disabled;
+        const canRemoveColor = () => colors.length > minColors && !disabled;
 
         return (
             <div

@@ -28,16 +28,8 @@ import { useInstancesData } from '../../hooks/useInstancesData';
  * @param {Object} props.apiData - API data for conditional evaluation
  */
 const FieldRenderer = React.memo(({ field, value, onChange, disabled, formData, apiData }) => {
-    // Conditional field evaluation
-    if (!shouldShowField(field, formData, apiData)) {
-        console.log('[FormRenderer] Hiding field due to conditional evaluation:', field.key);
-        return null;
-    }
-
+    // All hooks must be called unconditionally
     const { error, hasError, markTouched } = useFieldValidation(field.key);
-
-    // Get field component from registry
-    const FieldComponent = FieldRegistry.getField(field.type);
 
     const handleChange = useCallback(
         newValue => {
@@ -80,6 +72,15 @@ const FieldRenderer = React.memo(({ field, value, onChange, disabled, formData, 
             options: instanceOptions,
         });
     }
+
+    // Conditional field evaluation after all hooks
+    if (!shouldShowField(field, formData, apiData)) {
+        console.log('[FormRenderer] Hiding field due to conditional evaluation:', field.key);
+        return null;
+    }
+
+    // Get field component from registry
+    const FieldComponent = FieldRegistry.getField(field.type);
 
     console.log('[FormRenderer] Field rendering context:', {
         fieldKey: field.key,

@@ -96,7 +96,7 @@ export const ScheduleSummary = React.memo(
                                 use24HourTimeFormat: true,
                             });
                             return `Custom: ${humanReadable}`;
-                        } catch (error) {
+                        } catch {
                             return `Custom schedule (invalid cron expression)`;
                         }
                     }

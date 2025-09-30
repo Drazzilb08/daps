@@ -59,7 +59,7 @@ export const CronInput = React.memo(
             if (onValidityChange) {
                 onValidityChange(valid);
             }
-        }, [value, validateCron]); // Remove onValidityChange from dependencies to prevent infinite loop
+        }, [value, validateCron, onValidityChange]);
 
         const handleChange = useCallback(
             e => {

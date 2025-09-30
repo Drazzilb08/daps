@@ -21,7 +21,7 @@ const Layout = ({ children }) => {
      * @param {Event} _event - DOM event (unused)
      */
     const handleToolAction = React.useCallback(
-        (action, tool, _event) => {
+        (action, tool) => {
             console.log('Toolbar action:', { action, tool, searchPageType, searchSubtype });
         },
         [searchPageType, searchSubtype]

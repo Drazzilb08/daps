@@ -344,7 +344,6 @@ export const SearchCoordinatorProvider = ({
             }
         },
         [
-            searchStates,
             activeSearchType,
             debounceDelay,
             addToHistory,
@@ -427,7 +426,9 @@ export const SearchCoordinatorProvider = ({
     useEffect(() => {
         return () => {
             // Clear all debounce timeouts
-            Object.values(debounceTimeouts.current).forEach(timeout => {
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            const currentTimeouts = debounceTimeouts.current;
+            Object.values(currentTimeouts).forEach(timeout => {
                 clearTimeout(timeout);
             });
         };

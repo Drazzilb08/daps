@@ -21,14 +21,7 @@ import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } fro
  * @param {string} props.errorMessage - Error message to display
  */
 export const DirField = React.memo(
-    ({
-        field,
-        value,
-        onChange,
-        disabled = false,
-        highlightInvalid = false,
-        errorMessage = null,
-    }) => {
+    ({ field, value, disabled = false, highlightInvalid = false, errorMessage = null }) => {
         const handleInputClick = useCallback(() => {
             if (!disabled) {
                 // Placeholder functionality - show info about future modal implementation

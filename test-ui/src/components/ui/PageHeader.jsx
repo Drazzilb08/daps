@@ -9,7 +9,7 @@ export const PageHeader = ({ title, description, actions }) => {
     return (
         <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-semibold text-primary">{title}</h1>
+                <h2 className="text-3xl font-semibold text-primary">{title}</h2>
                 {actions && <div className="flex gap-2">{actions}</div>}
             </div>
             {description && <p className="text-secondary text-lg">{description}</p>}

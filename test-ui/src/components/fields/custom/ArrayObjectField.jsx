@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primitives';
-import { RemoveButton, AddButton, EmptyState, ColorSwatches } from '../features/shared';
+import { RemoveButton, AddButton, ColorSwatches } from '../features/shared';
 import { FieldRegistry } from '../FieldRegistry';
 import { shouldShowField, generateInstanceOptions } from '../../../utils/forms/conditionalFields';
 import { useInstancesData } from '../../../hooks/useInstancesData';

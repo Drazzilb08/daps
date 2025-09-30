@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useToast, TOAST_TYPES } from './ToastContext.jsx';
+import { useToast } from './ToastContext.jsx';
 
 /**
  * Global error context for application-wide error state
@@ -47,7 +47,7 @@ export const useGlobalError = () => {
  * @returns {string} User-friendly message
  */
 const generateUserMessage = error => {
-    const { type, originalError, message } = error;
+    const { type, message } = error;
 
     switch (type) {
         case ERROR_TYPES.NETWORK:
@@ -83,7 +83,7 @@ const generateUserMessage = error => {
  * @returns {string} Error severity level
  */
 const determineErrorSeverity = error => {
-    const { type, originalError } = error;
+    const { type } = error;
 
     switch (type) {
         case ERROR_TYPES.AUTHENTICATION:
@@ -339,7 +339,7 @@ GlobalErrorProvider.propTypes = {
     enableLogging: PropTypes.bool,
 };
 
-export const showErrorWithRecovery = (toast, error, recoveryFn) => {
+export const showErrorWithRecovery = (toast, error) => {
     const recoveryMessage = error.recoverable
         ? `${error.userMessage}\n\nTip: You can try refreshing the page to recover.`
         : error.userMessage;
@@ -395,7 +395,7 @@ export class ErrorBoundary extends React.Component {
             return (
                 <div className="min-h-error p-6 text-center bg-surface border-2 border-error rounded-lg m-4">
                     <h2>Something went wrong</h2>
-                    <p>We're sorry, but something unexpected happened.</p>
+                    <p>We&apos;re sorry, but something unexpected happened.</p>
                     <button onClick={() => window.location.reload()}>Refresh Page</button>
                 </div>
             );

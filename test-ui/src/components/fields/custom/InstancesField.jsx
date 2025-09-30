@@ -17,7 +17,7 @@
  * - Plex with full options: { name: "instance_name", upload_posters: true/false, libraries: ["lib1", "lib2"] }
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
     FieldWrapper,
     FieldLabel,
@@ -806,8 +806,8 @@ export const InstancesField = React.memo(
         highlightInvalid = false,
         errorMessage = null,
     }) => {
-        // Parse schema configuration
-        const instanceTypes = field.instance_types || [];
+        // Parse schema configuration with stable reference
+        const instanceTypes = useMemo(() => field.instance_types || [], [field.instance_types]);
         const showPosterOption = field.add_posters_option === true;
         const isRequired = field.required === true;
 

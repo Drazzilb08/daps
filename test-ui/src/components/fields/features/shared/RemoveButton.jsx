@@ -47,7 +47,6 @@ export const RemoveButton = React.memo(
         text = 'Remove',
         icon = 'close',
         iconOnly = true,
-        variant = 'default',
         size = 'medium',
         className = '',
         ariaProps = {},

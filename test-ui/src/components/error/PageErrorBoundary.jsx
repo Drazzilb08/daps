@@ -320,7 +320,8 @@ class PageErrorBoundaryBase extends Component {
                                     </h4>
                                     <ul className="m-0 pl-6 text-secondary text-sm leading-relaxed">
                                         <li className="mb-2">
-                                            Click "Try Again" to attempt reloading this page
+                                            Click &quot;Try Again&quot; to attempt reloading this
+                                            page
                                         </li>
                                         <li className="mb-2">
                                             Use the navigation buttons to go to a different page

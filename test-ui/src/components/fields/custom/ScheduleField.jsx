@@ -31,7 +31,7 @@ export const ScheduleField = React.memo(
     }) => {
         const [scheduleType, setScheduleType] = useState('daily');
         const [scheduleData, setScheduleData] = useState({});
-        const [isValid, setIsValid] = useState(true);
+        const [, setIsValid] = useState(true);
 
         // Parse incoming value into type and data
         const parseScheduleValue = useCallback(val => {
@@ -150,7 +150,7 @@ export const ScheduleField = React.memo(
             const parsed = parseScheduleValue(value);
             setScheduleType(parsed.type);
             setScheduleData(parsed.data);
-        }, [value]); // Remove parseScheduleValue from dependencies to prevent infinite loop
+        }, [value, parseScheduleValue]);
 
         // Handle schedule type change
         const handleTypeChange = useCallback(

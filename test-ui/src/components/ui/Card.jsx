@@ -85,7 +85,7 @@ export const Card = ({
                         {JSON.stringify(value, null, 2)}
                     </pre>
                 );
-            } catch (error) {
+            } catch {
                 // Handle circular references or non-serializable objects
                 return <span className="text-warning">[Complex Object]</span>;
             }

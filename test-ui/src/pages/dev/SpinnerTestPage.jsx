@@ -32,6 +32,8 @@ const SpinnerSizeDemo = React.memo(() => {
     );
 });
 
+SpinnerSizeDemo.displayName = 'SpinnerSizeDemo';
+
 const SpinnerTextDemo = React.memo(() => {
     const configurations = [
         { size: 'small', text: 'Loading...' },
@@ -57,6 +59,8 @@ const SpinnerTextDemo = React.memo(() => {
     );
 });
 
+SpinnerTextDemo.displayName = 'SpinnerTextDemo';
+
 const CenteredSpinnerDemo = React.memo(() => {
     return (
         <div className="bg-surface-elevated rounded border">
@@ -78,6 +82,8 @@ const CenteredSpinnerDemo = React.memo(() => {
         </div>
     );
 });
+
+CenteredSpinnerDemo.displayName = 'CenteredSpinnerDemo';
 
 const LoadingStateSimulation = React.memo(() => {
     const [loadingStates, setLoadingStates] = useState({
@@ -162,6 +168,8 @@ const LoadingStateSimulation = React.memo(() => {
     );
 });
 
+LoadingStateSimulation.displayName = 'LoadingStateSimulation';
+
 const AnimationPerformanceTest = React.memo(() => {
     const [spinnerCount, setSpinnerCount] = useState(1);
     const [isStressed, setIsStressed] = useState(false);
@@ -223,6 +231,8 @@ const AnimationPerformanceTest = React.memo(() => {
         </div>
     );
 });
+
+AnimationPerformanceTest.displayName = 'AnimationPerformanceTest';
 
 const AccessibilityTest = React.memo(() => {
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -290,6 +300,8 @@ const AccessibilityTest = React.memo(() => {
         </div>
     );
 });
+
+AccessibilityTest.displayName = 'AccessibilityTest';
 
 const SpinnerTestPage = () => {
     const [activeTest, setActiveTest] = useState('overview');

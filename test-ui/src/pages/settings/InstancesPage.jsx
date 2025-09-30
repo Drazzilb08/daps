@@ -61,7 +61,7 @@ export const InstancesPage = () => {
     }, [instances, connectionStatus]);
 
     // Service configuration with custom SVG icons
-    const services = [
+    const services = useMemo(() => [
         {
             type: 'radarr',
             label: 'Radarr',
@@ -116,21 +116,21 @@ export const InstancesPage = () => {
                 </svg>
             ),
         },
-    ];
+    ], []);
 
     // Placeholder handlers (Phase 4)
     /**
      * Handle add instance action (placeholder)
      * @param {string} serviceType - Service type (radarr|sonarr|plex)
      */
-    const handleAdd = useCallback((serviceType) => {
+    const handleAdd = useCallback(serviceType => {
         const serviceLabel = serviceType.charAt(0).toUpperCase() + serviceType.slice(1);
 
         alert(
             `🚧 Add ${serviceLabel} Instance\n\n` +
-            `Service: ${serviceType}\n` +
-            `Action: Add new instance configuration\n\n` +
-            `This will open a modal to configure the instance when the modal system is implemented.`
+                `Service: ${serviceType}\n` +
+                `Action: Add new instance configuration\n\n` +
+                `This will open a modal to configure the instance when the modal system is implemented.`
         );
     }, []);
 
@@ -145,11 +145,11 @@ export const InstancesPage = () => {
 
         alert(
             `🚧 Edit Instance Configuration\n\n` +
-            `Service: ${serviceLabel}\n` +
-            `Instance: ${instanceName}\n` +
-            `Current URL: ${instanceUrl}\n` +
-            `Action: Edit instance configuration\n\n` +
-            `This will open a modal to configure the instance when the modal system is implemented.`
+                `Service: ${serviceLabel}\n` +
+                `Instance: ${instanceName}\n` +
+                `Current URL: ${instanceUrl}\n` +
+                `Action: Edit instance configuration\n\n` +
+                `This will open a modal to configure the instance when the modal system is implemented.`
         );
     }, []);
 
@@ -164,11 +164,11 @@ export const InstancesPage = () => {
 
         alert(
             `🚧 Delete Instance Confirmation\n\n` +
-            `⚠️ Warning: This will delete the instance\n\n` +
-            `Service: ${serviceLabel}\n` +
-            `Instance: ${instanceName}\n` +
-            `URL: ${instanceUrl}\n\n` +
-            `This will open a confirmation modal when the modal system is implemented.`
+                `⚠️ Warning: This will delete the instance\n\n` +
+                `Service: ${serviceLabel}\n` +
+                `Instance: ${instanceName}\n` +
+                `URL: ${instanceUrl}\n\n` +
+                `This will open a confirmation modal when the modal system is implemented.`
         );
     }, []);
 
@@ -278,7 +278,7 @@ export const InstancesPage = () => {
         instancesToTest.forEach(({ serviceType, instanceName, instanceData }) => {
             handleTest(serviceType, instanceName, instanceData, true);
         });
-    }, [instances, handleTest]);
+    }, [instances, handleTest, services]);
 
     // Loading state
     if (isLoading) {

@@ -38,7 +38,7 @@ export const Badge = React.memo(
         ...restProps
     }) => {
         // Development-time validation to prevent domain-specific prop drift
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
             const propNames = Object.keys({
                 children,
                 variant,

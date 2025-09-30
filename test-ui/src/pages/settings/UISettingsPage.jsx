@@ -56,12 +56,54 @@ export const UISettingsPage = () => {
     const [saveError, setSaveError] = useState(null);
     const [saveSuccess, setSaveSuccess] = useState(false);
 
+    // Handle field changes
+    const handleFieldChange = useCallback((moduleKey, fieldKey, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [moduleKey]: {
+                ...prev[moduleKey],
+                [fieldKey]: value,
+            },
+        }));
+        setSaveError(null);
+    }, []);
+
+    // Save configuration
+    const handleSave = useCallback(async () => {
+        if (!isDirty || isSaving) return;
+
+        try {
+            setIsSaving(true);
+            setSaveError(null);
+
+            // Mock API call - replace with actual API call
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Update tracking after successful save
+            setLastSaved(JSON.stringify(formData));
+            setIsDirty(false);
+            setSaveSuccess(true);
+        } catch (error) {
+            console.error('Save failed:', error);
+            setSaveError(error.message || 'Failed to save configuration');
+        } finally {
+            setIsSaving(false);
+        }
+    }, [isDirty, isSaving, formData]);
+
+    // Reset to last saved state
+    const handleReset = useCallback(() => {
+        setFormData(JSON.parse(lastSaved));
+        setIsDirty(false);
+        setSaveError(null);
+    }, [lastSaved]);
+
     // Initialize form data
     useEffect(() => {
         setLastSaved(JSON.stringify(formData));
         setIsDirty(false);
         setSaveError(null);
-    }, []);
+    }, [formData]);
 
     // Track changes for dirty state
     useEffect(() => {
@@ -101,49 +143,7 @@ export const UISettingsPage = () => {
 
         window.addEventListener('keydown', handleKeyboard);
         return () => window.removeEventListener('keydown', handleKeyboard);
-    }, [isDirty, isSaving]);
-
-    // Handle field changes
-    const handleFieldChange = useCallback((moduleKey, fieldKey, value) => {
-        setFormData(prev => ({
-            ...prev,
-            [moduleKey]: {
-                ...prev[moduleKey],
-                [fieldKey]: value,
-            },
-        }));
-        setSaveError(null);
-    }, []);
-
-    // Save configuration
-    const handleSave = async () => {
-        if (!isDirty || isSaving) return;
-
-        try {
-            setIsSaving(true);
-            setSaveError(null);
-
-            // Mock API call - replace with actual API call
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // Update tracking after successful save
-            setLastSaved(JSON.stringify(formData));
-            setIsDirty(false);
-            setSaveSuccess(true);
-        } catch (error) {
-            console.error('Save failed:', error);
-            setSaveError(error.message || 'Failed to save configuration');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    // Reset to last saved state
-    const handleReset = () => {
-        setFormData(JSON.parse(lastSaved));
-        setIsDirty(false);
-        setSaveError(null);
-    };
+    }, [isDirty, isSaving, handleReset, handleSave]);
 
     return (
         <div className="p-4 md:p-6 max-w-4xl mx-auto">
@@ -303,7 +303,7 @@ export const UISettingsPage = () => {
                                             key={`error-${module.key}-${field.key}-${fieldIndex}`}
                                             className="p-2 bg-warning-bg text-warning rounded"
                                         >
-                                            Field type '{field.type}' error: {error.message}
+                                            Field type &apos;{field.type}&apos; error: {error.message}
                                         </div>
                                     );
                                 }

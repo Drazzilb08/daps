@@ -2,9 +2,10 @@ import { useId } from 'react';
 import { InputBase } from '../primitives/InputBase';
 
 export const HiddenField = ({ field, value, onChange, ...fieldProps }) => {
-    const inputId = field.id || useId();
+    const inputId = useId();
+    const finalId = field.id || inputId;
 
     return (
-        <InputBase id={inputId} type="hidden" value={value} onChange={onChange} {...fieldProps} />
+        <InputBase id={finalId} type="hidden" value={value} onChange={onChange} {...fieldProps} />
     );
 };

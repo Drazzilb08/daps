@@ -21,7 +21,7 @@ import React, { useCallback } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { InputBase, SelectBase } from '../../primitives';
-import { AddButton, RemoveButton, ItemCounter, EmptyState, FieldButton } from '../shared';
+import { AddButton, RemoveButton, EmptyState, FieldButton } from '../shared';
 import { useTouchDevice } from '../../../../utils/touchDetection';
 
 /**
@@ -287,7 +287,6 @@ export const DirectoryArray = React.memo(
         enableReordering = false,
         onMoveUp = null,
         onMoveDown = null,
-        dragHandleProps = null,
         // Mode selection props
         modeOptions = null,
         modes = [],
@@ -311,18 +310,18 @@ export const DirectoryArray = React.memo(
             [directories, minDirectories, onChange]
         );
 
-        // Handle changing a directory at specific index
-        const handleDirectoryChange = useCallback(
-            (index, newPath) => {
-                const newDirectories = [...directories];
-                newDirectories[index] = newPath;
-                onChange?.(newDirectories);
-            },
-            [directories, onChange]
-        );
+        // Handle changing a directory at specific index - currently unused
+        // const handleDirectoryChange = useCallback(
+        //     (index, newPath) => {
+        //         const newDirectories = [...directories];
+        //         newDirectories[index] = newPath;
+        //         onChange?.(newDirectories);
+        //     },
+        //     [directories, onChange]
+        // );
 
         // Handle clicking on directory input to open modal
-        const handleDirectoryClick = useCallback(index => {
+        const handleDirectoryClick = useCallback(() => {
             // Placeholder functionality - show info about future modal implementation
             alert(
                 '🚧 Directory Browser Modal\n\nThis will open a modal to browse and select a directory when the modal system is implemented.'
@@ -330,7 +329,7 @@ export const DirectoryArray = React.memo(
         }, []);
 
         const canAddDirectory = !disabled;
-        const canRemoveDirectory = index => directories.length > minDirectories && !disabled;
+        const canRemoveDirectory = () => directories.length > minDirectories && !disabled;
 
         return (
             <div

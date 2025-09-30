@@ -268,7 +268,7 @@ export const resolveFieldVisibility = (schema, formData) => {
                     isVisible = Boolean(dependentValue);
                     break;
                 case 'falsy':
-                    isVisible = !Boolean(dependentValue);
+                    isVisible = !dependentValue;
                     break;
                 case 'contains':
                     isVisible =

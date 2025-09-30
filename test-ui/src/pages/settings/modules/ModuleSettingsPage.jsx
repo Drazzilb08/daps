@@ -100,6 +100,47 @@ const ModuleSettingsContent = () => {
         }
     }, [searchTerm]);
 
+    // Save configuration - simplified with Context
+    const handleSave = useCallback(async () => {
+        if (!isDirty || isSaving) return;
+
+        try {
+            setIsSaving(true);
+            setSaveError(null);
+
+            await configAPI.updateConfig(formData);
+
+            // Update tracking after successful save
+            setLastSaved(JSON.stringify(formData));
+            setIsDirty(false);
+            setSaveSuccess(true);
+        } catch (error) {
+            console.error('Save failed:', error);
+            setSaveError(error.message || 'Failed to save configuration');
+        } finally {
+            setIsSaving(false);
+        }
+    }, [isDirty, isSaving, formData]);
+
+    // Reset to last saved state - simplified with Context
+    const handleReset = useCallback(() => {
+        setFormData(config);
+        setIsDirty(false);
+        setSaveError(null);
+    }, [config]);
+
+    // Handle field changes following main UI pattern
+    const handleFieldChange = useCallback((moduleKey, fieldKey, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [moduleKey]: {
+                ...prev[moduleKey],
+                [fieldKey]: value,
+            },
+        }));
+        setSaveError(null);
+    }, []);
+
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyboard = e => {
@@ -127,53 +168,12 @@ const ModuleSettingsContent = () => {
 
         window.addEventListener('keydown', handleKeyboard);
         return () => window.removeEventListener('keydown', handleKeyboard);
-    }, [isDirty, isSaving]);
+    }, [isDirty, isSaving, handleReset, handleSave]);
 
     const toggleModule = moduleKey => {
         setExpandedModules(prev =>
             prev.includes(moduleKey) ? prev.filter(key => key !== moduleKey) : [...prev, moduleKey]
         );
-    };
-
-    // Handle field changes following main UI pattern
-    const handleFieldChange = useCallback((moduleKey, fieldKey, value) => {
-        setFormData(prev => ({
-            ...prev,
-            [moduleKey]: {
-                ...prev[moduleKey],
-                [fieldKey]: value,
-            },
-        }));
-        setSaveError(null);
-    }, []);
-
-    // Save configuration - simplified with Context
-    const handleSave = async () => {
-        if (!isDirty || isSaving) return;
-
-        try {
-            setIsSaving(true);
-            setSaveError(null);
-
-            await configAPI.updateConfig(formData);
-
-            // Update tracking after successful save
-            setLastSaved(JSON.stringify(formData));
-            setIsDirty(false);
-            setSaveSuccess(true);
-        } catch (error) {
-            console.error('Save failed:', error);
-            setSaveError(error.message || 'Failed to save configuration');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    // Reset to last saved state - simplified with Context
-    const handleReset = () => {
-        setFormData(config);
-        setIsDirty(false);
-        setSaveError(null);
     };
 
     // No loading state needed - data comes from ConfigProvider
@@ -405,7 +405,7 @@ const ModuleSettingsContent = () => {
                                                     key={`error-${module.key}-${field.key}-${fieldIndex}`}
                                                     className="p-2 bg-warning-bg text-warning rounded"
                                                 >
-                                                    Field type '{field.type}' error: {error.message}
+                                                    Field type &apos;{field.type}&apos; error: {error.message}
                                                 </div>
                                             );
                                         }
@@ -416,7 +416,7 @@ const ModuleSettingsContent = () => {
                                     <span className="material-symbols-outlined text-4xl mb-2 block">
                                         inbox
                                     </span>
-                                    <p>This module's configuration is still being developed</p>
+                                    <p>This module&apos;s configuration is still being developed</p>
                                 </div>
                             )}
                         </AccordionItem.Body>

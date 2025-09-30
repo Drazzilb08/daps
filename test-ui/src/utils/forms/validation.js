@@ -1,4 +1,4 @@
-export function validateField(field, value, allValues = {}) {
+export function validateField(field, value) {
     // Check required fields
     if (field.required && (value === undefined || value === null || value === '')) {
         return `${field.label || field.key} is required`;

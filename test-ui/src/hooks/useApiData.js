@@ -194,7 +194,7 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
             isMountedRef.current = false;
             cleanup();
         };
-    }, []); // Empty dependency array - only runs on mount/unmount
+    }, [cleanup]); // Include cleanup dependency
 
     return {
         /** Current data */

@@ -17,7 +17,7 @@ const UnavailableField = ({ field }) => {
             </label>
 
             <div className="p-4 bg-surface-elevated border border-border rounded-md text-center text-tertiary text-sm">
-                <strong>Field type "{field.type}" not implemented</strong>
+                <strong>Field type &quot;{field.type}&quot; not implemented</strong>
                 <br />
                 <small>This field type is not available in the current version</small>
             </div>

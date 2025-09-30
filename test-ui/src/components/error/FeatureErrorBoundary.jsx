@@ -207,7 +207,7 @@ class FeatureErrorBoundaryBase extends Component {
                 fallback: FallbackComponent,
             } = this.props;
 
-            const { error, errorInfo, retryCount, errorTimestamp } = this.state;
+            const { error, retryCount } = this.state;
 
             // Use custom fallback if provided
             if (FallbackComponent) {

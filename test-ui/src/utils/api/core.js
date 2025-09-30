@@ -111,6 +111,7 @@ const apiCore = {
      * @returns {string} Cache key
      */
     getCacheKey(url, options = {}) {
+        // eslint-disable-next-line no-unused-vars
         const { body, ...cacheableOptions } = options;
         return `${url}:${JSON.stringify(cacheableOptions)}`;
     },

@@ -75,7 +75,7 @@ const UnknownFieldType = ({ field }) => {
 
             <div className="mt-2">
                 <div className="p-4 bg-error/20 border border-error rounded-md text-center text-error text-sm">
-                    <strong>Unknown field type "{field.type}"</strong>
+                    <strong>Unknown field type &quot;{field.type}&quot;</strong>
                     <br />
                     <small>This field type is not recognized by the system</small>
                 </div>

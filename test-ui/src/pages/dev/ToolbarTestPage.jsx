@@ -10,7 +10,7 @@ const ToolbarTestPage = () => {
         <div className="grid gap-12 max-w-full">
             <h1>Toolbar Overflow Test</h1>
             <p>Resize your browser window to test the responsive overflow behavior.</p>
-            <p>Buttons should move to an overflow "More" menu instead of getting compressed.</p>
+            <p>Buttons should move to an overflow &quot;More&quot; menu instead of getting compressed.</p>
 
             <div style={{ marginTop: '20px', border: '1px solid #ccc', borderRadius: '4px' }}>
                 <ToolBar>
@@ -79,7 +79,7 @@ const ToolbarTestPage = () => {
                     <li>Start with a wide browser window - all buttons should be visible</li>
                     <li>Gradually narrow the window</li>
                     <li>
-                        Watch for buttons to move to a "More" dropdown instead of getting compressed
+                        Watch for buttons to move to a &quot;More&quot; dropdown instead of getting compressed
                     </li>
                     <li>
                         The buttons should maintain their proper size and not have truncated text
@@ -95,8 +95,8 @@ const ToolbarTestPage = () => {
                     dropdown positioning.
                 </p>
                 <ol>
-                    <li>Narrow the browser window to trigger the "More" dropdown</li>
-                    <li>Click the "More" button to open the dropdown</li>
+                    <li>Narrow the browser window to trigger the &quot;More&quot; dropdown</li>
+                    <li>Click the &quot;More&quot; button to open the dropdown</li>
                     <li>Scroll the page up and down</li>
                     <li>
                         <strong>Expected behavior:</strong> Dropdown should stay fixed to its anchor

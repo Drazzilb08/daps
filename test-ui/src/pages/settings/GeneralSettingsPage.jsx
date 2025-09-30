@@ -63,7 +63,7 @@ export const GeneralSettingsPage = () => {
         setLastSaved(JSON.stringify(formData));
         setIsDirty(false);
         setSaveError(null);
-    }, []);
+    }, [formData]);
 
     // Track changes for dirty state
     useEffect(() => {
@@ -103,7 +103,7 @@ export const GeneralSettingsPage = () => {
 
         window.addEventListener('keydown', handleKeyboard);
         return () => window.removeEventListener('keydown', handleKeyboard);
-    }, [isDirty, isSaving]);
+    }, [isDirty, isSaving, handleSave, handleReset]);
 
     // Handle field changes
     const handleFieldChange = useCallback((moduleKey, fieldKey, value) => {
@@ -118,7 +118,7 @@ export const GeneralSettingsPage = () => {
     }, []);
 
     // Save configuration
-    const handleSave = async () => {
+    const handleSave = useCallback(async () => {
         if (!isDirty || isSaving) return;
 
         try {
@@ -138,14 +138,14 @@ export const GeneralSettingsPage = () => {
         } finally {
             setIsSaving(false);
         }
-    };
+    }, [isDirty, isSaving, formData]);
 
     // Reset to last saved state
-    const handleReset = () => {
+    const handleReset = useCallback(() => {
         setFormData(JSON.parse(lastSaved));
         setIsDirty(false);
         setSaveError(null);
-    };
+    }, [lastSaved]);
 
     return (
         <div className="p-4 md:p-6 max-w-4xl mx-auto">
@@ -305,7 +305,7 @@ export const GeneralSettingsPage = () => {
                                             key={`error-${module.key}-${field.key}-${fieldIndex}`}
                                             className="p-2 bg-warning-bg text-warning rounded"
                                         >
-                                            Field type '{field.type}' error: {error.message}
+                                            Field type &apos;{field.type}&apos; error: {error.message}
                                         </div>
                                     );
                                 }

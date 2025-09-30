@@ -102,8 +102,11 @@ export const DirListOptionsField = React.memo(
         const label = field.label || 'Directories with Options';
 
         // Extract mode options from field configuration
-        // Support multiple field schema formats: options, mode_options, modeOptions
-        const rawOptions = field.options || field.mode_options || field.modeOptions || [];
+        // Support multiple field schema formats: options, mode_options, modeOptions with stable reference
+        const rawOptions = useMemo(
+            () => field.options || field.mode_options || field.modeOptions || [],
+            [field.options, field.mode_options, field.modeOptions]
+        );
 
         // Convert to expected format: [{value, label}, ...]
         const modeOptions = useMemo(() => {

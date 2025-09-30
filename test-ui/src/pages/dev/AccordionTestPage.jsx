@@ -315,7 +315,7 @@ const AccordionTestPage = () => {
                                 <div className="bg-surface-elevated border-t border-border-subtle">
                                     <div className="px-4 py-4 md:px-6">
                                         <div className="text-primary">
-                                            This accordion header uses the 'cursor-default' utility
+                                            This accordion header uses the &apos;cursor-default&apos; utility
                                             class to override the pointer cursor.
                                         </div>
                                     </div>

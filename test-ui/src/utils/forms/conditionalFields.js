@@ -120,7 +120,7 @@ export const getInstanceType = (instanceName, instancesData) => {
 
     for (const [serviceType, instances] of Object.entries(instancesData)) {
         if (instances && typeof instances === 'object') {
-            if (instances.hasOwnProperty(instanceName)) {
+            if (Object.hasOwn(instances, instanceName)) {
                 console.log('[conditionalFields] Found instance type:', {
                     instanceName,
                     serviceType,

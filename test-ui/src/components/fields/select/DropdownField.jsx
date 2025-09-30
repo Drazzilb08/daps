@@ -41,7 +41,7 @@ export const DropdownField = React.memo(
         // Transform options to SelectBase format
         const options = useMemo(() => {
             if (!field.options) return [];
-            return field.options.map((option, index) => {
+            return field.options.map(option => {
                 if (typeof option === 'string') {
                     return { value: option, label: option };
                 }

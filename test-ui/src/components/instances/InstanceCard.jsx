@@ -21,7 +21,6 @@ import { Button } from '../ui/Button';
  */
 export const InstanceCard = ({
     instance,
-    serviceType,
     connectionStatus,
     isTesting,
     onTest,
@@ -43,7 +42,7 @@ export const InstanceCard = ({
             {/* Instance data display */}
             <div className="space-y-3">
                 {Object.entries(cardData)
-                    .filter(([key, value]) => value !== undefined && value !== null)
+                    .filter(([, value]) => value !== undefined && value !== null)
                     .map(([key, value]) => (
                         <div
                             key={key}
@@ -62,25 +61,15 @@ export const InstanceCard = ({
             {/* Action buttons - integrated into card */}
             <div className="flex gap-2 justify-end mt-4 pt-3 border-t border-default">
                 {/* Test button - Primary variant (main action) */}
-                <Button
-                    color="primary"
-                    onClick={onTest}
-                    disabled={isTesting}
-                >
+                <Button color="primary" onClick={onTest} disabled={isTesting}>
                     {isTesting ? 'Testing...' : 'Test'}
                 </Button>
                 {/* Edit button - Secondary variant (neutral action) */}
-                <Button
-                    color="info"
-                    onClick={onEdit}
-                >
+                <Button color="info" onClick={onEdit}>
                     Edit
                 </Button>
                 {/* Delete button - Danger variant (destructive action) */}
-                <Button
-                    color="error"
-                    onClick={onDelete}
-                >
+                <Button color="error" onClick={onDelete}>
                     Delete
                 </Button>
             </div>

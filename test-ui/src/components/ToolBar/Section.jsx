@@ -176,7 +176,7 @@ const Section = ({ children, alignContent = 'left', collapseButtons = true }) =>
             overflowItems: overflowItems,
             buttonCount: buttonCount,
         };
-    }, [children, isMeasured, sectionWidth, collapseButtons]);
+    }, [children, isMeasured, sectionWidth, collapseButtons, SEPARATOR_WIDTH]);
 
     // buttonCount is already available from the useMemo destructuring above
 

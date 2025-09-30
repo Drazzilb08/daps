@@ -130,7 +130,7 @@ export const ArrayObjectField = ({
                             {primary}
                         </div>
                         {secondary && (
-                            <div className="text-xs text-secondary truncate md:flex-shrink md:min-w-[120px]">
+                            <div className="text-xs text-secondary truncate md:flex-shrink md:min-w-30">
                                 {secondary}
                             </div>
                         )}
@@ -250,7 +250,7 @@ export const ArrayObjectField = ({
                 <div className="flex gap-3 p-4 border-t border-border bg-surface justify-end flex-col-reverse md:flex-row">
                     <button
                         type="button"
-                        className="min-h-11 min-w-11 inline-flex items-center justify-center px-4 py-3 rounded-md text-sm font-medium transition-colors cursor-pointer border bg-surface text-primary border-border hover:bg-surface-hover focus:outline-2 focus:outline-primary focus:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto md:min-w-[100px]"
+                        className="min-h-11 min-w-11 inline-flex items-center justify-center px-4 py-3 rounded-md text-sm font-medium transition-colors cursor-pointer border bg-surface text-primary border-border hover:bg-surface-hover focus:outline-2 focus:outline-primary focus:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto md:min-w-25"
                         onClick={handleCancel}
                         disabled={disabled}
                     >
@@ -258,7 +258,7 @@ export const ArrayObjectField = ({
                     </button>
                     <button
                         type="button"
-                        className="min-h-11 min-w-11 inline-flex items-center justify-center px-4 py-3 rounded-md text-sm font-medium transition-colors cursor-pointer border bg-primary text-primary-text border-primary hover:bg-primary-hover focus:outline-2 focus:outline-primary focus:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto md:min-w-[100px]"
+                        className="min-h-11 min-w-11 inline-flex items-center justify-center px-4 py-3 rounded-md text-sm font-medium transition-colors cursor-pointer border bg-primary text-white border-primary hover:bg-primary-hover focus:outline-2 focus:outline-primary focus:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full md:w-auto md:min-w-25"
                         onClick={handleSave}
                         disabled={disabled}
                     >

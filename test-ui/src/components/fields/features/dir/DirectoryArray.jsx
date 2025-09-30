@@ -107,7 +107,7 @@ const SortableDirectoryItem = React.memo(({
                     onClick={() => onClick(index)}
                     invalid={invalid}
                     aria-label={`${label} ${index + 1}`}
-                    className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-[120px]' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                    className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-30' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 />
 
                 {/* Mode selection - only show if modeOptions provided */}
@@ -121,7 +121,7 @@ const SortableDirectoryItem = React.memo(({
                         invalid={invalid}
                         options={modeOptions}
                         placeholder="Select mode..."
-                        className="md:flex-[1_1_0%] md:min-w-[100px] md:max-w-[150px]"
+                        className="md:flex-[1_1_0%] md:min-w-25 md:max-w-37"
                         aria-label={`Mode for ${label} ${index + 1}`}
                     />
                 )}
@@ -193,7 +193,7 @@ const DirectoryItem = React.memo(({
                     onClick={() => onClick(index)}
                     invalid={invalid}
                     aria-label={`${label} ${index + 1}`}
-                    className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-[120px]' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                    className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-30' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 />
 
                 {/* Mode selection - only show if modeOptions provided */}
@@ -207,7 +207,7 @@ const DirectoryItem = React.memo(({
                         invalid={invalid}
                         options={modeOptions}
                         placeholder="Select mode..."
-                        className="md:flex-[1_1_0%] md:min-w-[100px] md:max-w-[150px]"
+                        className="md:flex-[1_1_0%] md:min-w-25 md:max-w-37"
                         aria-label={`Mode for ${label} ${index + 1}`}
                     />
                 )}

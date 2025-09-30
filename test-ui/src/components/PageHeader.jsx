@@ -86,7 +86,7 @@ const PageHeader = React.memo(() => {
 
     return (
         <header
-            className={`shrink-0 h-header bg-header-bg z-sticky ${isSearchPage ? 'search-page' : 'non-search-page'}`}
+            className={`shrink-0 h-header bg-header-bg z-sticky min-h-header ${isSearchPage ? 'search-page' : 'non-search-page'}`}
             role="banner"
         >
             <div className={`flex items-center justify-between h-full px-4 max-w-full ${isSearchPage ? 'gap-4' : 'gap-3'}`}>

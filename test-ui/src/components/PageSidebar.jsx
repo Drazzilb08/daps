@@ -183,8 +183,8 @@ const PageSidebar = React.memo(() => {
             ref={sidebarRef}
             className={`bg-sidebar-bg border-r border-sidebar-border overflow-y-auto transition-transform
                 ${isMobile
-                    ? `fixed inset-y-0 left-0 w-sidebar z-50 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
-                    : 'flex-none w-sidebar translate-x-0'
+                    ? `fixed inset-y-0 left-0 min-w-sidebar z-50 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
+                    : 'flex-none min-w-sidebar translate-x-0'
                 } ${isMobile && mobileMenuOpen ? 'page-sidebar--mobile-open' : ''}`}
             role="navigation"
             aria-label="Main navigation"

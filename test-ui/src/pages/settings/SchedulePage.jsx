@@ -5,10 +5,9 @@ import { useModuleExecution } from '../../hooks/useModuleExecution.js';
 import { useApiData } from '../../hooks/useApiData';
 import { configAPI } from '../../utils/api/config';
 import { StatisticsGrid } from '../../components/statistics/StatisticsGrid';
-import { ModuleCard } from '../../components/modules/ModuleCard';
+import { ScheduleCard } from '../../components/modules/ScheduleCard';
 
 export const SchedulePage = () => {
-
     // API Data - Configuration
     const {
         data: configData,
@@ -19,62 +18,72 @@ export const SchedulePage = () => {
     });
 
     // Module Execution Hook
-    const {
-        executeModule,
-        isRunning,
-    } = useModuleExecution();
+    const { executeModule, isRunning } = useModuleExecution();
 
     // Derive data
     const schedules = useMemo(() => configData?.schedule || {}, [configData?.schedule]);
-    const availableModules = useMemo(() => moduleList.map(moduleKey => ({
-        key: moduleKey,
-        label: humanize(moduleKey),
-    })), []);
+    const availableModules = useMemo(
+        () =>
+            moduleList.map(moduleKey => ({
+                key: moduleKey,
+                label: humanize(moduleKey),
+            })),
+        []
+    );
 
     // Statistics
-    const statistics = useMemo(() => [
-        {
-            label: 'Scheduled Modules',
-            value: Object.keys(schedules).length,
-            colorClass: 'text-success'
-        },
-        {
-            label: 'Unscheduled Modules',
-            value: availableModules.length - Object.keys(schedules).length,
-            colorClass: 'text-warning'
-        },
-        {
-            label: 'Total Modules',
-            value: availableModules.length,
-            colorClass: 'text-brand-primary'
-        }
-    ], [schedules, availableModules]);
+    const statistics = useMemo(
+        () => [
+            {
+                label: 'Scheduled Modules',
+                value: Object.keys(schedules).length,
+                colorClass: 'text-success',
+            },
+            {
+                label: 'Unscheduled Modules',
+                value: availableModules.length - Object.keys(schedules).length,
+                colorClass: 'text-warning',
+            },
+            {
+                label: 'Total Modules',
+                value: availableModules.length,
+                colorClass: 'text-brand-primary',
+            },
+        ],
+        [schedules, availableModules]
+    );
 
     // Handlers
-    const handleModuleRun = useCallback(async (moduleKey) => {
-        try {
-            await executeModule(moduleKey);
-        } catch (error) {
-            console.error(`Failed to execute ${moduleKey}:`, error);
-        }
-    }, [executeModule]);
+    const handleModuleRun = useCallback(
+        async moduleKey => {
+            try {
+                await executeModule(moduleKey);
+            } catch (error) {
+                console.error(`Failed to execute ${moduleKey}:`, error);
+            }
+        },
+        [executeModule]
+    );
 
-    const handleScheduleEdit = useCallback((moduleKey, isEdit = false) => {
-        const module = availableModules.find(m => m.key === moduleKey);
-        if (!module) return;
+    const handleScheduleEdit = useCallback(
+        (moduleKey, isEdit = false) => {
+            const module = availableModules.find(m => m.key === moduleKey);
+            if (!module) return;
 
-        const currentSchedule = schedules[moduleKey] || '';
-        const action = isEdit ? 'Edit' : 'Add';
+            const currentSchedule = schedules[moduleKey] || '';
+            const action = isEdit ? 'Edit' : 'Add';
 
-        // PLACEHOLDER ALERT: Following DirField pattern exactly
-        alert(
-            `🚧 Schedule Configuration Modal\n\n` +
-            `Module: ${module.label}\n` +
-            `Action: ${action} schedule configuration\n` +
-            `Current Schedule: ${currentSchedule || 'None'}\n\n` +
-            `This will open a modal to configure the module schedule when the modal system is implemented.`
-        );
-    }, [availableModules, schedules]);
+            // PLACEHOLDER ALERT: Following DirField pattern exactly
+            alert(
+                `🚧 Schedule Configuration Modal\n\n` +
+                    `Module: ${module.label}\n` +
+                    `Action: ${action} schedule configuration\n` +
+                    `Current Schedule: ${currentSchedule || 'None'}\n\n` +
+                    `This will open a modal to configure the module schedule when the modal system is implemented.`
+            );
+        },
+        [availableModules, schedules]
+    );
 
     // Loading state
     if (isLoadingConfig) {
@@ -107,16 +116,12 @@ export const SchedulePage = () => {
             </div>
 
             {/* Statistics */}
-            <StatisticsGrid
-                statistics={statistics}
-                columns={3}
-                className="mb-8"
-            />
+            <StatisticsGrid statistics={statistics} columns={3} className="mb-8" />
 
             {/* Module Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {availableModules.map(module => (
-                    <ModuleCard
+                    <ScheduleCard
                         key={module.key}
                         moduleKey={module.key}
                         moduleLabel={module.label}

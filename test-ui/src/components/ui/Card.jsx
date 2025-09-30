@@ -1,15 +1,16 @@
 /**
  * Card Primitive Component
  *
- * Generic card component for displaying structured data in key-value pairs.
+ * Versatile card component that supports both data-driven rendering and container patterns.
  * This primitive provides a reusable foundation for displaying object data
- * with consistent styling and layout patterns.
+ * with consistent styling and layout patterns, or serving as a styled container.
  *
  * @param {Object} props - Component props
- * @param {Object} props.data - Data object to display
- * @param {Array} [props.excludeKeys=[]] - Keys to exclude from display
- * @param {Function} [props.formatKey] - Function to format key display names
- * @param {Function} [props.formatValue] - Function to format value display
+ * @param {Object} [props.data] - Data object to display (for data-driven mode)
+ * @param {React.ReactNode} [props.children] - Children for container mode
+ * @param {Array} [props.excludeKeys=[]] - Keys to exclude from display (data mode)
+ * @param {Function} [props.formatKey] - Function to format key display names (data mode)
+ * @param {Function} [props.formatValue] - Function to format value display (data mode)
  * @param {string} [props.className=""] - Additional CSS classes
  * @param {string} [props.variant="standard"] - Card variant type
  *
@@ -20,13 +21,37 @@
  * - "minimal": Minimal styling with no background
  */
 export const Card = ({
-    data = {},
+    data,
+    children,
     excludeKeys = [],
     formatKey,
     formatValue,
     className = '',
     variant = 'standard',
 }) => {
+    // Build CSS classes using utilities
+    const baseClasses = 'flex flex-col gap-3 p-4 bg-surface rounded-md';
+    const variantClasses = {
+        standard: 'border border-default',
+        compact: 'gap-2 p-3 text-sm',
+        bordered: 'border border-primary',
+        minimal: 'bg-transparent p-2 rounded-none gap-2',
+    };
+
+    const cardClasses = [baseClasses, variantClasses[variant] || '', className]
+        .filter(Boolean)
+        .join(' ');
+
+    // Container mode: render children directly
+    if (children !== undefined) {
+        return <div className={cardClasses}>{children}</div>;
+    }
+
+    // Data mode: auto-render data object (original behavior)
+    if (!data) {
+        return null;
+    }
+
     // Default key formatter - capitalize first letter
     const defaultFormatKey = key => {
         return key.charAt(0).toUpperCase() + key.slice(1);
@@ -70,19 +95,6 @@ export const Card = ({
         return null;
     }
 
-    // Build CSS classes using utilities
-    const baseClasses = 'flex flex-col gap-3 p-4 bg-surface rounded-md';
-    const variantClasses = {
-        standard: 'border border-default',
-        compact: 'gap-2 p-3 text-sm',
-        bordered: 'border border-primary',
-        minimal: 'bg-transparent p-2 rounded-none gap-2',
-    };
-
-    const cardClasses = [baseClasses, variantClasses[variant] || '', className]
-        .filter(Boolean)
-        .join(' ');
-
     return (
         <div className={cardClasses}>
             {entries.map(([key, value]) => {
@@ -113,25 +125,27 @@ export const Card = ({
  * CardRow - Individual row component for manual card construction
  *
  * @param {Object} props - Component props
- * @param {string} props.label - Row label text
+ * @param {string} [props.label] - Row label text (optional for labeled rows)
  * @param {React.ReactNode} props.children - Row content
  * @param {string} [props.className=""] - Additional CSS classes
  */
 export const CardRow = ({ label, children, className = '' }) => {
+    // If no label, render children directly (for flexible content)
+    if (!label) {
+        return <div className={className}>{children}</div>;
+    }
+
+    // Labeled row for key-value pairs
     const rowClasses = ['flex flex-col gap-1 sm:flex-row sm:items-start', className]
         .filter(Boolean)
         .join(' ');
 
     return (
         <div className={rowClasses}>
-            {label && (
-                <span className="font-semibold text-primary shrink-0 sm:min-w-24 text-sm">
-                    {label}:
-                </span>
-            )}
-            <span
-                className={`text-secondary flex-1 break-words text-base leading-relaxed ${!label ? 'sm:ml-0' : ''}`}
-            >
+            <span className="font-semibold text-primary shrink-0 sm:min-w-24 text-sm">
+                {label}:
+            </span>
+            <span className="text-secondary flex-1 break-words text-base leading-relaxed">
                 {children}
             </span>
         </div>

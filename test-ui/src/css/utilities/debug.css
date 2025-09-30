@@ -56,11 +56,11 @@
     min-height: 44px;
     border: 1px dashed orange;
     pointer-events: none;
-    z-index: 999; /* Use z-max value (999) for debug overlays */
+    z-index: var(--z-max);
   }
 
   /* ===========================================
-     RESPONSIVE DEBUG UTILITIES
+     RESPONSIVE DEBUG UTILITIES - STANDARD BREAKPOINTS
      =========================================== */
 
   .debug-breakpoint::before {
@@ -72,35 +72,28 @@
     background: red;
     color: white;
     font-size: 12px;
-    z-index: 999; /* Use z-max value (999) for debug indicators */
+    z-index: var(--z-max);
   }
 
-  @media (width >= 481px) {
+  @media (width >= 768px) {
     .debug-breakpoint::before {
-      content: 'sm';
+      content: 'md (768px)';
       background: orange;
-    }
-  }
-
-  @media (width >= 769px) {
-    .debug-breakpoint::before {
-      content: 'md';
-      background: yellow;
-      color: black;
     }
   }
 
   @media (width >= 1024px) {
     .debug-breakpoint::before {
-      content: 'lg';
-      background: green;
+      content: 'lg (1024px)';
+      background: yellow;
+      color: black;
     }
   }
 
-  @media (width >= 1200px) {
+  @media (width >= 1440px) {
     .debug-breakpoint::before {
-      content: 'xl';
-      background: blue;
+      content: 'xl (1440px)';
+      background: green;
     }
   }
 
@@ -139,11 +132,54 @@
     font-size: 10px;
     font-weight: bold;
     border-radius: 2px;
-    z-index: 999; /* Use z-max value (999) for debug overlays */
+  }
+
+  .dev-only::after {
+    z-index: var(--z-max);
   }
 
   /* Hide dev utilities in production */
   .production .dev-only::after {
     display: none;
+  }
+
+  /* ===========================================
+     FLEXBOX DEBUG UTILITIES
+     =========================================== */
+
+  .debug-flex * {
+    outline: 1px solid rgb(255 165 0 / 50%);
+  }
+
+  .debug-flex-item {
+    outline: 2px solid rgb(255 165 0);
+    outline-offset: -2px;
+  }
+
+  /* ===========================================
+     GRID DEBUG UTILITIES
+     =========================================== */
+
+  .debug-grid-container {
+    outline: 2px solid rgb(0 255 0 / 50%);
+    outline-offset: -2px;
+  }
+
+  .debug-grid-item {
+    outline: 1px solid rgb(0 255 0);
+    background: rgb(0 255 0 / 10%);
+  }
+
+  /* ===========================================
+     SPACING DEBUG UTILITIES
+     =========================================== */
+
+  .debug-spacing * {
+    background: rgb(255 0 0 / 5%);
+  }
+
+  .debug-spacing-item {
+    background: rgb(255 0 0 / 15%);
+    outline: 1px dashed rgb(255 0 0 / 50%);
   }
 }

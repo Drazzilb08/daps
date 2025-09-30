@@ -11,8 +11,6 @@
   .hover\:bg-surface-hover:hover { background: var(--surface-hover); }
   .hover\:bg-surface-active:hover { background: var(--surface-active); }
   .hover\:bg-surface-alt:hover { background: var(--surface-alt); }
-  .hover\:bg-surface-variant:hover { background: var(--surface-alt); }
-  .hover\:bg-surface-secondary:hover { background: var(--surface-alt); }
   .hover\:bg-success:hover { background: var(--success); }
   .hover\:bg-warning:hover { background: var(--warning); }
   .hover\:bg-error:hover { background: var(--error); }
@@ -24,15 +22,11 @@
   .hover\:bg-primary-surface:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
   .hover\:bg-primary\/15:hover { background: color-mix(in srgb, var(--primary) 15%, transparent); }
 
-  /* State color hover variants */
+  /* State color hover variants - Consistent naming with -subtle suffix */
   .hover\:bg-success-subtle:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
-  .hover\:bg-success-surface:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
-
   .hover\:bg-warning-subtle:hover { background: color-mix(in srgb, var(--warning) 20%, transparent); }
-  .hover\:bg-warning-surface:hover { background: color-mix(in srgb, var(--warning) 20%, transparent); }
-
   .hover\:bg-error-subtle:hover { background: color-mix(in srgb, var(--error) 10%, transparent); }
-  .hover\:bg-danger-surface:hover { background: color-mix(in srgb, var(--error) 10%, transparent); }
+  .hover\:bg-info-subtle:hover { background: color-mix(in srgb, var(--info) 15%, transparent); }
 
   /* Border hover variants - Complete coverage */
   .hover\:border-primary:hover { border-color: var(--primary); }
@@ -58,11 +52,27 @@
   .hover\:text-white:hover { color: #fff; }
   .hover\:text-inherit:hover { color: inherit; }
 
-  /* Transform hover variants */
+  /* Transform hover variants - Complete coverage */
+
+  /* Scale transforms */
+  .hover\:scale-95:hover { transform: scale(0.95); }
   .hover\:scale-98:hover { transform: scale(0.98); }
   .hover\:scale-102:hover { transform: scale(1.02); }
   .hover\:scale-105:hover { transform: scale(1.05); }
+  .hover\:scale-110:hover { transform: scale(1.10); }
+
+  /* Rotation transforms */
+  .hover\:rotate-1:hover { transform: rotate(1deg); }
+  .hover\:rotate-3:hover { transform: rotate(3deg); }
+  .hover\:rotate-6:hover { transform: rotate(6deg); }
+  .hover\:-rotate-1:hover { transform: rotate(-1deg); }
+  .hover\:-rotate-3:hover { transform: rotate(-3deg); }
+  .hover\:-rotate-6:hover { transform: rotate(-6deg); }
+
+  /* Translation transforms */
   .hover\:translate-y-negative-1:hover { transform: translateY(-4px); }
+  .hover\:translate-y-1:hover { transform: translateY(4px); }
+  .hover\:translate-y-2:hover { transform: translateY(8px); }
 
   /* Shadow hover variants */
   .hover\:shadow-sm:hover { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 10%), 0 1px 2px -1px rgb(0 0 0 / 10%); }
@@ -101,6 +111,18 @@
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
   }
 
+  .focus\:ring-warning:focus {
+    outline: none;
+    border-color: var(--warning);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--warning) 20%, transparent);
+  }
+
+  .focus\:ring-info:focus {
+    outline: none;
+    border-color: var(--info);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--info) 20%, transparent);
+  }
+
   /* Focus-within patterns for form containers */
   .focus-within\:border-primary:focus-within {
     border-color: var(--primary);
@@ -112,6 +134,14 @@
 
   .focus-within\:ring-error:focus-within {
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
+  }
+
+  .focus-within\:ring-warning:focus-within {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--warning) 20%, transparent);
+  }
+
+  .focus-within\:ring-info:focus-within {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--info) 20%, transparent);
   }
 
   /* Focus visible for keyboard navigation */
@@ -364,10 +394,20 @@
 
   /* Respect user motion preferences */
   @media (prefers-reduced-motion: reduce) {
+    .hover\:scale-95:hover,
     .hover\:scale-98:hover,
     .hover\:scale-102:hover,
     .hover\:scale-105:hover,
+    .hover\:scale-110:hover,
+    .hover\:rotate-1:hover,
+    .hover\:rotate-3:hover,
+    .hover\:rotate-6:hover,
+    .hover\:-rotate-1:hover,
+    .hover\:-rotate-3:hover,
+    .hover\:-rotate-6:hover,
     .hover\:translate-y-negative-1:hover,
+    .hover\:translate-y-1:hover,
+    .hover\:translate-y-2:hover,
     .active\:scale-98:active,
     .active\:scale-95:active,
     .group-hover\:scale-102 {
@@ -386,7 +426,7 @@
   }
 
   /* High contrast mode improvements */
-  @media (prefers-contrast: high) {
+  @media (prefers-contrast: more) {
     .focus\:ring-primary:focus,
     .focus\:ring-success:focus,
     .focus\:ring-error:focus,

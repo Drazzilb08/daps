@@ -83,11 +83,6 @@
   .w-max-content { width: max-content; }
   .w-fit-content { width: fit-content; }
 
-  /* Layout-specific widths */
-  .w-sidebar { width: 13.125rem; }
-  .w-container { width: 75rem;  /* 1200px */ }
-  .w-content { width: 48rem;  /* 768px */ }
-
   /* Touch target widths for accessibility */
   .w-touch { width: 44px; }
   .w-touch-lg { width: 48px; }
@@ -95,10 +90,7 @@
   /* Missing w-11 utility for 44px compliance (2.75rem = 44px) */
   .w-11 { width: 2.75rem; }   /* 44px - WCAG 2.1 AA minimum */
 
-  /* Icon and control widths */
-  .w-icon { width: 24px; }
-  .w-icon-sm { width: 16px; }
-  .w-icon-xl { width: 32px; }
+  /* Control widths */
   .w-control { width: 200px; }
   .w-input { width: 100%; }
 
@@ -166,11 +158,10 @@
   .h-lvh { height: 100lvh; }     /* Large viewport height */
   .h-dvh { height: 100dvh; }     /* Dynamic viewport height */
 
-  /* Layout-specific heights */
-  .h-header { height: 64px; }
-  .h-footer { height: 48px; }
-  .h-content { height: calc(100vh - 64px); }
-  .h-modal { height: 90vh; }
+  /* Content-based heights */
+  .h-min { height: min-content; }
+  .h-max { height: max-content; }
+  .h-fit { height: fit-content; }
 
   /* Touch target heights for accessibility */
   .h-touch { height: 44px; }
@@ -183,9 +174,6 @@
   .h-input { height: 44px; }
   .h-input-sm { height: 36px; }
   .h-input-lg { height: 52px; }
-  .h-icon { height: 24px; }
-  .h-icon-sm { height: 16px; }
-  .h-icon-xl { height: 32px; }
 
   /* Textarea heights - calculated from input base */
   .h-textarea-sm { height: calc(44px * 2); }
@@ -251,9 +239,6 @@
 
   /* Semantic square sizes */
   .size-touch { width: 44px; height: 44px; }
-  .size-icon { width: 24px; height: 24px; }
-  .size-icon-sm { width: 16px; height: 16px; }
-  .size-icon-xl { width: 32px; height: 32px; }
 
   /* ===========================================
      MINIMUM WIDTH UTILITIES

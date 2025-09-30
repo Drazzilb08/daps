@@ -12,7 +12,18 @@
 
   .state-active:active:not(:disabled) {
     transform: scale(0.98);
-    transition: transform 0.1s ease;
+    transition: transform 150ms ease-in-out;
+  }
+
+  /* Protection for touch devices - prevent sticky hover states */
+  @media (hover: none) and (pointer: coarse) {
+    .state-hover-dim:hover {
+      opacity: 1; /* Disable hover on touch devices */
+    }
+
+    .hover\:bg-surface-hover:hover {
+      background: inherit; /* Prevent sticky hover states */
+    }
   }
 
   /* ===========================================

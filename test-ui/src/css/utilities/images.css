@@ -1,12 +1,28 @@
 
 @layer utilities {
-  /* Object-fit */
+  /* ===========================================
+     OBJECT-FIT UTILITIES
+     =========================================== */
 
-  .img-cover { object-fit: cover; }
-  .img-contain { object-fit: contain; }
-  .img-fill { object-fit: fill; }
-  .img-scale-down { object-fit: scale-down; }
-  .img-none { object-fit: none; }
+  .object-contain { object-fit: contain; }
+  .object-cover { object-fit: cover; }
+  .object-fill { object-fit: fill; }
+  .object-none { object-fit: none; }
+  .object-scale-down { object-fit: scale-down; }
+
+  /* ===========================================
+     OBJECT-POSITION UTILITIES
+     =========================================== */
+
+  .object-bottom { object-position: bottom; }
+  .object-center { object-position: center; }
+  .object-left { object-position: left; }
+  .object-left-bottom { object-position: left bottom; }
+  .object-left-top { object-position: left top; }
+  .object-right { object-position: right; }
+  .object-right-bottom { object-position: right bottom; }
+  .object-right-top { object-position: right top; }
+  .object-top { object-position: top; }
 
   /* ===========================================
      RESPONSIVE IMAGE UTILITIES
@@ -66,40 +82,53 @@
     animation: shimmer 2s infinite;
   }
 
+  /* Shimmer animation for loading states */
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
   /* ===========================================
-     POSTER SIZING UTILITIES
+     ASPECT RATIO UTILITIES
      =========================================== */
 
-  /* Systematic poster utilities */
-  .aspect-poster { aspect-ratio: 2 / 3; }
-  
-  .w-poster-sm { width: 7.5rem; }    /* 120px */
-  .w-poster-md { width: 8.125rem; }  /* 130px */
-  .w-poster-lg { width: 9.75rem; }   /* 156px */
+  .aspect-square { aspect-ratio: 1 / 1; }    /* 1:1 - Square */
+  .aspect-video { aspect-ratio: 16 / 9; }    /* 16:9 - Video */
+  .aspect-4-3 { aspect-ratio: 4 / 3; }       /* 4:3 - Traditional TV */
+  .aspect-poster { aspect-ratio: 2 / 3; }    /* 2:3 - Movie poster */
+  .aspect-21-9 { aspect-ratio: 21 / 9; }     /* 21:9 - Ultrawide */
+
+  /* ===========================================
+     POSTER SIZING UTILITIES - STANDARD SCALE
+     =========================================== */
+
+  .w-poster-sm { width: 8rem; }   /* 128px */
+  .w-poster-md { width: 10rem; }  /* 160px */
+  .w-poster-lg { width: 12rem; }  /* 192px */
 
 
   /* ===========================================
      RESPONSIVE POSTER UTILITIES
      =========================================== */
 
-  @media (width <= 768px) {
+  @media (width <= 480px) {
     .poster-responsive {
-      width: 7.5rem;  /* 120px */
-      height: calc(7.5rem * 1.5);  /* 180px - aspect 2:3 */
+      width: 8rem;  /* 128px */
+      height: calc(8rem * 1.5);  /* 192px - aspect 2:3 */
     }
   }
 
   @media (width >= 481px) and (width <= 768px) {
     .poster-responsive {
-      width: 8.125rem;  /* 130px */
-      height: calc(8.125rem * 1.5);  /* 195px - aspect 2:3 */
+      width: 10rem;  /* 160px */
+      height: calc(10rem * 1.5);  /* 240px - aspect 2:3 */
     }
   }
 
   @media (width >= 769px) {
     .poster-responsive {
-      width: 9.75rem;  /* 156px */
-      height: calc(9.75rem * 1.5);  /* 234px - aspect 2:3 */
+      width: 12rem;  /* 192px */
+      height: calc(12rem * 1.5);  /* 288px - aspect 2:3 */
     }
   }
 
@@ -123,20 +152,3 @@
     }
   }
 }
-
-  /* Object utilities (moved from layout.css) */
-  .object-contain { object-fit: contain; }
-  .object-cover { object-fit: cover; }
-  .object-fill { object-fit: fill; }
-  .object-none { object-fit: none; }
-  .object-scale-down { object-fit: scale-down; }
-
-  .object-bottom { object-position: bottom; }
-  .object-center { object-position: center; }
-  .object-left { object-position: left; }
-  .object-left-bottom { object-position: left bottom; }
-  .object-left-top { object-position: left top; }
-  .object-right { object-position: right; }
-  .object-right-bottom { object-position: right bottom; }
-  .object-right-top { object-position: right top; }
-  .object-top { object-position: top; }

@@ -1,9 +1,5 @@
 
 @layer utilities {
-  /* Badge-specific typography utilities */
-  .badge-text-size { font-size: 0.875rem; }
-  .badge-text-weight { font-weight: 500; }
-
   /* Font sizes */
   .text-xs { font-size: 0.75rem; }
   .text-sm { font-size: 0.875rem; }
@@ -15,8 +11,6 @@
   .text-4xl { font-size: 2.25rem; }    /* 36px */
   .text-5xl { font-size: 3rem; }       /* 48px */
   .text-6xl { font-size: 3.75rem; }    /* 60px */
-
-  .text-heading { font-size: 1.875rem; }
 
   /* ===========================================
      FONT WEIGHT UTILITIES - DESIGN TOKEN BASED
@@ -33,7 +27,7 @@
   .font-black { font-weight: 900; }
 
   /* ===========================================
-     FONT FAMILY UTILITIES
+     FONT FAMILY UTILITIES - COMPREHENSIVE SYSTEM
      =========================================== */
 
   .font-sans { font-family: Roboto, 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
@@ -47,6 +41,15 @@
 
   .font-system-mono {
     font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  }
+
+  /* Additional system font options */
+  .font-system-serif {
+    font-family: 'New York', 'Iowan Old Style', 'Apple Garamond', 'Baskerville', 'Times New Roman', 'Droid Serif', 'Times', serif;
+  }
+
+  .font-system-ui {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 
   /* ===========================================
@@ -280,9 +283,10 @@
   .list-outside { list-style-position: outside; }
 
   /* ===========================================
-     FONT VARIANT UTILITIES
+     FONT VARIANT UTILITIES - COMPREHENSIVE OPENTYPE FEATURES
      =========================================== */
 
+  /* Numeric variants */
   .normal-nums { font-variant-numeric: normal; }
   .ordinal { font-variant-numeric: ordinal; }
   .slashed-zero { font-variant-numeric: slashed-zero; }
@@ -292,6 +296,35 @@
   .tabular-nums { font-variant-numeric: tabular-nums; }
   .diagonal-fractions { font-variant-numeric: diagonal-fractions; }
   .stacked-fractions { font-variant-numeric: stacked-fractions; }
+
+  /* Modern font feature utilities */
+  .font-variant-numeric {
+    font-variant-numeric: lining-nums tabular-nums; /* Enable numeric features */
+  }
+
+  .font-feature-tabular-nums {
+    font-variant-numeric: tabular-nums; /* Monospace numbers */
+    font-feature-settings: "tnum";
+  }
+
+  .font-feature-slashed-zero {
+    font-variant-numeric: slashed-zero; /* Slashed zero glyph */
+    font-feature-settings: "zero";
+  }
+
+  .font-feature-oldstyle-nums {
+    font-variant-numeric: oldstyle-nums; /* Old-style numerals */
+    font-feature-settings: "onum";
+  }
+
+  /* Font optical sizing utilities */
+  .font-optical-auto {
+    font-optical-sizing: auto; /* Enable optical sizing for better readability */
+  }
+
+  .font-optical-none {
+    font-optical-sizing: none; /* Disable optical sizing */
+  }
 
   /* ===========================================
      TYPOGRAPHY UTILITIES - ATOMIC ONLY
@@ -355,7 +388,7 @@
   }
 
   /* High contrast adjustments */
-  @media (prefers-contrast: high) {
+  @media (prefers-contrast: more) {
     .text-readable {
       font-weight: 500;
       letter-spacing: 0.025em;

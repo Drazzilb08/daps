@@ -125,7 +125,6 @@ const SettingsMockPage = () => {
             {/* Module Accordion List */}
             <div className="space-y-3">
                 {filteredModules.map(module => {
-
                     return (
                         <AccordionItem
                             key={module.key}
@@ -290,7 +289,8 @@ const SettingsMockPage = () => {
                                             inbox
                                         </span>
                                         <p className="text-secondary">
-                                            This module&apos;s configuration is still being developed
+                                            This module&apos;s configuration is still being
+                                            developed
                                         </p>
                                         <p className="text-sm text-tertiary mt-2">
                                             Module key:{' '}

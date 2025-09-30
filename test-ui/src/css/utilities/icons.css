@@ -81,29 +81,17 @@
         display: inline-block;
         vertical-align: middle;
     }
-    .icon-block {
-        display: block;
-    }
+    .icon-block { display: block; }
 
     /* ===========================================
      SEMANTIC ICON COLORS
      =========================================== */
 
-    .icon-success {
-        color: var(--success);
-    }
-    .icon-warning {
-        color: var(--warning);
-    }
-    .icon-error {
-        color: var(--error);
-    }
-    .icon-info {
-        color: var(--accent);
-    }
-    .icon-muted {
-        color: var(--text-tertiary);
-    }
+    .icon-success { color: var(--success); }
+    .icon-warning { color: var(--warning); }
+    .icon-error { color: var(--error); }
+    .icon-info { color: var(--accent); }
+    .icon-muted { color: var(--text-tertiary); }
 
     /* ===========================================
      ACCESSIBILITY ENHANCEMENTS
@@ -113,8 +101,6 @@
         .icon-success,
         .icon-warning,
         .icon-error,
-        .icon-info {
-            filter: contrast(1.2);
-        }
+        .icon-info { filter: contrast(1.2); }
     }
 }

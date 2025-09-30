@@ -12,6 +12,7 @@
     .accordion-header::marker {
         content: '';
     }
+
     @supports (interpolate-size: allow-keywords) {
         .accordion-item {
             interpolate-size: allow-keywords;

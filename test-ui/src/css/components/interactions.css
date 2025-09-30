@@ -104,15 +104,17 @@
         border-color: var(--error);
     }
 
+    /* Lower specificity selector must come first */
+    .accessible-field + .field-error {
+        display: none;
+    }
+
+    /* Higher specificity selector comes after */
     .accessible-field[aria-invalid='true'] + .field-error {
         display: block;
         color: var(--error);
         font-size: 0.875rem;
         margin-top: 0.25rem;
-    }
-
-    .accessible-field + .field-error {
-        display: none;
     }
 
     /* ===========================================
@@ -184,25 +186,30 @@
 
     /* Staggered animation pattern for lists */
     .state-stagger-in {
-        animation: staggerFadeIn 300ms ease-out forwards;
+        animation: stagger-fade-in 300ms ease-out forwards;
     }
+
     .state-stagger-in:nth-child(1) {
         animation-delay: 0ms;
     }
+
     .state-stagger-in:nth-child(2) {
         animation-delay: 50ms;
     }
+
     .state-stagger-in:nth-child(3) {
         animation-delay: 100ms;
     }
+
     .state-stagger-in:nth-child(4) {
         animation-delay: 150ms;
     }
+
     .state-stagger-in:nth-child(5) {
         animation-delay: 200ms;
     }
 
-    @keyframes staggerFadeIn {
+    @keyframes stagger-fade-in {
         from {
             opacity: 0;
             transform: translateY(10px);
@@ -216,10 +223,10 @@
 
     /* Modal entrance animation */
     .state-modal-enter {
-        animation: modalSlideUp 200ms ease-out;
+        animation: modal-slide-up 200ms ease-out;
     }
 
-    @keyframes modalSlideUp {
+    @keyframes modal-slide-up {
         from {
             opacity: 0;
             transform: translateY(20px) scale(0.95);

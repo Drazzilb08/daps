@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx",
-    "format": "prettier --write \"src/**/*.{js,jsx,css,json,md}\"",
+    "format": "prettier --write \"src/**/*.{js,jsx,css,json,md}\" && npm run format:utilities",
+    "format:utilities": "node scripts/format-utilities.js",
     "stylelint": "stylelint 'src/**/*.css' --fix"
   },
   "dependencies": {

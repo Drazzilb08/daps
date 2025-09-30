@@ -5,9 +5,8 @@
         border-color: var(--input-border-disabled);
     }
 
-    .state-hover-dim {
-        transition: opacity 150ms ease-in-out;
-    }
+    .state-hover-dim { transition: opacity 150ms ease-in-out; }
+
     .state-hover-dim:hover:not(:disabled) {
         opacity: 0.9;
     }
@@ -32,45 +31,29 @@
      HOVER STATE UTILITIES
      =========================================== */
 
-    .hover\:bg-surface-hover:hover {
-        background: var(--surface-alt);
-    }
+    .hover\:bg-surface-hover:hover { background: var(--surface-alt); }
 
     /* ===========================================
      FOCUS STATE UTILITIES
      =========================================== */
 
-    .outline-none {
-        outline: none;
-    }
-    .focus\:border-primary:focus {
-        border-color: var(--primary);
-    }
-    .focus-within\:border-primary:focus-within {
-        border-color: var(--primary);
-    }
+    .outline-none { outline: none; }
+    .focus\:border-primary:focus { border-color: var(--primary); }
+    .focus-within\:border-primary:focus-within { border-color: var(--primary); }
 
     /* ===========================================
      VALIDATION STATE UTILITIES
      =========================================== */
 
-    .state-invalid {
-        border-color: var(--error);
-    }
+    .state-invalid { border-color: var(--error); }
 
     .state-invalid:focus,
-    .state-invalid:focus-within {
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
-    }
+    .state-invalid:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent); }
 
-    .state-valid {
-        border-color: var(--success);
-    }
+    .state-valid { border-color: var(--success); }
 
     .state-valid:focus,
-    .state-valid:focus-within {
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent);
-    }
+    .state-valid:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent); }
 
     /* ===========================================
      LOADING STATE UTILITIES
@@ -99,9 +82,7 @@
         color: var(--primary-text);
     }
 
-    .state-selected:hover {
-        background: var(--focus);
-    }
+    .state-selected:hover { background: var(--focus); }
 
     /* ===========================================
      ERROR STATE UTILITIES

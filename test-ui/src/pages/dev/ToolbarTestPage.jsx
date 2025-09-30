@@ -10,7 +10,10 @@ const ToolbarTestPage = () => {
         <div className="grid gap-12 max-w-full">
             <h1>Toolbar Overflow Test</h1>
             <p>Resize your browser window to test the responsive overflow behavior.</p>
-            <p>Buttons should move to an overflow &quot;More&quot; menu instead of getting compressed.</p>
+            <p>
+                Buttons should move to an overflow &quot;More&quot; menu instead of getting
+                compressed.
+            </p>
 
             <div style={{ marginTop: '20px', border: '1px solid #ccc', borderRadius: '4px' }}>
                 <ToolBar>
@@ -79,7 +82,8 @@ const ToolbarTestPage = () => {
                     <li>Start with a wide browser window - all buttons should be visible</li>
                     <li>Gradually narrow the window</li>
                     <li>
-                        Watch for buttons to move to a &quot;More&quot; dropdown instead of getting compressed
+                        Watch for buttons to move to a &quot;More&quot; dropdown instead of getting
+                        compressed
                     </li>
                     <li>
                         The buttons should maintain their proper size and not have truncated text

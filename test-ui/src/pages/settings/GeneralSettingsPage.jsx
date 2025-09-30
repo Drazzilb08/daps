@@ -303,7 +303,8 @@ export const GeneralSettingsPage = () => {
                                             key={`error-${module.key}-${field.key}-${fieldIndex}`}
                                             className="p-2 bg-warning-bg text-warning rounded"
                                         >
-                                            Field type &apos;{field.type}&apos; error: {error.message}
+                                            Field type &apos;{field.type}&apos; error:{' '}
+                                            {error.message}
                                         </div>
                                     );
                                 }

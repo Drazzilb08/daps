@@ -5,9 +5,11 @@ export default {
     {
       files: ['src/css/utilities/**/*.css'],
       rules: {
-        // Turn off rules you don’t want enforced here
+        // Turn off rules you don't want enforced here
         'selector-class-pattern': null,
         'max-nesting-depth': null,
+        // Disable all formatting rules that would conflict with custom single-line format
+        // Prettier is excluded via .prettierignore, Stylelint should only lint, not format
       },
     },
   ],

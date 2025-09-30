@@ -11,7 +11,7 @@
         padding: 0;
         margin: -1px;
         overflow: hidden;
-        clip: rect(0, 0, 0, 0);
+        clip-path: inset(50%);
         white-space: nowrap;
         border: 0;
     }
@@ -24,7 +24,7 @@
         padding: 0;
         margin: 0;
         overflow: visible;
-        clip: auto;
+        clip-path: none;
         white-space: normal;
     }
 
@@ -36,7 +36,7 @@
         padding: 0;
         margin: -1px;
         overflow: hidden;
-        clip: rect(0, 0, 0, 0);
+        clip-path: inset(50%);
         white-space: nowrap;
         border: 0;
     }
@@ -48,7 +48,7 @@
         padding: 0.5rem 0.75rem;
         margin: 0;
         overflow: visible;
-        clip: auto;
+        clip-path: none;
         white-space: normal;
         background: var(--surface);
         color: var(--text-primary);
@@ -62,9 +62,7 @@
      =========================================== */
 
     /* Focus ring styles - WCAG 2.1 AA compliant */
-    .focus-ring {
-        outline: none;
-    }
+    .focus-ring { outline: none; }
 
     .focus-ring:focus-visible {
         outline: 2px solid var(--focus);
@@ -73,9 +71,7 @@
     }
 
     /* Small focus ring for compact elements */
-    .focus-ring-sm {
-        outline: none;
-    }
+    .focus-ring-sm { outline: none; }
 
     .focus-ring-sm:focus-visible {
         outline: 1px solid var(--focus);
@@ -84,9 +80,7 @@
     }
 
     /* Large focus ring for high visibility */
-    .focus-ring-lg {
-        outline: none;
-    }
+    .focus-ring-lg { outline: none; }
 
     .focus-ring-lg:focus-visible {
         outline: 3px solid var(--focus);
@@ -95,9 +89,7 @@
     }
 
     /* Enhanced focus ring with box shadow */
-    .focus-ring-enhanced {
-        outline: none;
-    }
+    .focus-ring-enhanced { outline: none; }
 
     .focus-ring-enhanced:focus-visible {
         outline: 2px solid var(--focus);
@@ -109,9 +101,7 @@
     }
 
     /* Focus trap container */
-    .focus-trap {
-        position: relative;
-    }
+    .focus-trap { position: relative; }
 
     .focus-trap::before,
     .focus-trap::after {
@@ -242,9 +232,7 @@
     }
 
     /* Enhanced keyboard navigation */
-    .keyboard-nav-enhanced {
-        position: relative;
-    }
+    .keyboard-nav-enhanced { position: relative; }
 
     .keyboard-nav-enhanced:focus-visible::before {
         content: '';
@@ -256,20 +244,12 @@
     }
 
     /* Tab order utilities */
-    .tab-order-first {
-        order: -1;
-    }
-    .tab-order-last {
-        order: 999;
-    }
-    .tab-order-none {
-        order: 0;
-    }
+    .tab-order-first { order: -1; }
+    .tab-order-last { order: 999; }
+    .tab-order-none { order: 0; }
 
     /* Keyboard shortcuts indicator */
-    .has-keyboard-shortcut {
-        position: relative;
-    }
+    .has-keyboard-shortcut { position: relative; }
 
     .has-keyboard-shortcut::after {
         content: attr(data-shortcut);
@@ -287,9 +267,7 @@
         transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .has-keyboard-shortcut:focus::after {
-        opacity: 1;
-    }
+    .has-keyboard-shortcut:focus::after { opacity: 1; }
 
     /* ===========================================
      HIGH CONTRAST MODE UTILITIES
@@ -352,28 +330,18 @@
         }
 
         /* Disable auto-playing content */
-        .reduce-motion-autoplay {
-            animation-play-state: paused !important;
-        }
+        .reduce-motion-autoplay { animation-play-state: paused !important; }
 
         /* Static alternatives for animated content */
-        .motion-safe-hidden {
-            display: none;
-        }
+        .motion-safe-hidden { display: none; }
 
-        .motion-reduce-visible {
-            display: block;
-        }
+        .motion-reduce-visible { display: block; }
     }
 
     @media (prefers-reduced-motion: no-preference) {
-        .motion-safe-hidden {
-            display: block;
-        }
+        .motion-safe-hidden { display: block; }
 
-        .motion-reduce-visible {
-            display: none;
-        }
+        .motion-reduce-visible { display: none; }
     }
 
     /* ===========================================
@@ -382,22 +350,16 @@
 
     /* Forced colors mode (Windows High Contrast) */
     @media (forced-colors: active) {
-        .forced-colors-border {
-            border: 1px solid ButtonText;
-        }
+        .forced-colors-border { border: 1px solid ButtonText; }
 
         .forced-colors-bg {
             background-color: ButtonFace;
             color: ButtonText;
         }
 
-        .forced-colors-link {
-            color: LinkText;
-        }
+        .forced-colors-link { color: LinkText; }
 
-        .forced-colors-visited {
-            color: VisitedText;
-        }
+        .forced-colors-visited { color: VisitedText; }
 
         .forced-colors-active {
             background-color: Highlight;
@@ -415,15 +377,6 @@
     /* ===========================================
      ARIA STATE UTILITIES
      =========================================== */
-
-    /* ARIA expanded states */
-    .aria-expanded[aria-expanded='true'] {
-        /* Visual indicator for expanded state */
-    }
-
-    .aria-expanded[aria-expanded='false'] {
-        /* Visual indicator for collapsed state */
-    }
 
     /* ARIA selected states */
     .aria-selected[aria-selected='true'] {
@@ -510,14 +463,6 @@
         overflow: hidden;
     }
 
-    .live-region.polite {
-        /* aria-live="polite" equivalent for CSS */
-    }
-
-    .live-region.assertive {
-        /* aria-live="assertive" equivalent for CSS */
-    }
-
     /* Status message styling */
     .status-message {
         padding: 0.75rem;
@@ -563,9 +508,7 @@
     }
 
     /* Field group with proper spacing */
-    .field-group {
-        margin-bottom: 1rem;
-    }
+    .field-group { margin-bottom: 1rem; }
 
     .field-group legend {
         font-weight: 600;
@@ -604,13 +547,9 @@
 
     @media print {
         /* Ensure content is accessible in print */
-        .print-hidden {
-            display: none !important;
-        }
+        .print-hidden { display: none !important; }
 
-        .print-visible {
-            display: block !important;
-        }
+        .print-visible { display: block !important; }
 
         /* Add URLs for links in print */
         .print-urls a[href]::after {
@@ -621,9 +560,7 @@
 
         /* Skip navigation in print */
         .skip-link,
-        .skip-links {
-            display: none !important;
-        }
+        .skip-links { display: none !important; }
 
         /* Ensure sufficient contrast in print */
         .print-high-contrast {

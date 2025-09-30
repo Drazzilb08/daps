@@ -343,13 +343,7 @@ export const SearchCoordinatorProvider = ({
                 debounceTimeouts.current[searchType] = setTimeout(executeSearch, debounceDelay);
             }
         },
-        [
-            activeSearchType,
-            debounceDelay,
-            addToHistory,
-            getSearchState,
-            setSearchState,
-        ]
+        [activeSearchType, debounceDelay, addToHistory, getSearchState, setSearchState]
     );
 
     /**

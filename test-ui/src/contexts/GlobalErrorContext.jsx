@@ -278,14 +278,18 @@ export const GlobalErrorProvider = ({ children, onError, enableLogging = true })
      */
     useEffect(() => {
         const handleGlobalError = event => {
-            setError(event.error || event.message, {
+            const errorMessage =
+                event?.error?.message || event?.error || event?.message || 'Unknown error occurred';
+            setError(errorMessage, {
                 type: ERROR_TYPES.CLIENT,
                 severity: ERROR_SEVERITY.MEDIUM,
             });
         };
 
         const handleUnhandledRejection = event => {
-            setError(event.reason, {
+            const errorMessage =
+                event?.reason?.message || event?.reason || 'Unknown promise rejection';
+            setError(errorMessage, {
                 type: ERROR_TYPES.CLIENT,
                 severity: ERROR_SEVERITY.HIGH,
             });

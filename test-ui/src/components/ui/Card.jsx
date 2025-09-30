@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * Card Primitive Component
  *
@@ -57,7 +59,7 @@ export const Card = ({
         return key.charAt(0).toUpperCase() + key.slice(1);
     };
 
-    // Default value formatter - handle arrays, objects, and primitives
+    // Default value formatter - handle arrays, objects, React elements, and primitives
     const defaultFormatValue = value => {
         if (Array.isArray(value)) {
             return (
@@ -71,12 +73,22 @@ export const Card = ({
             );
         }
 
+        // Check if value is a React element
+        if (React.isValidElement(value)) {
+            return value;
+        }
+
         if (typeof value === 'object' && value !== null) {
-            return (
-                <pre className="bg-surface-elevated border border-default rounded-md p-3 m-0 font-mono text-sm overflow-x-auto whitespace-pre-wrap text-tertiary">
-                    {JSON.stringify(value, null, 2)}
-                </pre>
-            );
+            try {
+                return (
+                    <pre className="bg-surface-elevated border border-default rounded-md p-3 m-0 font-mono text-sm overflow-x-auto whitespace-pre-wrap text-tertiary">
+                        {JSON.stringify(value, null, 2)}
+                    </pre>
+                );
+            } catch (error) {
+                // Handle circular references or non-serializable objects
+                return <span className="text-warning">[Complex Object]</span>;
+            }
         }
 
         return <span>{String(value)}</span>;

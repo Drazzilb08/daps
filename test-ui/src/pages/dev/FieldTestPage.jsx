@@ -9,6 +9,7 @@ import { useToast } from '../../contexts/ToastContext.jsx';
 import { useApiData } from '../../hooks/useApiData.js';
 import { instancesAPI } from '../../utils/api';
 import { InstancesField } from '../../components/fields/custom/InstancesField.jsx';
+import { Button } from '../../components/ui';
 
 const FieldStatusOverview = React.memo(() => {
     const workingTypes = FieldRegistry.getWorkingFieldTypes();
@@ -965,33 +966,75 @@ const FieldTestPage = () => {
                 </div>
             </div>
 
+            <div className="bg-surface-elevated rounded p-4 border mb-4">
+                <h3 className="text-lg font-semibold text-primary mb-3 text-center">
+                    Button Primitive Component Test
+                </h3>
+                <div className="space-y-4">
+                    <div>
+                        <h4 className="text-sm font-medium text-primary mb-2">Color Variants:</h4>
+                        <div className="flex gap-2 flex-wrap">
+                            <Button color="primary">Primary</Button>
+                            <Button color="success">Success</Button>
+                            <Button color="error">Error</Button>
+                            <Button color="info">Info</Button>
+                            <Button color="warning">Warning</Button>
+                            <Button color="accent">Accent</Button>
+                            <Button color="surface">Surface</Button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-medium text-primary mb-2">Size Variants:</h4>
+                        <div className="flex gap-2 items-center flex-wrap">
+                            <Button size="small" color="primary">
+                                Small (36px)
+                            </Button>
+                            <Button size="medium" color="primary">
+                                Medium (44px)
+                            </Button>
+                            <Button size="large" color="primary">
+                                Large (48px)
+                            </Button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-medium text-primary mb-2">States:</h4>
+                        <div className="flex gap-2 flex-wrap">
+                            <Button color="primary">Normal</Button>
+                            <Button color="primary" disabled>
+                                Disabled
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div className="bg-surface-elevated rounded p-4 border">
                 <h3 className="text-lg font-semibold text-primary mb-3 text-center">
                     Quick Actions
                 </h3>
                 <div className="flex gap-2 justify-center flex-wrap">
-                    <button
+                    <Button
+                        color="primary"
+                        size="medium"
                         onClick={() => {
                             workingFieldTypes.forEach(type =>
                                 setApprovedFields(prev => new Set([...prev, type]))
                             );
                         }}
-                        className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors"
                     >
                         Approve All Working Fields
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        color="error"
+                        size="medium"
                         onClick={() => setApprovedFields(new Set())}
-                        className="touch-target bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors"
                     >
                         Reset All Approvals
-                    </button>
-                    <button
-                        onClick={() => setFilter('unapproved')}
-                        className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover"
-                    >
+                    </Button>
+                    <Button color="surface" size="medium" onClick={() => setFilter('unapproved')}>
                         Show Fields Needing Testing
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

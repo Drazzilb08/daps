@@ -21,15 +21,18 @@ export const instancesAPI = {
      * @param {string} options.type - Filter by instance type
      * @returns {Promise<Array>} List of configured instances
      */
-    fetchInstances: (options = {}) => {
+    fetchInstances: async (options = {}) => {
         const { type, ...requestOptions } = options;
         const params = type ? `?type=${type}` : '';
 
-        return apiCore.get(`/instances${params}`, {
+        const response = await apiCore.get(`/instances${params}`, {
             useCache: true,
             cacheTTL: 5 * 60 * 1000, // 5 minutes cache
             ...requestOptions,
         });
+
+        // Extract data from DAPS API response format
+        return response.data || response;
     },
 
     /**
@@ -94,7 +97,7 @@ export const instancesAPI = {
      * @returns {Promise<Object>} Connection test result
      */
     testInstanceConfig: instanceData => {
-        return apiCore.post('/instances/test-config', instanceData);
+        return apiCore.post('/instances/test', instanceData);
     },
 
     /**

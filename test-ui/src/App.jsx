@@ -19,6 +19,7 @@ import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx'
 import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import UISettingsPage from './pages/settings/UISettingsPage.jsx';
 import { SchedulePage } from './pages/settings/SchedulePage.jsx';
+import { InstancesPage } from './pages/settings/InstancesPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -244,23 +245,12 @@ const App = () => {
                                             <Route
                                                 path="settings/instances"
                                                 element={
-                                                    <div className="p-4 md:p-6 max-w-4xl mx-auto">
-                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">
-                                                            Instance Settings
-                                                        </h1>
-                                                        <p className="text-sm md:text-base text-secondary mb-6">
-                                                            Configure service instances and
-                                                            connections
-                                                        </p>
-                                                        <div className="text-center py-8 text-tertiary">
-                                                            <span className="material-symbols-outlined text-4xl mb-2 block">
-                                                                hub
-                                                            </span>
-                                                            <p>
-                                                                Instance configuration coming soon
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                    <PageErrorBoundary
+                                                        pageName="Instance Management"
+                                                        pageDescription="Service instance configuration and connection testing"
+                                                    >
+                                                        <InstancesPage />
+                                                    </PageErrorBoundary>
                                                 }
                                             />
                                             <Route

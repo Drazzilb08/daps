@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { useGlobalError } from '../../contexts/GlobalErrorContext.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
+import { Button } from '../ui/Button';
 
 /**
  * Page-level Error Boundary for route protection
@@ -232,57 +233,57 @@ class PageErrorBoundaryBase extends Component {
 
                             <div className="mb-6 flex flex-wrap gap-2">
                                 {showRetry && (
-                                    <button
+                                    <Button
+                                        color="primary"
                                         onClick={this.handleRetry}
-                                        className="touch-target leading-none no-underline whitespace-nowrap border border-transparent select-none bg-primary text-white py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
-                                        type="button"
+                                        className="gap-1"
                                     >
-                                        <span className="material-symbols-outlined mr-1">
+                                        <span className="material-symbols-outlined text-base">
                                             refresh
                                         </span>
                                         Try Again
-                                    </button>
+                                    </Button>
                                 )}
 
                                 {showNavigation && (
                                     <>
-                                        <button
+                                        <Button
+                                            color="surface"
                                             onClick={this.handleNavigateHome}
-                                            className="touch-target leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
-                                            type="button"
+                                            className="gap-1"
                                         >
-                                            <span className="material-symbols-outlined mr-1">
+                                            <span className="material-symbols-outlined text-base">
                                                 home
                                             </span>
                                             Go Home
-                                        </button>
+                                        </Button>
 
-                                        <button
+                                        <Button
+                                            color="surface"
                                             onClick={this.handleNavigateBack}
-                                            className="touch-target leading-none no-underline whitespace-nowrap border border-border select-none bg-surface text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
-                                            type="button"
+                                            className="gap-1"
                                         >
-                                            <span className="material-symbols-outlined mr-1">
+                                            <span className="material-symbols-outlined text-base">
                                                 arrow_back
                                             </span>
                                             Go Back
-                                        </button>
+                                        </Button>
                                     </>
                                 )}
 
-                                <button
-                                    onClick={this.handleCopyError}
-                                    className={`touch-target leading-none no-underline whitespace-nowrap border border-transparent select-none py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center ${
+                                <Button
+                                    color={
                                         this.state.copySuccess
-                                            ? 'bg-success text-white'
+                                            ? 'success'
                                             : this.state.copyError
-                                              ? 'bg-error text-white'
-                                              : 'bg-surface-elevated text-primary'
-                                    }`}
-                                    type="button"
+                                              ? 'error'
+                                              : 'info'
+                                    }
+                                    onClick={this.handleCopyError}
                                     disabled={this.state.copying}
+                                    className="gap-1"
                                 >
-                                    <span className="material-symbols-outlined mr-1">
+                                    <span className="material-symbols-outlined text-base">
                                         {this.state.copying
                                             ? 'hourglass_empty'
                                             : this.state.copySuccess
@@ -298,16 +299,18 @@ class PageErrorBoundaryBase extends Component {
                                           : this.state.copyError
                                             ? 'Failed'
                                             : 'Copy Error'}
-                                </button>
+                                </Button>
 
-                                <button
+                                <Button
+                                    color="surface"
                                     onClick={this.handleRefresh}
-                                    className="touch-target leading-none no-underline whitespace-nowrap border border-border select-none bg-transparent text-primary py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
-                                    type="button"
+                                    className="gap-1"
                                 >
-                                    <span className="material-symbols-outlined mr-1">refresh</span>
+                                    <span className="material-symbols-outlined text-base">
+                                        refresh
+                                    </span>
                                     Refresh Page
-                                </button>
+                                </Button>
                             </div>
 
                             <div className="mt-6">

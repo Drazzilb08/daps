@@ -114,7 +114,7 @@ const LoadingStateSimulation = React.memo(() => {
                     <button
                         onClick={() => simulateLoading('button')}
                         disabled={loadingStates.button}
-                        className="w-full px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
+                        className="w-full px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 flex items-center justify-center gap-2 min-h-11"
                     >
                         {loadingStates.button && <Spinner size="small" />}
                         {loadingStates.button ? 'Loading...' : 'Start Loading'}
@@ -127,7 +127,7 @@ const LoadingStateSimulation = React.memo(() => {
                     <button
                         onClick={() => simulateLoading('form', 3000)}
                         disabled={loadingStates.form}
-                        className="w-full px-4 py-2 bg-success text-white rounded hover:bg-success-hover disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
+                        className="w-full px-4 py-2 bg-success text-white rounded hover:bg-success-hover disabled:opacity-50 flex items-center justify-center gap-2 min-h-11"
                     >
                         {loadingStates.form && <Spinner size="small" />}
                         {loadingStates.form ? 'Submitting...' : 'Submit Form'}
@@ -140,7 +140,7 @@ const LoadingStateSimulation = React.memo(() => {
                     <button
                         onClick={() => simulateLoading('data', 1500)}
                         disabled={loadingStates.data}
-                        className="w-full px-4 py-2 bg-info text-white rounded hover:bg-info-hover disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
+                        className="w-full px-4 py-2 bg-info text-white rounded hover:bg-info-hover disabled:opacity-50 flex items-center justify-center gap-2 min-h-11"
                     >
                         {loadingStates.data && <Spinner size="small" />}
                         {loadingStates.data ? 'Loading Data...' : 'Fetch Data'}
@@ -153,7 +153,7 @@ const LoadingStateSimulation = React.memo(() => {
                     <button
                         onClick={() => simulateLoading('save', 2500)}
                         disabled={loadingStates.save}
-                        className="w-full px-4 py-2 bg-warning text-white rounded hover:bg-warning-hover disabled:opacity-50 flex items-center justify-center gap-2 min-h-[44px]"
+                        className="w-full px-4 py-2 bg-warning text-white rounded hover:bg-warning-hover disabled:opacity-50 flex items-center justify-center gap-2 min-h-11"
                     >
                         {loadingStates.save && <Spinner size="small" />}
                         {loadingStates.save ? 'Saving...' : 'Save Changes'}
@@ -207,7 +207,7 @@ const AnimationPerformanceTest = React.memo(() => {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-auto gap-3 p-4 bg-surface rounded border min-h-[120px]">
+                <div className="grid grid-cols-auto gap-3 p-4 bg-surface rounded border min-h-30">
                     {Array.from({ length: spinnerCount }, (_, i) => (
                         <Spinner
                             key={i}
@@ -326,7 +326,7 @@ const SpinnerTestPage = () => {
                                 onClick={() => setActiveTest(test.id)}
                                 className={`px-3 py-2 text-sm rounded transition-colors ${
                                     activeTest === test.id
-                                        ? 'bg-primary text-primary-text'
+                                        ? 'bg-primary text-brand-primary'
                                         : 'bg-surface hover:bg-surface-hover text-secondary hover:text-primary'
                                 }`}
                             >

@@ -28,7 +28,7 @@ export const MonthdaySelector = React.memo(({
 
     return (
         <div className={`mb-4 ${className}`}>
-            <div className="text-sm font-medium text-text-secondary mb-2">
+            <div className="text-sm font-medium text-secondary mb-2">
                 Select Days of Month
             </div>
 
@@ -51,8 +51,8 @@ export const MonthdaySelector = React.memo(({
                                     : 'cursor-pointer'
                                 }
                                 ${isSelected
-                                    ? 'bg-primary text-primary-text border border-primary shadow-sm'
-                                    : 'bg-surface text-text-primary border border-border hover:bg-primary hover:border-border-light'
+                                    ? 'bg-primary text-white border border-primary shadow-sm'
+                                    : 'bg-surface text-primary border border-border hover:bg-primary hover:border-border-light'
                                 }
                             `}
                         >
@@ -62,12 +62,12 @@ export const MonthdaySelector = React.memo(({
                 })}
             </div>
             {selectedDays.length > 0 && (
-                <div className="text-xs text-text-tertiary">
+                <div className="text-xs text-tertiary">
                     Selected: {selectedDays.join(', ')}
                     {selectedDays.length > 6 && ' (and more)'}
                 </div>
             )}
-            <div className="text-xs text-text-tertiary mt-1">
+            <div className="text-xs text-tertiary mt-1">
                 Note: Days 29-31 may not exist in all months
             </div>
         </div>

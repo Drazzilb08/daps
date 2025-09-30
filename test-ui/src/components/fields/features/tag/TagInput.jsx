@@ -400,7 +400,7 @@ export const TagInput = React.memo(
                                         className={[
                                             'px-3 py-2 cursor-pointer text-sm',
                                             index === focusedSuggestionIndex
-                                                ? 'bg-primary text-primary-text'
+                                                ? 'bg-primary text-white'
                                                 : 'hover:bg-surface-hover text-primary',
                                         ]
                                             .filter(Boolean)

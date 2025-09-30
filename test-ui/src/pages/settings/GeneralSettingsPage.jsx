@@ -153,8 +153,8 @@ export const GeneralSettingsPage = () => {
             <div className="mb-6 md:mb-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">General Settings</h1>
-                        <p className="text-sm md:text-base text-text-secondary">Configure general DAPS application settings</p>
+                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">General Settings</h1>
+                        <p className="text-sm md:text-base text-secondary">Configure general DAPS application settings</p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -180,7 +180,7 @@ export const GeneralSettingsPage = () => {
                             <button
                                 onClick={handleReset}
                                 disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-border rounded hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] text-text-primary"
+                                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-border rounded hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed min-h-11 text-primary"
                             >
                                 Reset
                             </button>
@@ -188,7 +188,7 @@ export const GeneralSettingsPage = () => {
                             <button
                                 onClick={handleSave}
                                 disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[44px]"
+                                className="flex-1 sm:flex-none px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-11"
                             >
                                 {isSaving ? (
                                     <>
@@ -221,7 +221,7 @@ export const GeneralSettingsPage = () => {
             {/* Settings card */}
             {GENERAL_SETTINGS_SCHEMA.map((module, moduleIndex) => (
                 <div key={`module-${module.key}-${moduleIndex}`} className="bg-surface border border-border-subtle rounded-lg p-4 md:p-6">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 text-text-primary">{module.label}</h2>
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 text-primary">{module.label}</h2>
 
                     {module.fields && module.fields.length > 0 ? (
                         <form
@@ -287,7 +287,7 @@ export const GeneralSettingsPage = () => {
                             })}
                         </form>
                     ) : (
-                        <div className="text-center py-8 text-text-tertiary">
+                        <div className="text-center py-8 text-tertiary">
                             <span className="material-symbols-outlined text-4xl mb-2 block">inbox</span>
                             <p>No general settings available</p>
                         </div>

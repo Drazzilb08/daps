@@ -28,7 +28,7 @@ export const ScheduleTypePanel = React.memo(({
     const renderHourlyPanel = () => (
         <div className="space-y-4">
             <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">
+                <label className="block text-sm font-medium text-secondary mb-2">
                     Minute (0-59)
                 </label>
                 <input
@@ -40,7 +40,7 @@ export const ScheduleTypePanel = React.memo(({
                     disabled={disabled}
                     className="w-20 px-3 py-2 border border-border rounded-md min-h-11 bg-surface"
                 />
-                <div className="text-xs text-text-tertiary mt-1">
+                <div className="text-xs text-tertiary mt-1">
                     Run at this minute past every hour
                 </div>
             </div>
@@ -70,7 +70,7 @@ export const ScheduleTypePanel = React.memo(({
             <div className="space-y-4">
                 <div>
                     <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-text-secondary">
+                        <label className="text-sm font-medium text-secondary">
                             Daily Times
                         </label>
                         <button
@@ -116,7 +116,7 @@ export const ScheduleTypePanel = React.memo(({
                 disabled={disabled}
             />
             <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">
+                <label className="block text-sm font-medium text-secondary mb-2">
                     Time
                 </label>
                 <TimeInput
@@ -136,7 +136,7 @@ export const ScheduleTypePanel = React.memo(({
                 disabled={disabled}
             />
             <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">
+                <label className="block text-sm font-medium text-secondary mb-2">
                     Time
                 </label>
                 <TimeInput

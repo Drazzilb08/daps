@@ -37,8 +37,8 @@ export const PillSelector = React.memo(({
                             : 'cursor-pointer'
                         }
                         ${selectedType === option.type
-                            ? 'bg-primary text-primary-text border border-primary shadow-sm'
-                            : 'bg-surface text-text-primary border border-border hover:bg-primary hover:border-border-light'
+                            ? 'bg-primary text-white border border-primary shadow-sm'
+                            : 'bg-surface text-primary border border-border hover:bg-primary hover:border-border-light'
                         }
                     `}
                 >

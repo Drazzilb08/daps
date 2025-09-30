@@ -182,8 +182,8 @@ const ModuleSettingsContent = () => {
       <div className="mb-6 md:mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Module Settings</h1>
-            <p className="text-sm md:text-base text-text-secondary">Configure DAPS module settings</p>
+            <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">Module Settings</h1>
+            <p className="text-sm md:text-base text-secondary">Configure DAPS module settings</p>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -209,7 +209,7 @@ const ModuleSettingsContent = () => {
               <button
                 onClick={handleReset}
                 disabled={!isDirty || isSaving}
-                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-border rounded hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] text-text-primary"
+                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-border rounded hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed min-h-11 text-primary"
               >
                 Reset
               </button>
@@ -217,7 +217,7 @@ const ModuleSettingsContent = () => {
               <button
                 onClick={handleSave}
                 disabled={!isDirty || isSaving}
-                className="flex-1 sm:flex-none px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[44px]"
+                className="flex-1 sm:flex-none px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-11"
               >
                 {isSaving ? (
                   <>
@@ -250,7 +250,7 @@ const ModuleSettingsContent = () => {
       {/* Search functionality */}
       <div className="mb-6">
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-3 text-text-secondary">
+          <span className="material-symbols-outlined absolute left-3 top-3 text-secondary">
             search
           </span>
           <input
@@ -258,7 +258,7 @@ const ModuleSettingsContent = () => {
             placeholder="Search modules and fields..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px] bg-surface text-text-primary"
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent min-h-11 bg-surface text-primary"
           />
         </div>
       </div>
@@ -268,99 +268,117 @@ const ModuleSettingsContent = () => {
         {filteredModules.map((module, moduleIndex) => (
           <AccordionItem
             key={`module-${module.key}-${moduleIndex}`}
-            title={module.label}
             isExpanded={expandedModules.includes(module.key)}
             onToggle={() => toggleModule(module.key)}
           >
-            {module.fields && module.fields.length > 0 ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSave();
-                }}
-                className="space-y-4 md:space-y-6"
-                noValidate
-              >
-                {module.fields.map((field, fieldIndex) => {
-                  try {
-
-                    // Generate unique IDs for this field instance
-                    const uniqueId = `field-${module.key}-${field.key}-${fieldIndex}`;
-                    const errorId = `${uniqueId}-error`;
-                    const descId = `${uniqueId}-desc`;
-
-                    // Get field value from current module data - CORRECTED VALUE MAPPING
-                    // formData structure is flat: sync_gdrive, poster_renamerr, etc. are direct properties
-                    const moduleData = formData[module.key] || {};
-                    let fieldValue = moduleData[field.key];
-
-                    // DEBUG: Detailed logging for sync_gdrive
-                    if (module.key === 'sync_gdrive' && field.key === 'log_level') {
-                      console.log('FULL DEBUG DATA:', {
-                        'formData': formData,
-                        'formDataKeys': Object.keys(formData),
-                        'actualFormDataKeys': Object.keys(formData).map(key => `${key}: ${typeof formData[key]}`),
-                        'moduleKey': module.key,
-                        'moduleData': moduleData,
-                        'moduleDataKeys': Object.keys(moduleData),
-                        'directAccess': formData['sync_gdrive'],
-                        'directAccessKeys': formData['sync_gdrive'] ? Object.keys(formData['sync_gdrive']) : 'undefined',
-                        'fieldKey': field.key,
-                        'rawFieldValue': fieldValue,
-                        'fieldDefaultValue': field.defaultValue,
-                        'fullFormDataStructure': JSON.stringify(formData, null, 2)
-                      });
-                    }
-
-                    // Handle special case for nested values (like token)
-                    if (fieldValue === undefined) {
-                      fieldValue = field.defaultValue;
-                    }
-
-                    // Handle null values - convert to empty string for form fields
-                    if (fieldValue === null) {
-                      fieldValue = '';
-                    }
-
-                    // Handle object values - stringify for JSON fields
-                    if (fieldValue && typeof fieldValue === 'object' && field.type === 'json') {
-                      fieldValue = JSON.stringify(fieldValue, null, 2);
-                    }
-
-                    return (
-                      <div key={`field-${module.key}-${field.key}-${fieldIndex}`} className="settings-field-row">
-                        <MemoizedFieldComponent
-                          field={{
-                            ...field,
-                            id: uniqueId,
-                            errorId,
-                            descId
-                          }}
-                          value={fieldValue}
-                          onChange={(value) => handleFieldChange(module.key, field.key, value)}
-                          disabled={isSaving}
-                          highlightInvalid={false}
-                          errorMessage={null}
-                          rootConfig={formData}
-                        />
-                      </div>
-                    );
-                  } catch (error) {
-                    console.error(`Error rendering field ${field.key}:`, error);
-                    return (
-                      <div key={`error-${module.key}-${field.key}-${fieldIndex}`} className="p-2 bg-warning-bg text-warning rounded">
-                        Field type '{field.type}' error: {error.message}
-                      </div>
-                    );
-                  }
-                })}
-              </form>
-            ) : (
-              <div className="text-center py-8 text-text-tertiary">
-                <span className="material-symbols-outlined text-4xl mb-2 block">inbox</span>
-                <p>This module's configuration is still being developed</p>
+            <AccordionItem.Header className="px-6 py-4 bg-surface hover:bg-surface-hover border-b border-border-subtle">
+              <div className="flex items-center justify-between min-h-11">
+                <span className="font-medium text-base text-primary">
+                  {module.label}
+                </span>
+                <span
+                  className="material-symbols-outlined text-xl text-secondary transition-transform duration-200"
+                  style={{
+                    transform: expandedModules.includes(module.key)
+                      ? 'rotate(90deg)'
+                      : 'rotate(0deg)'
+                  }}
+                >
+                  chevron_right
+                </span>
               </div>
-            )}
+            </AccordionItem.Header>
+            <AccordionItem.Body className="bg-surface-elevated border-t border-border-subtle p-6">
+              {module.fields && module.fields.length > 0 ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSave();
+                  }}
+                  className="space-y-4 md:space-y-6"
+                  noValidate
+                >
+                  {module.fields.map((field, fieldIndex) => {
+                    try {
+
+                      // Generate unique IDs for this field instance
+                      const uniqueId = `field-${module.key}-${field.key}-${fieldIndex}`;
+                      const errorId = `${uniqueId}-error`;
+                      const descId = `${uniqueId}-desc`;
+
+                      // Get field value from current module data - CORRECTED VALUE MAPPING
+                      // formData structure is flat: sync_gdrive, poster_renamerr, etc. are direct properties
+                      const moduleData = formData[module.key] || {};
+                      let fieldValue = moduleData[field.key];
+
+                      // DEBUG: Detailed logging for sync_gdrive
+                      if (module.key === 'sync_gdrive' && field.key === 'log_level') {
+                        console.log('FULL DEBUG DATA:', {
+                          'formData': formData,
+                          'formDataKeys': Object.keys(formData),
+                          'actualFormDataKeys': Object.keys(formData).map(key => `${key}: ${typeof formData[key]}`),
+                          'moduleKey': module.key,
+                          'moduleData': moduleData,
+                          'moduleDataKeys': Object.keys(moduleData),
+                          'directAccess': formData['sync_gdrive'],
+                          'directAccessKeys': formData['sync_gdrive'] ? Object.keys(formData['sync_gdrive']) : 'undefined',
+                          'fieldKey': field.key,
+                          'rawFieldValue': fieldValue,
+                          'fieldDefaultValue': field.defaultValue,
+                          'fullFormDataStructure': JSON.stringify(formData, null, 2)
+                        });
+                      }
+
+                      // Handle special case for nested values (like token)
+                      if (fieldValue === undefined) {
+                        fieldValue = field.defaultValue;
+                      }
+
+                      // Handle null values - convert to empty string for form fields
+                      if (fieldValue === null) {
+                        fieldValue = '';
+                      }
+
+                      // Handle object values - stringify for JSON fields
+                      if (fieldValue && typeof fieldValue === 'object' && field.type === 'json') {
+                        fieldValue = JSON.stringify(fieldValue, null, 2);
+                      }
+
+                      return (
+                        <div key={`field-${module.key}-${field.key}-${fieldIndex}`} className="settings-field-row">
+                          <MemoizedFieldComponent
+                            field={{
+                              ...field,
+                              id: uniqueId,
+                              errorId,
+                              descId
+                            }}
+                            value={fieldValue}
+                            onChange={(value) => handleFieldChange(module.key, field.key, value)}
+                            disabled={isSaving}
+                            highlightInvalid={false}
+                            errorMessage={null}
+                            rootConfig={formData}
+                          />
+                        </div>
+                      );
+                    } catch (error) {
+                      console.error(`Error rendering field ${field.key}:`, error);
+                      return (
+                        <div key={`error-${module.key}-${field.key}-${fieldIndex}`} className="p-2 bg-warning-bg text-warning rounded">
+                          Field type '{field.type}' error: {error.message}
+                        </div>
+                      );
+                    }
+                  })}
+                </form>
+              ) : (
+                <div className="text-center py-8 text-tertiary">
+                  <span className="material-symbols-outlined text-4xl mb-2 block">inbox</span>
+                  <p>This module's configuration is still being developed</p>
+                </div>
+              )}
+            </AccordionItem.Body>
           </AccordionItem>
         ))}
       </Accordion>
@@ -406,7 +424,7 @@ export const ModuleSettingsPage = () => {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-text-secondary">Loading configuration...</p>
+            <p className="text-secondary">Loading configuration...</p>
           </div>
         </div>
       </div>

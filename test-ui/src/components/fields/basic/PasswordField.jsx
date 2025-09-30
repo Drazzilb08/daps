@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
 import { FieldButton } from '../features/shared';
@@ -58,16 +57,16 @@ export const PasswordField = React.memo(
                         variant="right"
                         className="text-brand-primary"
                     >
-                        <span
-                            className="material-symbols-outlined text-lg"
-                            aria-hidden="true"
-                        >
+                        <span className="material-symbols-outlined text-lg" aria-hidden="true">
                             {showPassword ? 'visibility_off' : 'visibility'}
                         </span>
                     </FieldButton>
                 </div>
 
-                <FieldDescription id={field.descId || `${inputId}-desc`} description={field.description} />
+                <FieldDescription
+                    id={field.descId || `${inputId}-desc`}
+                    description={field.description}
+                />
                 <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
             </FieldWrapper>
         );

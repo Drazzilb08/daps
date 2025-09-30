@@ -44,7 +44,9 @@ const MenuItem = ({
     const itemClassName = [
         'flex items-center gap-2 py-2 px-3 touch-target bg-transparent text-secondary border-none rounded-sm cursor-pointer text-sm w-full text-left whitespace-nowrap',
         'transition-colors focus:outline-none active:text-primary md:text-base',
-        isDisabled ? 'text-tertiary cursor-not-allowed hover:text-tertiary focus:text-tertiary active:text-tertiary' : 'hover:bg-surface-hover focus:bg-surface-hover menu-item-focus',
+        isDisabled
+            ? 'text-tertiary cursor-not-allowed hover:text-tertiary focus:text-tertiary active:text-tertiary'
+            : 'hover:bg-surface-hover focus:bg-surface-hover menu-item-focus',
         className,
     ]
         .filter(Boolean)

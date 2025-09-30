@@ -9,7 +9,7 @@ export {
     getPosterPreviewUrl,
     hexToRgb,
     getPosterByIndex,
-    getPosterDimensions
+    getPosterDimensions,
 } from './posterCanvas';
 
 /**

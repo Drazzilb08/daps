@@ -5,7 +5,6 @@ import { FieldRegistry } from '../FieldRegistry';
 import { shouldShowField, generateInstanceOptions } from '../../../utils/forms/conditionalFields';
 import { useInstancesData } from '../../../hooks/useInstancesData';
 
-
 /**
  * Unified ArrayObjectField - Handles dynamic array of objects with configurable schemas
  * Uses accordion-style expansion for mobile-first design without modal dependency
@@ -29,14 +28,18 @@ export const ArrayObjectField = ({
     const [editingData, setEditingData] = useState({});
 
     // Load instances data for conditional field evaluation and dynamic dropdowns
-    const { instancesData, isLoading: instancesLoading, error: instancesError } = useInstancesData();
+    const {
+        instancesData,
+        isLoading: instancesLoading,
+        error: instancesError,
+    } = useInstancesData();
 
     console.log('[ArrayObjectField] Instance data state:', {
         fieldKey: field.key,
         hasInstancesData: !!instancesData,
         instancesLoading,
         hasInstancesError: !!instancesError,
-        instancesDataKeys: instancesData ? Object.keys(instancesData) : []
+        instancesDataKeys: instancesData ? Object.keys(instancesData) : [],
     });
 
     const inputId = `field-${field.key}`;
@@ -50,16 +53,19 @@ export const ArrayObjectField = ({
         setEditingData({});
     }, [value.length]);
 
-    const handleEdit = useCallback((index) => {
-        // Toggle behavior: if clicking on already expanded item, close it
-        if (expandedIndex === index) {
-            setExpandedIndex(null);
-            setEditingData({});
-        } else {
-            setExpandedIndex(index);
-            setEditingData({ ...value[index] });
-        }
-    }, [value, expandedIndex]);
+    const handleEdit = useCallback(
+        index => {
+            // Toggle behavior: if clicking on already expanded item, close it
+            if (expandedIndex === index) {
+                setExpandedIndex(null);
+                setEditingData({});
+            } else {
+                setExpandedIndex(index);
+                setEditingData({ ...value[index] });
+            }
+        },
+        [value, expandedIndex]
+    );
 
     const handleSave = useCallback(() => {
         if (expandedIndex === null) return;
@@ -83,28 +89,31 @@ export const ArrayObjectField = ({
         setEditingData({});
     }, []);
 
-    const handleRemove = useCallback((index) => {
-        const newArray = value.filter((_, i) => i !== index);
-        onChange(newArray);
-        if (expandedIndex === index) {
-            setExpandedIndex(null);
-            setEditingData({});
-        }
-    }, [value, onChange, expandedIndex]);
+    const handleRemove = useCallback(
+        index => {
+            const newArray = value.filter((_, i) => i !== index);
+            onChange(newArray);
+            if (expandedIndex === index) {
+                setExpandedIndex(null);
+                setEditingData({});
+            }
+        },
+        [value, onChange, expandedIndex]
+    );
 
     const handleFieldChange = useCallback((fieldKey, fieldValue) => {
         setEditingData(prev => ({
             ...prev,
-            [fieldKey]: fieldValue
+            [fieldKey]: fieldValue,
         }));
     }, []);
 
     // Handle preset selection for fields that support multi-field updates
-    const handlePresetSelected = useCallback((presetFieldUpdates) => {
+    const handlePresetSelected = useCallback(presetFieldUpdates => {
         console.log('[ArrayObjectField] handlePresetSelected called with:', presetFieldUpdates);
         setEditingData(prev => ({
             ...prev,
-            ...presetFieldUpdates
+            ...presetFieldUpdates,
         }));
     }, []);
 
@@ -118,7 +127,7 @@ export const ArrayObjectField = ({
                     className="flex items-center justify-between p-3 min-h-11 cursor-pointer transition-colors hover:bg-surface-hover focus:bg-surface-hover focus:outline-2 focus:outline-primary focus:outline-offset-[-2px]"
                     onClick={() => handleEdit(index)}
                     tabIndex={0}
-                    onKeyDown={(e) => {
+                    onKeyDown={e => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             handleEdit(index);
@@ -126,9 +135,7 @@ export const ArrayObjectField = ({
                     }}
                 >
                     <div className="flex-1 flex flex-col gap-1 md:flex-row md:items-center md:gap-4 min-w-0">
-                        <div className="font-medium text-primary text-sm truncate">
-                            {primary}
-                        </div>
+                        <div className="font-medium text-primary text-sm truncate">{primary}</div>
                         {secondary && (
                             <div className="text-xs text-secondary truncate md:flex-shrink md:min-w-30">
                                 {secondary}
@@ -147,7 +154,7 @@ export const ArrayObjectField = ({
                     </div>
                     <div className="flex items-center gap-2 ml-3">
                         <RemoveButton
-                            onClick={(e) => {
+                            onClick={e => {
                                 e.stopPropagation();
                                 handleRemove(index);
                             }}
@@ -173,14 +180,14 @@ export const ArrayObjectField = ({
 
         // Prepare API data for conditional field evaluation
         const apiData = {
-            instances: instancesData
+            instances: instancesData,
         };
 
         console.log('[ArrayObjectField] Rendering edit form with conditional support:', {
             fieldKey: field.key,
             totalFields: field.fields.length,
             editingDataKeys: Object.keys(editingData),
-            hasApiData: !!apiData.instances
+            hasApiData: !!apiData.instances,
         });
 
         return (
@@ -192,7 +199,7 @@ export const ArrayObjectField = ({
                 <div className="p-4 flex flex-col gap-4">
                     {field.fields
                         .filter(subField => shouldShowField(subField, editingData, apiData))
-                        .map((subField) => {
+                        .map(subField => {
                             const FieldComponent = getFieldComponent(subField.type);
 
                             // Additional props for specific field types
@@ -200,7 +207,10 @@ export const ArrayObjectField = ({
                             if (subField.type === 'presets') {
                                 additionalProps.onPresetSelected = handlePresetSelected;
                                 additionalProps.moduleConfig = value; // Pass current array as moduleConfig for duplicate detection
-                                console.log('[ArrayObjectField] Adding onPresetSelected for presets field:', subField.key);
+                                console.log(
+                                    '[ArrayObjectField] Adding onPresetSelected for presets field:',
+                                    subField.key
+                                );
                             }
 
                             // Enhanced dropdown with API integration
@@ -215,14 +225,17 @@ export const ArrayObjectField = ({
                                 enhancedField = {
                                     ...subField,
                                     options: instanceOptions,
-                                    placeholder: '— Select instance... —' // Override DropdownField default
+                                    placeholder: '— Select instance... —', // Override DropdownField default
                                 };
-                                console.log('[ArrayObjectField] Adding dynamic instance options for field:', {
-                                    fieldKey: subField.key,
-                                    optionsFilter: subField.options_filter,
-                                    optionCount: instanceOptions.length,
-                                    options: instanceOptions
-                                });
+                                console.log(
+                                    '[ArrayObjectField] Adding dynamic instance options for field:',
+                                    {
+                                        fieldKey: subField.key,
+                                        optionsFilter: subField.options_filter,
+                                        optionCount: instanceOptions.length,
+                                        options: instanceOptions,
+                                    }
+                                );
                             }
 
                             console.log('[ArrayObjectField] Rendering field:', {
@@ -230,7 +243,7 @@ export const ArrayObjectField = ({
                                 fieldType: subField.type,
                                 hasAdditionalProps: Object.keys(additionalProps).length > 0,
                                 additionalPropsKeys: Object.keys(additionalProps),
-                                isVisible: shouldShowField(subField, editingData, apiData)
+                                isVisible: shouldShowField(subField, editingData, apiData),
                             });
 
                             return (
@@ -238,7 +251,7 @@ export const ArrayObjectField = ({
                                     <FieldComponent
                                         field={enhancedField}
                                         value={editingData[subField.key] || ''}
-                                        onChange={(value) => handleFieldChange(subField.key, value)}
+                                        onChange={value => handleFieldChange(subField.key, value)}
                                         disabled={disabled}
                                         {...additionalProps}
                                     />
@@ -314,15 +327,15 @@ export const ArrayObjectField = ({
 const DISPLAY_TEMPLATES = {
     gdrive: {
         itemName: 'Drive Location',
-        display: (item) => ({
+        display: item => ({
             primary: item.name || 'Unnamed Drive',
             secondary: item.location || 'No location specified',
-            badge: item.id ? `ID: ${item.id.substring(0, 8)}...` : null
-        })
+            badge: item.id ? `ID: ${item.id.substring(0, 8)}...` : null,
+        }),
     },
     replacerr: {
         itemName: 'Holiday Mapping',
-        display: (item) => {
+        display: item => {
             let scheduleText = 'No schedule';
             if (item.schedule) {
                 if (typeof item.schedule === 'string') {
@@ -335,26 +348,26 @@ const DISPLAY_TEMPLATES = {
             return {
                 primary: item.name || 'Unknown Holiday',
                 secondary: scheduleText,
-                badge: item.colors ? `${item.colors.length} colors` : 'No colors'
+                badge: item.colors ? `${item.colors.length} colors` : 'No colors',
             };
-        }
+        },
     },
     upgradinatorr: {
         itemName: 'Instance Mapping',
-        display: (item) => ({
+        display: item => ({
             primary: item.instance || 'Unknown Instance',
             secondary: `Tag: ${item.tag_name || 'None'} | Count: ${item.count || 0}`,
-            badge: item.unattended ? 'Unattended' : 'Manual'
-        })
+            badge: item.unattended ? 'Unattended' : 'Manual',
+        }),
     },
     labelarr: {
         itemName: 'Tag Mapping',
-        display: (item) => ({
+        display: item => ({
             primary: item.app_instance || 'Unknown Instance',
             secondary: item.labels || 'No labels',
-            badge: item.plex_instances?.length ? `${item.plex_instances.length} Plex` : 'No Plex'
-        })
-    }
+            badge: item.plex_instances?.length ? `${item.plex_instances.length} Plex` : 'No Plex',
+        }),
+    },
 };
 
 /**

@@ -88,332 +88,378 @@ FieldStatusOverview.displayName = 'FieldStatusOverview';
  * Individual Field Tester Component
  * Test a single field type with different configurations and states
  */
-const FieldTester = React.memo(({
-    fieldType,
-    onApprove,
-    onDisapprove,
-    isApproved,
-    instances = [],
-    instancesLoading = false,
-    instancesError = null,
-    plexLibraries = {},
-    librariesLoading = false,
-    librariesError = null,
-}) => {
-    const [testConfig, setTestConfig] = useState(() => {
-        const baseConfig = {
-            label: `Test ${fieldType} Field`,
-            required: false,
-            disabled: false,
-            placeholder: `Enter ${fieldType} value...`,
-            description: `Testing ${fieldType} field implementation`,
-        };
-
-        // Add sample options for dropdown fields
-        if (fieldType === 'dropdown') {
-            baseConfig.options = [
-                { value: 'option1', label: 'First Option' },
-                { value: 'option2', label: 'Second Option' },
-                { value: 'option3', label: 'Third Option' },
-                { value: 'group1', label: 'Group Item 1' },
-                { value: 'group2', label: 'Group Item 2' },
-                'Simple String Option',
-                'Another String Option',
-            ];
-            baseConfig.placeholder = 'Select an option from the dropdown...';
-            baseConfig.description =
-                'Testing dropdown field with sample options (mix of objects and strings)';
-        }
-
-        // Add sample mode options for dirlist_options fields
-        if (fieldType === 'dirlist_options') {
-            baseConfig.mode_options = [
-                { value: 'copy', label: 'Copy' },
-                { value: 'move', label: 'Move' },
-                { value: 'link', label: 'Link' },
-                { value: 'hardlink', label: 'Hard Link' },
-                { value: 'symlink', label: 'Symbolic Link' },
-            ];
-            baseConfig.placeholder = 'Click to select directory...';
-            baseConfig.description =
-                'Testing directory list field with mode selection dropdowns';
-            baseConfig.add_button_text = 'Add Directory';
-            baseConfig.remove_button_text = 'Remove';
-            baseConfig.max_directories = 10;
-            baseConfig.min_directories = 1;
-        }
-
-        // Add schema configuration for instances fields
-        if (fieldType === 'instances') {
-            baseConfig.instance_types = ['radarr', 'sonarr', 'plex'];
-            baseConfig.add_posters_option = true;
-            baseConfig.placeholder = 'Select instances for this module...';
-            baseConfig.description =
-                'Testing instances field with multiple service types and poster upload options';
-        }
-
-        // Add configuration for tag fields
-        if (fieldType === 'tag_input') {
-            baseConfig.suggestions = ['action', 'adventure', 'animation', 'comedy', 'drama', 'documentary', 'family', 'fantasy', 'horror', 'kids', 'mystery', 'romance', 'sci-fi', 'thriller', 'western'];
-
-            // Custom filter function for "starts with" behavior
-            baseConfig.filterFunction = (suggestion, input) => {
-                const suggestionText = suggestion.toLowerCase();
-                const inputText = input.toLowerCase();
-                return suggestionText.startsWith(inputText); // Type "r" → shows "romance"
+const FieldTester = React.memo(
+    ({
+        fieldType,
+        onApprove,
+        onDisapprove,
+        isApproved,
+        instances = [],
+        instancesLoading = false,
+        instancesError = null,
+        plexLibraries = {},
+        librariesLoading = false,
+        librariesError = null,
+    }) => {
+        const [testConfig, setTestConfig] = useState(() => {
+            const baseConfig = {
+                label: `Test ${fieldType} Field`,
+                required: false,
+                disabled: false,
+                placeholder: `Enter ${fieldType} value...`,
+                description: `Testing ${fieldType} field implementation`,
             };
-            baseConfig.allowCustom = true;
-            baseConfig.placeholder = 'Type "r" to see romance, "a" for action...';
-            baseConfig.description = 'Testing "starts with" filtering - type "r" and only items beginning with "r" appear';
-        }
 
-        if (fieldType === 'tag_display') {
-            baseConfig.disabled = true;
-            baseConfig.placeholder = 'Read-only tag display';
-            baseConfig.description = 'Testing tag display field in read-only mode';
-        }
+            // Add sample options for dropdown fields
+            if (fieldType === 'dropdown') {
+                baseConfig.options = [
+                    { value: 'option1', label: 'First Option' },
+                    { value: 'option2', label: 'Second Option' },
+                    { value: 'option3', label: 'Third Option' },
+                    { value: 'group1', label: 'Group Item 1' },
+                    { value: 'group2', label: 'Group Item 2' },
+                    'Simple String Option',
+                    'Another String Option',
+                ];
+                baseConfig.placeholder = 'Select an option from the dropdown...';
+                baseConfig.description =
+                    'Testing dropdown field with sample options (mix of objects and strings)';
+            }
 
-        // Add configuration for presets fields
-        if (fieldType === 'presets') {
-            baseConfig.presetType = 'holiday'; // Default to holiday presets for testing
-            baseConfig.identifierField = 'name';
-            baseConfig.moduleConfigKey = 'holidays';
-            baseConfig.targetFields = ['name', 'schedule', 'colors'];
-            baseConfig.placeholder = 'Select a preset...';
-            baseConfig.description = 'Testing unified PresetsField with holiday preset configuration (schema-driven)';
-        }
+            // Add sample mode options for dirlist_options fields
+            if (fieldType === 'dirlist_options') {
+                baseConfig.mode_options = [
+                    { value: 'copy', label: 'Copy' },
+                    { value: 'move', label: 'Move' },
+                    { value: 'link', label: 'Link' },
+                    { value: 'hardlink', label: 'Hard Link' },
+                    { value: 'symlink', label: 'Symbolic Link' },
+                ];
+                baseConfig.placeholder = 'Click to select directory...';
+                baseConfig.description =
+                    'Testing directory list field with mode selection dropdowns';
+                baseConfig.add_button_text = 'Add Directory';
+                baseConfig.remove_button_text = 'Remove';
+                baseConfig.max_directories = 10;
+                baseConfig.min_directories = 1;
+            }
 
-        // Add configuration for object_array fields
-        if (fieldType === 'object_array') {
-            baseConfig.displayType = 'replacerr'; // Use holiday mapping display for testing
-            baseConfig.fields = [
-                {
-                    key: 'name',
-                    type: 'text',
-                    label: 'Holiday Name',
-                    required: true,
-                    placeholder: 'Enter holiday name...'
-                },
-                {
-                    key: 'colors',
-                    type: 'color_list',
-                    label: 'Color Palette',
-                    description: 'Colors to use for this holiday mapping'
-                },
-                {
-                    key: 'schedule',
-                    type: 'text',
-                    label: 'Schedule Period',
-                    placeholder: 'e.g., 2024-12-20 to 2024-12-26'
-                }
-            ];
-            baseConfig.description = 'Testing ArrayObjectField with holiday mapping display template and color swatches';
-        }
+            // Add schema configuration for instances fields
+            if (fieldType === 'instances') {
+                baseConfig.instance_types = ['radarr', 'sonarr', 'plex'];
+                baseConfig.add_posters_option = true;
+                baseConfig.placeholder = 'Select instances for this module...';
+                baseConfig.description =
+                    'Testing instances field with multiple service types and poster upload options';
+            }
 
-        return baseConfig;
-    });
+            // Add configuration for tag fields
+            if (fieldType === 'tag_input') {
+                baseConfig.suggestions = [
+                    'action',
+                    'adventure',
+                    'animation',
+                    'comedy',
+                    'drama',
+                    'documentary',
+                    'family',
+                    'fantasy',
+                    'horror',
+                    'kids',
+                    'mystery',
+                    'romance',
+                    'sci-fi',
+                    'thriller',
+                    'western',
+                ];
 
-    const [testValue, setTestValue] = useState(() => {
-        // Initialize test value based on field type
-        if (fieldType === 'instances') {
-            return []; // Array for instances field
-        }
-        if (fieldType === 'color_list' || fieldType === 'color_list_poster') {
-            return []; // Array for color list fields
-        }
-        if (fieldType === 'dirlist' || fieldType === 'dirlist_dragdrop' || fieldType === 'dirlist_options') {
-            return []; // Array for directory list fields
-        }
-        if (fieldType === 'check_box') {
-            return false; // Boolean for checkbox
-        }
-        if (fieldType === 'tag_input') {
-            return []; // Array for tag input field
-        }
-        if (fieldType === 'tag_display') {
-            return ['action', 'comedy', 'kids']; // Array with sample tags for display
-        }
-        if (fieldType === 'presets') {
-            return ''; // String for preset selection
-        }
-        if (fieldType === 'object_array') {
-            return [
-                {
-                    name: 'Christmas',
-                    colors: ['#ff0000', '#00ff00', '#ffffff'],
-                    schedule: '2024-12-20 to 2024-12-26'
-                },
-                {
-                    name: 'Halloween',
-                    colors: ['#ff8c00', '#000000', '#8b4513'],
-                    schedule: '2024-10-25 to 2024-10-31'
-                }
-            ]; // Array with sample holiday mapping objects
-        }
-        return ''; // String for most fields
-    });
-    const [showError, setShowError] = useState(false);
-    const toast = useToast();
+                // Custom filter function for "starts with" behavior
+                baseConfig.filterFunction = (suggestion, input) => {
+                    const suggestionText = suggestion.toLowerCase();
+                    const inputText = input.toLowerCase();
+                    return suggestionText.startsWith(inputText); // Type "r" → shows "romance"
+                };
+                baseConfig.allowCustom = true;
+                baseConfig.placeholder = 'Type "r" to see romance, "a" for action...';
+                baseConfig.description =
+                    'Testing "starts with" filtering - type "r" and only items beginning with "r" appear';
+            }
 
-    // Update test configuration when field type changes
-    useEffect(() => {
-        const baseConfig = {
-            label: `Test ${fieldType} Field`,
-            required: false,
-            disabled: false,
-            placeholder: `Enter ${fieldType} value...`,
-            description: `Testing ${fieldType} field implementation`,
-        };
+            if (fieldType === 'tag_display') {
+                baseConfig.disabled = true;
+                baseConfig.placeholder = 'Read-only tag display';
+                baseConfig.description = 'Testing tag display field in read-only mode';
+            }
 
-        // Add sample options for dropdown fields
-        if (fieldType === 'dropdown') {
-            baseConfig.options = [
-                { value: 'option1', label: 'First Option' },
-                { value: 'option2', label: 'Second Option' },
-                { value: 'option3', label: 'Third Option' },
-                { value: 'group1', label: 'Group Item 1' },
-                { value: 'group2', label: 'Group Item 2' },
-                'Simple String Option',
-                'Another String Option',
-            ];
-            baseConfig.placeholder = 'Select an option from the dropdown...';
-            baseConfig.description =
-                'Testing dropdown field with sample options (mix of objects and strings)';
-        }
+            // Add configuration for presets fields
+            if (fieldType === 'presets') {
+                baseConfig.presetType = 'holiday'; // Default to holiday presets for testing
+                baseConfig.identifierField = 'name';
+                baseConfig.moduleConfigKey = 'holidays';
+                baseConfig.targetFields = ['name', 'schedule', 'colors'];
+                baseConfig.placeholder = 'Select a preset...';
+                baseConfig.description =
+                    'Testing unified PresetsField with holiday preset configuration (schema-driven)';
+            }
 
-        // Add sample mode options for dirlist_options fields
-        if (fieldType === 'dirlist_options') {
-            baseConfig.mode_options = [
-                { value: 'copy', label: 'Copy' },
-                { value: 'move', label: 'Move' },
-                { value: 'link', label: 'Link' },
-                { value: 'hardlink', label: 'Hard Link' },
-                { value: 'symlink', label: 'Symbolic Link' },
-            ];
-            baseConfig.placeholder = 'Click to select directory...';
-            baseConfig.description =
-                'Testing directory list field with mode selection dropdowns';
-            baseConfig.add_button_text = 'Add Directory';
-            baseConfig.remove_button_text = 'Remove';
-            baseConfig.max_directories = 10;
-            baseConfig.min_directories = 1;
-        }
+            // Add configuration for object_array fields
+            if (fieldType === 'object_array') {
+                baseConfig.displayType = 'replacerr'; // Use holiday mapping display for testing
+                baseConfig.fields = [
+                    {
+                        key: 'name',
+                        type: 'text',
+                        label: 'Holiday Name',
+                        required: true,
+                        placeholder: 'Enter holiday name...',
+                    },
+                    {
+                        key: 'colors',
+                        type: 'color_list',
+                        label: 'Color Palette',
+                        description: 'Colors to use for this holiday mapping',
+                    },
+                    {
+                        key: 'schedule',
+                        type: 'text',
+                        label: 'Schedule Period',
+                        placeholder: 'e.g., 2024-12-20 to 2024-12-26',
+                    },
+                ];
+                baseConfig.description =
+                    'Testing ArrayObjectField with holiday mapping display template and color swatches';
+            }
 
-        // Add schema configuration for instances fields
-        if (fieldType === 'instances') {
-            baseConfig.instance_types = ['radarr', 'sonarr', 'plex'];
-            baseConfig.add_posters_option = true;
-            baseConfig.placeholder = 'Select instances for this module...';
-            baseConfig.description =
-                'Testing instances field with multiple service types and poster upload options';
-        }
+            return baseConfig;
+        });
 
-        // Add configuration for tag fields
-        if (fieldType === 'tag_input') {
-            baseConfig.suggestions = ['action', 'adventure', 'animation', 'comedy', 'drama', 'documentary', 'family', 'fantasy', 'horror', 'kids', 'mystery', 'romance', 'sci-fi', 'thriller', 'western'];
+        const [testValue, setTestValue] = useState(() => {
+            // Initialize test value based on field type
+            if (fieldType === 'instances') {
+                return []; // Array for instances field
+            }
+            if (fieldType === 'color_list' || fieldType === 'color_list_poster') {
+                return []; // Array for color list fields
+            }
+            if (
+                fieldType === 'dirlist' ||
+                fieldType === 'dirlist_dragdrop' ||
+                fieldType === 'dirlist_options'
+            ) {
+                return []; // Array for directory list fields
+            }
+            if (fieldType === 'check_box') {
+                return false; // Boolean for checkbox
+            }
+            if (fieldType === 'tag_input') {
+                return []; // Array for tag input field
+            }
+            if (fieldType === 'tag_display') {
+                return ['action', 'comedy', 'kids']; // Array with sample tags for display
+            }
+            if (fieldType === 'presets') {
+                return ''; // String for preset selection
+            }
+            if (fieldType === 'object_array') {
+                return [
+                    {
+                        name: 'Christmas',
+                        colors: ['#ff0000', '#00ff00', '#ffffff'],
+                        schedule: '2024-12-20 to 2024-12-26',
+                    },
+                    {
+                        name: 'Halloween',
+                        colors: ['#ff8c00', '#000000', '#8b4513'],
+                        schedule: '2024-10-25 to 2024-10-31',
+                    },
+                ]; // Array with sample holiday mapping objects
+            }
+            return ''; // String for most fields
+        });
+        const [showError, setShowError] = useState(false);
+        const toast = useToast();
 
-            // Custom filter function for "starts with" behavior
-            baseConfig.filterFunction = (suggestion, input) => {
-                const suggestionText = suggestion.toLowerCase();
-                const inputText = input.toLowerCase();
-                return suggestionText.startsWith(inputText); // Type "r" → shows "romance"
+        // Update test configuration when field type changes
+        useEffect(() => {
+            const baseConfig = {
+                label: `Test ${fieldType} Field`,
+                required: false,
+                disabled: false,
+                placeholder: `Enter ${fieldType} value...`,
+                description: `Testing ${fieldType} field implementation`,
             };
-            baseConfig.allowCustom = true;
-            baseConfig.placeholder = 'Type "r" to see romance, "a" for action...';
-            baseConfig.description = 'Testing "starts with" filtering - type "r" and only items beginning with "r" appear';
-        }
 
-        if (fieldType === 'tag_display') {
-            baseConfig.disabled = true;
-            baseConfig.placeholder = 'Read-only tag display';
-            baseConfig.description = 'Testing tag display field in read-only mode';
-        }
+            // Add sample options for dropdown fields
+            if (fieldType === 'dropdown') {
+                baseConfig.options = [
+                    { value: 'option1', label: 'First Option' },
+                    { value: 'option2', label: 'Second Option' },
+                    { value: 'option3', label: 'Third Option' },
+                    { value: 'group1', label: 'Group Item 1' },
+                    { value: 'group2', label: 'Group Item 2' },
+                    'Simple String Option',
+                    'Another String Option',
+                ];
+                baseConfig.placeholder = 'Select an option from the dropdown...';
+                baseConfig.description =
+                    'Testing dropdown field with sample options (mix of objects and strings)';
+            }
 
-        // Add configuration for presets fields
-        if (fieldType === 'presets') {
-            baseConfig.presetType = 'holiday'; // Default to holiday presets for testing
-            baseConfig.identifierField = 'name';
-            baseConfig.moduleConfigKey = 'holidays';
-            baseConfig.targetFields = ['name', 'schedule', 'colors'];
-            baseConfig.placeholder = 'Select a preset...';
-            baseConfig.description = 'Testing unified PresetsField with holiday preset configuration (schema-driven)';
-        }
+            // Add sample mode options for dirlist_options fields
+            if (fieldType === 'dirlist_options') {
+                baseConfig.mode_options = [
+                    { value: 'copy', label: 'Copy' },
+                    { value: 'move', label: 'Move' },
+                    { value: 'link', label: 'Link' },
+                    { value: 'hardlink', label: 'Hard Link' },
+                    { value: 'symlink', label: 'Symbolic Link' },
+                ];
+                baseConfig.placeholder = 'Click to select directory...';
+                baseConfig.description =
+                    'Testing directory list field with mode selection dropdowns';
+                baseConfig.add_button_text = 'Add Directory';
+                baseConfig.remove_button_text = 'Remove';
+                baseConfig.max_directories = 10;
+                baseConfig.min_directories = 1;
+            }
 
-        // Add configuration for object_array fields
-        if (fieldType === 'object_array') {
-            baseConfig.displayType = 'replacerr'; // Use holiday mapping display for testing
-            baseConfig.fields = [
-                {
-                    key: 'name',
-                    type: 'text',
-                    label: 'Holiday Name',
-                    required: true,
-                    placeholder: 'Enter holiday name...'
-                },
-                {
-                    key: 'colors',
-                    type: 'color_list',
-                    label: 'Color Palette',
-                    description: 'Colors to use for this holiday mapping'
-                },
-                {
-                    key: 'schedule',
-                    type: 'text',
-                    label: 'Schedule Period',
-                    placeholder: 'e.g., 2024-12-20 to 2024-12-26'
-                }
-            ];
-            baseConfig.description = 'Testing ArrayObjectField with holiday mapping display template and color swatches';
-        }
+            // Add schema configuration for instances fields
+            if (fieldType === 'instances') {
+                baseConfig.instance_types = ['radarr', 'sonarr', 'plex'];
+                baseConfig.add_posters_option = true;
+                baseConfig.placeholder = 'Select instances for this module...';
+                baseConfig.description =
+                    'Testing instances field with multiple service types and poster upload options';
+            }
 
-        setTestConfig(baseConfig);
+            // Add configuration for tag fields
+            if (fieldType === 'tag_input') {
+                baseConfig.suggestions = [
+                    'action',
+                    'adventure',
+                    'animation',
+                    'comedy',
+                    'drama',
+                    'documentary',
+                    'family',
+                    'fantasy',
+                    'horror',
+                    'kids',
+                    'mystery',
+                    'romance',
+                    'sci-fi',
+                    'thriller',
+                    'western',
+                ];
 
-        // Reset test value based on field type
-        if (fieldType === 'instances') {
-            setTestValue([]); // Array for instances field
-        } else if (fieldType === 'color_list' || fieldType === 'color_list_poster') {
-            setTestValue([]); // Array for color list fields
-        } else if (fieldType === 'dirlist' || fieldType === 'dirlist_dragdrop' || fieldType === 'dirlist_options') {
-            setTestValue([]); // Array for directory list fields
-        } else if (fieldType === 'check_box') {
-            setTestValue(false); // Boolean for checkbox
-        } else if (fieldType === 'tag_input') {
-            setTestValue([]); // Array for tag input field
-        } else if (fieldType === 'tag_display') {
-            setTestValue(['action', 'comedy', 'kids']); // Array with sample tags for display
-        } else if (fieldType === 'presets') {
-            setTestValue(''); // String for preset selection
-        } else if (fieldType === 'object_array') {
-            setTestValue([
-                {
-                    name: 'Christmas',
-                    colors: ['#ff0000', '#00ff00', '#ffffff'],
-                    schedule: '2024-12-20 to 2024-12-26'
-                },
-                {
-                    name: 'Halloween',
-                    colors: ['#ff8c00', '#000000', '#8b4513'],
-                    schedule: '2024-10-25 to 2024-10-31'
-                }
-            ]); // Array with sample holiday mapping objects
-        } else {
-            setTestValue(''); // String for most fields
-        }
-    }, [fieldType]);
+                // Custom filter function for "starts with" behavior
+                baseConfig.filterFunction = (suggestion, input) => {
+                    const suggestionText = suggestion.toLowerCase();
+                    const inputText = input.toLowerCase();
+                    return suggestionText.startsWith(inputText); // Type "r" → shows "romance"
+                };
+                baseConfig.allowCustom = true;
+                baseConfig.placeholder = 'Type "r" to see romance, "a" for action...';
+                baseConfig.description =
+                    'Testing "starts with" filtering - type "r" and only items beginning with "r" appear';
+            }
 
-    // Create test field configuration
-    const testField = useMemo(
-        () => ({
-            key: `test_${fieldType}`,
-            type: fieldType,
-            ...testConfig,
-        }),
-        [fieldType, testConfig]
-    );
+            if (fieldType === 'tag_display') {
+                baseConfig.disabled = true;
+                baseConfig.placeholder = 'Read-only tag display';
+                baseConfig.description = 'Testing tag display field in read-only mode';
+            }
 
-    // Test form schema with error injection for testing
-    const testSchema = useMemo(
-        () => {
+            // Add configuration for presets fields
+            if (fieldType === 'presets') {
+                baseConfig.presetType = 'holiday'; // Default to holiday presets for testing
+                baseConfig.identifierField = 'name';
+                baseConfig.moduleConfigKey = 'holidays';
+                baseConfig.targetFields = ['name', 'schedule', 'colors'];
+                baseConfig.placeholder = 'Select a preset...';
+                baseConfig.description =
+                    'Testing unified PresetsField with holiday preset configuration (schema-driven)';
+            }
+
+            // Add configuration for object_array fields
+            if (fieldType === 'object_array') {
+                baseConfig.displayType = 'replacerr'; // Use holiday mapping display for testing
+                baseConfig.fields = [
+                    {
+                        key: 'name',
+                        type: 'text',
+                        label: 'Holiday Name',
+                        required: true,
+                        placeholder: 'Enter holiday name...',
+                    },
+                    {
+                        key: 'colors',
+                        type: 'color_list',
+                        label: 'Color Palette',
+                        description: 'Colors to use for this holiday mapping',
+                    },
+                    {
+                        key: 'schedule',
+                        type: 'text',
+                        label: 'Schedule Period',
+                        placeholder: 'e.g., 2024-12-20 to 2024-12-26',
+                    },
+                ];
+                baseConfig.description =
+                    'Testing ArrayObjectField with holiday mapping display template and color swatches';
+            }
+
+            setTestConfig(baseConfig);
+
+            // Reset test value based on field type
+            if (fieldType === 'instances') {
+                setTestValue([]); // Array for instances field
+            } else if (fieldType === 'color_list' || fieldType === 'color_list_poster') {
+                setTestValue([]); // Array for color list fields
+            } else if (
+                fieldType === 'dirlist' ||
+                fieldType === 'dirlist_dragdrop' ||
+                fieldType === 'dirlist_options'
+            ) {
+                setTestValue([]); // Array for directory list fields
+            } else if (fieldType === 'check_box') {
+                setTestValue(false); // Boolean for checkbox
+            } else if (fieldType === 'tag_input') {
+                setTestValue([]); // Array for tag input field
+            } else if (fieldType === 'tag_display') {
+                setTestValue(['action', 'comedy', 'kids']); // Array with sample tags for display
+            } else if (fieldType === 'presets') {
+                setTestValue(''); // String for preset selection
+            } else if (fieldType === 'object_array') {
+                setTestValue([
+                    {
+                        name: 'Christmas',
+                        colors: ['#ff0000', '#00ff00', '#ffffff'],
+                        schedule: '2024-12-20 to 2024-12-26',
+                    },
+                    {
+                        name: 'Halloween',
+                        colors: ['#ff8c00', '#000000', '#8b4513'],
+                        schedule: '2024-10-25 to 2024-10-31',
+                    },
+                ]); // Array with sample holiday mapping objects
+            } else {
+                setTestValue(''); // String for most fields
+            }
+        }, [fieldType]);
+
+        // Create test field configuration
+        const testField = useMemo(
+            () => ({
+                key: `test_${fieldType}`,
+                type: fieldType,
+                ...testConfig,
+            }),
+            [fieldType, testConfig]
+        );
+
+        // Test form schema with error injection for testing
+        const testSchema = useMemo(() => {
             const baseSchema = {
                 label: `${fieldType} Field Test`,
                 fields: [testField],
@@ -434,13 +480,10 @@ const FieldTester = React.memo(({
             }
 
             return baseSchema;
-        },
-        [testField, fieldType, testConfig.targetFields]
-    );
+        }, [testField, fieldType, testConfig.targetFields]);
 
-    // Test form values with error state simulation
-    const testFormValues = useMemo(
-        () => {
+        // Test form values with error state simulation
+        const testFormValues = useMemo(() => {
             const baseValues = {
                 [`test_${fieldType}`]: testValue,
             };
@@ -454,173 +497,188 @@ const FieldTester = React.memo(({
             }
 
             return baseValues;
-        },
-        [fieldType, testValue, testConfig.targetFields]
-    );
+        }, [fieldType, testValue, testConfig.targetFields]);
 
-    // Error state simulation - inject error if showError is true
-    const testErrors = useMemo(() => {
-        if (showError) {
-            return { [`test_${fieldType}`]: 'Test error message - this is how errors appear' };
-        }
-        return {};
-    }, [showError, fieldType]);
+        // Error state simulation - inject error if showError is true
+        const testErrors = useMemo(() => {
+            if (showError) {
+                return { [`test_${fieldType}`]: 'Test error message - this is how errors appear' };
+            }
+            return {};
+        }, [showError, fieldType]);
 
-    const handleConfigChange = useCallback((key, value) => {
-        setTestConfig(prev => ({ ...prev, [key]: value }));
-    }, []);
+        const handleConfigChange = useCallback((key, value) => {
+            setTestConfig(prev => ({ ...prev, [key]: value }));
+        }, []);
 
-    const handleTestSubmit = useCallback(
-        values => {
-            console.log(`[${fieldType}] Test submit:`, values);
-            toast.success(`${fieldType} field test submitted successfully!`);
-        },
-        [fieldType, toast]
-    );
+        const handleTestSubmit = useCallback(
+            values => {
+                console.log(`[${fieldType}] Test submit:`, values);
+                toast.success(`${fieldType} field test submitted successfully!`);
+            },
+            [fieldType, toast]
+        );
 
-    const handleApprove = useCallback(() => {
-        onApprove(fieldType);
-        toast.success(`${fieldType} field approved for production!`);
-    }, [fieldType, onApprove, toast]);
+        const handleApprove = useCallback(() => {
+            onApprove(fieldType);
+            toast.success(`${fieldType} field approved for production!`);
+        }, [fieldType, onApprove, toast]);
 
-    const handleDisapprove = useCallback(() => {
-        onDisapprove(fieldType);
-        if (isApproved) {
-            toast.success(`${fieldType} field unapproved - moved to needs testing`);
-        } else {
-            toast.info(`${fieldType} field marked as needs work`);
-        }
-    }, [fieldType, onDisapprove, toast, isApproved]);
+        const handleDisapprove = useCallback(() => {
+            onDisapprove(fieldType);
+            if (isApproved) {
+                toast.success(`${fieldType} field unapproved - moved to needs testing`);
+            } else {
+                toast.info(`${fieldType} field marked as needs work`);
+            }
+        }, [fieldType, onDisapprove, toast, isApproved]);
 
-    const isWorking = FieldRegistry.isWorkingFieldType(fieldType);
+        const isWorking = FieldRegistry.isWorkingFieldType(fieldType);
 
-    return (
-        <div className={`bg-surface border rounded p-4 ${!isWorking ? 'opacity-70 border-dashed' : ''}`}>
-            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-                <h3 className="text-lg font-medium text-primary font-mono m-0">{fieldType}</h3>
-                <div className="flex gap-2">
-                    {!isWorking && (
-                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-error border-error">Placeholder</span>
-                    )}
-                    {isWorking && isApproved && (
-                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-success border-success">Approved</span>
-                    )}
-                    {isWorking && !isApproved && (
-                        <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-warning border-warning">Needs Testing</span>
-                    )}
-                </div>
-            </div>
-
-            {isWorking && (
-                <>
-                    <div className="mb-4 p-3 bg-surface-elevated border rounded-sm">
-                        <h4 className="text-base font-medium text-primary mb-2">Field Configuration</h4>
-                        <div className="flex gap-4 flex-wrap">
-                            <label className="flex items-center justify-center gap-2 text-sm text-primary cursor-pointer touch-target px-2 py-2">
-                                <input
-                                    type="checkbox"
-                                    checked={testConfig.required}
-                                    onChange={e => handleConfigChange('required', e.target.checked)}
-                                    className="w-4 h-4"
-                                />
-                                Required
-                            </label>
-                            <label className="flex items-center justify-center gap-2 text-sm text-primary cursor-pointer touch-target px-2 py-2">
-                                <input
-                                    type="checkbox"
-                                    checked={testConfig.disabled}
-                                    onChange={e => handleConfigChange('disabled', e.target.checked)}
-                                    className="w-4 h-4"
-                                />
-                                Disabled
-                            </label>
-                            <label className="flex items-center justify-center gap-2 text-sm text-primary cursor-pointer touch-target px-2 py-2">
-                                <input
-                                    type="checkbox"
-                                    checked={showError}
-                                    onChange={e => setShowError(e.target.checked)}
-                                    className="w-4 h-4"
-                                />
-                                Show Error State
-                            </label>
-                        </div>
-                    </div>
-
-                    <div className="mb-4 p-3 bg-surface-elevated border rounded-sm">
-                        <h4 className="text-base font-medium text-primary mb-2">Field Test</h4>
-
-                        {fieldType === 'instances' ? (
-                            // Special handling for InstancesField with API data
-                            <div className="field-wrapper">
-                                <InstancesField
-                                    field={testConfig}
-                                    value={testValue}
-                                    onChange={setTestValue}
-                                    disabled={testConfig.disabled}
-                                    highlightInvalid={showError}
-                                    errorMessage={showError ? 'Test error message' : null}
-                                    instances={instances}
-                                    instancesLoading={instancesLoading}
-                                    instancesError={instancesError}
-                                    plexLibraries={plexLibraries}
-                                    librariesLoading={librariesLoading}
-                                    librariesError={librariesError}
-                                />
-                            </div>
-                        ) : (
-                            // Standard FormRenderer for other field types
-                            <FormRenderer
-                                schema={testSchema}
-                                initialValues={testFormValues}
-                                onSubmit={handleTestSubmit}
-                                onChange={values => setTestValue(values[`test_${fieldType}`])}
-                                submitText="Test Submit"
-                                validateOnChange={false}
-                                customErrors={testErrors}
-                            />
+        return (
+            <div
+                className={`bg-surface border rounded p-4 ${!isWorking ? 'opacity-70 border-dashed' : ''}`}
+            >
+                <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+                    <h3 className="text-lg font-medium text-primary font-mono m-0">{fieldType}</h3>
+                    <div className="flex gap-2">
+                        {!isWorking && (
+                            <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-error border-error">
+                                Placeholder
+                            </span>
+                        )}
+                        {isWorking && isApproved && (
+                            <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-success border-success">
+                                Approved
+                            </span>
+                        )}
+                        {isWorking && !isApproved && (
+                            <span className="inline-flex items-center px-2 py-1 text-sm font-medium border rounded-sm bg-surface text-warning border-warning">
+                                Needs Testing
+                            </span>
                         )}
                     </div>
+                </div>
 
-                    <div className="p-3 bg-surface-elevated border border-primary rounded-sm">
-                        <h4 className="text-base font-medium text-primary mb-2">Approval Status</h4>
-                        <div className="flex gap-2 flex-wrap">
-                            {isApproved ? (
+                {isWorking && (
+                    <>
+                        <div className="mb-4 p-3 bg-surface-elevated border rounded-sm">
+                            <h4 className="text-base font-medium text-primary mb-2">
+                                Field Configuration
+                            </h4>
+                            <div className="flex gap-4 flex-wrap">
+                                <label className="flex items-center justify-center gap-2 text-sm text-primary cursor-pointer touch-target px-2 py-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={testConfig.required}
+                                        onChange={e =>
+                                            handleConfigChange('required', e.target.checked)
+                                        }
+                                        className="w-4 h-4"
+                                    />
+                                    Required
+                                </label>
+                                <label className="flex items-center justify-center gap-2 text-sm text-primary cursor-pointer touch-target px-2 py-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={testConfig.disabled}
+                                        onChange={e =>
+                                            handleConfigChange('disabled', e.target.checked)
+                                        }
+                                        className="w-4 h-4"
+                                    />
+                                    Disabled
+                                </label>
+                                <label className="flex items-center justify-center gap-2 text-sm text-primary cursor-pointer touch-target px-2 py-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={showError}
+                                        onChange={e => setShowError(e.target.checked)}
+                                        className="w-4 h-4"
+                                    />
+                                    Show Error State
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="mb-4 p-3 bg-surface-elevated border rounded-sm">
+                            <h4 className="text-base font-medium text-primary mb-2">Field Test</h4>
+
+                            {fieldType === 'instances' ? (
+                                // Special handling for InstancesField with API data
+                                <div className="field-wrapper">
+                                    <InstancesField
+                                        field={testConfig}
+                                        value={testValue}
+                                        onChange={setTestValue}
+                                        disabled={testConfig.disabled}
+                                        highlightInvalid={showError}
+                                        errorMessage={showError ? 'Test error message' : null}
+                                        instances={instances}
+                                        instancesLoading={instancesLoading}
+                                        instancesError={instancesError}
+                                        plexLibraries={plexLibraries}
+                                        librariesLoading={librariesLoading}
+                                        librariesError={librariesError}
+                                    />
+                                </div>
+                            ) : (
+                                // Standard FormRenderer for other field types
+                                <FormRenderer
+                                    schema={testSchema}
+                                    initialValues={testFormValues}
+                                    onSubmit={handleTestSubmit}
+                                    onChange={values => setTestValue(values[`test_${fieldType}`])}
+                                    submitText="Test Submit"
+                                    validateOnChange={false}
+                                    customErrors={testErrors}
+                                />
+                            )}
+                        </div>
+
+                        <div className="p-3 bg-surface-elevated border border-primary rounded-sm">
+                            <h4 className="text-base font-medium text-primary mb-2">
+                                Approval Status
+                            </h4>
+                            <div className="flex gap-2 flex-wrap">
+                                {isApproved ? (
+                                    <button
+                                        onClick={handleDisapprove}
+                                        className="touch-target bg-warning text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                                    >
+                                        Unapprove
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleApprove}
+                                        className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                                    >
+                                        Approve for Production
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleDisapprove}
-                                    className="touch-target bg-warning text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
+                                    className="touch-target bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
                                 >
-                                    Unapprove
+                                    Needs Work
                                 </button>
-                            ) : (
-                                <button
-                                    onClick={handleApprove}
-                                    className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
-                                >
-                                    Approve for Production
-                                </button>
-                            )}
-                            <button
-                                onClick={handleDisapprove}
-                                className="touch-target bg-error text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
-                            >
-                                Needs Work
-                            </button>
+                            </div>
                         </div>
-                    </div>
-                </>
-            )}
+                    </>
+                )}
 
-            {!isWorking && (
-                <div className="p-4 text-center text-secondary italic">
-                    <p>
-                        This field type is not implemented. It will show a placeholder message in
-                        forms.
-                    </p>
-                </div>
-            )}
-        </div>
-    );
-});
+                {!isWorking && (
+                    <div className="p-4 text-center text-secondary italic">
+                        <p>
+                            This field type is not implemented. It will show a placeholder message
+                            in forms.
+                        </p>
+                    </div>
+                )}
+            </div>
+        );
+    }
+);
 
 FieldTester.displayName = 'FieldTester';
 
@@ -665,7 +723,7 @@ const FieldTestPage = () => {
     const {
         data: instancesResponse,
         isLoading: instancesLoading,
-        error: instancesError
+        error: instancesError,
     } = useApiData({
         apiFunction: instancesAPI.fetchInstances,
         options: {
@@ -690,7 +748,7 @@ const FieldTestPage = () => {
                     type: serviceType,
                     name: instanceName,
                     url: instanceConfig.url,
-                    api: instanceConfig.api
+                    api: instanceConfig.api,
                 });
             });
         });
@@ -706,7 +764,7 @@ const FieldTestPage = () => {
     const {
         data: librariesResponse,
         isLoading: librariesLoading,
-        error: librariesError
+        error: librariesError,
     } = useApiData({
         apiFunction: async () => {
             if (plexInstances.length === 0) {
@@ -813,16 +871,26 @@ const FieldTestPage = () => {
                         Individual Field Testing
                     </h2>
                     <div className="flex flex-wrap gap-3">
-                        <span className="text-sm text-secondary bg-surface border p-1 px-2">Working: {stats.working}</span>
-                        <span className="text-sm text-secondary bg-surface border p-1 px-2">Approved: {stats.approved}</span>
-                        <span className="text-sm text-secondary bg-surface border p-1 px-2">Needs Testing: {stats.unapproved}</span>
-                        <span className="text-sm text-secondary bg-surface border p-1 px-2">Placeholder: {stats.placeholder}</span>
+                        <span className="text-sm text-secondary bg-surface border p-1 px-2">
+                            Working: {stats.working}
+                        </span>
+                        <span className="text-sm text-secondary bg-surface border p-1 px-2">
+                            Approved: {stats.approved}
+                        </span>
+                        <span className="text-sm text-secondary bg-surface border p-1 px-2">
+                            Needs Testing: {stats.unapproved}
+                        </span>
+                        <span className="text-sm text-secondary bg-surface border p-1 px-2">
+                            Placeholder: {stats.placeholder}
+                        </span>
                     </div>
                 </div>
 
                 <div className="flex gap-4 mb-4 flex-wrap">
                     <div className="flex items-center gap-2">
-                        <label htmlFor="filter-select" className="text-sm font-medium text-primary">Filter:</label>
+                        <label htmlFor="filter-select" className="text-sm font-medium text-primary">
+                            Filter:
+                        </label>
                         <select
                             id="filter-select"
                             value={filter}
@@ -838,7 +906,12 @@ const FieldTestPage = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <label htmlFor="field-type-select" className="text-sm font-medium text-primary">Test Field:</label>
+                        <label
+                            htmlFor="field-type-select"
+                            className="text-sm font-medium text-primary"
+                        >
+                            Test Field:
+                        </label>
                         {filteredFieldTypes.length === 0 ? (
                             <div className="text-sm text-secondary">
                                 <span>No fields match this filter</span>
@@ -866,7 +939,9 @@ const FieldTestPage = () => {
                 <div className="mb-4">
                     {filteredFieldTypes.length === 0 ? (
                         <div className="text-center p-4">
-                            <h3 className="text-lg font-medium text-primary mb-2">No Fields Available</h3>
+                            <h3 className="text-lg font-medium text-primary mb-2">
+                                No Fields Available
+                            </h3>
                             <p className="text-secondary">
                                 No field types match the current filter. Try adjusting your filter
                                 selection to see available fields for testing.
@@ -891,7 +966,9 @@ const FieldTestPage = () => {
             </div>
 
             <div className="bg-surface-elevated rounded p-4 border">
-                <h3 className="text-lg font-semibold text-primary mb-3 text-center">Quick Actions</h3>
+                <h3 className="text-lg font-semibold text-primary mb-3 text-center">
+                    Quick Actions
+                </h3>
                 <div className="flex gap-2 justify-center flex-wrap">
                     <button
                         onClick={() => {

@@ -13,10 +13,7 @@ export const FieldDescription = ({ id, description, className = '' }) => {
     if (!description) return null;
 
     return (
-        <div
-            id={id}
-            className={`text-xs text-secondary mt-1 ${className}`.trim()}
-        >
+        <div id={id} className={`text-xs text-secondary mt-1 ${className}`.trim()}>
             {description}
         </div>
     );

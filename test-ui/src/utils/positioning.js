@@ -11,7 +11,12 @@
  * @param {number} gap - Gap between anchor and content (default: 4)
  * @returns {Object} {top, left, finalPlacement}
  */
-export function calculateOptimalPosition(anchorRect, contentDimensions, placement = 'bottom-right', gap = 4) {
+export function calculateOptimalPosition(
+    anchorRect,
+    contentDimensions,
+    placement = 'bottom-right',
+    gap = 4
+) {
     const viewport = {
         width: window.innerWidth,
         height: window.innerHeight,
@@ -75,10 +80,7 @@ export function calculateOptimalPosition(anchorRect, contentDimensions, placemen
     if (left < 0) {
         left = Math.max(8, anchorRect.left); // Minimum 8px from edge
     } else if (left + dropdownWidth > viewport.width) {
-        left = Math.min(
-            viewport.width - dropdownWidth - 8,
-            anchorRect.right - dropdownWidth
-        );
+        left = Math.min(viewport.width - dropdownWidth - 8, anchorRect.right - dropdownWidth);
     }
 
     // Check vertical bounds and flip if needed
@@ -110,7 +112,7 @@ export function calculateOptimalPosition(anchorRect, contentDimensions, placemen
     return {
         top,
         left,
-        finalPlacement
+        finalPlacement,
     };
 }
 
@@ -126,7 +128,7 @@ export function isElementVisible(element, threshold = 0.5) {
     const rect = element.getBoundingClientRect();
     const viewport = {
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
     };
 
     const visibleWidth = Math.min(rect.right, viewport.width) - Math.max(rect.left, 0);
@@ -135,5 +137,5 @@ export function isElementVisible(element, threshold = 0.5) {
     const visibleArea = Math.max(0, visibleWidth) * Math.max(0, visibleHeight);
     const totalArea = rect.width * rect.height;
 
-    return totalArea > 0 ? (visibleArea / totalArea) >= threshold : false;
+    return totalArea > 0 ? visibleArea / totalArea >= threshold : false;
 }

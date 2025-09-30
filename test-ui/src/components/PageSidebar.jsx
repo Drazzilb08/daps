@@ -93,7 +93,6 @@ const NAVIGATION_STRUCTURE = [
                 id: 'settings-modules',
                 label: 'Modules',
                 path: '/settings/modules',
-            
             },
             {
                 id: 'settings-interface',
@@ -103,8 +102,8 @@ const NAVIGATION_STRUCTURE = [
             {
                 id: 'settings-general',
                 label: 'General',
-                path: '/settings/general'
-            }
+                path: '/settings/general',
+            },
         ],
     },
     {
@@ -152,7 +151,6 @@ const PageSidebar = React.memo(() => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isMobile, mobileMenuOpen, closeMobileMenu]);
 
-
     const isParentActive = useCallback(
         item => {
             if (item.type !== 'parent') return false;
@@ -182,9 +180,10 @@ const PageSidebar = React.memo(() => {
         <aside
             ref={sidebarRef}
             className={`bg-sidebar-bg border-r border-sidebar-border overflow-y-auto transition-transform
-                ${isMobile
-                    ? `fixed inset-y-0 left-0 min-w-sidebar z-50 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
-                    : 'flex-none min-w-sidebar translate-x-0'
+                ${
+                    isMobile
+                        ? `fixed inset-y-0 left-0 min-w-sidebar z-50 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
+                        : 'flex-none min-w-sidebar translate-x-0'
                 } ${isMobile && mobileMenuOpen ? 'page-sidebar--mobile-open' : ''}`}
             role="navigation"
             aria-label="Main navigation"
@@ -222,7 +221,9 @@ const PageSidebar = React.memo(() => {
                                     >
                                         {item.icon}
                                     </span>
-                                    <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>
+                                    <span className="flex-1 whitespace-nowrap overflow-hidden text-ellipsis">
+                                        {item.label}
+                                    </span>
                                 </NavLink>
 
                                 {/* Child Items - Only Visible When Parent is Active */}

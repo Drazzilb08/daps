@@ -12,14 +12,14 @@ export default function ArrayObjectFieldPage() {
             preset: 'preset1',
             name: 'Movie Posters Collection',
             id: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
-            location: '/mnt/media/posters/movies'
+            location: '/mnt/media/posters/movies',
         },
         {
             preset: 'preset2',
             name: 'TV Show Assets',
             id: '1AbcDef123456789GhijKlmnOpqrStuv',
-            location: '/mnt/media/posters/tv'
-        }
+            location: '/mnt/media/posters/tv',
+        },
     ]);
 
     const [replacerData, setReplacerData] = useState([
@@ -28,19 +28,19 @@ export default function ArrayObjectFieldPage() {
             name: 'Christmas',
             schedule: {
                 start: '2024-12-01',
-                end: '2024-12-31'
+                end: '2024-12-31',
             },
-            colors: ['#C41E3A', '#228B22', '#FFD700']
+            colors: ['#C41E3A', '#228B22', '#FFD700'],
         },
         {
             preset: 'halloween',
             name: 'Halloween',
             schedule: {
                 start: '2024-10-01',
-                end: '2024-10-31'
+                end: '2024-10-31',
             },
-            colors: ['#FF8C00', '#000000', '#8B4513']
-        }
+            colors: ['#FF8C00', '#000000', '#8B4513'],
+        },
     ]);
 
     const [upgradinatorData, setUpgradinatorData] = useState([
@@ -50,7 +50,7 @@ export default function ArrayObjectFieldPage() {
             tag_name: 'upgrade-4k',
             ignore_tag: 'no-upgrade',
             unattended: true,
-            season_monitored_threshold: 0.8
+            season_monitored_threshold: 0.8,
         },
         {
             instance: 'sonarr-main',
@@ -58,21 +58,21 @@ export default function ArrayObjectFieldPage() {
             tag_name: 'upgrade-shows',
             ignore_tag: '',
             unattended: false,
-            season_monitored_threshold: 0.75
-        }
+            season_monitored_threshold: 0.75,
+        },
     ]);
 
     const [labelarrData, setLabelarrData] = useState([
         {
             app_instance: 'radarr-main',
             labels: 'action,thriller',
-            plex_instances: [{ name: 'plex-main', url: 'http://localhost:32400' }]
+            plex_instances: [{ name: 'plex-main', url: 'http://localhost:32400' }],
         },
         {
             app_instance: 'sonarr-main',
             labels: 'drama,series',
-            plex_instances: [{ name: 'plex-main', url: 'http://localhost:32400' }]
-        }
+            plex_instances: [{ name: 'plex-main', url: 'http://localhost:32400' }],
+        },
     ]);
 
     // Field configurations matching original schemas
@@ -112,7 +112,7 @@ export default function ArrayObjectFieldPage() {
                 required: true,
                 description: 'Local directory to sync with the specified Google Drive ID.',
             },
-        ]
+        ],
     };
 
     const replacerField = {
@@ -150,7 +150,7 @@ export default function ArrayObjectFieldPage() {
                 required: false,
                 description: 'Colors to use for the holiday border override.',
             },
-        ]
+        ],
     };
 
     const upgradinatorField = {
@@ -165,42 +165,42 @@ export default function ArrayObjectFieldPage() {
                 type: 'dropdown',
                 options: ['radarr-main', 'radarr-4k', 'sonarr-main', 'sonarr-4k'],
                 required: true,
-                description: 'Select the instance to upgrade (Radarr or Sonarr).'
+                description: 'Select the instance to upgrade (Radarr or Sonarr).',
             },
             {
                 key: 'count',
                 label: 'Count',
                 type: 'number',
                 required: true,
-                description: 'Number of items to upgrade per run.'
+                description: 'Number of items to upgrade per run.',
             },
             {
                 key: 'tag_name',
                 label: 'Tag Name',
                 type: 'text',
                 required: true,
-                description: 'Tag name to filter items for upgrade.'
+                description: 'Tag name to filter items for upgrade.',
             },
             {
                 key: 'ignore_tag',
                 label: 'Ignore Tag',
                 type: 'text',
-                description: 'Tag name to exclude from upgrade.'
+                description: 'Tag name to exclude from upgrade.',
             },
             {
                 key: 'unattended',
                 label: 'Unattended',
                 type: 'check_box',
-                description: 'Run upgrades without user intervention.'
+                description: 'Run upgrades without user intervention.',
             },
             {
                 key: 'season_monitored_threshold',
                 label: 'Season Monitored Threshold',
                 type: 'float',
                 required: true,
-                description: 'Minimum percentage of monitored seasons required (Sonarr only).'
-            }
-        ]
+                description: 'Minimum percentage of monitored seasons required (Sonarr only).',
+            },
+        ],
     };
 
     const labelarrField = {
@@ -215,23 +215,23 @@ export default function ArrayObjectFieldPage() {
                 type: 'dropdown',
                 options: ['radarr-main', 'radarr-4k', 'sonarr-main', 'sonarr-4k'],
                 required: true,
-                description: 'Select the specific app instance for this mapping.'
+                description: 'Select the specific app instance for this mapping.',
             },
             {
                 key: 'labels',
                 label: 'Labels',
                 type: 'text',
                 required: true,
-                description: 'Labels to assign in this mapping.'
+                description: 'Labels to assign in this mapping.',
             },
             {
                 key: 'plex_instances',
                 label: 'Plex Instances',
                 type: 'instances',
                 required: true,
-                description: 'List of Plex instances to apply the labels to.'
-            }
-        ]
+                description: 'List of Plex instances to apply the labels to.',
+            },
+        ],
     };
 
     return (
@@ -242,8 +242,9 @@ export default function ArrayObjectFieldPage() {
                         Unified ArrayObjectField Mockup
                     </h1>
                     <p className="text-secondary text-base leading-relaxed">
-                        This page demonstrates the unified ArrayObjectField component that replaces all *_custom fields.
-                        The accordion-style interface eliminates modal dependencies while providing a mobile-first experience.
+                        This page demonstrates the unified ArrayObjectField component that replaces
+                        all *_custom fields. The accordion-style interface eliminates modal
+                        dependencies while providing a mobile-first experience.
                     </p>
                 </header>
 
@@ -255,7 +256,11 @@ export default function ArrayObjectFieldPage() {
                                 Google Drive Configuration
                             </h2>
                             <p className="text-sm text-secondary mt-1">
-                                Schema: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">object_array</code> for Google Drive configuration
+                                Schema:{' '}
+                                <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">
+                                    object_array
+                                </code>{' '}
+                                for Google Drive configuration
                             </p>
                         </div>
                         <div>
@@ -274,7 +279,11 @@ export default function ArrayObjectFieldPage() {
                                 Holiday Border Configuration
                             </h2>
                             <p className="text-sm text-secondary mt-1">
-                                Schema: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">object_array</code> for poster replacement configuration
+                                Schema:{' '}
+                                <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">
+                                    object_array
+                                </code>{' '}
+                                for poster replacement configuration
                             </p>
                         </div>
                         <div>
@@ -293,7 +302,11 @@ export default function ArrayObjectFieldPage() {
                                 Instance Upgrade Mappings
                             </h2>
                             <p className="text-sm text-secondary mt-1">
-                                Schema: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">object_array</code> for media upgrade configuration
+                                Schema:{' '}
+                                <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">
+                                    object_array
+                                </code>{' '}
+                                for media upgrade configuration
                             </p>
                         </div>
                         <div>
@@ -312,7 +325,11 @@ export default function ArrayObjectFieldPage() {
                                 Tag Synchronization Mappings
                             </h2>
                             <p className="text-sm text-secondary mt-1">
-                                Schema: <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">object_array</code> for labeling configuration
+                                Schema:{' '}
+                                <code className="bg-surface-alt px-2 py-1 rounded text-xs font-mono">
+                                    object_array
+                                </code>{' '}
+                                for labeling configuration
                             </p>
                         </div>
                         <div>
@@ -332,27 +349,37 @@ export default function ArrayObjectFieldPage() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <h4 className="font-medium text-primary mb-2">🚫 No Modal Dependencies</h4>
+                            <h4 className="font-medium text-primary mb-2">
+                                🚫 No Modal Dependencies
+                            </h4>
                             <p className="text-sm text-secondary">
-                                Accordion-style interface eliminates the need for modal systems, perfect for test-ui environment.
+                                Accordion-style interface eliminates the need for modal systems,
+                                perfect for test-ui environment.
                             </p>
                         </div>
                         <div>
-                            <h4 className="font-medium text-primary mb-2">📱 Mobile-First Design</h4>
+                            <h4 className="font-medium text-primary mb-2">
+                                📱 Mobile-First Design
+                            </h4>
                             <p className="text-sm text-secondary">
-                                Touch-optimized with 44px minimum targets, works seamlessly on all device sizes.
+                                Touch-optimized with 44px minimum targets, works seamlessly on all
+                                device sizes.
                             </p>
                         </div>
                         <div>
                             <h4 className="font-medium text-primary mb-2">🎯 Single Component</h4>
                             <p className="text-sm text-secondary">
-                                One unified component replaces four separate implementations, reducing maintenance overhead.
+                                One unified component replaces four separate implementations,
+                                reducing maintenance overhead.
                             </p>
                         </div>
                         <div>
-                            <h4 className="font-medium text-primary mb-2">🔧 Configurable Display</h4>
+                            <h4 className="font-medium text-primary mb-2">
+                                🔧 Configurable Display
+                            </h4>
                             <p className="text-sm text-secondary">
-                                Display templates adapt to different data types while maintaining consistent interaction patterns.
+                                Display templates adapt to different data types while maintaining
+                                consistent interaction patterns.
                             </p>
                         </div>
                     </div>
@@ -365,23 +392,27 @@ export default function ArrayObjectFieldPage() {
                     </h3>
                     <div className="flex flex-col gap-4">
                         <div>
-                            <h4 className="font-medium text-primary mb-2">Current Schema (Legacy)</h4>
+                            <h4 className="font-medium text-primary mb-2">
+                                Current Schema (Legacy)
+                            </h4>
                             <pre className="text-xs p-3 bg-surface-alt rounded border overflow-auto">
-{`{
+                                {`{
   key: 'gdrive_list',
   type: 'object_array',  // ← Modern unified field type
   fields: [...]
-}`}</pre>
+}`}
+                            </pre>
                         </div>
                         <div>
                             <h4 className="font-medium text-primary mb-2">New Schema (Unified)</h4>
                             <pre className="text-xs p-3 bg-accent-bg rounded border overflow-auto">
-{`{
+                                {`{
   key: 'gdrive_list',
   type: 'object_array',        // ← Unified type
   displayType: 'gdrive',       // ← Display template
   fields: [...]                // ← Same field definitions
-}`}</pre>
+}`}
+                            </pre>
                         </div>
                     </div>
                 </section>

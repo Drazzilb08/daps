@@ -46,7 +46,7 @@ export const DateRangeField = React.memo(
         errorMessage = null,
     }) => {
         // Parse the string value into components
-        const parseSchedule = useCallback((val) => {
+        const parseSchedule = useCallback(val => {
             let fromMonth = '01',
                 fromDay = '01',
                 toMonth = '01',
@@ -67,7 +67,7 @@ export const DateRangeField = React.memo(
         );
 
         // Generate day options for a given month
-        const generateDayOptions = useCallback((monthValue) => {
+        const generateDayOptions = useCallback(monthValue => {
             const monthData = months.find(m => m.value === monthValue);
             const days = monthData?.days || 31;
 
@@ -77,49 +77,76 @@ export const DateRangeField = React.memo(
             });
         }, []);
 
-        const fromDayOptions = useMemo(() => generateDayOptions(fromMonth), [fromMonth, generateDayOptions]);
-        const toDayOptions = useMemo(() => generateDayOptions(toMonth), [toMonth, generateDayOptions]);
+        const fromDayOptions = useMemo(
+            () => generateDayOptions(fromMonth),
+            [fromMonth, generateDayOptions]
+        );
+        const toDayOptions = useMemo(
+            () => generateDayOptions(toMonth),
+            [toMonth, generateDayOptions]
+        );
 
         // Month options for SelectBase
-        const monthOptions = useMemo(() =>
-            months.map(month => ({
-                value: month.value,
-                label: month.label
-            })), []
+        const monthOptions = useMemo(
+            () =>
+                months.map(month => ({
+                    value: month.value,
+                    label: month.label,
+                })),
+            []
         );
 
         // Handle changes to date components
-        const handleChange = useCallback((newValues) => {
-            const fm = newValues.fromMonth ?? fromMonth;
-            const fd = newValues.fromDay ?? fromDay;
-            const tm = newValues.toMonth ?? toMonth;
-            const td = newValues.toDay ?? toDay;
+        const handleChange = useCallback(
+            newValues => {
+                const fm = newValues.fromMonth ?? fromMonth;
+                const fd = newValues.fromDay ?? fromDay;
+                const tm = newValues.toMonth ?? toMonth;
+                const td = newValues.toDay ?? toDay;
 
-            onChange(`range(${fm}/${fd}-${tm}/${td})`);
-        }, [fromMonth, fromDay, toMonth, toDay, onChange]);
+                onChange(`range(${fm}/${fd}-${tm}/${td})`);
+            },
+            [fromMonth, fromDay, toMonth, toDay, onChange]
+        );
 
         // Individual change handlers
-        const handleFromMonthChange = useCallback((e) => {
-            handleChange({ fromMonth: e.target.value, fromDay: '01' });
-        }, [handleChange]);
+        const handleFromMonthChange = useCallback(
+            e => {
+                handleChange({ fromMonth: e.target.value, fromDay: '01' });
+            },
+            [handleChange]
+        );
 
-        const handleFromDayChange = useCallback((e) => {
-            handleChange({ fromDay: e.target.value });
-        }, [handleChange]);
+        const handleFromDayChange = useCallback(
+            e => {
+                handleChange({ fromDay: e.target.value });
+            },
+            [handleChange]
+        );
 
-        const handleToMonthChange = useCallback((e) => {
-            handleChange({ toMonth: e.target.value, toDay: '01' });
-        }, [handleChange]);
+        const handleToMonthChange = useCallback(
+            e => {
+                handleChange({ toMonth: e.target.value, toDay: '01' });
+            },
+            [handleChange]
+        );
 
-        const handleToDayChange = useCallback((e) => {
-            handleChange({ toDay: e.target.value });
-        }, [handleChange]);
+        const handleToDayChange = useCallback(
+            e => {
+                handleChange({ toDay: e.target.value });
+            },
+            [handleChange]
+        );
 
         const inputId = `field-${field.key}`;
 
         return (
             <FieldWrapper invalid={highlightInvalid}>
-                <FieldLabel htmlFor={inputId} label={field.label || 'Date Range'} required={field.required} />
+                <FieldLabel
+                    htmlFor={inputId}
+                    label={field.label || 'Date Range'}
+                    required={field.required}
+                />
 
                 {/* Enhanced accessibility with fieldset grouping */}
                 <fieldset aria-labelledby={inputId} className="border-0 p-0 m-0">
@@ -127,18 +154,27 @@ export const DateRangeField = React.memo(
 
                     {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-
                         {/* From Date Group - Grouped Container */}
                         <div className="p-3 flex-1">
                             <div className="flex flex-col gap-1 mb-2">
-                                <span className="text-sm font-medium text-primary" id={`${inputId}-from-label`}>
+                                <span
+                                    className="text-sm font-medium text-primary"
+                                    id={`${inputId}-from-label`}
+                                >
                                     From
                                 </span>
                             </div>
-                            <div className="flex gap-2" role="group" aria-labelledby={`${inputId}-from-label`}>
+                            <div
+                                className="flex gap-2"
+                                role="group"
+                                aria-labelledby={`${inputId}-from-label`}
+                            >
                                 {/* From Month */}
                                 <div className="flex flex-col flex-1 min-w-24">
-                                    <label className="text-xs text-secondary mb-1" htmlFor={`${inputId}-from-month`}>
+                                    <label
+                                        className="text-xs text-secondary mb-1"
+                                        htmlFor={`${inputId}-from-month`}
+                                    >
                                         Month
                                     </label>
                                     <SelectBase
@@ -156,7 +192,10 @@ export const DateRangeField = React.memo(
 
                                 {/* From Day */}
                                 <div className="flex flex-col w-16">
-                                    <label className="text-xs text-secondary mb-1" htmlFor={`${inputId}-from-day`}>
+                                    <label
+                                        className="text-xs text-secondary mb-1"
+                                        htmlFor={`${inputId}-from-day`}
+                                    >
                                         Day
                                     </label>
                                     <SelectBase
@@ -176,20 +215,32 @@ export const DateRangeField = React.memo(
 
                         {/* To Connector - De-emphasized */}
                         <div className="flex items-center justify-center py-2">
-                            <span className="text-secondary text-sm opacity-75" aria-hidden="true">to</span>
+                            <span className="text-secondary text-sm opacity-75" aria-hidden="true">
+                                to
+                            </span>
                         </div>
 
                         {/* To Date Group - Grouped Container */}
                         <div className="p-3 flex-1">
                             <div className="flex flex-col gap-1 mb-2">
-                                <span className="text-sm font-medium text-primary" id={`${inputId}-to-label`}>
+                                <span
+                                    className="text-sm font-medium text-primary"
+                                    id={`${inputId}-to-label`}
+                                >
                                     To
                                 </span>
                             </div>
-                            <div className="flex gap-2" role="group" aria-labelledby={`${inputId}-to-label`}>
+                            <div
+                                className="flex gap-2"
+                                role="group"
+                                aria-labelledby={`${inputId}-to-label`}
+                            >
                                 {/* To Month */}
                                 <div className="flex flex-col flex-1 min-w-24">
-                                    <label className="text-xs text-secondary mb-1" htmlFor={`${inputId}-to-month`}>
+                                    <label
+                                        className="text-xs text-secondary mb-1"
+                                        htmlFor={`${inputId}-to-month`}
+                                    >
                                         Month
                                     </label>
                                     <SelectBase
@@ -207,7 +258,10 @@ export const DateRangeField = React.memo(
 
                                 {/* To Day */}
                                 <div className="flex flex-col w-16">
-                                    <label className="text-xs text-secondary mb-1" htmlFor={`${inputId}-to-day`}>
+                                    <label
+                                        className="text-xs text-secondary mb-1"
+                                        htmlFor={`${inputId}-to-day`}
+                                    >
                                         Day
                                     </label>
                                     <SelectBase

@@ -180,8 +180,12 @@ class PageErrorBoundaryBase extends Component {
                 <div className="min-h-content p-4 font-sans">
                     <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-8 shadow-xl mx-auto">
                         <div className="text-center mb-8">
-                            <div className="material-symbols-outlined text-4xl mb-3 block text-error">build</div>
-                            <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">{pageName} Page Error</h1>
+                            <div className="material-symbols-outlined text-4xl mb-3 block text-error">
+                                build
+                            </div>
+                            <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">
+                                {pageName} Page Error
+                            </h1>
                             <p className="text-secondary text-lg leading-relaxed">
                                 {pageDescription
                                     ? `There was a problem loading the ${pageDescription.toLowerCase()}.`
@@ -200,7 +204,9 @@ class PageErrorBoundaryBase extends Component {
                             )}
 
                             <div className="bg-surface-variant border border-border rounded-md p-4 mb-6">
-                                <h3 className="text-primary text-xl font-semibold m-0 mb-3">Error Details</h3>
+                                <h3 className="text-primary text-xl font-semibold m-0 mb-3">
+                                    Error Details
+                                </h3>
                                 <div className="mb-2 text-sm font-mono break-words">
                                     <strong>Error:</strong> {error?.message || 'Unknown error'}
                                 </div>
@@ -231,7 +237,9 @@ class PageErrorBoundaryBase extends Component {
                                         className="touch-target leading-none no-underline whitespace-nowrap border border-transparent select-none bg-primary text-white py-2 px-3 rounded-md cursor-pointer btn-interactions inline-flex items-center justify-center"
                                         type="button"
                                     >
-                                        <span className="material-symbols-outlined mr-1">refresh</span>
+                                        <span className="material-symbols-outlined mr-1">
+                                            refresh
+                                        </span>
                                         Try Again
                                     </button>
                                 )}
@@ -308,12 +316,18 @@ class PageErrorBoundaryBase extends Component {
                                         What can I do?
                                     </h4>
                                     <ul className="m-0 pl-6 text-secondary text-sm leading-relaxed">
-                                        <li className="mb-2">Click "Try Again" to attempt reloading this page</li>
+                                        <li className="mb-2">
+                                            Click "Try Again" to attempt reloading this page
+                                        </li>
                                         <li className="mb-2">
                                             Use the navigation buttons to go to a different page
                                         </li>
-                                        <li className="mb-2">Refresh your browser if the problem persists</li>
-                                        <li className="mb-2">Check the browser console for additional details</li>
+                                        <li className="mb-2">
+                                            Refresh your browser if the problem persists
+                                        </li>
+                                        <li className="mb-2">
+                                            Check the browser console for additional details
+                                        </li>
                                     </ul>
                                 </div>
                             </div>

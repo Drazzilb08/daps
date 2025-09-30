@@ -6,7 +6,10 @@
 import { useCallback } from 'react';
 import { useApiData } from './useApiData';
 import { configAPI } from '../utils/api/config';
-import { generateInstanceOptions, getInstanceType as getInstanceTypeUtil } from '../utils/forms/conditionalFields';
+import {
+    generateInstanceOptions,
+    getInstanceType as getInstanceTypeUtil,
+} from '../utils/forms/conditionalFields';
 
 /**
  * Hook for managing instance data with API integration
@@ -15,15 +18,19 @@ import { generateInstanceOptions, getInstanceType as getInstanceTypeUtil } from 
 export const useInstancesData = () => {
     console.log('[useInstancesData] Hook initializing');
 
-    const { data: instancesResponse, isLoading, error } = useApiData({
+    const {
+        data: instancesResponse,
+        isLoading,
+        error,
+    } = useApiData({
         apiFunction: () => configAPI.fetchSection('instances'),
         options: {
             retryAttempts: 2,
             cacheKey: 'instances_data',
             cacheTTL: 300000, // 5 minutes
             showErrorToast: true,
-            successMessage: null // Don't show success toast for background data loading
-        }
+            successMessage: null, // Don't show success toast for background data loading
+        },
     });
 
     // Extract instances data from API response - config API nests it under data.instances
@@ -33,7 +40,7 @@ export const useInstancesData = () => {
         isLoading,
         hasError: !!error,
         hasInstancesData: !!instancesData,
-        instancesDataKeys: instancesData ? Object.keys(instancesData) : []
+        instancesDataKeys: instancesData ? Object.keys(instancesData) : [],
     });
 
     /**
@@ -41,42 +48,48 @@ export const useInstancesData = () => {
      * @param {Array} allowedTypes - Array of allowed service types (e.g. ['radarr', 'sonarr'])
      * @returns {Array} Dropdown options array
      */
-    const getInstanceOptions = useCallback((allowedTypes = []) => {
-        console.log('[useInstancesData] getInstanceOptions called:', {
-            allowedTypes,
-            hasInstancesData: !!instancesData
-        });
+    const getInstanceOptions = useCallback(
+        (allowedTypes = []) => {
+            console.log('[useInstancesData] getInstanceOptions called:', {
+                allowedTypes,
+                hasInstancesData: !!instancesData,
+            });
 
-        const options = generateInstanceOptions(instancesData, allowedTypes);
+            const options = generateInstanceOptions(instancesData, allowedTypes);
 
-        console.log('[useInstancesData] Generated options:', {
-            optionCount: options.length,
-            options
-        });
+            console.log('[useInstancesData] Generated options:', {
+                optionCount: options.length,
+                options,
+            });
 
-        return options;
-    }, [instancesData]);
+            return options;
+        },
+        [instancesData]
+    );
 
     /**
      * Get instance type for a specific instance name
      * @param {string} instanceName - Instance name to look up
      * @returns {string|null} Instance type (radarr, sonarr, plex) or null
      */
-    const getInstanceType = useCallback((instanceName) => {
-        console.log('[useInstancesData] getInstanceType called:', {
-            instanceName,
-            hasInstancesData: !!instancesData
-        });
+    const getInstanceType = useCallback(
+        instanceName => {
+            console.log('[useInstancesData] getInstanceType called:', {
+                instanceName,
+                hasInstancesData: !!instancesData,
+            });
 
-        const instanceType = getInstanceTypeUtil(instanceName, instancesData);
+            const instanceType = getInstanceTypeUtil(instanceName, instancesData);
 
-        console.log('[useInstancesData] Instance type result:', {
-            instanceName,
-            instanceType
-        });
+            console.log('[useInstancesData] Instance type result:', {
+                instanceName,
+                instanceType,
+            });
 
-        return instanceType;
-    }, [instancesData]);
+            return instanceType;
+        },
+        [instancesData]
+    );
 
     /**
      * Check if instances data is ready for use
@@ -88,7 +101,7 @@ export const useInstancesData = () => {
             ready,
             isLoading,
             hasError: !!error,
-            hasData: !!instancesData
+            hasData: !!instancesData,
         });
         return ready;
     }, [isLoading, error, instancesData]);
@@ -113,23 +126,26 @@ export const useInstancesData = () => {
      * @param {string} serviceType - Service type (radarr, sonarr, plex)
      * @returns {Object} Instance objects for the service type
      */
-    const getInstancesForServiceType = useCallback((serviceType) => {
-        if (!instancesData || !serviceType) {
-            console.log('[useInstancesData] Missing data for getInstancesForServiceType:', {
-                serviceType,
-                hasInstancesData: !!instancesData
-            });
-            return {};
-        }
+    const getInstancesForServiceType = useCallback(
+        serviceType => {
+            if (!instancesData || !serviceType) {
+                console.log('[useInstancesData] Missing data for getInstancesForServiceType:', {
+                    serviceType,
+                    hasInstancesData: !!instancesData,
+                });
+                return {};
+            }
 
-        const instances = instancesData[serviceType] || {};
-        console.log('[useInstancesData] Instances for service type:', {
-            serviceType,
-            instanceCount: Object.keys(instances).length,
-            instances
-        });
-        return instances;
-    }, [instancesData]);
+            const instances = instancesData[serviceType] || {};
+            console.log('[useInstancesData] Instances for service type:', {
+                serviceType,
+                instanceCount: Object.keys(instances).length,
+                instances,
+            });
+            return instances;
+        },
+        [instancesData]
+    );
 
     const result = {
         // Raw data
@@ -142,14 +158,14 @@ export const useInstancesData = () => {
         getInstanceType,
         isInstancesReady,
         getAvailableServiceTypes,
-        getInstancesForServiceType
+        getInstancesForServiceType,
     };
 
     console.log('[useInstancesData] Returning result:', {
         hasInstancesData: !!result.instancesData,
         isLoading: result.isLoading,
         hasError: !!result.error,
-        isReady: result.isInstancesReady()
+        isReady: result.isInstancesReady(),
     });
 
     return result;

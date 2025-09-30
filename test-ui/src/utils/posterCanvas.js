@@ -17,7 +17,7 @@ const getBorderThickness = () => {
  */
 export const getPosterDimensions = () => {
     return {
-        width: 156,  // Hardcoded poster width in pixels
+        width: 156, // Hardcoded poster width in pixels
         height: 234, // Hardcoded poster height in pixels
     };
 };

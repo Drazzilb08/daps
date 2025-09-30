@@ -68,7 +68,8 @@ export const AddButton = React.memo(
             'rounded-md',
             'cursor-pointer',
             'hover:bg-primary-hover transition-colors',
-            disabled && 'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+            disabled &&
+                'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
             className,
         ]
             .filter(Boolean)

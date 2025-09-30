@@ -36,18 +36,22 @@ export const DirListOptionsField = React.memo(
 
             if (Array.isArray(value)) {
                 // Handle array of objects: [{path: "...", mode: "..."}, ...]
-                if (value.length > 0 && typeof value[0] === 'object' && value[0].path !== undefined) {
+                if (
+                    value.length > 0 &&
+                    typeof value[0] === 'object' &&
+                    value[0].path !== undefined
+                ) {
                     const directories = value.map(item => item.path || '');
                     const modes = value.map(item => item.mode || '');
                     return {
                         directoriesArray: directories.length > 0 ? directories : [''],
-                        modesArray: modes.length > 0 ? modes : ['']
+                        modesArray: modes.length > 0 ? modes : [''],
                     };
                 }
                 // Handle legacy array of strings (backwards compatibility)
                 return {
                     directoriesArray: value.length > 0 ? value : [''],
-                    modesArray: new Array(value.length || 1).fill('')
+                    modesArray: new Array(value.length || 1).fill(''),
                 };
             }
 
@@ -70,7 +74,7 @@ export const DirListOptionsField = React.memo(
                 // Output as array of objects with path and mode
                 const newValue = newDirectories.map((path, index) => ({
                     path: path || '',
-                    mode: newModes[index] || ''
+                    mode: newModes[index] || '',
                 }));
 
                 onChange(newValue);
@@ -83,7 +87,7 @@ export const DirListOptionsField = React.memo(
             (index, newMode) => {
                 const newValue = directoriesArray.map((path, i) => ({
                     path: path || '',
-                    mode: i === index ? newMode : (modesArray[i] || '')
+                    mode: i === index ? newMode : modesArray[i] || '',
                 }));
 
                 onChange(newValue);
@@ -113,7 +117,7 @@ export const DirListOptionsField = React.memo(
                 // Convert string to {value, label} format
                 return {
                     value: option,
-                    label: option
+                    label: option,
                 };
             });
         }, [rawOptions]);

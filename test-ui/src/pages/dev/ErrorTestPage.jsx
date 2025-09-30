@@ -53,7 +53,9 @@ const ErrorTestPage = () => {
     return (
         <div className="p-3 md:p-4 max-w-4xl mx-auto">
             <div className="text-center mb-4">
-                <h1 className="text-2xl font-bold text-primary mb-2">🔬 Error Handling Demonstrations</h1>
+                <h1 className="text-2xl font-bold text-primary mb-2">
+                    🔬 Error Handling Demonstrations
+                </h1>
                 <p className="text-base text-secondary max-w-prose mx-auto">
                     Click the buttons below to see different error handling approaches:
                 </p>
@@ -63,10 +65,12 @@ const ErrorTestPage = () => {
             <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
                 <h2 className="text-lg font-semibold text-primary mb-2">🍞 Toast Notifications</h2>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">What it is:</strong> Small popup notifications that appear briefly
+                    <strong className="text-primary font-medium">What it is:</strong> Small popup
+                    notifications that appear briefly
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">When to use:</strong> Success confirmations, alerts, quick feedback
+                    <strong className="text-primary font-medium">When to use:</strong> Success
+                    confirmations, alerts, quick feedback
                 </p>
                 <div className="flex gap-2 flex-wrap mt-3 md:flex-row flex-col md:items-center">
                     <button
@@ -98,13 +102,16 @@ const ErrorTestPage = () => {
 
             {/* Global Error Handling */}
             <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
-                <h2 className="text-lg font-semibold text-primary mb-2">🌐 Global Error Handling</h2>
+                <h2 className="text-lg font-semibold text-primary mb-2">
+                    🌐 Global Error Handling
+                </h2>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">What it is:</strong> Centralized error handling for the entire app
+                    <strong className="text-primary font-medium">What it is:</strong> Centralized
+                    error handling for the entire app
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">When to use:</strong> Network failures, authentication issues, server
-                    errors
+                    <strong className="text-primary font-medium">When to use:</strong> Network
+                    failures, authentication issues, server errors
                 </p>
                 <button
                     onClick={showGlobalError}
@@ -116,16 +123,20 @@ const ErrorTestPage = () => {
 
             {/* Critical Feature Error (Full Screen Overlay) */}
             <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
-                <h2 className="text-lg font-semibold text-primary mb-2">⚠️ Critical Feature Error</h2>
+                <h2 className="text-lg font-semibold text-primary mb-2">
+                    ⚠️ Critical Feature Error
+                </h2>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">What it is:</strong> Full-screen overlay that blocks everything
+                    <strong className="text-primary font-medium">What it is:</strong> Full-screen
+                    overlay that blocks everything
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">When to use:</strong> Essential features like navigation or
-                    authentication
+                    <strong className="text-primary font-medium">When to use:</strong> Essential
+                    features like navigation or authentication
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">Visual behavior:</strong> Covers entire screen, forces user to resolve
+                    <strong className="text-primary font-medium">Visual behavior:</strong> Covers
+                    entire screen, forces user to resolve
                 </p>
 
                 <button
@@ -157,13 +168,16 @@ const ErrorTestPage = () => {
             <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
                 <h2 className="text-lg font-semibold text-primary mb-2">📄 Page Error</h2>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">What it is:</strong> Replaces entire page content with error page
+                    <strong className="text-primary font-medium">What it is:</strong> Replaces
+                    entire page content with error page
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">When to use:</strong> When entire pages/routes fail to load
+                    <strong className="text-primary font-medium">When to use:</strong> When entire
+                    pages/routes fail to load
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">Visual behavior:</strong> Shows error page with navigation options
+                    <strong className="text-primary font-medium">Visual behavior:</strong> Shows
+                    error page with navigation options
                 </p>
 
                 <button
@@ -191,14 +205,16 @@ const ErrorTestPage = () => {
             <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
                 <h2 className="text-lg font-semibold text-primary mb-2">🛡️ Feature Error</h2>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">What it is:</strong> Replaces just the broken component inline
+                    <strong className="text-primary font-medium">What it is:</strong> Replaces just
+                    the broken component inline
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">When to use:</strong> Individual features that might fail independently
+                    <strong className="text-primary font-medium">When to use:</strong> Individual
+                    features that might fail independently
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">Visual behavior:</strong> Shows error UI in place of component, allows
-                    retry/skip
+                    <strong className="text-primary font-medium">Visual behavior:</strong> Shows
+                    error UI in place of component, allows retry/skip
                 </p>
 
                 <button

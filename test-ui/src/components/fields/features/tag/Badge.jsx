@@ -39,30 +39,46 @@ export const Badge = React.memo(
     }) => {
         // Development-time validation to prevent domain-specific prop drift
         if (process.env.NODE_ENV === 'development') {
-            const propNames = Object.keys({ children, variant, size, onRemove, onClick, disabled, focused, className, removeLabel, ariaProps, ...restProps });
+            const propNames = Object.keys({
+                children,
+                variant,
+                size,
+                onRemove,
+                onClick,
+                disabled,
+                focused,
+                className,
+                removeLabel,
+                ariaProps,
+                ...restProps,
+            });
             const forbidden = ['tag', 'label', 'status', 'category', 'type'];
             const hasForbidden = propNames.some(name =>
                 forbidden.some(term => name.toLowerCase().includes(term))
             );
             if (hasForbidden) {
-                console.error('Badge: Domain-specific prop detected!', propNames, 'Use generic props instead');
+                console.error(
+                    'Badge: Domain-specific prop detected!',
+                    propNames,
+                    'Use generic props instead'
+                );
             }
         }
 
         const isInteractive = Boolean(onClick || onRemove);
         const isRemovable = Boolean(onRemove);
-        const handleClick = (e) => {
+        const handleClick = e => {
             if (disabled) return;
             onClick?.(e);
         };
 
-        const handleRemove = (e) => {
+        const handleRemove = e => {
             e.stopPropagation(); // Prevent badge click when removing
             if (disabled) return;
             onRemove?.(e);
         };
 
-        const handleKeyDown = (e) => {
+        const handleKeyDown = e => {
             if (disabled) return;
 
             if (e.key === 'Enter' || e.key === ' ') {
@@ -102,7 +118,9 @@ export const Badge = React.memo(
             'duration-200',
             sizeClasses[size],
             variantClasses[variant],
-            isInteractive && !disabled && 'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
+            isInteractive &&
+                !disabled &&
+                'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1',
             focused && 'ring-2 ring-primary ring-offset-1',
             disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
             className,

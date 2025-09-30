@@ -89,11 +89,16 @@ const PageHeader = React.memo(() => {
             className={`shrink-0 h-header bg-header-bg z-sticky min-h-header ${isSearchPage ? 'search-page' : 'non-search-page'}`}
             role="banner"
         >
-            <div className={`flex items-center justify-between h-full px-4 max-w-full ${isSearchPage ? 'gap-4' : 'gap-3'}`}>
+            <div
+                className={`flex items-center justify-between h-full px-4 max-w-full ${isSearchPage ? 'gap-4' : 'gap-3'}`}
+            >
                 {/* Brand/Logo Section with Hamburger */}
                 <div className="flex items-center gap-3 shrink-0">
                     {/* DAPS Logo and Title - Clickable Link to Home */}
-                    <Link to="/" className="touch-target flex items-center gap-3 no-underline text-current cursor-pointer p-1 transition-colors hover:bg-surface-alt focus:outline-focus">
+                    <Link
+                        to="/"
+                        className="touch-target flex items-center gap-3 no-underline text-current cursor-pointer p-1 transition-colors hover:bg-surface-alt focus:outline-focus"
+                    >
                         <img
                             src="/img/favicon-32x32.png"
                             alt="DAPS Logo"
@@ -103,7 +108,9 @@ const PageHeader = React.memo(() => {
                         />
                         <h1 className="max-md:hidden flex flex-col leading-tight m-0">
                             <span className="text-xl font-bold text-brand-primary">DAPS</span>
-                            <span className="text-sm text-primary font-medium opacity-75">Media Automation</span>
+                            <span className="text-sm text-primary font-medium opacity-75">
+                                Media Automation
+                            </span>
                         </h1>
                     </Link>
 
@@ -127,9 +134,7 @@ const PageHeader = React.memo(() => {
                     </div>
                 ) : (
                     /* Non-Search Page - Clean Spacer */
-                    <div className="flex-1">
-                        {/* Clean minimal header for non-search pages */}
-                    </div>
+                    <div className="flex-1">{/* Clean minimal header for non-search pages */}</div>
                 )}
 
                 {/* Actions Section - Always show theme toggle */}
@@ -148,7 +153,9 @@ const PageHeader = React.memo(() => {
                         >
                             {getThemeIconName()}
                         </span>
-                        <span className="theme-toggle-text max-sm:hidden">{getThemeDisplayText()}</span>
+                        <span className="theme-toggle-text max-sm:hidden">
+                            {getThemeDisplayText()}
+                        </span>
                     </button>
                 </div>
             </div>

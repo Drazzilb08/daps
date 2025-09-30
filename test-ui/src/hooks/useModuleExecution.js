@@ -76,50 +76,52 @@ export const useModuleExecution = () => {
      * Execute module
      * @param {string} moduleKey - Module key to execute
      */
-    const executeModule = useCallback(async (moduleKey) => {
-        try {
-            setRunningModules(prev => new Set([...prev, moduleKey]));
-            startPolling();
+    const executeModule = useCallback(
+        async moduleKey => {
+            try {
+                setRunningModules(prev => new Set([...prev, moduleKey]));
+                startPolling();
 
-            toast.info(`Starting ${moduleKey}...`);
+                toast.info(`Starting ${moduleKey}...`);
 
-            const response = await fetch('/api/modules/run', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ module: moduleKey })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('Response is not JSON');
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                toast.success(`${moduleKey} completed successfully`);
-                await loadRunStates();
-            } else {
-                toast.error(`${moduleKey} failed: ${result.message || 'Unknown error'}`);
-            }
-        } catch (error) {
-            console.error(`Failed to run ${moduleKey}:`, error);
-            toast.error(`Failed to run ${moduleKey}: ${error.message}`);
-        } finally {
-            if (isMountedRef.current) {
-                setRunningModules(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(moduleKey);
-                    return newSet;
+                const response = await fetch('/api/modules/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ module: moduleKey }),
                 });
-            }
-        }
-    }, [toast, startPolling, loadRunStates]);
 
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Response is not JSON');
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    toast.success(`${moduleKey} completed successfully`);
+                    await loadRunStates();
+                } else {
+                    toast.error(`${moduleKey} failed: ${result.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error(`Failed to run ${moduleKey}:`, error);
+                toast.error(`Failed to run ${moduleKey}: ${error.message}`);
+            } finally {
+                if (isMountedRef.current) {
+                    setRunningModules(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(moduleKey);
+                        return newSet;
+                    });
+                }
+            }
+        },
+        [toast, startPolling, loadRunStates]
+    );
 
     // Initial load and cleanup
     useEffect(() => {
@@ -145,7 +147,7 @@ export const useModuleExecution = () => {
         polling,
         executeModule,
         refreshData: loadRunStates,
-        isRunning: (moduleKey) => runningModules.has(moduleKey),
-        getRunState: (moduleKey) => runStates[moduleKey] || null
+        isRunning: moduleKey => runningModules.has(moduleKey),
+        getRunState: moduleKey => runStates[moduleKey] || null,
     };
 };

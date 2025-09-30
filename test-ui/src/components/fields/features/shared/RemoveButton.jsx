@@ -90,7 +90,8 @@ export const RemoveButton = React.memo(
                 : size === 'large'
                   ? 'min-w-12 min-h-12 text-xl'
                   : '', // Use default touch target sizing
-            disabled && 'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+            disabled &&
+                'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
             className,
         ]
             .filter(Boolean)

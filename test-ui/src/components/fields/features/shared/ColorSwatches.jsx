@@ -7,11 +7,7 @@
  */
 export const ColorSwatches = ({ colors = [], maxDisplay = 4, size = 'sm' }) => {
     if (!colors || colors.length === 0) {
-        return (
-            <span className="text-xs text-tertiary italic">
-                No colors
-            </span>
-        );
+        return <span className="text-xs text-tertiary italic">No colors</span>;
     }
 
     const displayColors = colors.slice(0, maxDisplay);
@@ -20,7 +16,7 @@ export const ColorSwatches = ({ colors = [], maxDisplay = 4, size = 'sm' }) => {
     const sizeClasses = {
         sm: 'w-4 h-4',
         md: 'w-6 h-6',
-        lg: 'w-8 h-8'
+        lg: 'w-8 h-8',
     };
 
     const sizeClass = sizeClasses[size] || sizeClasses.sm;
@@ -37,9 +33,7 @@ export const ColorSwatches = ({ colors = [], maxDisplay = 4, size = 'sm' }) => {
             ))}
 
             {remainingCount > 0 && (
-                <span className="text-xs text-secondary ml-1">
-                    +{remainingCount}
-                </span>
+                <span className="text-xs text-secondary ml-1">+{remainingCount}</span>
             )}
         </div>
     );

@@ -63,7 +63,8 @@ const HOLIDAY_PRESETS = [
     },
 ];
 
-const GDRIVE_PRESETS_URL = 'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/CL2K/presets.json';
+const GDRIVE_PRESETS_URL =
+    'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/CL2K/presets.json';
 
 /**
  * PresetsField component for schema-driven preset selection
@@ -178,7 +179,7 @@ export const PresetsField = React.memo(
                     targetFields,
                     onPresetSelected: !!onPresetSelected,
                     presetsLength: presets.length,
-                    field: field.key
+                    field: field.key,
                 });
 
                 onChange(selectedValue);
@@ -201,19 +202,25 @@ export const PresetsField = React.memo(
                         // Always include the current field's value
                         presetFieldUpdates[field.key] = selectedValue;
 
-                        console.log('[PresetsField] calling onPresetSelected with:', presetFieldUpdates);
+                        console.log(
+                            '[PresetsField] calling onPresetSelected with:',
+                            presetFieldUpdates
+                        );
                         onPresetSelected(presetFieldUpdates);
                     } else {
                         console.log('[PresetsField] No targetFields or selectedPreset not found:', {
                             selectedPreset: !!selectedPreset,
-                            targetFieldsLength: targetFields.length
+                            targetFieldsLength: targetFields.length,
                         });
                     }
                 } else {
-                    console.log('[PresetsField] onPresetSelected not available or no selectedValue:', {
-                        onPresetSelected: !!onPresetSelected,
-                        selectedValue
-                    });
+                    console.log(
+                        '[PresetsField] onPresetSelected not available or no selectedValue:',
+                        {
+                            onPresetSelected: !!onPresetSelected,
+                            selectedValue,
+                        }
+                    );
                 }
             },
             [onChange, onPresetSelected, presets, field.key, identifierField, targetFields]

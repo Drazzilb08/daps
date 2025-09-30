@@ -79,7 +79,10 @@ const Layout = ({ children }) => {
                         </FeatureErrorBoundary>
                     )}
 
-                    <main id="main-content" className="flex-1 overflow-y-auto p-4 px-3 md:p-6 md:px-4 bg-bg">
+                    <main
+                        id="main-content"
+                        className="flex-1 overflow-y-auto p-4 px-3 md:p-6 md:px-4 bg-bg"
+                    >
                         <FeatureErrorBoundary
                             featureName="Page Content"
                             featureDescription="Main page content area"

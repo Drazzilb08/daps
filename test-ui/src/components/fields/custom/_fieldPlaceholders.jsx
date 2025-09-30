@@ -22,7 +22,9 @@ const UnavailableField = ({ field }) => {
                 <small>This field type is not available in the current version</small>
             </div>
 
-            {field.description && <div className="text-sm text-tertiary mt-1">{field.description}</div>}
+            {field.description && (
+                <div className="text-sm text-tertiary mt-1">{field.description}</div>
+            )}
         </div>
     );
 };

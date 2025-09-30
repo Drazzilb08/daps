@@ -1,4 +1,3 @@
-
 const API_BASE = '/api';
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const REQUEST_TIMEOUT = 30000; // 30 seconds

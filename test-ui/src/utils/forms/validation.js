@@ -1,4 +1,3 @@
-
 export function validateField(field, value, allValues = {}) {
     // Check required fields
     if (field.required && (value === undefined || value === null || value === '')) {

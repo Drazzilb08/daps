@@ -47,10 +47,7 @@ export const AccordionItem = ({
 
     return (
         <AccordionItemContext.Provider value={{ isExpanded, handleToggle }}>
-            <details
-                className={`accordion-item ${className}`}
-                open={isExpanded}
-            >
+            <details className={`accordion-item ${className}`} open={isExpanded}>
                 {children}
             </details>
         </AccordionItemContext.Provider>
@@ -78,14 +75,12 @@ const AccordionHeader = ({ children, className = '' }) => {
 
     const { isExpanded, handleToggle } = context;
 
-    const handleClick = (event) => {
+    const handleClick = event => {
         event.preventDefault(); // Prevent native details toggle
         handleToggle();
     };
 
-    const content = typeof children === 'function'
-        ? children({ isExpanded })
-        : children;
+    const content = typeof children === 'function' ? children({ isExpanded }) : children;
 
     return (
         <summary
@@ -94,7 +89,7 @@ const AccordionHeader = ({ children, className = '' }) => {
             role="button"
             tabIndex={0}
             aria-expanded={isExpanded}
-            onKeyDown={(e) => {
+            onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     handleToggle();

@@ -76,10 +76,12 @@ export const TagInput = React.memo(
                     // Handle async function results
                     if (result instanceof Promise) {
                         setIsLoading(true);
-                        result.then(() => {
-                            setIsLoading(false);
-                            // This would need more sophisticated state management for async
-                        }).catch(() => setIsLoading(false));
+                        result
+                            .then(() => {
+                                setIsLoading(false);
+                                // This would need more sophisticated state management for async
+                            })
+                            .catch(() => setIsLoading(false));
                         return [];
                     }
                     return Array.isArray(result) ? result : [];
@@ -95,17 +97,21 @@ export const TagInput = React.memo(
             if (!inputValue.trim()) return suggestionArray;
 
             // Suggestion filtering logic
-            const filterFn = filterFunction || ((suggestion, input) => {
-                const suggestionText = caseSensitive ? suggestion : suggestion.toLowerCase();
-                const inputText = caseSensitive ? input : input.toLowerCase();
-                return suggestionText.includes(inputText);
-            });
+            const filterFn =
+                filterFunction ||
+                ((suggestion, input) => {
+                    const suggestionText = caseSensitive ? suggestion : suggestion.toLowerCase();
+                    const inputText = caseSensitive ? input : input.toLowerCase();
+                    return suggestionText.includes(inputText);
+                });
 
             return suggestionArray
                 .filter(suggestion => filterFn(suggestion, inputValue))
                 .filter(suggestion => {
                     // Exclude already selected items
-                    const compareItems = caseSensitive ? items : items.map(item => item.toLowerCase());
+                    const compareItems = caseSensitive
+                        ? items
+                        : items.map(item => item.toLowerCase());
                     const compareSuggestion = caseSensitive ? suggestion : suggestion.toLowerCase();
                     return !compareItems.includes(compareSuggestion);
                 });
@@ -113,7 +119,7 @@ export const TagInput = React.memo(
 
         // Item management with duplicate prevention
         const addItem = useCallback(
-            (newItem) => {
+            newItem => {
                 if (!newItem || !newItem.trim()) return false;
 
                 const trimmedItem = newItem.trim();
@@ -145,7 +151,7 @@ export const TagInput = React.memo(
         );
 
         const removeItem = useCallback(
-            (indexToRemove) => {
+            indexToRemove => {
                 const newItems = items.filter((_, index) => index !== indexToRemove);
                 onItemsChange?.(newItems);
             },
@@ -153,7 +159,7 @@ export const TagInput = React.memo(
         );
 
         // Input handling with suggestion management
-        const handleInputChange = (e) => {
+        const handleInputChange = e => {
             const value = e.target.value;
             setInputValue(value);
             setFocusedSuggestionIndex(-1);
@@ -185,7 +191,7 @@ export const TagInput = React.memo(
         };
 
         // Comprehensive keyboard navigation
-        const handleKeyDown = (e) => {
+        const handleKeyDown = e => {
             if (disabled) return;
 
             switch (e.key) {
@@ -238,7 +244,7 @@ export const TagInput = React.memo(
         };
 
         // Suggestion selection handlers
-        const handleSuggestionClick = (suggestion) => {
+        const handleSuggestionClick = suggestion => {
             if (addItem(suggestion)) {
                 setInputValue('');
                 setShowSuggestions(false);
@@ -266,7 +272,7 @@ export const TagInput = React.memo(
 
         // Badge removal with keyboard support
         const handleBadgeRemove = useCallback(
-            (indexToRemove) => {
+            indexToRemove => {
                 removeItem(indexToRemove);
                 // Return focus to input for continued interaction
                 inputRef.current?.focus();
@@ -275,13 +281,7 @@ export const TagInput = React.memo(
         );
 
         // Container classes for responsive layout
-        const containerClasses = [
-            'relative',
-            'w-full',
-            className,
-        ]
-            .filter(Boolean)
-            .join(' ');
+        const containerClasses = ['relative', 'w-full', className].filter(Boolean).join(' ');
 
         // Suggestions dropdown styling with proper theming
         const suggestionsClasses = [
@@ -307,20 +307,31 @@ export const TagInput = React.memo(
                 {/* Input container with badges inside */}
                 <div className="relative">
                     {/* Custom input container with badges inside */}
-                    <div className={[
-                        'min-h-11 border border-border rounded-md bg-surface',
-                        'flex flex-wrap gap-1 p-2',
-                        'focus-within:border-primary focus-within:ring-1 focus-within:ring-primary',
-                        disabled && 'opacity-50 bg-surface-disabled cursor-not-allowed',
-                    ].filter(Boolean).join(' ')}>
-
+                    <div
+                        className={[
+                            'min-h-11 border border-border rounded-md bg-surface',
+                            'flex flex-wrap gap-1 p-2',
+                            'focus-within:border-primary focus-within:ring-1 focus-within:ring-primary',
+                            disabled && 'opacity-50 bg-surface-disabled cursor-not-allowed',
+                        ]
+                            .filter(Boolean)
+                            .join(' ')}
+                    >
                         {/* Badge display inside input container */}
                         {items.length > 0 && (
-                            <div className="flex flex-wrap gap-1" role="list" aria-label="Selected items">
+                            <div
+                                className="flex flex-wrap gap-1"
+                                role="list"
+                                aria-label="Selected items"
+                            >
                                 {items.map((item, index) => (
                                     <div key={`${item}-${index}`} role="listitem">
                                         <Badge
-                                            onRemove={disabled ? undefined : () => handleBadgeRemove(index)}
+                                            onRemove={
+                                                disabled
+                                                    ? undefined
+                                                    : () => handleBadgeRemove(index)
+                                            }
                                             removeLabel={removeLabel}
                                             variant="interactive"
                                             size="small"
@@ -347,7 +358,9 @@ export const TagInput = React.memo(
                                 'flex-1 min-w-0 bg-transparent border-none outline-none',
                                 'text-primary placeholder-tertiary',
                                 'min-h-7', // Slightly smaller than container
-                            ].filter(Boolean).join(' ')}
+                            ]
+                                .filter(Boolean)
+                                .join(' ')}
                             role="combobox"
                             aria-expanded={showSuggestions}
                             aria-haspopup="listbox"

@@ -13,26 +13,29 @@ import { FieldRegistry } from '../../components/fields/FieldRegistry.jsx';
  * Memoized field component for better performance
  * Only re-renders when field value or key changes
  */
-const MemoizedFieldComponent = React.memo(({ field, value, onChange, ...props }) => {
-    const FieldComponent = FieldRegistry.getField(field.type);
+const MemoizedFieldComponent = React.memo(
+    ({ field, value, onChange, ...props }) => {
+        const FieldComponent = FieldRegistry.getField(field.type);
 
-    if (!FieldComponent) {
+        if (!FieldComponent) {
+            return (
+                <div className="p-2 bg-warning-bg text-warning rounded">
+                    Unknown field type: {field.type}
+                </div>
+            );
+        }
+
+        return <FieldComponent field={field} value={value} onChange={onChange} {...props} />;
+    },
+    (prevProps, nextProps) => {
         return (
-            <div className="p-2 bg-warning-bg text-warning rounded">
-                Unknown field type: {field.type}
-            </div>
+            prevProps.value === nextProps.value &&
+            prevProps.field.key === nextProps.field.key &&
+            prevProps.disabled === nextProps.disabled &&
+            prevProps.highlightInvalid === nextProps.highlightInvalid
         );
     }
-
-    return <FieldComponent field={field} value={value} onChange={onChange} {...props} />;
-}, (prevProps, nextProps) => {
-    return (
-        prevProps.value === nextProps.value &&
-        prevProps.field.key === nextProps.field.key &&
-        prevProps.disabled === nextProps.disabled &&
-        prevProps.highlightInvalid === nextProps.highlightInvalid
-    );
-});
+);
 
 MemoizedFieldComponent.displayName = 'MemoizedFieldComponent';
 
@@ -46,8 +49,8 @@ export const GeneralSettingsPage = () => {
         general: {
             log_level: 'info',
             max_logs: 9,
-            update_notifications: true
-        }
+            update_notifications: true,
+        },
     });
     const [lastSaved, setLastSaved] = useState('{}');
     const [isDirty, setIsDirty] = useState(false);
@@ -80,7 +83,7 @@ export const GeneralSettingsPage = () => {
 
     // Keyboard shortcuts
     useEffect(() => {
-        const handleKeyboard = (e) => {
+        const handleKeyboard = e => {
             // Ctrl/Cmd + S to save
             if ((e.ctrlKey || e.metaKey) && e.key === 's') {
                 e.preventDefault();
@@ -96,13 +99,11 @@ export const GeneralSettingsPage = () => {
                     handleReset();
                 }
             }
-
         };
 
         window.addEventListener('keydown', handleKeyboard);
         return () => window.removeEventListener('keydown', handleKeyboard);
     }, [isDirty, isSaving]);
-
 
     // Handle field changes
     const handleFieldChange = useCallback((moduleKey, fieldKey, value) => {
@@ -110,8 +111,8 @@ export const GeneralSettingsPage = () => {
             ...prev,
             [moduleKey]: {
                 ...prev[moduleKey],
-                [fieldKey]: value
-            }
+                [fieldKey]: value,
+            },
         }));
         setSaveError(null);
     }, []);
@@ -131,7 +132,6 @@ export const GeneralSettingsPage = () => {
             setLastSaved(JSON.stringify(formData));
             setIsDirty(false);
             setSaveSuccess(true);
-
         } catch (error) {
             console.error('Save failed:', error);
             setSaveError(error.message || 'Failed to save configuration');
@@ -153,8 +153,12 @@ export const GeneralSettingsPage = () => {
             <div className="mb-6 md:mb-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">General Settings</h1>
-                        <p className="text-sm md:text-base text-secondary">Configure general DAPS application settings</p>
+                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">
+                            General Settings
+                        </h1>
+                        <p className="text-sm md:text-base text-secondary">
+                            Configure general DAPS application settings
+                        </p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -169,7 +173,9 @@ export const GeneralSettingsPage = () => {
 
                         {saveSuccess && (
                             <span className="text-sm text-success flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">check_circle</span>
+                                <span className="material-symbols-outlined text-sm">
+                                    check_circle
+                                </span>
                                 <span className="hidden sm:inline">Saved successfully</span>
                                 <span className="sm:hidden">Saved</span>
                             </span>
@@ -197,7 +203,9 @@ export const GeneralSettingsPage = () => {
                                     </>
                                 ) : (
                                     <>
-                                        <span className="material-symbols-outlined text-sm">save</span>
+                                        <span className="material-symbols-outlined text-sm">
+                                            save
+                                        </span>
                                         <span className="hidden sm:inline">Save Changes</span>
                                         <span className="sm:hidden">Save</span>
                                     </>
@@ -220,12 +228,17 @@ export const GeneralSettingsPage = () => {
 
             {/* Settings card */}
             {GENERAL_SETTINGS_SCHEMA.map((module, moduleIndex) => (
-                <div key={`module-${module.key}-${moduleIndex}`} className="bg-surface border border-border-subtle rounded-lg p-4 md:p-6">
-                    <h2 className="text-lg md:text-xl font-semibold mb-4 text-primary">{module.label}</h2>
+                <div
+                    key={`module-${module.key}-${moduleIndex}`}
+                    className="bg-surface border border-border-subtle rounded-lg p-4 md:p-6"
+                >
+                    <h2 className="text-lg md:text-xl font-semibold mb-4 text-primary">
+                        {module.label}
+                    </h2>
 
                     {module.fields && module.fields.length > 0 ? (
                         <form
-                            onSubmit={(e) => {
+                            onSubmit={e => {
                                 e.preventDefault();
                                 handleSave();
                             }}
@@ -254,21 +267,30 @@ export const GeneralSettingsPage = () => {
                                     }
 
                                     // Handle object values - stringify for JSON fields
-                                    if (fieldValue && typeof fieldValue === 'object' && field.type === 'json') {
+                                    if (
+                                        fieldValue &&
+                                        typeof fieldValue === 'object' &&
+                                        field.type === 'json'
+                                    ) {
                                         fieldValue = JSON.stringify(fieldValue, null, 2);
                                     }
 
                                     return (
-                                        <div key={`field-${module.key}-${field.key}-${fieldIndex}`} className="settings-field-row">
+                                        <div
+                                            key={`field-${module.key}-${field.key}-${fieldIndex}`}
+                                            className="settings-field-row"
+                                        >
                                             <MemoizedFieldComponent
                                                 field={{
                                                     ...field,
                                                     id: uniqueId,
                                                     errorId,
-                                                    descId
+                                                    descId,
                                                 }}
                                                 value={fieldValue}
-                                                onChange={(value) => handleFieldChange(module.key, field.key, value)}
+                                                onChange={value =>
+                                                    handleFieldChange(module.key, field.key, value)
+                                                }
                                                 disabled={isSaving}
                                                 highlightInvalid={false}
                                                 errorMessage={null}
@@ -279,7 +301,10 @@ export const GeneralSettingsPage = () => {
                                 } catch (error) {
                                     console.error(`Error rendering field ${field.key}:`, error);
                                     return (
-                                        <div key={`error-${module.key}-${field.key}-${fieldIndex}`} className="p-2 bg-warning-bg text-warning rounded">
+                                        <div
+                                            key={`error-${module.key}-${field.key}-${fieldIndex}`}
+                                            className="p-2 bg-warning-bg text-warning rounded"
+                                        >
                                             Field type '{field.type}' error: {error.message}
                                         </div>
                                     );
@@ -288,7 +313,9 @@ export const GeneralSettingsPage = () => {
                         </form>
                     ) : (
                         <div className="text-center py-8 text-tertiary">
-                            <span className="material-symbols-outlined text-4xl mb-2 block">inbox</span>
+                            <span className="material-symbols-outlined text-4xl mb-2 block">
+                                inbox
+                            </span>
                             <p>No general settings available</p>
                         </div>
                     )}

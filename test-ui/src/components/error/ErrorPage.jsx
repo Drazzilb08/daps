@@ -119,7 +119,9 @@ const ErrorPage = ({
         <div className="min-h-content p-4 font-sans">
             <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-8 shadow-xl mx-auto">
                 <div className="text-center mb-8">
-                    <div className="material-symbols-outlined text-4xl mb-3 block text-error">{getStatusIcon(statusCode)}</div>
+                    <div className="material-symbols-outlined text-4xl mb-3 block text-error">
+                        {getStatusIcon(statusCode)}
+                    </div>
                     <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">
                         {statusCode} - {finalTitle}
                     </h1>
@@ -170,10 +172,14 @@ const ErrorPage = ({
                     {finalSuggestions.length > 0 && (
                         <div className="mt-6">
                             <div className="bg-surface-alt border border-border rounded-md p-4">
-                                <h4 className="text-primary text-lg font-semibold m-0 mb-3">What can I do?</h4>
+                                <h4 className="text-primary text-lg font-semibold m-0 mb-3">
+                                    What can I do?
+                                </h4>
                                 <ul className="m-0 pl-6 text-secondary text-sm leading-relaxed">
                                     {finalSuggestions.map((suggestion, index) => (
-                                        <li key={index} className="mb-2">{suggestion}</li>
+                                        <li key={index} className="mb-2">
+                                            {suggestion}
+                                        </li>
                                     ))}
                                 </ul>
                             </div>

@@ -1,4 +1,3 @@
-
 export const normalizeFieldSchema = (fieldSchema, fieldKey) => {
     // Handle string shorthand (just field type)
     if (typeof fieldSchema === 'string') {

@@ -28,131 +28,137 @@ import { useTouchDevice } from '../../../../utils/touchDetection';
  * SortableDirectoryItem - Directory item with drag and drop support
  * Handles reordering controls when enabled
  */
-const SortableDirectoryItem = React.memo(({
-    id,
-    index,
-    directory,
-    isLastItem,
-    itemId,
-    canMoveUp,
-    canMoveDown,
-    canRemoveDirectory,
-    enableReordering,
-    onMoveUp,
-    onMoveDown,
-    onRemove,
-    onClick,
-    disabled,
-    invalid,
-    placeholder,
-    label,
-    baseId,
-    removeButtonText,
-    // Mode selection props
-    mode,
-    modeOptions,
-    onModeChange
-}) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({ id });
+const SortableDirectoryItem = React.memo(
+    ({
+        id,
+        index,
+        directory,
+        isLastItem,
+        itemId,
+        canMoveUp,
+        canMoveDown,
+        canRemoveDirectory,
+        enableReordering,
+        onMoveUp,
+        onMoveDown,
+        onRemove,
+        onClick,
+        disabled,
+        invalid,
+        placeholder,
+        label,
+        baseId,
+        removeButtonText,
+        // Mode selection props
+        mode,
+        modeOptions,
+        onModeChange,
+    }) => {
+        const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+            useSortable({ id });
 
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-    };
+        const style = {
+            transform: CSS.Transform.toString(transform),
+            transition,
+            opacity: isDragging ? 0.5 : 1,
+        };
 
-    const isTouch = useTouchDevice();
+        const isTouch = useTouchDevice();
 
-    return (
-        <div className="flex gap-2 items-start" ref={setNodeRef} style={style}>
-            {/* Non-touch devices: Drag Handle (left side) */}
-            {enableReordering && !isTouch && (
-                <div
-                    className="flex items-center justify-center w-11 h-11 text-brand-primary cursor-grab hover:text-primary transition-colors touch-target flex-shrink-0"
-                    {...attributes}
-                    {...listeners}
-                >
-                    <span className="material-symbols-outlined text-2xl">drag_indicator</span>
-                </div>
-            )}
-
-            {/* Touch devices: Up Button (left side) */}
-            {enableReordering && isTouch && (
-                <FieldButton
-                    onClick={() => onMoveUp && onMoveUp(index)}
-                    disabled={!canMoveUp}
-                    ariaLabel={`Move ${directory || 'directory'} up`}
-                    className="flex-shrink-0"
-                >
-                    <span className="material-symbols-outlined text-base">keyboard_arrow_up</span>
-                </FieldButton>
-            )}
-
-            <div className={`flex ${modeOptions ? 'flex-col gap-2 md:flex-row md:gap-3' : ''} flex-1 min-w-0`}>
-                <InputBase
-                    id={itemId}
-                    type="text"
-                    name={`${baseId}-${index}`}
-                    value={directory || ''}
-                    placeholder={placeholder}
-                    disabled={disabled}
-                    readOnly={true}
-                    onClick={() => onClick(index)}
-                    invalid={invalid}
-                    aria-label={`${label} ${index + 1}`}
-                    className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-30' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                />
-
-                {/* Mode selection - only show if modeOptions provided */}
-                {modeOptions && (
-                    <SelectBase
-                        id={`${itemId}-mode`}
-                        name={`${baseId}-mode-${index}`}
-                        value={mode || ''}
-                        onChange={(e) => onModeChange?.(index, e.target.value)}
-                        disabled={disabled}
-                        invalid={invalid}
-                        options={modeOptions}
-                        placeholder="Select mode..."
-                        className="md:flex-[1_1_0%] md:min-w-25 md:max-w-37"
-                        aria-label={`Mode for ${label} ${index + 1}`}
-                    />
+        return (
+            <div className="flex gap-2 items-start" ref={setNodeRef} style={style}>
+                {/* Non-touch devices: Drag Handle (left side) */}
+                {enableReordering && !isTouch && (
+                    <div
+                        className="flex items-center justify-center w-11 h-11 text-brand-primary cursor-grab hover:text-primary transition-colors touch-target flex-shrink-0"
+                        {...attributes}
+                        {...listeners}
+                    >
+                        <span className="material-symbols-outlined text-2xl">drag_indicator</span>
+                    </div>
                 )}
-            </div>
 
-            {/* Touch devices: Down Button (right side) */}
-            {enableReordering && isTouch && (
-                <FieldButton
-                    onClick={() => onMoveDown && onMoveDown(index)}
-                    disabled={!canMoveDown}
-                    ariaLabel={`Move ${directory || 'directory'} down`}
-                    className="flex-shrink-0"
+                {/* Touch devices: Up Button (left side) */}
+                {enableReordering && isTouch && (
+                    <FieldButton
+                        onClick={() => onMoveUp && onMoveUp(index)}
+                        disabled={!canMoveUp}
+                        ariaLabel={`Move ${directory || 'directory'} up`}
+                        className="flex-shrink-0"
+                    >
+                        <span className="material-symbols-outlined text-base">
+                            keyboard_arrow_up
+                        </span>
+                    </FieldButton>
+                )}
+
+                <div
+                    className={`flex ${modeOptions ? 'flex-col gap-2 md:flex-row md:gap-3' : ''} flex-1 min-w-0`}
                 >
-                    <span className="material-symbols-outlined text-base">keyboard_arrow_down</span>
-                </FieldButton>
-            )}
+                    <InputBase
+                        id={itemId}
+                        type="text"
+                        name={`${baseId}-${index}`}
+                        value={directory || ''}
+                        placeholder={placeholder}
+                        disabled={disabled}
+                        readOnly={true}
+                        onClick={() => onClick(index)}
+                        invalid={invalid}
+                        aria-label={`${label} ${index + 1}`}
+                        className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-30' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                    />
 
-            <RemoveButton
-                onClick={() => onRemove(index)}
-                disabled={!canRemoveDirectory}
-                itemName={`${label} ${index + 1}`}
-                itemType="directory"
-                text={removeButtonText}
-                variant="default"
-                size="medium"
-                title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
-                className="flex-shrink-0 self-start"
-            />
-        </div>
-    );
-});
+                    {/* Mode selection - only show if modeOptions provided */}
+                    {modeOptions && (
+                        <SelectBase
+                            id={`${itemId}-mode`}
+                            name={`${baseId}-mode-${index}`}
+                            value={mode || ''}
+                            onChange={e => onModeChange?.(index, e.target.value)}
+                            disabled={disabled}
+                            invalid={invalid}
+                            options={modeOptions}
+                            placeholder="Select mode..."
+                            className="md:flex-[1_1_0%] md:min-w-25 md:max-w-37"
+                            aria-label={`Mode for ${label} ${index + 1}`}
+                        />
+                    )}
+                </div>
+
+                {/* Touch devices: Down Button (right side) */}
+                {enableReordering && isTouch && (
+                    <FieldButton
+                        onClick={() => onMoveDown && onMoveDown(index)}
+                        disabled={!canMoveDown}
+                        ariaLabel={`Move ${directory || 'directory'} down`}
+                        className="flex-shrink-0"
+                    >
+                        <span className="material-symbols-outlined text-base">
+                            keyboard_arrow_down
+                        </span>
+                    </FieldButton>
+                )}
+
+                <RemoveButton
+                    onClick={() => onRemove(index)}
+                    disabled={!canRemoveDirectory}
+                    itemName={`${label} ${index + 1}`}
+                    itemType="directory"
+                    text={removeButtonText}
+                    variant="default"
+                    size="medium"
+                    title={
+                        isLastItem
+                            ? 'Cannot remove the last directory entry'
+                            : `Remove directory ${index + 1}`
+                    }
+                    className="flex-shrink-0 self-start"
+                />
+            </div>
+        );
+    }
+);
 
 SortableDirectoryItem.displayName = 'SortableDirectoryItem';
 
@@ -160,73 +166,81 @@ SortableDirectoryItem.displayName = 'SortableDirectoryItem';
  * DirectoryItem - Regular directory item without drag and drop
  * For use in non-sortable directory lists
  */
-const DirectoryItem = React.memo(({
-    index,
-    directory,
-    isLastItem,
-    itemId,
-    canRemoveDirectory,
-    onRemove,
-    onClick,
-    disabled,
-    invalid,
-    placeholder,
-    label,
-    baseId,
-    removeButtonText,
-    // Mode selection props
-    mode,
-    modeOptions,
-    onModeChange
-}) => {
-    return (
-        <div className="flex gap-2 items-start">
-            <div className={`flex ${modeOptions ? 'flex-col gap-2 md:flex-row md:gap-3' : ''} flex-1 min-w-0`}>
-                <InputBase
-                    id={itemId}
-                    type="text"
-                    name={`${baseId}-${index}`}
-                    value={directory || ''}
-                    placeholder={placeholder}
-                    disabled={disabled}
-                    readOnly={true}
-                    onClick={() => onClick(index)}
-                    invalid={invalid}
-                    aria-label={`${label} ${index + 1}`}
-                    className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-30' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                />
-
-                {/* Mode selection - only show if modeOptions provided */}
-                {modeOptions && (
-                    <SelectBase
-                        id={`${itemId}-mode`}
-                        name={`${baseId}-mode-${index}`}
-                        value={mode || ''}
-                        onChange={(e) => onModeChange?.(index, e.target.value)}
+const DirectoryItem = React.memo(
+    ({
+        index,
+        directory,
+        isLastItem,
+        itemId,
+        canRemoveDirectory,
+        onRemove,
+        onClick,
+        disabled,
+        invalid,
+        placeholder,
+        label,
+        baseId,
+        removeButtonText,
+        // Mode selection props
+        mode,
+        modeOptions,
+        onModeChange,
+    }) => {
+        return (
+            <div className="flex gap-2 items-start">
+                <div
+                    className={`flex ${modeOptions ? 'flex-col gap-2 md:flex-row md:gap-3' : ''} flex-1 min-w-0`}
+                >
+                    <InputBase
+                        id={itemId}
+                        type="text"
+                        name={`${baseId}-${index}`}
+                        value={directory || ''}
+                        placeholder={placeholder}
                         disabled={disabled}
+                        readOnly={true}
+                        onClick={() => onClick(index)}
                         invalid={invalid}
-                        options={modeOptions}
-                        placeholder="Select mode..."
-                        className="md:flex-[1_1_0%] md:min-w-25 md:max-w-37"
-                        aria-label={`Mode for ${label} ${index + 1}`}
+                        aria-label={`${label} ${index + 1}`}
+                        className={`${modeOptions ? 'md:flex-[2_1_0%] md:min-w-30' : ''} ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                     />
-                )}
-            </div>
 
-            <RemoveButton
-                onClick={() => onRemove(index)}
-                disabled={!canRemoveDirectory}
-                itemName={`${label} ${index + 1}`}
-                itemType="directory"
-                text={removeButtonText}
-                variant="default"
-                size="medium"
-                title={isLastItem ? 'Cannot remove the last directory entry' : `Remove directory ${index + 1}`}
-                className="flex-shrink-0 self-start"
-            />
-        </div>
-    );
-});
+                    {/* Mode selection - only show if modeOptions provided */}
+                    {modeOptions && (
+                        <SelectBase
+                            id={`${itemId}-mode`}
+                            name={`${baseId}-mode-${index}`}
+                            value={mode || ''}
+                            onChange={e => onModeChange?.(index, e.target.value)}
+                            disabled={disabled}
+                            invalid={invalid}
+                            options={modeOptions}
+                            placeholder="Select mode..."
+                            className="md:flex-[1_1_0%] md:min-w-25 md:max-w-37"
+                            aria-label={`Mode for ${label} ${index + 1}`}
+                        />
+                    )}
+                </div>
+
+                <RemoveButton
+                    onClick={() => onRemove(index)}
+                    disabled={!canRemoveDirectory}
+                    itemName={`${label} ${index + 1}`}
+                    itemType="directory"
+                    text={removeButtonText}
+                    variant="default"
+                    size="medium"
+                    title={
+                        isLastItem
+                            ? 'Cannot remove the last directory entry'
+                            : `Remove directory ${index + 1}`
+                    }
+                    className="flex-shrink-0 self-start"
+                />
+            </div>
+        );
+    }
+);
 
 DirectoryItem.displayName = 'DirectoryItem';
 
@@ -308,16 +322,12 @@ export const DirectoryArray = React.memo(
         );
 
         // Handle clicking on directory input to open modal
-        const handleDirectoryClick = useCallback(
-            (index) => {
-                // Placeholder functionality - show info about future modal implementation
-                alert(
-                    '🚧 Directory Browser Modal\n\nThis will open a modal to browse and select a directory when the modal system is implemented.'
-                );
-            },
-            []
-        );
-
+        const handleDirectoryClick = useCallback(index => {
+            // Placeholder functionality - show info about future modal implementation
+            alert(
+                '🚧 Directory Browser Modal\n\nThis will open a modal to browse and select a directory when the modal system is implemented.'
+            );
+        }, []);
 
         const canAddDirectory = !disabled;
         const canRemoveDirectory = index => directories.length > minDirectories && !disabled;
@@ -352,7 +362,8 @@ export const DirectoryArray = React.memo(
                             const isLastItem = directories.length === 1;
 
                             const canMoveUp = enableReordering && index > 0 && !disabled;
-                            const canMoveDown = enableReordering && index < directories.length - 1 && !disabled;
+                            const canMoveDown =
+                                enableReordering && index < directories.length - 1 && !disabled;
 
                             // Get mode for this directory index
                             const itemMode = modes[index] || '';
@@ -425,7 +436,6 @@ export const DirectoryArray = React.memo(
                             itemType="directory"
                             disabledReason="Field is disabled"
                         />
-
                     </div>
                 )}
             </div>

@@ -116,7 +116,10 @@ export const FloatField = React.memo(
                     </FieldButton>
                 </div>
 
-                <FieldDescription id={field.descId || `${inputId}-desc`} description={field.description} />
+                <FieldDescription
+                    id={field.descId || `${inputId}-desc`}
+                    description={field.description}
+                />
                 <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
             </FieldWrapper>
         );

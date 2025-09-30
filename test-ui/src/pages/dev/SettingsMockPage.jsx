@@ -19,11 +19,9 @@ const SettingsMockPage = () => {
     const [filteredModules, setFilteredModules] = useState(SETTINGS_SCHEMA);
 
     // Handle module expand/collapse
-    const toggleModule = useCallback((moduleKey) => {
+    const toggleModule = useCallback(moduleKey => {
         setExpandedModules(prev =>
-            prev.includes(moduleKey)
-                ? prev.filter(key => key !== moduleKey)
-                : [...prev, moduleKey]
+            prev.includes(moduleKey) ? prev.filter(key => key !== moduleKey) : [...prev, moduleKey]
         );
     }, []);
 
@@ -37,19 +35,21 @@ const SettingsMockPage = () => {
     }, []);
 
     // Mock header search integration
-    const handleSettingsSearch = useCallback((query) => {
+    const handleSettingsSearch = useCallback(query => {
         if (!query) {
             setFilteredModules(SETTINGS_SCHEMA);
             return;
         }
 
         const searchLower = query.toLowerCase();
-        const filtered = SETTINGS_SCHEMA.filter(module =>
-            module.label.toLowerCase().includes(searchLower) ||
-            module.fields.some(field =>
-                field.label?.toLowerCase().includes(searchLower) ||
-                field.key?.toLowerCase().includes(searchLower)
-            )
+        const filtered = SETTINGS_SCHEMA.filter(
+            module =>
+                module.label.toLowerCase().includes(searchLower) ||
+                module.fields.some(
+                    field =>
+                        field.label?.toLowerCase().includes(searchLower) ||
+                        field.key?.toLowerCase().includes(searchLower)
+                )
         );
         setFilteredModules(filtered);
     }, []);
@@ -60,7 +60,7 @@ const SettingsMockPage = () => {
         console.log('Mock: Registering settings search handler with header search system');
 
         // Simulate search integration with window message for demo
-        const handleSearchMessage = (event) => {
+        const handleSearchMessage = event => {
             if (event.data?.type === 'settings-search') {
                 handleSettingsSearch(event.data.query);
             }
@@ -70,9 +70,8 @@ const SettingsMockPage = () => {
         return () => window.removeEventListener('message', handleSearchMessage);
     }, [handleSettingsSearch]);
 
-
     // Get field type summary for mock display
-    const getFieldTypeSummary = (fields) => {
+    const getFieldTypeSummary = fields => {
         if (!fields || fields.length === 0) return 'No fields configured';
 
         const types = fields.reduce((acc, field) => {
@@ -86,7 +85,8 @@ const SettingsMockPage = () => {
             .join(', ');
 
         const total = fields.length;
-        const remaining = Object.keys(types).length > 3 ? ` (+${Object.keys(types).length - 3} more)` : '';
+        const remaining =
+            Object.keys(types).length > 3 ? ` (+${Object.keys(types).length - 3} more)` : '';
 
         return `${total} fields: ${summary}${remaining}`;
     };
@@ -95,31 +95,36 @@ const SettingsMockPage = () => {
         <div className="p-6 max-w-4xl mx-auto min-h-screen">
             {/* Page Header */}
             <div className="mb-8">
-                <h1 className="text-2xl font-semibold text-primary mb-2">
-                    Settings Configuration
-                </h1>
+                <h1 className="text-2xl font-semibold text-primary mb-2">Settings Configuration</h1>
                 <p className="text-secondary mb-4">
-                    Mock interface for schema-driven accordion layout demonstrating header search integration.
-                    All modules generated from settings_schema.js. Search functionality integrated with header search system.
+                    Mock interface for schema-driven accordion layout demonstrating header search
+                    integration. All modules generated from settings_schema.js. Search functionality
+                    integrated with header search system.
                 </p>
 
                 {/* Note about header search integration */}
                 <div className="p-4 bg-bg-secondary border border-border-subtle rounded-md mb-6">
                     <p className="text-sm text-primary mb-2">
-                        <span className="material-symbols-outlined text-primary mr-2" style={{ fontSize: '16px' }}>info</span>
+                        <span
+                            className="material-symbols-outlined text-primary mr-2"
+                            style={{ fontSize: '16px' }}
+                        >
+                            info
+                        </span>
                         <strong>Header Search Integration</strong>
                     </p>
                     <p className="text-sm text-secondary">
-                        In the final implementation, search functionality will be handled by the header search system.
-                        The SearchToolbar will automatically appear with expand/collapse and save/reset controls
-                        when navigating to the settings page. No inline search controls needed.
+                        In the final implementation, search functionality will be handled by the
+                        header search system. The SearchToolbar will automatically appear with
+                        expand/collapse and save/reset controls when navigating to the settings
+                        page. No inline search controls needed.
                     </p>
                 </div>
             </div>
 
             {/* Module Accordion List */}
             <div className="space-y-3">
-                {filteredModules.map((module) => {
+                {filteredModules.map(module => {
                     const fieldCount = module.fields?.length || 0;
 
                     return (
@@ -134,9 +139,14 @@ const SettingsMockPage = () => {
                                     <div className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-surface-hover transition-colors min-h-11">
                                         <div className="flex items-center gap-4 flex-1 min-w-0">
                                             {/* Expand/Collapse Icon */}
-                                            <span className="material-symbols-outlined text-xl text-secondary transition-transform duration-200 shrink-0" style={{
-                                                transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'
-                                            }}>
+                                            <span
+                                                className="material-symbols-outlined text-xl text-secondary transition-transform duration-200 shrink-0"
+                                                style={{
+                                                    transform: isExpanded
+                                                        ? 'rotate(90deg)'
+                                                        : 'rotate(0deg)',
+                                                }}
+                                            >
                                                 chevron_right
                                             </span>
 
@@ -175,7 +185,9 @@ const SettingsMockPage = () => {
                                                                         {field.label}
                                                                     </span>
                                                                     {field.required && (
-                                                                        <span className="text-error text-sm">*</span>
+                                                                        <span className="text-error text-sm">
+                                                                            *
+                                                                        </span>
                                                                     )}
                                                                 </div>
                                                                 <p className="text-sm text-tertiary mt-1 font-mono">
@@ -197,44 +209,76 @@ const SettingsMockPage = () => {
                                                         )}
 
                                                         {/* Field Options/Properties */}
-                                                        {(field.options || field.placeholder || field.required) && (
+                                                        {(field.options ||
+                                                            field.placeholder ||
+                                                            field.required) && (
                                                             <div className="flex flex-wrap gap-2 mt-2">
                                                                 {field.options && (
                                                                     <span className="px-2 py-1 bg-surface border border-border-subtle text-xs rounded">
-                                                                        Options: {Array.isArray(field.options) ? field.options.join(', ') : field.options}
+                                                                        Options:{' '}
+                                                                        {Array.isArray(
+                                                                            field.options
+                                                                        )
+                                                                            ? field.options.join(
+                                                                                  ', '
+                                                                              )
+                                                                            : field.options}
                                                                     </span>
                                                                 )}
                                                                 {field.placeholder && (
                                                                     <span className="px-2 py-1 bg-surface border border-border-subtle text-xs rounded">
-                                                                        Placeholder: {field.placeholder.substring(0, 30)}...
+                                                                        Placeholder:{' '}
+                                                                        {field.placeholder.substring(
+                                                                            0,
+                                                                            30
+                                                                        )}
+                                                                        ...
                                                                     </span>
                                                                 )}
                                                             </div>
                                                         )}
 
                                                         {/* Nested Fields (for custom types) */}
-                                                        {field.fields && field.fields.length > 0 && (
-                                                            <div className="mt-3 pl-4 border-l-2 border-border-subtle">
-                                                                <p className="text-xs font-medium text-secondary mb-2">
-                                                                    Nested fields ({field.fields.length}):
-                                                                </p>
-                                                                <div className="space-y-1">
-                                                                    {field.fields.slice(0, 3).map((nestedField) => (
-                                                                        <span
-                                                                            key={nestedField.key}
-                                                                            className="inline-block px-2 py-1 bg-bg-tertiary text-xs rounded mr-2 mb-1"
-                                                                        >
-                                                                            {nestedField.label} ({nestedField.type})
-                                                                        </span>
-                                                                    ))}
-                                                                    {field.fields.length > 3 && (
-                                                                        <span className="text-xs text-tertiary">
-                                                                            +{field.fields.length - 3} more...
-                                                                        </span>
-                                                                    )}
+                                                        {field.fields &&
+                                                            field.fields.length > 0 && (
+                                                                <div className="mt-3 pl-4 border-l-2 border-border-subtle">
+                                                                    <p className="text-xs font-medium text-secondary mb-2">
+                                                                        Nested fields (
+                                                                        {field.fields.length}):
+                                                                    </p>
+                                                                    <div className="space-y-1">
+                                                                        {field.fields
+                                                                            .slice(0, 3)
+                                                                            .map(nestedField => (
+                                                                                <span
+                                                                                    key={
+                                                                                        nestedField.key
+                                                                                    }
+                                                                                    className="inline-block px-2 py-1 bg-bg-tertiary text-xs rounded mr-2 mb-1"
+                                                                                >
+                                                                                    {
+                                                                                        nestedField.label
+                                                                                    }{' '}
+                                                                                    (
+                                                                                    {
+                                                                                        nestedField.type
+                                                                                    }
+                                                                                    )
+                                                                                </span>
+                                                                            ))}
+                                                                        {field.fields.length >
+                                                                            3 && (
+                                                                            <span className="text-xs text-tertiary">
+                                                                                +
+                                                                                {field.fields
+                                                                                    .length -
+                                                                                    3}{' '}
+                                                                                more...
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        )}
+                                                            )}
                                                     </div>
                                                 ))}
                                             </div>
@@ -250,7 +294,10 @@ const SettingsMockPage = () => {
                                             This module's configuration is still being developed
                                         </p>
                                         <p className="text-sm text-tertiary mt-2">
-                                            Module key: <code className="px-2 py-1 bg-surface border border-border-subtle rounded text-xs">{module.key}</code>
+                                            Module key:{' '}
+                                            <code className="px-2 py-1 bg-surface border border-border-subtle rounded text-xs">
+                                                {module.key}
+                                            </code>
                                         </p>
                                     </div>
                                 )}
@@ -284,11 +331,15 @@ const SettingsMockPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div>
                         <span className="text-secondary">Total Modules:</span>
-                        <span className="ml-2 font-medium text-primary">{SETTINGS_SCHEMA.length}</span>
+                        <span className="ml-2 font-medium text-primary">
+                            {SETTINGS_SCHEMA.length}
+                        </span>
                     </div>
                     <div>
                         <span className="text-secondary">Expanded:</span>
-                        <span className="ml-2 font-medium text-primary">{expandedModules.length}</span>
+                        <span className="ml-2 font-medium text-primary">
+                            {expandedModules.length}
+                        </span>
                     </div>
                     <div>
                         <span className="text-secondary">Schema-Driven:</span>
@@ -296,8 +347,9 @@ const SettingsMockPage = () => {
                     </div>
                 </div>
                 <p className="text-xs text-tertiary mt-3">
-                    This mockup demonstrates the accordion interface from the action plan with header search integration.
-                    Next steps: implement SearchCoordinatorProvider integration and real field components via FieldRegistry system.
+                    This mockup demonstrates the accordion interface from the action plan with
+                    header search integration. Next steps: implement SearchCoordinatorProvider
+                    integration and real field components via FieldRegistry system.
                 </p>
             </div>
         </div>

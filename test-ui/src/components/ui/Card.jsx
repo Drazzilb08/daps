@@ -79,11 +79,7 @@ export const Card = ({
         minimal: 'bg-transparent p-2 rounded-none gap-2',
     };
 
-    const cardClasses = [
-        baseClasses,
-        variantClasses[variant] || '',
-        className,
-    ]
+    const cardClasses = [baseClasses, variantClasses[variant] || '', className]
         .filter(Boolean)
         .join(' ');
 
@@ -92,13 +88,18 @@ export const Card = ({
             {entries.map(([key, value]) => {
                 const formattedKey = keyFormatter(key);
                 return (
-                    <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-4" key={key}>
+                    <div
+                        className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-4"
+                        key={key}
+                    >
                         {formattedKey && (
                             <span className="font-semibold text-primary shrink-0 sm:min-w-24 text-sm">
                                 {formattedKey}:
                             </span>
                         )}
-                        <span className={`text-secondary flex-1 break-words text-base leading-relaxed ${!formattedKey ? 'sm:ml-0' : ''}`}>
+                        <span
+                            className={`text-secondary flex-1 break-words text-base leading-relaxed ${!formattedKey ? 'sm:ml-0' : ''}`}
+                        >
                             {valueFormatter(value)}
                         </span>
                     </div>
@@ -117,7 +118,9 @@ export const Card = ({
  * @param {string} [props.className=""] - Additional CSS classes
  */
 export const CardRow = ({ label, children, className = '' }) => {
-    const rowClasses = ['flex flex-col gap-1 sm:flex-row sm:items-start', className].filter(Boolean).join(' ');
+    const rowClasses = ['flex flex-col gap-1 sm:flex-row sm:items-start', className]
+        .filter(Boolean)
+        .join(' ');
 
     return (
         <div className={rowClasses}>
@@ -126,7 +129,9 @@ export const CardRow = ({ label, children, className = '' }) => {
                     {label}:
                 </span>
             )}
-            <span className={`text-secondary flex-1 break-words text-base leading-relaxed ${!label ? 'sm:ml-0' : ''}`}>
+            <span
+                className={`text-secondary flex-1 break-words text-base leading-relaxed ${!label ? 'sm:ml-0' : ''}`}
+            >
                 {children}
             </span>
         </div>

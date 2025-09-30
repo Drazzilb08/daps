@@ -13,11 +13,7 @@ const ConfigContext = createContext(null);
  * @param {React.ReactNode} props.children - Child components
  */
 export const ConfigProvider = ({ config, children }) => {
-    return (
-        <ConfigContext.Provider value={config}>
-            {children}
-        </ConfigContext.Provider>
-    );
+    return <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>;
 };
 
 /**
@@ -50,7 +46,7 @@ export const useInstances = () => {
                 type: serviceType,
                 name: instanceName,
                 url: instanceConfig.url,
-                api: instanceConfig.api
+                api: instanceConfig.api,
             });
         });
     });

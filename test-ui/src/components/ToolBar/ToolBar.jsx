@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
  */
 const ToolBar = ({
     className = 'flex justify-between flex-none px-2 md:px-4 h-header bg-surface text-primary border-b border-border',
-    children
+    children,
 }) => {
     return <div className={className}>{children}</div>;
 };

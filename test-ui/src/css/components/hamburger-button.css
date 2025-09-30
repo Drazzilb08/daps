@@ -1,4 +1,3 @@
-
 @layer components {
     .hamburger:hover {
         background: var(--surface-alt);

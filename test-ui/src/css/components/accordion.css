@@ -1,56 +1,24 @@
 @layer components {
-    /* Native details/summary accordion implementation */
-    .accordion-item {
-        /* Details element styling */
-    }
-
     .accordion-header {
-        /* Remove default summary styling */
         list-style: none;
         outline: none;
         cursor: pointer;
     }
 
-    /* Remove default marker in WebKit browsers */
     .accordion-header::-webkit-details-marker {
         display: none;
     }
 
-    /* Remove default marker in Firefox */
     .accordion-header::marker {
         content: '';
     }
-
-    /* Content area styling */
-    .accordion-content {
-        /* Native details content area - no custom animations needed */
-
-        /* Browser handles smooth expand/collapse automatically */
-    }
-
-    /* Body component state-based classes for compound component */
-    .accordion-body {
-        /* Base body styles */
-    }
-
-    .accordion-body--expanded {
-        /* Expanded state - content visible */
-    }
-
-    .accordion-body--collapsed {
-        /* Collapsed state - content hidden */
-    }
-
-    /* Enhanced smooth animation support for modern browsers */
     @supports (interpolate-size: allow-keywords) {
         .accordion-item {
-            /* Enable smooth height interpolation where supported */
             interpolate-size: allow-keywords;
             transition: height 300ms ease-out;
         }
     }
 
-    /* Fallback animation using CSS Grid for cross-browser compatibility */
     @supports not (interpolate-size: allow-keywords) {
         .accordion-content {
             display: grid;
@@ -68,13 +36,11 @@
         }
     }
 
-    /* Focus styling for accessibility */
     .accordion-header:focus-visible {
         outline: 2px solid var(--focus);
         outline-offset: -2px;
     }
 
-    /* Reduced motion support */
     @media (prefers-reduced-motion: reduce) {
         .accordion-item,
         .accordion-content {
@@ -82,7 +48,6 @@
         }
     }
 
-    /* Ensure proper stacking context */
     .accordion-item {
         position: relative;
         z-index: 1;

@@ -7,7 +7,13 @@
  */
 
 import React, { useCallback } from 'react';
-import { FieldWrapper, FieldLabel, FieldError, FieldDescription, CheckboxBase } from '../primitives';
+import {
+    FieldWrapper,
+    FieldLabel,
+    FieldError,
+    FieldDescription,
+    CheckboxBase,
+} from '../primitives';
 
 /**
  * CheckboxField component for boolean input
@@ -29,19 +35,25 @@ export const CheckboxField = React.memo(
         highlightInvalid = false,
         errorMessage = null,
     }) => {
-        const handleContainerClick = useCallback((e) => {
-            // Don't handle click if it came from the label or checkbox input
-            // This allows native label-checkbox association to work properly
-            if (disabled) return;
-            if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
+        const handleContainerClick = useCallback(
+            e => {
+                // Don't handle click if it came from the label or checkbox input
+                // This allows native label-checkbox association to work properly
+                if (disabled) return;
+                if (e.target.tagName === 'LABEL' || e.target.tagName === 'INPUT') return;
 
-            onChange(!value);
-        }, [onChange, value, disabled]);
+                onChange(!value);
+            },
+            [onChange, value, disabled]
+        );
 
-        const handleCheckboxChange = useCallback((e) => {
-            if (disabled) return;
-            onChange(e.target.checked);
-        }, [onChange, disabled]);
+        const handleCheckboxChange = useCallback(
+            e => {
+                if (disabled) return;
+                onChange(e.target.checked);
+            },
+            [onChange, disabled]
+        );
 
         const inputId = field.id || `field-${field.key}`;
         const isChecked = Boolean(value);
@@ -54,7 +66,7 @@ export const CheckboxField = React.memo(
                     onClick={handleContainerClick}
                     role="button"
                     tabIndex={disabled ? -1 : 0}
-                    onKeyDown={(e) => {
+                    onKeyDown={e => {
                         if ((e.key === ' ' || e.key === 'Enter') && !disabled) {
                             e.preventDefault();
                             onChange(!value);
@@ -62,7 +74,9 @@ export const CheckboxField = React.memo(
                     }}
                     aria-pressed={isChecked}
                     aria-disabled={disabled}
-                    aria-describedby={errorMessage ? field.errorId || `${inputId}-error` : undefined}
+                    aria-describedby={
+                        errorMessage ? field.errorId || `${inputId}-error` : undefined
+                    }
                 >
                     {/* Use existing CheckboxBase primitive - WRITE ONCE, USE EVERYWHERE */}
                     <CheckboxBase
@@ -73,7 +87,9 @@ export const CheckboxField = React.memo(
                         disabled={disabled}
                         required={field.required}
                         invalid={highlightInvalid}
-                        ariaDescribedby={errorMessage ? field.errorId || `${inputId}-error` : undefined}
+                        ariaDescribedby={
+                            errorMessage ? field.errorId || `${inputId}-error` : undefined
+                        }
                     />
 
                     {/* Field content */}

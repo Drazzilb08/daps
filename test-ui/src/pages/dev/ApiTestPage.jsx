@@ -28,7 +28,10 @@ const ApiResponseDisplay = React.memo(({ data, isLoading, error, title }) => (
         <h4 className="text-sm font-medium text-primary mb-2">{title}</h4>
         {isLoading && (
             <div className="p-3 text-secondary flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-border border-t-primary rounded-full animate-spin" aria-label="Loading..." />
+                <div
+                    className="w-4 h-4 border-2 border-border border-t-primary rounded-full animate-spin"
+                    aria-label="Loading..."
+                />
                 <span>Loading...</span>
             </div>
         )}

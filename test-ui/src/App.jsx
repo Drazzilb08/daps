@@ -182,10 +182,16 @@ const App = () => {
                                                 path="settings"
                                                 element={
                                                     <div className="p-4 md:p-6 max-w-4xl mx-auto">
-                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">Settings Splash</h1>
-                                                        <p className="text-sm md:text-base text-secondary mb-6">Splash page for all settings links</p>
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">
+                                                            Settings Splash
+                                                        </h1>
+                                                        <p className="text-sm md:text-base text-secondary mb-6">
+                                                            Splash page for all settings links
+                                                        </p>
                                                         <div className="text-center py-8 text-tertiary">
-                                                            <span className="material-symbols-outlined text-4xl mb-2 block">schedule</span>
+                                                            <span className="material-symbols-outlined text-4xl mb-2 block">
+                                                                schedule
+                                                            </span>
                                                             <p>Splash page coming soon</p>
                                                         </div>
                                                     </div>
@@ -239,11 +245,20 @@ const App = () => {
                                                 path="settings/instances"
                                                 element={
                                                     <div className="p-4 md:p-6 max-w-4xl mx-auto">
-                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">Instance Settings</h1>
-                                                        <p className="text-sm md:text-base text-secondary mb-6">Configure service instances and connections</p>
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">
+                                                            Instance Settings
+                                                        </h1>
+                                                        <p className="text-sm md:text-base text-secondary mb-6">
+                                                            Configure service instances and
+                                                            connections
+                                                        </p>
                                                         <div className="text-center py-8 text-tertiary">
-                                                            <span className="material-symbols-outlined text-4xl mb-2 block">hub</span>
-                                                            <p>Instance configuration coming soon</p>
+                                                            <span className="material-symbols-outlined text-4xl mb-2 block">
+                                                                hub
+                                                            </span>
+                                                            <p>
+                                                                Instance configuration coming soon
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 }
@@ -252,11 +267,21 @@ const App = () => {
                                                 path="settings/notifications"
                                                 element={
                                                     <div className="p-4 md:p-6 max-w-4xl mx-auto">
-                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">Notification Settings</h1>
-                                                        <p className="text-sm md:text-base text-secondary mb-6">Configure notification providers and alerts</p>
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">
+                                                            Notification Settings
+                                                        </h1>
+                                                        <p className="text-sm md:text-base text-secondary mb-6">
+                                                            Configure notification providers and
+                                                            alerts
+                                                        </p>
                                                         <div className="text-center py-8 text-tertiary">
-                                                            <span className="material-symbols-outlined text-4xl mb-2 block">notifications</span>
-                                                            <p>Notification configuration coming soon</p>
+                                                            <span className="material-symbols-outlined text-4xl mb-2 block">
+                                                                notifications
+                                                            </span>
+                                                            <p>
+                                                                Notification configuration coming
+                                                                soon
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 }

@@ -1,4 +1,3 @@
-
 import React, { useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
 
@@ -39,7 +38,10 @@ export const TextField = React.memo(
                     aria-describedby={`${field.descId || `${inputId}-desc`} ${field.errorId || `${inputId}-error`}`.trim()}
                     aria-invalid={highlightInvalid}
                 />
-                <FieldDescription id={field.descId || `${inputId}-desc`} description={field.description} />
+                <FieldDescription
+                    id={field.descId || `${inputId}-desc`}
+                    description={field.description}
+                />
                 <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
             </FieldWrapper>
         );

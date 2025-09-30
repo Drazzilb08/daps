@@ -7,31 +7,31 @@
  * Supported condition types for field evaluation
  */
 const CONDITION_TYPES = {
-    'instance_type_equals': (selectedValue, targetValue, apiData) => {
+    instance_type_equals: (selectedValue, targetValue, apiData) => {
         console.log('[conditionalFields] Evaluating instance_type_equals:', {
             selectedValue,
             targetValue,
-            instanceType: getInstanceType(selectedValue, apiData)
+            instanceType: getInstanceType(selectedValue, apiData),
         });
         const instanceType = getInstanceType(selectedValue, apiData);
         return instanceType === targetValue;
     },
-    'equals': (selectedValue, targetValue) => {
+    equals: (selectedValue, targetValue) => {
         console.log('[conditionalFields] Evaluating equals:', { selectedValue, targetValue });
         return selectedValue === targetValue;
     },
-    'not_equals': (selectedValue, targetValue) => {
+    not_equals: (selectedValue, targetValue) => {
         console.log('[conditionalFields] Evaluating not_equals:', { selectedValue, targetValue });
         return selectedValue !== targetValue;
     },
-    'in': (selectedValue, targetValues) => {
+    in: (selectedValue, targetValues) => {
         console.log('[conditionalFields] Evaluating in:', { selectedValue, targetValues });
         return Array.isArray(targetValues) && targetValues.includes(selectedValue);
     },
-    'not_in': (selectedValue, targetValues) => {
+    not_in: (selectedValue, targetValues) => {
         console.log('[conditionalFields] Evaluating not_in:', { selectedValue, targetValues });
         return Array.isArray(targetValues) && !targetValues.includes(selectedValue);
-    }
+    },
 };
 
 /**
@@ -48,7 +48,7 @@ export const shouldShowField = (field, formData, apiData = {}) => {
         hasConditional: !!field.conditional,
         hasLegacyCondition: !!field.show_if_instance_type,
         formData: Object.keys(formData || {}),
-        apiDataKeys: Object.keys(apiData)
+        apiDataKeys: Object.keys(apiData),
     });
 
     // Handle new conditional format
@@ -63,7 +63,7 @@ export const shouldShowField = (field, formData, apiData = {}) => {
             value,
             selectedValue,
             api_lookup,
-            hasLookupData: !!lookupData
+            hasLookupData: !!lookupData,
         });
 
         const evaluator = CONDITION_TYPES[condition];
@@ -87,7 +87,7 @@ export const shouldShowField = (field, formData, apiData = {}) => {
             instanceField,
             selectedInstance,
             instanceType,
-            targetType: field.show_if_instance_type
+            targetType: field.show_if_instance_type,
         });
 
         const result = instanceType === field.show_if_instance_type;
@@ -110,7 +110,7 @@ export const getInstanceType = (instanceName, instancesData) => {
     console.log('[conditionalFields] Looking up instance type:', {
         instanceName,
         hasInstancesData: !!instancesData,
-        instancesDataKeys: instancesData ? Object.keys(instancesData) : []
+        instancesDataKeys: instancesData ? Object.keys(instancesData) : [],
     });
 
     if (!instanceName || !instancesData) {
@@ -123,7 +123,7 @@ export const getInstanceType = (instanceName, instancesData) => {
             if (instances.hasOwnProperty(instanceName)) {
                 console.log('[conditionalFields] Found instance type:', {
                     instanceName,
-                    serviceType
+                    serviceType,
                 });
                 return serviceType;
             }
@@ -141,12 +141,16 @@ export const getInstanceType = (instanceName, instancesData) => {
  * @param {boolean} includePlaceholder - Whether to include placeholder as first option (default: true for backwards compatibility)
  * @returns {Array} - Dropdown options array
  */
-export const generateInstanceOptions = (instancesData, allowedTypes = [], includePlaceholder = true) => {
+export const generateInstanceOptions = (
+    instancesData,
+    allowedTypes = [],
+    includePlaceholder = true
+) => {
     console.log('[conditionalFields] Generating instance options:', {
         hasInstancesData: !!instancesData,
         allowedTypes,
         includePlaceholder,
-        instancesDataKeys: instancesData ? Object.keys(instancesData) : []
+        instancesDataKeys: instancesData ? Object.keys(instancesData) : [],
     });
 
     const options = includePlaceholder ? [{ value: '', label: '— Select instance... —' }] : [];
@@ -164,7 +168,7 @@ export const generateInstanceOptions = (instancesData, allowedTypes = [], includ
         console.log('[conditionalFields] Processing service type:', {
             serviceType,
             instanceCount: instanceNames.length,
-            instanceNames
+            instanceNames,
         });
 
         instanceNames.forEach(instanceName => {
@@ -176,7 +180,7 @@ export const generateInstanceOptions = (instancesData, allowedTypes = [], includ
                 value: instanceName,
                 label: `${humanize(serviceType)} ${humanizedInstanceName}`,
                 instanceType: serviceType,
-                serviceType: serviceType
+                serviceType: serviceType,
             };
             options.push(option);
             generatedCount++;
@@ -188,7 +192,7 @@ export const generateInstanceOptions = (instancesData, allowedTypes = [], includ
     console.log('[conditionalFields] Generated total options:', {
         totalCount: options.length,
         generatedCount,
-        finalOptions: options
+        finalOptions: options,
     });
 
     return options;
@@ -199,7 +203,7 @@ export const generateInstanceOptions = (instancesData, allowedTypes = [], includ
  * @param {string} text - Text to humanize
  * @returns {string} - Humanized text
  */
-export const humanize = (text) => {
+export const humanize = text => {
     if (!text) return '';
     return text.charAt(0).toUpperCase() + text.slice(1);
 };
@@ -236,7 +240,7 @@ export const removeServicePrefix = (instanceName, serviceType) => {
  * @param {string} text - Text to humanize
  * @returns {string} - Enhanced humanized text
  */
-export const enhancedHumanize = (text) => {
+export const enhancedHumanize = text => {
     if (!text) return '';
 
     // Handle common patterns
@@ -251,24 +255,26 @@ export const enhancedHumanize = (text) => {
     // Split into words and process each
     const words = result.split(/\s+/).filter(word => word.length > 0);
 
-    return words.map(word => {
-        const lowerWord = word.toLowerCase();
+    return words
+        .map(word => {
+            const lowerWord = word.toLowerCase();
 
-        // Special case handling
-        switch (lowerWord) {
-            case '4k':
-                return '4K';
-            case 'hd':
-                return 'HD';
-            case 'anime':
-                return 'Anime';
-            case 'test':
-                return 'Test';
-            default:
-                // Standard capitalization
-                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-        }
-    }).join(' ');
+            // Special case handling
+            switch (lowerWord) {
+                case '4k':
+                    return '4K';
+                case 'hd':
+                    return 'HD';
+                case 'anime':
+                    return 'Anime';
+                case 'test':
+                    return 'Test';
+                default:
+                    // Standard capitalization
+                    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }
+        })
+        .join(' ');
 };
 
 /**

@@ -71,16 +71,13 @@ const FieldRenderer = React.memo(({ field, value, onChange, disabled, formData, 
 
     // Enhanced dropdown with API integration
     if (field.options_source === 'api_instances') {
-        const instanceOptions = generateInstanceOptions(
-            apiData?.instances,
-            field.options_filter
-        );
+        const instanceOptions = generateInstanceOptions(apiData?.instances, field.options_filter);
         additionalProps.options = instanceOptions;
         console.log('[FormRenderer] Adding dynamic instance options for field:', {
             fieldKey: field.key,
             optionsFilter: field.options_filter,
             optionCount: instanceOptions.length,
-            options: instanceOptions
+            options: instanceOptions,
         });
     }
 
@@ -88,7 +85,7 @@ const FieldRenderer = React.memo(({ field, value, onChange, disabled, formData, 
         fieldKey: field.key,
         fieldType: field.type,
         hasAdditionalProps: Object.keys(additionalProps).length > 0,
-        additionalPropsKeys: Object.keys(additionalProps)
+        additionalPropsKeys: Object.keys(additionalProps),
     });
 
     return (
@@ -146,13 +143,17 @@ const FormSection = React.memo(({ section, formData, onFieldChange, disabled, ap
                             >
                                 ▼
                             </span>
-                            <h3 className="m-0 text-lg font-medium text-primary">{section.title}</h3>
+                            <h3 className="m-0 text-lg font-medium text-primary">
+                                {section.title}
+                            </h3>
                         </button>
                     ) : (
                         <h3 className="m-0 text-lg font-medium text-primary">{section.title}</h3>
                     )}
                     {section.description && (
-                        <p className="mt-2 mb-0 text-sm text-secondary leading-relaxed">{section.description}</p>
+                        <p className="mt-2 mb-0 text-sm text-secondary leading-relaxed">
+                            {section.description}
+                        </p>
                     )}
                 </div>
             )}
@@ -207,13 +208,17 @@ export const FormRenderer = React.memo(
         className = '',
     }) => {
         // Load instances data for conditional field evaluation and dynamic dropdowns
-        const { instancesData, isLoading: instancesLoading, error: instancesError } = useInstancesData();
+        const {
+            instancesData,
+            isLoading: instancesLoading,
+            error: instancesError,
+        } = useInstancesData();
 
         console.log('[FormRenderer] Instance data state:', {
             hasInstancesData: !!instancesData,
             instancesLoading,
             hasInstancesError: !!instancesError,
-            instancesDataKeys: instancesData ? Object.keys(instancesData) : []
+            instancesDataKeys: instancesData ? Object.keys(instancesData) : [],
         });
         // Parse and validate schema
         const schema = useMemo(() => {
@@ -293,13 +298,13 @@ export const FormRenderer = React.memo(
         // Prepare API data for conditional field evaluation
         const apiData = useMemo(() => {
             return {
-                instances: instancesData
+                instances: instancesData,
             };
         }, [instancesData]);
 
         console.log('[FormRenderer] API data prepared:', {
             hasInstances: !!apiData.instances,
-            instancesKeys: apiData.instances ? Object.keys(apiData.instances) : []
+            instancesKeys: apiData.instances ? Object.keys(apiData.instances) : [],
         });
 
         // Group fields by sections
@@ -346,9 +351,13 @@ export const FormRenderer = React.memo(
                     {/* Form header */}
                     {schema.title && (
                         <div className="mb-6 text-center">
-                            <h2 className="m-0 mb-2 text-2xl font-semibold text-primary leading-tight">{schema.title}</h2>
+                            <h2 className="m-0 mb-2 text-2xl font-semibold text-primary leading-tight">
+                                {schema.title}
+                            </h2>
                             {schema.description && (
-                                <p className="m-0 text-base text-secondary leading-relaxed">{schema.description}</p>
+                                <p className="m-0 text-base text-secondary leading-relaxed">
+                                    {schema.description}
+                                </p>
                             )}
                         </div>
                     )}
@@ -369,7 +378,10 @@ export const FormRenderer = React.memo(
 
                     {/* Submit error display */}
                     {submitError && (
-                        <div className="mb-4 p-3 bg-surface text-error-text border border-error rounded-md text-sm" role="alert">
+                        <div
+                            className="mb-4 p-3 bg-surface text-error-text border border-error rounded-md text-sm"
+                            role="alert"
+                        >
                             <strong>Submission Error:</strong> {submitError}
                         </div>
                     )}

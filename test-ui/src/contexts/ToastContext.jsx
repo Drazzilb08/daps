@@ -79,8 +79,8 @@ function Toast({ id, message, type, onClose }) {
             <div
                 className={`absolute bottom-0 left-0 h-1 bg-white opacity-50 ${prefersReducedMotion ? '' : 'transition-all'} ${visible ? 'w-full' : 'w-0'}`}
                 style={{
-                    transitionDuration: prefersReducedMotion ? '0ms' : (visible ? '3000ms' : '0ms'),
-                    width: prefersReducedMotion && visible ? '100%' : undefined
+                    transitionDuration: prefersReducedMotion ? '0ms' : visible ? '3000ms' : '0ms',
+                    width: prefersReducedMotion && visible ? '100%' : undefined,
                 }}
             />
         </div>

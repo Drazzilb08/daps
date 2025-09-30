@@ -44,14 +44,19 @@ export const TagInputField = React.memo(
             if (Array.isArray(value)) return value;
             if (typeof value === 'string') {
                 // Handle comma-separated string values
-                return value ? value.split(',').map(item => item.trim()).filter(Boolean) : [];
+                return value
+                    ? value
+                          .split(',')
+                          .map(item => item.trim())
+                          .filter(Boolean)
+                    : [];
             }
             return [];
         }, [value]);
 
         // Standard onChange handler following field patterns
         const handleItemsChange = useCallback(
-            (newItems) => {
+            newItems => {
                 onChange(newItems);
             },
             [onChange]
@@ -114,14 +119,8 @@ export const TagInputField = React.memo(
                     name={field.key}
                 />
 
-                <FieldDescription
-                    id={`${inputId}-desc`}
-                    description={field.description}
-                />
-                <FieldError
-                    id={`${inputId}-error`}
-                    message={errorMessage}
-                />
+                <FieldDescription id={`${inputId}-desc`} description={field.description} />
+                <FieldError id={`${inputId}-error`} message={errorMessage} />
             </FieldWrapper>
         );
     }

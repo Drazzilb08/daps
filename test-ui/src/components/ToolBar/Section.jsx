@@ -193,7 +193,9 @@ const Section = ({ children, alignContent = 'left', collapseButtons = true }) =>
         }
     };
 
-    const sectionClassName = ['flex items-center gap-1 min-w-0 overflow-hidden', getJustifyClass()].filter(Boolean).join(' ');
+    const sectionClassName = ['flex items-center gap-1 min-w-0 overflow-hidden', getJustifyClass()]
+        .filter(Boolean)
+        .join(' ');
 
     return (
         <div

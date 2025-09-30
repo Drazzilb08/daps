@@ -11,9 +11,7 @@ const SpinnerSizeDemo = React.memo(() => {
 
     return (
         <div className="bg-surface-elevated rounded p-6 border">
-            <h3 className="text-lg font-semibold text-primary mb-4">
-                Spinner Sizes
-            </h3>
+            <h3 className="text-lg font-semibold text-primary mb-4">Spinner Sizes</h3>
 
             <div className="grid grid-cols-3 gap-6">
                 {sizes.map(size => (
@@ -21,9 +19,7 @@ const SpinnerSizeDemo = React.memo(() => {
                         <div className="flex justify-center items-center mb-3 h-16">
                             <Spinner size={size} />
                         </div>
-                        <div className="text-sm text-secondary font-medium capitalize">
-                            {size}
-                        </div>
+                        <div className="text-sm text-secondary font-medium capitalize">{size}</div>
                         <div className="text-xs text-tertiary mt-1">
                             {size === 'small' && '16px (w-4 h-4)'}
                             {size === 'medium' && '24px (w-6 h-6)'}
@@ -45,13 +41,14 @@ const SpinnerTextDemo = React.memo(() => {
 
     return (
         <div className="bg-surface-elevated rounded p-6 border">
-            <h3 className="text-lg font-semibold text-primary mb-4">
-                Spinners with Text
-            </h3>
+            <h3 className="text-lg font-semibold text-primary mb-4">Spinners with Text</h3>
 
             <div className="space-y-4">
                 {configurations.map(({ size, text }) => (
-                    <div key={`${size}-${text}`} className="flex items-center gap-3 p-3 bg-surface rounded border">
+                    <div
+                        key={`${size}-${text}`}
+                        className="flex items-center gap-3 p-3 bg-surface rounded border"
+                    >
                         <Spinner size={size} text={text} />
                     </div>
                 ))}
@@ -92,20 +89,21 @@ const LoadingStateSimulation = React.memo(() => {
 
     const { toast } = useToast();
 
-    const simulateLoading = useCallback((key, duration = 2000) => {
-        setLoadingStates(prev => ({ ...prev, [key]: true }));
+    const simulateLoading = useCallback(
+        (key, duration = 2000) => {
+            setLoadingStates(prev => ({ ...prev, [key]: true }));
 
-        setTimeout(() => {
-            setLoadingStates(prev => ({ ...prev, [key]: false }));
-            toast.success(`${key} operation completed!`);
-        }, duration);
-    }, [toast]);
+            setTimeout(() => {
+                setLoadingStates(prev => ({ ...prev, [key]: false }));
+                toast.success(`${key} operation completed!`);
+            }, duration);
+        },
+        [toast]
+    );
 
     return (
         <div className="bg-surface-elevated rounded p-6 border">
-            <h3 className="text-lg font-semibold text-primary mb-4">
-                Interactive Loading States
-            </h3>
+            <h3 className="text-lg font-semibold text-primary mb-4">Interactive Loading States</h3>
 
             <div className="grid grid-cols-2 gap-4">
                 {/* Button Loading */}
@@ -180,9 +178,7 @@ const AnimationPerformanceTest = React.memo(() => {
 
     return (
         <div className="bg-surface-elevated rounded p-6 border">
-            <h3 className="text-lg font-semibold text-primary mb-4">
-                Animation Performance Test
-            </h3>
+            <h3 className="text-lg font-semibold text-primary mb-4">Animation Performance Test</h3>
 
             <div className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -194,7 +190,7 @@ const AnimationPerformanceTest = React.memo(() => {
                         min="1"
                         max="20"
                         value={spinnerCount}
-                        onChange={(e) => setSpinnerCount(parseInt(e.target.value))}
+                        onChange={e => setSpinnerCount(parseInt(e.target.value))}
                         disabled={isStressed}
                         className="flex-1"
                     />
@@ -219,8 +215,8 @@ const AnimationPerformanceTest = React.memo(() => {
 
                 {isStressed && (
                     <div className="text-sm text-warning bg-surface border border-warning rounded p-2">
-                        <strong>Stress Test Active:</strong> Rendering {spinnerCount} spinners to test performance.
-                        Watch for frame drops or animation stuttering.
+                        <strong>Stress Test Active:</strong> Rendering {spinnerCount} spinners to
+                        test performance. Watch for frame drops or animation stuttering.
                     </div>
                 )}
             </div>
@@ -235,7 +231,7 @@ const AccessibilityTest = React.memo(() => {
         const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
         setPrefersReducedMotion(mediaQuery.matches);
 
-        const handleChange = (e) => setPrefersReducedMotion(e.matches);
+        const handleChange = e => setPrefersReducedMotion(e.matches);
         mediaQuery.addEventListener('change', handleChange);
 
         return () => mediaQuery.removeEventListener('change', handleChange);
@@ -243,9 +239,7 @@ const AccessibilityTest = React.memo(() => {
 
     return (
         <div className="bg-surface-elevated rounded p-6 border">
-            <h3 className="text-lg font-semibold text-primary mb-4">
-                Accessibility Compliance
-            </h3>
+            <h3 className="text-lg font-semibold text-primary mb-4">Accessibility Compliance</h3>
 
             <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -253,12 +247,16 @@ const AccessibilityTest = React.memo(() => {
                         <label className="text-sm font-medium text-secondary">
                             Reduced Motion Preference:
                         </label>
-                        <div className={`p-2 rounded text-sm ${
-                            prefersReducedMotion
-                                ? 'bg-surface text-success border border-success'
-                                : 'bg-info-subtle text-info border border-info'
-                        }`}>
-                            {prefersReducedMotion ? 'Detected (animations disabled)' : 'Not detected (animations enabled)'}
+                        <div
+                            className={`p-2 rounded text-sm ${
+                                prefersReducedMotion
+                                    ? 'bg-surface text-success border border-success'
+                                    : 'bg-info-subtle text-info border border-info'
+                            }`}
+                        >
+                            {prefersReducedMotion
+                                ? 'Detected (animations disabled)'
+                                : 'Not detected (animations enabled)'}
                         </div>
                     </div>
 
@@ -277,11 +275,15 @@ const AccessibilityTest = React.memo(() => {
                         Accessibility Features:
                     </h4>
                     <ul className="text-sm text-secondary space-y-1">
-                        <li>• Respects <code>prefers-reduced-motion</code> media query</li>
+                        <li>
+                            • Respects <code>prefers-reduced-motion</code> media query
+                        </li>
                         <li>• Uses semantic markup with proper ARIA attributes</li>
                         <li>• Provides alternative text for screen readers</li>
                         <li>• Maintains sufficient color contrast</li>
-                        <li>• Touch-friendly minimum size (44px) when used in interactive elements</li>
+                        <li>
+                            • Touch-friendly minimum size (44px) when used in interactive elements
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -313,7 +315,8 @@ const SpinnerTestPage = () => {
                         Spinner Component Testing
                     </h1>
                     <p className="text-secondary">
-                        Comprehensive testing interface for spinner components, animations, and loading states
+                        Comprehensive testing interface for spinner components, animations, and
+                        loading states
                     </p>
                 </div>
 

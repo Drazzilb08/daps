@@ -16,12 +16,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
  * @returns {Object} Array management interface
  */
 export function useArrayField(initialValue = [], onChange, options = {}) {
-    const {
-        minItems = 0,
-        maxItems = 10,
-        defaultItem = '',
-        validateItem = () => true
-    } = options;
+    const { minItems = 0, maxItems = 10, defaultItem = '', validateItem = () => true } = options;
 
     // Use ref to track if we're in a controlled update to prevent circular loops
     const isControlledUpdate = useRef(false);
@@ -39,52 +34,67 @@ export function useArrayField(initialValue = [], onChange, options = {}) {
     }, [initialValue, items]);
 
     // Internal change handler that prevents circular updates
-    const handleChange = useCallback((newItems) => {
-        isControlledUpdate.current = true;
-        setItems(newItems);
-        onChange?.(newItems);
-    }, [onChange]);
+    const handleChange = useCallback(
+        newItems => {
+            isControlledUpdate.current = true;
+            setItems(newItems);
+            onChange?.(newItems);
+        },
+        [onChange]
+    );
 
-    const addItem = useCallback((item = defaultItem) => {
-        if (items.length >= maxItems) return false;
+    const addItem = useCallback(
+        (item = defaultItem) => {
+            if (items.length >= maxItems) return false;
 
-        const newItem = typeof item === 'function' ? item() : item;
-        const newItems = [...items, newItem];
-        handleChange(newItems);
-        return true;
-    }, [items, maxItems, defaultItem, handleChange]);
+            const newItem = typeof item === 'function' ? item() : item;
+            const newItems = [...items, newItem];
+            handleChange(newItems);
+            return true;
+        },
+        [items, maxItems, defaultItem, handleChange]
+    );
 
-    const removeItem = useCallback((index) => {
-        if (items.length <= minItems || index < 0 || index >= items.length) {
-            return false;
-        }
+    const removeItem = useCallback(
+        index => {
+            if (items.length <= minItems || index < 0 || index >= items.length) {
+                return false;
+            }
 
-        const newItems = items.filter((_, i) => i !== index);
-        handleChange(newItems);
-        return true;
-    }, [items, minItems, handleChange]);
+            const newItems = items.filter((_, i) => i !== index);
+            handleChange(newItems);
+            return true;
+        },
+        [items, minItems, handleChange]
+    );
 
-    const updateItem = useCallback((index, value) => {
-        if (index < 0 || index >= items.length) return false;
-        if (!validateItem(value)) return false;
+    const updateItem = useCallback(
+        (index, value) => {
+            if (index < 0 || index >= items.length) return false;
+            if (!validateItem(value)) return false;
 
-        const newItems = [...items];
-        newItems[index] = value;
-        handleChange(newItems);
-        return true;
-    }, [items, validateItem, handleChange]);
+            const newItems = [...items];
+            newItems[index] = value;
+            handleChange(newItems);
+            return true;
+        },
+        [items, validateItem, handleChange]
+    );
 
-    const moveItem = useCallback((fromIndex, toIndex) => {
-        if (fromIndex < 0 || fromIndex >= items.length) return false;
-        if (toIndex < 0 || toIndex >= items.length) return false;
-        if (fromIndex === toIndex) return true;
+    const moveItem = useCallback(
+        (fromIndex, toIndex) => {
+            if (fromIndex < 0 || fromIndex >= items.length) return false;
+            if (toIndex < 0 || toIndex >= items.length) return false;
+            if (fromIndex === toIndex) return true;
 
-        const newItems = [...items];
-        const [item] = newItems.splice(fromIndex, 1);
-        newItems.splice(toIndex, 0, item);
-        handleChange(newItems);
-        return true;
-    }, [items, handleChange]);
+            const newItems = [...items];
+            const [item] = newItems.splice(fromIndex, 1);
+            newItems.splice(toIndex, 0, item);
+            handleChange(newItems);
+            return true;
+        },
+        [items, handleChange]
+    );
 
     return {
         items,
@@ -99,6 +109,6 @@ export function useArrayField(initialValue = [], onChange, options = {}) {
         isFull: items.length >= maxItems,
         isAtMinimum: items.length <= minItems,
         minItems,
-        maxItems
+        maxItems,
     };
 }

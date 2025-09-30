@@ -36,9 +36,7 @@ export const FieldWrapper = ({
     const baseClasses = variantClasses[variant] || variantClasses.standard;
     const invalidClasses = invalid ? 'text-error' : '';
 
-    const wrapperClasses = [baseClasses, invalidClasses, className]
-        .filter(Boolean)
-        .join(' ');
+    const wrapperClasses = [baseClasses, invalidClasses, className].filter(Boolean).join(' ');
 
     return <div className={wrapperClasses}>{children}</div>;
 };

@@ -57,7 +57,8 @@ export const SETTINGS_SCHEMA = [
                         label: 'Gdrive Presets',
                         type: 'presets',
                         presetType: 'gdrive',
-                        presetUrl: 'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/CL2K/presets.json',
+                        presetUrl:
+                            'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/CL2K/presets.json',
                         identifierField: 'name',
                         moduleConfigKey: 'gdrive_list',
                         targetFields: ['name', 'id'],
@@ -353,7 +354,7 @@ export const SETTINGS_SCHEMA = [
                             field: 'instance',
                             condition: 'instance_type_equals',
                             value: 'sonarr',
-                            api_lookup: 'instances'
+                            api_lookup: 'instances',
                         },
                         description:
                             'Minimum percentage of monitored seasons required (Sonarr only).',
@@ -612,7 +613,6 @@ export const SETTINGS_SCHEMA = [
             },
         ],
     },
-
 ];
 
 export const SETTINGS_MODULES = [

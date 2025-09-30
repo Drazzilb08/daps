@@ -18,9 +18,7 @@
  * @returns {JSX.Element} Accordion container
  */
 export const Accordion = ({ children, className = '' }) => (
-  <div className={`space-y-3 ${className}`}>
-    {children}
-  </div>
+    <div className={`space-y-3 ${className}`}>{children}</div>
 );
 
 Accordion.displayName = 'Accordion';

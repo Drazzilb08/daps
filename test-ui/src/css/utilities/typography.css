@@ -45,7 +45,7 @@
 
   /* Additional system font options */
   .font-system-serif {
-    font-family: 'New York', 'Iowan Old Style', 'Apple Garamond', 'Baskerville', 'Times New Roman', 'Droid Serif', 'Times', serif;
+    font-family: 'New York', 'Iowan Old Style', 'Apple Garamond', Baskerville, 'Times New Roman', 'Droid Serif', Times, serif;
   }
 
   .font-system-ui {

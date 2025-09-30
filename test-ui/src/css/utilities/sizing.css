@@ -319,6 +319,9 @@
     .md\:max-w-dropdown-desktop { max-width: 320px; }
   }
   .max-w-sidebar { max-width: 320px; }
+  .min-w-sidebar { min-width: 210px; }
+  .max-h-header { max-height: 64px; }
+  .min-h-header { min-height: 60px; }
 
   /* Screen size maximum widths */
   .max-w-screen-sm { max-width: 640px; }

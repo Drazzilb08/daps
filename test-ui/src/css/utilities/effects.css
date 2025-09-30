@@ -47,49 +47,45 @@
   /* Backdrop brightness utilities */
   .backdrop-brightness-50 {
     backdrop-filter: brightness(0.5);
-    -webkit-backdrop-filter: brightness(0.5);
   }
+
   .backdrop-brightness-150 {
     backdrop-filter: brightness(1.5);
-    -webkit-backdrop-filter: brightness(1.5);
   }
 
   /* Backdrop contrast utilities */
   .backdrop-contrast-50 {
     backdrop-filter: contrast(0.5);
-    -webkit-backdrop-filter: contrast(0.5);
   }
+
   .backdrop-contrast-150 {
     backdrop-filter: contrast(1.5);
-    -webkit-backdrop-filter: contrast(1.5);
   }
 
   /* Backdrop saturate utilities */
   .backdrop-saturate-0 {
     backdrop-filter: saturate(0);
-    -webkit-backdrop-filter: saturate(0);
   }
+
   .backdrop-saturate-150 {
     backdrop-filter: saturate(1.5);
-    -webkit-backdrop-filter: saturate(1.5);
   }
+
   .backdrop-saturate-200 {
     backdrop-filter: saturate(2);
-    -webkit-backdrop-filter: saturate(2);
   }
 
   /* Backdrop effect utilities */
   .backdrop-grayscale {
     backdrop-filter: grayscale(100%);
-    -webkit-backdrop-filter: grayscale(100%);
   }
+
   .backdrop-invert {
     backdrop-filter: invert(100%);
-    -webkit-backdrop-filter: invert(100%);
   }
+
   .backdrop-sepia {
     backdrop-filter: sepia(100%);
-    -webkit-backdrop-filter: sepia(100%);
   }
 
   /* ===========================================

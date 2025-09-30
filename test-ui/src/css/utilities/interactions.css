@@ -44,7 +44,7 @@
 
   /* Text hover variants - consolidated from other files */
   .hover\:text-primary:hover { color: var(--primary); }
-  .hover\:text-primary-text:hover { color: var(--text-primary); }
+  .hover\:text-brand-primary:hover { color: var(--text-primary); }
   .hover\:text-secondary:hover { color: var(--text-secondary); }
   .hover\:text-success:hover { color: var(--success); }
   .hover\:text-warning:hover { color: var(--warning); }

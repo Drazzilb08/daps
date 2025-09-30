@@ -20,6 +20,11 @@
   .bg-white { background: #fff; }
   .bg-black { background: #000; }
 
+  /* State-specific background patterns for compatibility */
+  .bg-warning-bg { background: color-mix(in srgb, var(--warning) 10%, transparent); }
+  .bg-error-bg { background: color-mix(in srgb, var(--error) 10%, transparent); }
+  .bg-surface-hover { background: var(--surface-alt); }
+
   /* Layout-specific backgrounds */
   .bg-header-bg { background: var(--header-bg); }
   .bg-sidebar-bg { background: var(--sidebar-bg); }
@@ -125,6 +130,7 @@
   .text-white { color: #fff; }
   .text-black { color: #000; }
 
+
   /* Focus and interactive text colors */
   .text-focus { color: var(--focus); }
   .text-link { color: var(--accent); }
@@ -191,6 +197,7 @@
     .text-muted {
       color: var(--text-primary);
     }
+
     .text-subtle {
       color: var(--text-secondary);
     }

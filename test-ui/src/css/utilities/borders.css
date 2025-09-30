@@ -101,6 +101,10 @@
   .border-b-primary { border-bottom-color: var(--primary); }
   .border-l-primary { border-left-color: var(--primary); }
 
+  /* Compatibility border classes for AccordionItem migration */
+  .border-border-subtle { border-color: var(--border-light); }
+  .border-error-border { border-color: var(--error); }
+
   .border-l-success { border-left-color: var(--success); }
   .border-l-warning { border-left-color: var(--warning); }
   .border-l-error { border-left-color: var(--error); }

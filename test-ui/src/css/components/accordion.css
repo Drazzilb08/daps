@@ -8,6 +8,7 @@
         /* Remove default summary styling */
         list-style: none;
         outline: none;
+        cursor: pointer;
     }
 
     /* Remove default marker in WebKit browsers */
@@ -23,7 +24,21 @@
     /* Content area styling */
     .accordion-content {
         /* Native details content area - no custom animations needed */
+
         /* Browser handles smooth expand/collapse automatically */
+    }
+
+    /* Body component state-based classes for compound component */
+    .accordion-body {
+        /* Base body styles */
+    }
+
+    .accordion-body--expanded {
+        /* Expanded state - content visible */
+    }
+
+    .accordion-body--collapsed {
+        /* Collapsed state - content hidden */
     }
 
     /* Enhanced smooth animation support for modern browsers */

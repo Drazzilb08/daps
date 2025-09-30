@@ -14,6 +14,7 @@ import ToolbarTestPage from './pages/dev/ToolbarTestPage.jsx';
 import SpinnerTestPage from './pages/dev/SpinnerTestPage.jsx';
 import SettingsMockPage from './pages/dev/SettingsMockPage.jsx';
 import ArrayObjectFieldPage from './pages/dev/ArrayObjectFieldPage.jsx';
+import AccordionTestPage from './pages/dev/AccordionTestPage.jsx';
 import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
 import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import UISettingsPage from './pages/settings/UISettingsPage.jsx';
@@ -181,9 +182,9 @@ const App = () => {
                                                 path="settings"
                                                 element={
                                                     <div className="p-4 md:p-6 max-w-4xl mx-auto">
-                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Settings Splash</h1>
-                                                        <p className="text-sm md:text-base text-text-secondary mb-6">Splash page for all settings links</p>
-                                                        <div className="text-center py-8 text-text-tertiary">
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">Settings Splash</h1>
+                                                        <p className="text-sm md:text-base text-secondary mb-6">Splash page for all settings links</p>
+                                                        <div className="text-center py-8 text-tertiary">
                                                             <span className="material-symbols-outlined text-4xl mb-2 block">schedule</span>
                                                             <p>Splash page coming soon</p>
                                                         </div>
@@ -238,9 +239,9 @@ const App = () => {
                                                 path="settings/instances"
                                                 element={
                                                     <div className="p-4 md:p-6 max-w-4xl mx-auto">
-                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Instance Settings</h1>
-                                                        <p className="text-sm md:text-base text-text-secondary mb-6">Configure service instances and connections</p>
-                                                        <div className="text-center py-8 text-text-tertiary">
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">Instance Settings</h1>
+                                                        <p className="text-sm md:text-base text-secondary mb-6">Configure service instances and connections</p>
+                                                        <div className="text-center py-8 text-tertiary">
                                                             <span className="material-symbols-outlined text-4xl mb-2 block">hub</span>
                                                             <p>Instance configuration coming soon</p>
                                                         </div>
@@ -251,9 +252,9 @@ const App = () => {
                                                 path="settings/notifications"
                                                 element={
                                                     <div className="p-4 md:p-6 max-w-4xl mx-auto">
-                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-text-primary">Notification Settings</h1>
-                                                        <p className="text-sm md:text-base text-text-secondary mb-6">Configure notification providers and alerts</p>
-                                                        <div className="text-center py-8 text-text-tertiary">
+                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">Notification Settings</h1>
+                                                        <p className="text-sm md:text-base text-secondary mb-6">Configure notification providers and alerts</p>
+                                                        <div className="text-center py-8 text-tertiary">
                                                             <span className="material-symbols-outlined text-4xl mb-2 block">notifications</span>
                                                             <p>Notification configuration coming soon</p>
                                                         </div>
@@ -349,6 +350,17 @@ const App = () => {
                                                         pageDescription="Unified ArrayObjectField component demonstration"
                                                     >
                                                         <ArrayObjectFieldPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/accordion"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Accordion Test"
+                                                        pageDescription="AccordionItem compound component validation and testing"
+                                                    >
+                                                        <AccordionTestPage />
                                                     </PageErrorBoundary>
                                                 }
                                             />

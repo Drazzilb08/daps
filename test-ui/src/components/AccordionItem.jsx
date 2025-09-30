@@ -1,48 +1,144 @@
+import { useState, useContext, createContext } from 'react';
+
 /**
- * AccordionItem Component - Native HTML accordion implementation
- * Uses native <details> and <summary> elements for built-in accessibility
- * and smooth animations without JavaScript overhead.
+ * Context for sharing accordion state between AccordionItem and subcomponents
+ * @typedef {Object} AccordionItemContextValue
+ * @property {boolean} isExpanded - Current expanded state
+ * @property {Function} handleToggle - Toggle handler function
+ */
+const AccordionItemContext = createContext(null);
+
+/**
+ * AccordionItem - Manages accordion state and animation
+ *
+ * Supports both controlled and uncontrolled modes:
+ * - Uncontrolled: Use `defaultExpanded` prop, component manages state internally
+ * - Controlled: Use `isExpanded` and `onToggle` props, parent manages state
  *
  * @param {Object} props - Component props
- * @param {string} props.title - The title displayed in the accordion header
- * @param {React.ReactNode} props.children - Content to show when expanded
- * @param {boolean} props.isExpanded - Whether the accordion is currently expanded
- * @param {Function} props.onToggle - Function to call when the accordion is toggled
+ * @param {React.ReactNode} props.children - Must contain Header and Body subcomponents
+ * @param {boolean} [props.defaultExpanded=false] - Initial expanded state (uncontrolled mode)
+ * @param {boolean} [props.isExpanded] - Controlled expanded state
+ * @param {Function} [props.onToggle] - Callback when toggled: (isExpanded: boolean) => void
+ * @param {string} [props.className] - Additional CSS classes for item container
  * @returns {JSX.Element} AccordionItem component
  */
-export const AccordionItem = ({ title, children, isExpanded, onToggle }) => {
-    const handleToggle = (event) => {
-        // Prevent the native details toggle behavior
-        event.preventDefault();
-        onToggle();
+export const AccordionItem = ({
+    children,
+    defaultExpanded = false,
+    isExpanded: controlledExpanded,
+    onToggle,
+    className = '',
+}) => {
+    // State management: controlled vs uncontrolled
+    const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+    const isControlled = controlledExpanded !== undefined;
+    const isExpanded = isControlled ? controlledExpanded : internalExpanded;
+
+    const handleToggle = () => {
+        const newExpanded = !isExpanded;
+
+        if (!isControlled) {
+            setInternalExpanded(newExpanded);
+        }
+
+        onToggle?.(newExpanded);
     };
 
     return (
-        <details
-            className="accordion-item border border-border-subtle rounded-lg overflow-hidden"
-            open={isExpanded}
-        >
-            <summary
-                className="accordion-header list-none cursor-pointer"
-                onClick={handleToggle}
+        <AccordionItemContext.Provider value={{ isExpanded, handleToggle }}>
+            <details
+                className={`accordion-item ${className}`}
+                open={isExpanded}
             >
-                <div className="w-full px-4 py-4 md:px-6 bg-surface hover:bg-surface-hover flex items-center justify-between min-h-[44px] touch-manipulation">
-                    <span className="font-medium text-sm md:text-base text-text-primary pr-2">{title}</span>
-                    <span
-                        className="material-symbols-outlined transition-transform duration-200 text-xl text-text-secondary flex-shrink-0"
-                        style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
-                    >
-                        chevron_right
-                    </span>
-                </div>
-            </summary>
-            <div className="accordion-content bg-surface-elevated border-t border-border-subtle">
-                <div className="px-4 py-4 md:px-6">
-                    {children}
-                </div>
-            </div>
-        </details>
+                {children}
+            </details>
+        </AccordionItemContext.Provider>
     );
 };
+
+/**
+ * AccordionItem.Header - Renders header content with click handling
+ *
+ * Supports both direct children and render prop patterns:
+ * - Direct: `<Header>Content</Header>`
+ * - Render prop: `<Header>{({ isExpanded }) => <div>...</div>}</Header>`
+ *
+ * @param {Object} props - Component props
+ * @param {React.ReactNode|Function} props.children - Header content or render function
+ * @param {string} [props.className] - Additional CSS classes for header
+ * @returns {JSX.Element} Header component
+ */
+const AccordionHeader = ({ children, className = '' }) => {
+    const context = useContext(AccordionItemContext);
+
+    if (!context) {
+        throw new Error('AccordionItem.Header must be used within AccordionItem');
+    }
+
+    const { isExpanded, handleToggle } = context;
+
+    const handleClick = (event) => {
+        event.preventDefault(); // Prevent native details toggle
+        handleToggle();
+    };
+
+    const content = typeof children === 'function'
+        ? children({ isExpanded })
+        : children;
+
+    return (
+        <summary
+            className={`accordion-header ${className}`}
+            onClick={handleClick}
+            role="button"
+            tabIndex={0}
+            aria-expanded={isExpanded}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleToggle();
+                }
+            }}
+        >
+            {content}
+        </summary>
+    );
+};
+
+AccordionHeader.displayName = 'AccordionItem.Header';
+AccordionItem.Header = AccordionHeader;
+
+/**
+ * AccordionItem.Body - Renders expanded content with animation
+ *
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Body content
+ * @param {string} [props.className] - Additional CSS classes for body
+ * @returns {JSX.Element} Body component
+ */
+const AccordionBody = ({ children, className = '' }) => {
+    const context = useContext(AccordionItemContext);
+
+    if (!context) {
+        throw new Error('AccordionItem.Body must be used within AccordionItem');
+    }
+
+    const { isExpanded } = context;
+
+    return (
+        <div
+            className={`accordion-body ${isExpanded ? 'accordion-body--expanded' : 'accordion-body--collapsed'} ${className}`}
+            aria-hidden={!isExpanded}
+        >
+            {children}
+        </div>
+    );
+};
+
+AccordionBody.displayName = 'AccordionItem.Body';
+AccordionItem.Body = AccordionBody;
+
+AccordionItem.displayName = 'AccordionItem';
 
 export default AccordionItem;

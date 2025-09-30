@@ -8,6 +8,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { UI_SETTINGS_SCHEMA } from '../../utils/constants/ui_settings_schema.js';
 import { FieldRegistry } from '../../components/fields/FieldRegistry.jsx';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { Button } from '../../components/ui/Button';
 
 /**
  * Memoized field component for better performance
@@ -148,17 +150,10 @@ export const UISettingsPage = () => {
     return (
         <div className="p-4 md:p-6 max-w-4xl mx-auto">
             {/* Header with save controls */}
-            <div className="mb-6 md:mb-8">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">
-                            User Interface Settings
-                        </h1>
-                        <p className="text-sm md:text-base text-secondary">
-                            Configure the appearance and behavior of the DAPS interface
-                        </p>
-                    </div>
-
+            <PageHeader
+                title="User Interface Settings"
+                description="Configure the appearance and behavior of the DAPS interface"
+                actions={
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         {/* Status indicators - responsive text */}
                         {isDirty && (
@@ -181,18 +176,21 @@ export const UISettingsPage = () => {
 
                         {/* Mobile-optimized buttons */}
                         <div className="flex gap-2">
-                            <button
+                            <Button
+                                color="secondary"
+                                variant="outline"
                                 onClick={handleReset}
                                 disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-border rounded hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed min-h-11 text-primary"
+                                className="flex-1 sm:flex-none"
                             >
                                 Reset
-                            </button>
+                            </Button>
 
-                            <button
+                            <Button
+                                color="primary"
                                 onClick={handleSave}
                                 disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-11"
+                                className="flex-1 sm:flex-none"
                             >
                                 {isSaving ? (
                                     <>
@@ -208,21 +206,21 @@ export const UISettingsPage = () => {
                                         <span className="sm:hidden">Save</span>
                                     </>
                                 )}
-                            </button>
+                            </Button>
                         </div>
+                    </div>
+                }
+            />
+
+            {/* Error display */}
+            {saveError && (
+                <div className="mb-6 p-3 bg-error-bg border border-error-border text-error rounded">
+                    <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">error</span>
+                        {saveError}
                     </div>
                 </div>
-
-                {/* Error display */}
-                {saveError && (
-                    <div className="mt-4 p-3 bg-error-bg border border-error-border text-error rounded">
-                        <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-sm">error</span>
-                            {saveError}
-                        </div>
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* Settings card */}
             {UI_SETTINGS_SCHEMA.map((module, moduleIndex) => (

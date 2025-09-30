@@ -4,6 +4,7 @@ import { humanize } from '../../utils/tools.js';
 import { useModuleExecution } from '../../hooks/useModuleExecution.js';
 import { useApiData } from '../../hooks/useApiData';
 import { configAPI } from '../../utils/api/config';
+import { PageHeader } from '../../components/ui/PageHeader';
 import { StatisticsGrid } from '../../components/statistics/StatisticsGrid';
 import { ScheduleCard } from '../../components/modules/ScheduleCard';
 
@@ -108,12 +109,10 @@ export const SchedulePage = () => {
     return (
         <div className="p-6 max-w-screen-xl mx-auto">
             {/* Page Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-semibold mb-2 text-primary">Module Scheduling</h1>
-                <p className="text-secondary text-lg">
-                    Configure when DAPS modules should run automatically
-                </p>
-            </div>
+            <PageHeader
+                title="Module Scheduling"
+                description="Configure when DAPS modules should run automatically"
+            />
 
             {/* Statistics */}
             <StatisticsGrid statistics={statistics} columns={3} className="mb-8" />

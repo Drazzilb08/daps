@@ -5,6 +5,8 @@ import { FieldRegistry } from '../../../components/fields/FieldRegistry.jsx';
 import { Accordion } from '../../../components/Accordion.jsx';
 import { AccordionItem } from '../../../components/AccordionItem.jsx';
 import { ConfigProvider, useConfig } from '../../../contexts/ConfigContext.jsx';
+import { PageHeader } from '../../../components/ui/PageHeader';
+import { Button } from '../../../components/ui/Button';
 
 /**
  * Memoized field component for better performance
@@ -181,17 +183,10 @@ const ModuleSettingsContent = () => {
     return (
         <div className="p-4 md:p-6 max-w-4xl mx-auto">
             {/* Header with save controls */}
-            <div className="mb-6 md:mb-8">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">
-                            Module Settings
-                        </h1>
-                        <p className="text-sm md:text-base text-secondary">
-                            Configure DAPS module settings
-                        </p>
-                    </div>
-
+            <PageHeader
+                title="Module Settings"
+                description="Configure DAPS module settings"
+                actions={
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         {/* Status indicators - responsive text */}
                         {isDirty && (
@@ -214,18 +209,21 @@ const ModuleSettingsContent = () => {
 
                         {/* Mobile-optimized buttons */}
                         <div className="flex gap-2">
-                            <button
+                            <Button
+                                color="secondary"
+                                variant="outline"
                                 onClick={handleReset}
                                 disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none px-3 py-2 text-sm border border-border rounded hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed min-h-11 text-primary"
+                                className="flex-1 sm:flex-none"
                             >
                                 Reset
-                            </button>
+                            </Button>
 
-                            <button
+                            <Button
+                                color="primary"
                                 onClick={handleSave}
                                 disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-11"
+                                className="flex-1 sm:flex-none"
                             >
                                 {isSaving ? (
                                     <>
@@ -241,21 +239,21 @@ const ModuleSettingsContent = () => {
                                         <span className="sm:hidden">Save</span>
                                     </>
                                 )}
-                            </button>
+                            </Button>
                         </div>
+                    </div>
+                }
+            />
+
+            {/* Error display */}
+            {saveError && (
+                <div className="mt-4 p-3 bg-error-bg border border-error-border text-error rounded">
+                    <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-sm">error</span>
+                        {saveError}
                     </div>
                 </div>
-
-                {/* Error display */}
-                {saveError && (
-                    <div className="mt-4 p-3 bg-error-bg border border-error-border text-error rounded">
-                        <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-sm">error</span>
-                            {saveError}
-                        </div>
-                    </div>
-                )}
-            </div>
+            )}
 
             {/* Search functionality */}
             <div className="mb-6">

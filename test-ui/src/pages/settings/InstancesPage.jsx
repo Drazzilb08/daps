@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { StatisticsGrid } from '../../components/statistics/StatisticsGrid';
+import { StatGrid } from '../../components/statistics';
+import { StatCard } from '../../components/ui';
 import { InstanceCard } from '../../components/instances/InstanceCard';
 import { Button } from '../../components/ui/button/Button';
 import { useApiData } from '../../hooks/useApiData';
@@ -325,7 +326,16 @@ export const InstancesPage = () => {
             />
 
             {/* Statistics */}
-            <StatisticsGrid statistics={statistics} columns={3} className="mb-8" />
+            <StatGrid columns={3} className="mb-8">
+                {statistics.map(stat => (
+                    <StatCard
+                        key={stat.label}
+                        label={stat.label}
+                        value={stat.value}
+                        colorClass={stat.colorClass}
+                    />
+                ))}
+            </StatGrid>
 
             {/* Service Sections */}
             {services.map(service => (

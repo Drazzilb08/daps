@@ -5,7 +5,8 @@ import { useModuleExecution } from '../../hooks/useModuleExecution.js';
 import { useApiData } from '../../hooks/useApiData';
 import { configAPI } from '../../utils/api/config';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { StatisticsGrid } from '../../components/statistics/StatisticsGrid';
+import { StatGrid } from '../../components/statistics';
+import { StatCard } from '../../components/ui';
 import { ScheduleCard } from '../../components/modules/ScheduleCard';
 
 export const SchedulePage = () => {
@@ -115,7 +116,16 @@ export const SchedulePage = () => {
             />
 
             {/* Statistics */}
-            <StatisticsGrid statistics={statistics} columns={3} className="mb-8" />
+            <StatGrid columns={3} className="mb-8">
+                {statistics.map(stat => (
+                    <StatCard
+                        key={stat.label}
+                        label={stat.label}
+                        value={stat.value}
+                        colorClass={stat.colorClass}
+                    />
+                ))}
+            </StatGrid>
 
             {/* Module Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

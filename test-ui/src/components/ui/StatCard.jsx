@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Card } from './Card';
+import { Card } from './card/Card';
 import { StatIcon, StatLabel, StatValue, StatChange } from '../statistics/primitives';
 
 /**
@@ -68,21 +68,23 @@ export const StatCard = React.memo(
     }) => {
         return (
             <Card variant={variant} className={className}>
-                <div className="flex flex-col gap-2">
-                    {icon && <StatIcon icon={icon} />}
-                    <StatLabel>{label}</StatLabel>
-                    <StatValue color={valueColor} format={valueFormat}>
-                        {value}
-                    </StatValue>
-                    {subtext && <StatLabel size="xs">{subtext}</StatLabel>}
-                    {change && (
-                        <StatChange
-                            value={change.value}
-                            direction={change.direction}
-                            inverse={change.inverse}
-                        />
-                    )}
-                </div>
+                <Card.Body>
+                    <div className="flex flex-col gap-2">
+                        {icon && <StatIcon icon={icon} />}
+                        <StatLabel>{label}</StatLabel>
+                        <StatValue color={valueColor} format={valueFormat}>
+                            {value}
+                        </StatValue>
+                        {subtext && <StatLabel size="xs">{subtext}</StatLabel>}
+                        {change && (
+                            <StatChange
+                                value={change.value}
+                                direction={change.direction}
+                                inverse={change.inverse}
+                            />
+                        )}
+                    </div>
+                </Card.Body>
             </Card>
         );
     }

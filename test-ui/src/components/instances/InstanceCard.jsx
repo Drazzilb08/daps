@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '../ui/Card';
+import { Card } from '../ui/card/Card';
 import { Button } from '../ui/button/Button';
 
 /**
@@ -38,41 +38,44 @@ export const InstanceCard = ({
     };
 
     return (
-        <Card variant="standard">
-            {/* Instance data display */}
-            <div className="space-y-3">
-                {Object.entries(cardData)
-                    .filter(([, value]) => value !== undefined && value !== null)
-                    .map(([key, value]) => (
-                        <div
-                            key={key}
-                            className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-4"
-                        >
-                            <span className="font-semibold text-brand-primary shrink-0 sm:min-w-24 text-sm">
-                                {key.charAt(0).toUpperCase() + key.slice(1)}:
-                            </span>
-                            <span className="text-secondary flex-1 break-words text-base leading-relaxed">
-                                {React.isValidElement(value) ? value : String(value)}
-                            </span>
-                        </div>
-                    ))}
-            </div>
-
-            {/* Action buttons - integrated into card */}
-            <div className="flex gap-2 justify-end mt-4 pt-3 border-t border-default">
-                {/* Test button - Primary variant (main action) */}
-                <Button variant="primary" onClick={onTest} disabled={isTesting}>
-                    {isTesting ? 'Testing...' : 'Test'}
-                </Button>
-                {/* Edit button - Secondary variant (neutral action) */}
-                <Button variant="secondary" onClick={onEdit}>
-                    Edit
-                </Button>
-                {/* Delete button - Danger variant (destructive action) */}
-                <Button variant="danger" onClick={onDelete}>
-                    Delete
-                </Button>
-            </div>
+        <Card>
+            <Card.Body>
+                {/* Instance data display */}
+                <div className="space-y-3">
+                    {Object.entries(cardData)
+                        .filter(([, value]) => value !== undefined && value !== null)
+                        .map(([key, value]) => (
+                            <div
+                                key={key}
+                                className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-4"
+                            >
+                                <span className="font-semibold text-brand-primary shrink-0 sm:min-w-24 text-sm">
+                                    {key.charAt(0).toUpperCase() + key.slice(1)}:
+                                </span>
+                                <span className="text-secondary flex-1 break-words text-base leading-relaxed">
+                                    {React.isValidElement(value) ? value : String(value)}
+                                </span>
+                            </div>
+                        ))}
+                </div>
+            </Card.Body>
+            <Card.Footer align="right">
+                {/* Action buttons */}
+                <div className="flex gap-2">
+                    {/* Test button - Primary variant (main action) */}
+                    <Button variant="primary" onClick={onTest} disabled={isTesting}>
+                        {isTesting ? 'Testing...' : 'Test'}
+                    </Button>
+                    {/* Edit button - Secondary variant (neutral action) */}
+                    <Button variant="secondary" onClick={onEdit}>
+                        Edit
+                    </Button>
+                    {/* Delete button - Danger variant (destructive action) */}
+                    <Button variant="danger" onClick={onDelete}>
+                        Delete
+                    </Button>
+                </div>
+            </Card.Footer>
         </Card>
     );
 };

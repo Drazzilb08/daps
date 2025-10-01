@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { scheduleToHuman } from '../../utils/schedule';
-import { Card, CardRow } from '../ui/Card';
+import { Card } from '../ui/card/Card';
+import { Button } from '../ui/button/Button';
 
 /**
  * ScheduleCard - Displays module schedule information with execution controls
@@ -45,52 +46,36 @@ export const ScheduleCard = React.memo(
         );
 
         return (
-            <div onClick={handleCardClick} className="cursor-pointer">
-                <Card
-                    variant="standard"
-                    className="hover:border-primary transition-all duration-150 group"
-                >
-                    {/* Module name and run button */}
-                    <CardRow>
-                        <div className="flex items-start justify-between w-full">
-                            <h3 className="text-lg font-semibold text-primary group-hover:text-brand-primary transition-colors">
-                                {moduleLabel}
-                            </h3>
-                            <button
-                                onClick={handleRunClick}
-                                disabled={isRunning}
-                                className={`text-sm font-medium px-3 py-1.5 rounded-md transition-all duration-150 min-h-8 select-none ${
-                                    isRunning
-                                        ? 'bg-info/10 text-info border border-info/20 cursor-not-allowed opacity-75'
-                                        : 'bg-primary/10 text-primary hover:bg-primary/20 active:bg-primary/30 active:scale-98 border border-primary/20 cursor-pointer'
-                                }`}
-                                title={isRunning ? 'Module is running...' : 'Run now'}
-                            >
-                                {isRunning ? 'Running...' : 'Run'}
-                            </button>
-                        </div>
-                    </CardRow>
-
-                    {/* Schedule status */}
-                    <CardRow>
-                        <div
-                            className={`text-sm font-medium ${hasSchedule ? 'text-success' : 'text-secondary'}`}
+            <Card clickable hoverable onClick={handleCardClick}>
+                <Card.Header
+                    title={moduleLabel}
+                    action={
+                        <Button
+                            variant={isRunning ? 'secondary' : 'primary'}
+                            size="small"
+                            onClick={handleRunClick}
+                            disabled={isRunning}
                         >
-                            {humanReadableSchedule}
-                        </div>
-                    </CardRow>
+                            {isRunning ? 'Running...' : 'Run'}
+                        </Button>
+                    }
+                />
+                <Card.Body>
+                    <div
+                        className={`text-sm font-medium ${hasSchedule ? 'text-success' : 'text-secondary'}`}
+                    >
+                        {humanReadableSchedule}
+                    </div>
 
                     {/* Running indicator */}
                     {isRunning && (
-                        <CardRow>
-                            <div className="flex items-center gap-2 text-xs text-info bg-info/5 px-2 py-1 rounded-md border border-info/20">
-                                <span className="w-1.5 h-1.5 bg-info rounded-full animate-pulse" />
-                                Currently running
-                            </div>
-                        </CardRow>
+                        <div className="flex items-center gap-2 text-xs text-info bg-info/5 px-2 py-1 rounded-md border border-info/20 mt-2">
+                            <span className="w-1.5 h-1.5 bg-info rounded-full animate-pulse" />
+                            Currently running
+                        </div>
                     )}
-                </Card>
-            </div>
+                </Card.Body>
+            </Card>
         );
     }
 );

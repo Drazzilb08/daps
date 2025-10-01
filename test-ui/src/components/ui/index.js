@@ -9,8 +9,11 @@
 // Button primitive system
 export * from './button';
 
+// Card primitive system (new composition API)
+export { Card, CardContainer, CardHeader, CardBody, CardFooter, CardImage } from './card';
+export { MediaCard, ActionCard } from './card';
+
 // Other UI components
-export { Card, CardRow } from './Card';
 export { default as Dropdown } from './Dropdown';
 export { default as HamburgerButton } from './HamburgerButton';
 export { default as Menu } from './Menu';

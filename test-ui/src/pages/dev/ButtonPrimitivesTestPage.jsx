@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageHeader } from '../../components/ui';
-import { Card } from '../../components/ui/Card';
+import { Card } from '../../components/ui/card/Card';
 import { Button } from '../../components/ui/button/Button';
 import { IconButton } from '../../components/ui/button/IconButton';
 import { LoadingButton } from '../../components/ui/button/LoadingButton';
@@ -38,9 +38,8 @@ export const ButtonPrimitivesTestPage = () => {
 
             {/* Configuration Controls */}
             <Card>
-                <div className="flex flex-col gap-4">
-                    <h3 className="text-lg font-semibold text-primary">Configuration</h3>
-
+                <Card.Header title="Configuration" />
+                <Card.Body>
                     <div className="flex flex-wrap gap-4">
                         <label className="flex flex-col gap-1">
                             <span className="text-sm text-secondary">Button Variant</span>
@@ -70,7 +69,7 @@ export const ButtonPrimitivesTestPage = () => {
                             </select>
                         </label>
                     </div>
-                </div>
+                </Card.Body>
             </Card>
 
             {/* Primitive Demonstrations */}
@@ -79,7 +78,7 @@ export const ButtonPrimitivesTestPage = () => {
                     Primitive Composition Pattern
                 </h2>
                 <Card>
-                    <div className="flex flex-col gap-4">
+                    <Card.Body>
                         <div className="text-sm text-secondary space-y-2">
                             <p>
                                 <strong>4 Atomic Primitives:</strong>
@@ -105,7 +104,7 @@ export const ButtonPrimitivesTestPage = () => {
                                 LoadingButton, ButtonGroup, SplitButton
                             </p>
                         </div>
-                    </div>
+                    </Card.Body>
                 </Card>
             </section>
 
@@ -115,7 +114,7 @@ export const ButtonPrimitivesTestPage = () => {
                     Button Composer (Base + Icon + Text)
                 </h2>
                 <Card>
-                    <div className="flex flex-col gap-4">
+                    <Card.Body>
                         <div className="flex flex-wrap gap-3">
                             <Button variant={variant} size={size}>
                                 Basic Button
@@ -138,7 +137,7 @@ export const ButtonPrimitivesTestPage = () => {
                                 Full Width
                             </Button>
                         </div>
-                    </div>
+                    </Card.Body>
                 </Card>
             </section>
 
@@ -146,23 +145,25 @@ export const ButtonPrimitivesTestPage = () => {
             <section className="flex flex-col gap-3">
                 <h2 className="text-xl font-semibold text-primary">All Button Variants</h2>
                 <Card>
-                    <div className="flex flex-wrap gap-3">
-                        <Button variant="primary" size={size} icon="check">
-                            Primary
-                        </Button>
-                        <Button variant="secondary" size={size} icon="info">
-                            Secondary
-                        </Button>
-                        <Button variant="success" size={size} icon="check_circle">
-                            Success
-                        </Button>
-                        <Button variant="danger" size={size} icon="delete">
-                            Danger
-                        </Button>
-                        <Button variant="ghost" size={size} icon="close">
-                            Ghost
-                        </Button>
-                    </div>
+                    <Card.Body>
+                        <div className="flex flex-wrap gap-3">
+                            <Button variant="primary" size={size} icon="check">
+                                Primary
+                            </Button>
+                            <Button variant="secondary" size={size} icon="info">
+                                Secondary
+                            </Button>
+                            <Button variant="success" size={size} icon="check_circle">
+                                Success
+                            </Button>
+                            <Button variant="danger" size={size} icon="delete">
+                                Danger
+                            </Button>
+                            <Button variant="ghost" size={size} icon="close">
+                                Ghost
+                            </Button>
+                        </div>
+                    </Card.Body>
                 </Card>
             </section>
 
@@ -170,17 +171,19 @@ export const ButtonPrimitivesTestPage = () => {
             <section className="flex flex-col gap-3">
                 <h2 className="text-xl font-semibold text-primary">All Button Sizes</h2>
                 <Card>
-                    <div className="flex flex-wrap items-end gap-3">
-                        <Button variant={variant} size="small" icon="add">
-                            Small (36px)
-                        </Button>
-                        <Button variant={variant} size="medium" icon="save">
-                            Medium (44px - WCAG)
-                        </Button>
-                        <Button variant={variant} size="large" icon="upload">
-                            Large (48px)
-                        </Button>
-                    </div>
+                    <Card.Body>
+                        <div className="flex flex-wrap items-end gap-3">
+                            <Button variant={variant} size="small" icon="add">
+                                Small (36px)
+                            </Button>
+                            <Button variant={variant} size="medium" icon="save">
+                                Medium (44px - WCAG)
+                            </Button>
+                            <Button variant={variant} size="large" icon="upload">
+                                Large (48px)
+                            </Button>
+                        </div>
+                    </Card.Body>
                 </Card>
             </section>
 
@@ -190,29 +193,41 @@ export const ButtonPrimitivesTestPage = () => {
                     IconButton Composer (Base + Icon)
                 </h2>
                 <Card>
-                    <div className="flex flex-wrap gap-3">
-                        <IconButton icon="close" variant={variant} size={size} aria-label="Close" />
-                        <IconButton icon="edit" variant="primary" size={size} aria-label="Edit" />
-                        <IconButton
-                            icon="delete"
-                            variant="danger"
-                            size={size}
-                            aria-label="Delete"
-                        />
-                        <IconButton
-                            icon="favorite"
-                            variant="ghost"
-                            size={size}
-                            aria-label="Favorite"
-                        />
-                        <IconButton
-                            icon="search"
-                            variant="secondary"
-                            size={size}
-                            disabled
-                            aria-label="Search"
-                        />
-                    </div>
+                    <Card.Body>
+                        <div className="flex flex-wrap gap-3">
+                            <IconButton
+                                icon="close"
+                                variant={variant}
+                                size={size}
+                                aria-label="Close"
+                            />
+                            <IconButton
+                                icon="edit"
+                                variant="primary"
+                                size={size}
+                                aria-label="Edit"
+                            />
+                            <IconButton
+                                icon="delete"
+                                variant="danger"
+                                size={size}
+                                aria-label="Delete"
+                            />
+                            <IconButton
+                                icon="favorite"
+                                variant="ghost"
+                                size={size}
+                                aria-label="Favorite"
+                            />
+                            <IconButton
+                                icon="search"
+                                variant="secondary"
+                                size={size}
+                                disabled
+                                aria-label="Search"
+                            />
+                        </div>
+                    </Card.Body>
                 </Card>
             </section>
 
@@ -222,7 +237,7 @@ export const ButtonPrimitivesTestPage = () => {
                     LoadingButton Composer (Base + Text + Spinner)
                 </h2>
                 <Card>
-                    <div className="flex flex-col gap-4">
+                    <Card.Body>
                         <div className="flex flex-wrap gap-3">
                             <LoadingButton
                                 variant={variant}
@@ -255,7 +270,7 @@ export const ButtonPrimitivesTestPage = () => {
                             Click &ldquo;Click to Load&rdquo; to see loading state demonstration (2
                             second delay)
                         </p>
-                    </div>
+                    </Card.Body>
                 </Card>
             </section>
 
@@ -265,7 +280,7 @@ export const ButtonPrimitivesTestPage = () => {
                     ButtonGroup Composer (Horizontal Layout)
                 </h2>
                 <Card>
-                    <div className="flex flex-col gap-4">
+                    <Card.Body>
                         <div>
                             <p className="text-sm text-secondary mb-3">Horizontal Group</p>
                             <ButtonGroup orientation="horizontal" spacing="medium">
@@ -307,7 +322,7 @@ export const ButtonPrimitivesTestPage = () => {
                                 </Button>
                             </ButtonGroup>
                         </div>
-                    </div>
+                    </Card.Body>
                 </Card>
             </section>
 
@@ -317,7 +332,7 @@ export const ButtonPrimitivesTestPage = () => {
                     SplitButton Composer (Button + IconButton + Dropdown)
                 </h2>
                 <Card>
-                    <div className="flex flex-col gap-4">
+                    <Card.Body>
                         <div className="flex flex-wrap gap-3">
                             <SplitButton
                                 variant={variant}
@@ -359,7 +374,7 @@ export const ButtonPrimitivesTestPage = () => {
                                 Upload File
                             </SplitButton>
                         </div>
-                    </div>
+                    </Card.Body>
                 </Card>
             </section>
 
@@ -369,7 +384,7 @@ export const ButtonPrimitivesTestPage = () => {
                     Interactive State Demonstrations
                 </h2>
                 <Card>
-                    <div className="flex flex-col gap-4">
+                    <Card.Body>
                         <div>
                             <p className="text-sm text-secondary mb-3">Hover States</p>
                             <div className="flex flex-wrap gap-3">
@@ -415,7 +430,7 @@ export const ButtonPrimitivesTestPage = () => {
                                 </LoadingButton>
                             </div>
                         </div>
-                    </div>
+                    </Card.Body>
                 </Card>
             </section>
 
@@ -423,7 +438,7 @@ export const ButtonPrimitivesTestPage = () => {
             <section className="flex flex-col gap-3">
                 <h2 className="text-xl font-semibold text-primary">Migration Guide</h2>
                 <Card>
-                    <div className="flex flex-col gap-4">
+                    <Card.Body>
                         <div className="text-sm text-secondary space-y-3">
                             <div>
                                 <p className="font-semibold text-primary mb-2">
@@ -456,16 +471,14 @@ export const ButtonPrimitivesTestPage = () => {
                                 </ul>
                             </div>
                         </div>
-                    </div>
+                    </Card.Body>
                 </Card>
             </section>
 
             {/* Architecture Documentation */}
             <Card>
-                <div className="flex flex-col gap-3">
-                    <h3 className="text-lg font-semibold text-primary">
-                        Architecture Documentation
-                    </h3>
+                <Card.Header title="Architecture Documentation" />
+                <Card.Body>
                     <div className="text-sm text-secondary space-y-2">
                         <p>
                             <strong>Primitive Composition:</strong> Every button is built by
@@ -494,7 +507,7 @@ export const ButtonPrimitivesTestPage = () => {
                             touch targets, proper ARIA labels, keyboard navigation
                         </p>
                     </div>
-                </div>
+                </Card.Body>
             </Card>
         </div>
     );

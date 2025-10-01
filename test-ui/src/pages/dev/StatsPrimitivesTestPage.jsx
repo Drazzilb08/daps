@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PageHeader } from '../../components/ui';
 import { StatCard } from '../../components/ui';
 import { StatGrid, StatList, StatInline } from '../../components/statistics';
-import { Card } from '../../components/ui/Card';
+import { Card } from '../../components/ui/card/Card';
 
 /**
  * StatsPrimitivesTestPage - Comprehensive test page for Statistics System
@@ -30,9 +30,8 @@ export const StatsPrimitivesTestPage = () => {
 
             {/* Configuration Controls */}
             <Card>
-                <div className="flex flex-col gap-4">
-                    <h3 className="text-lg font-semibold text-primary">Configuration</h3>
-
+                <Card.Header title="Configuration" />
+                <Card.Body>
                     <div className="flex flex-wrap gap-4">
                         <label className="flex flex-col gap-1">
                             <span className="text-sm text-secondary">Grid Columns</span>
@@ -75,7 +74,7 @@ export const StatsPrimitivesTestPage = () => {
                             </select>
                         </label>
                     </div>
-                </div>
+                </Card.Body>
             </Card>
 
             {/* StatGrid Layout - Basic Usage */}
@@ -235,8 +234,8 @@ export const StatsPrimitivesTestPage = () => {
                     Complex Example: Dashboard Summary
                 </h2>
                 <Card variant="bordered">
-                    <div className="flex flex-col gap-4">
-                        <h3 className="text-lg font-semibold text-primary">Sales Dashboard</h3>
+                    <Card.Header title="Sales Dashboard" />
+                    <Card.Body>
                         <StatGrid columns={4} gap="3">
                             <StatCard
                                 label="Today's Sales"
@@ -272,16 +271,14 @@ export const StatsPrimitivesTestPage = () => {
                                 change={{ value: -0.5, direction: 'down' }}
                             />
                         </StatGrid>
-                    </div>
+                    </Card.Body>
                 </Card>
             </section>
 
             {/* Composition Documentation */}
             <Card>
-                <div className="flex flex-col gap-3">
-                    <h3 className="text-lg font-semibold text-primary">
-                        Architecture Documentation
-                    </h3>
+                <Card.Header title="Architecture Documentation" />
+                <Card.Body>
                     <div className="text-sm text-secondary space-y-2">
                         <p>
                             <strong>Primitive Composition:</strong> Every StatCard is built by
@@ -306,7 +303,7 @@ export const StatsPrimitivesTestPage = () => {
                             in layouts
                         </p>
                     </div>
-                </div>
+                </Card.Body>
             </Card>
         </div>
     );

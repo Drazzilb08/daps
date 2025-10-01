@@ -89,8 +89,9 @@
 
     .hover\:shadow-lg:hover {
         box-shadow:
-            0 10px 15px -3px rgb(0 0 0 / 10%),
-            0 4px 6px -4px rgb(0 0 0 / 10%);
+            0 20px 25px -5px rgb(0 0 0 / 25%),
+            0 10px 10px -5px rgb(0 0 0 / 10%);
+        transform: translateY(-2px);
     }
 
     .hover\:shadow-xl:hover {
@@ -321,6 +322,12 @@
 
     .transition-shadow { transition: box-shadow 150ms ease-in-out; }
 
+    .transition-shadow-transform {
+        transition:
+            box-shadow 150ms ease-in-out,
+            transform 150ms ease-in-out;
+    }
+
     /* No transition for accessibility */
     .transition-none { transition: none; }
 
@@ -419,6 +426,7 @@
         .transition-border,
         .transition-color,
         .transition-shadow,
+        .transition-shadow-transform,
         .transition-opacity,
         .transition-all { transition: none; }
     }

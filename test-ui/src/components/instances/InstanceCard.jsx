@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from '../ui/Card';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/button/Button';
 
 /**
  * Instance card component that composes Card primitive for instance display
@@ -61,15 +61,15 @@ export const InstanceCard = ({
             {/* Action buttons - integrated into card */}
             <div className="flex gap-2 justify-end mt-4 pt-3 border-t border-default">
                 {/* Test button - Primary variant (main action) */}
-                <Button color="primary" onClick={onTest} disabled={isTesting}>
+                <Button variant="primary" onClick={onTest} disabled={isTesting}>
                     {isTesting ? 'Testing...' : 'Test'}
                 </Button>
                 {/* Edit button - Secondary variant (neutral action) */}
-                <Button color="info" onClick={onEdit}>
+                <Button variant="secondary" onClick={onEdit}>
                     Edit
                 </Button>
                 {/* Delete button - Danger variant (destructive action) */}
-                <Button color="error" onClick={onDelete}>
+                <Button variant="danger" onClick={onDelete}>
                     Delete
                 </Button>
             </div>

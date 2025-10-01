@@ -16,6 +16,7 @@ import SettingsMockPage from './pages/dev/SettingsMockPage.jsx';
 import ArrayObjectFieldPage from './pages/dev/ArrayObjectFieldPage.jsx';
 import AccordionTestPage from './pages/dev/AccordionTestPage.jsx';
 import StatsPrimitivesTestPage from './pages/dev/StatsPrimitivesTestPage.jsx';
+import ButtonPrimitivesTestPage from './pages/dev/ButtonPrimitivesTestPage.jsx';
 import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
 import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import UISettingsPage from './pages/settings/UISettingsPage.jsx';
@@ -388,6 +389,17 @@ const App = () => {
                                                         pageDescription="Statistics System primitive composition and layout testing"
                                                     >
                                                         <StatsPrimitivesTestPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/button-primitives"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Button Primitives Test"
+                                                        pageDescription="Button System primitive composition and component testing"
+                                                    >
+                                                        <ButtonPrimitivesTestPage />
                                                     </PageErrorBoundary>
                                                 }
                                             />

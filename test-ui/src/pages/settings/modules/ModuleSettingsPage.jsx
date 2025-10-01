@@ -6,7 +6,7 @@ import { Accordion } from '../../../components/Accordion.jsx';
 import { AccordionItem } from '../../../components/AccordionItem.jsx';
 import { ConfigProvider, useConfig } from '../../../contexts/ConfigContext.jsx';
 import { PageHeader } from '../../../components/ui/PageHeader';
-import { Button } from '../../../components/ui/Button';
+import { Button } from '../../../components/ui/button/Button';
 
 /**
  * Memoized field component for better performance
@@ -210,8 +210,7 @@ const ModuleSettingsContent = () => {
                         {/* Mobile-optimized buttons */}
                         <div className="flex gap-2">
                             <Button
-                                color="secondary"
-                                variant="outline"
+                                variant="secondary"
                                 onClick={handleReset}
                                 disabled={!isDirty || isSaving}
                                 className="flex-1 sm:flex-none"
@@ -220,7 +219,7 @@ const ModuleSettingsContent = () => {
                             </Button>
 
                             <Button
-                                color="primary"
+                                variant="primary"
                                 onClick={handleSave}
                                 disabled={!isDirty || isSaving}
                                 className="flex-1 sm:flex-none"

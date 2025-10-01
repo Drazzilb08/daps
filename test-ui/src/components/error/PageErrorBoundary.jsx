@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { useGlobalError } from '../../contexts/GlobalErrorContext.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/button/Button';
 
 /**
  * Page-level Error Boundary for route protection
@@ -234,7 +234,7 @@ class PageErrorBoundaryBase extends Component {
                             <div className="mb-6 flex flex-wrap gap-2">
                                 {showRetry && (
                                     <Button
-                                        color="primary"
+                                        variant="primary"
                                         onClick={this.handleRetry}
                                         className="gap-1"
                                     >
@@ -248,7 +248,7 @@ class PageErrorBoundaryBase extends Component {
                                 {showNavigation && (
                                     <>
                                         <Button
-                                            color="surface"
+                                            variant="secondary"
                                             onClick={this.handleNavigateHome}
                                             className="gap-1"
                                         >
@@ -259,7 +259,7 @@ class PageErrorBoundaryBase extends Component {
                                         </Button>
 
                                         <Button
-                                            color="surface"
+                                            variant="secondary"
                                             onClick={this.handleNavigateBack}
                                             className="gap-1"
                                         >
@@ -272,12 +272,12 @@ class PageErrorBoundaryBase extends Component {
                                 )}
 
                                 <Button
-                                    color={
+                                    variant={
                                         this.state.copySuccess
                                             ? 'success'
                                             : this.state.copyError
-                                              ? 'error'
-                                              : 'info'
+                                              ? 'danger'
+                                              : 'secondary'
                                     }
                                     onClick={this.handleCopyError}
                                     disabled={this.state.copying}
@@ -302,7 +302,7 @@ class PageErrorBoundaryBase extends Component {
                                 </Button>
 
                                 <Button
-                                    color="surface"
+                                    variant="secondary"
                                     onClick={this.handleRefresh}
                                     className="gap-1"
                                 >

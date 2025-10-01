@@ -9,7 +9,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { UI_SETTINGS_SCHEMA } from '../../utils/constants/ui_settings_schema.js';
 import { FieldRegistry } from '../../components/fields/FieldRegistry.jsx';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { Button } from '../../components/ui/Button';
+import { Button } from '../../components/ui/button/Button';
 
 /**
  * Memoized field component for better performance
@@ -177,8 +177,7 @@ export const UISettingsPage = () => {
                         {/* Mobile-optimized buttons */}
                         <div className="flex gap-2">
                             <Button
-                                color="secondary"
-                                variant="outline"
+                                variant="secondary"
                                 onClick={handleReset}
                                 disabled={!isDirty || isSaving}
                                 className="flex-1 sm:flex-none"
@@ -187,7 +186,7 @@ export const UISettingsPage = () => {
                             </Button>
 
                             <Button
-                                color="primary"
+                                variant="primary"
                                 onClick={handleSave}
                                 disabled={!isDirty || isSaving}
                                 className="flex-1 sm:flex-none"

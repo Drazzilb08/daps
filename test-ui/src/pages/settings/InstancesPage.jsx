@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatisticsGrid } from '../../components/statistics/StatisticsGrid';
 import { InstanceCard } from '../../components/instances/InstanceCard';
-import { Button } from '../../components/ui/Button';
+import { Button } from '../../components/ui/button/Button';
 import { useApiData } from '../../hooks/useApiData';
 import { useToast } from '../../contexts/ToastContext';
 import { instancesAPI } from '../../utils/api/instances';
@@ -308,7 +308,7 @@ export const InstancesPage = () => {
                 />
                 <div className="text-center py-12">
                     <p className="text-error">Error loading instances: {error.message}</p>
-                    <Button color="primary" onClick={refreshInstances} className="mt-4">
+                    <Button variant="primary" onClick={refreshInstances} className="mt-4">
                         Retry
                     </Button>
                 </div>
@@ -336,7 +336,7 @@ export const InstancesPage = () => {
                             {service.icon}
                             {service.label} Instances
                         </h2>
-                        <Button color="primary" onClick={() => handleAdd(service.type)}>
+                        <Button variant="primary" onClick={() => handleAdd(service.type)}>
                             + Add {service.label}
                         </Button>
                     </div>
@@ -362,7 +362,7 @@ export const InstancesPage = () => {
                         <div className="text-center py-12 text-secondary">
                             <p>No {service.label} instances configured</p>
                             <Button
-                                color="primary"
+                                variant="primary"
                                 onClick={() => handleAdd(service.type)}
                                 className="mt-4"
                             >

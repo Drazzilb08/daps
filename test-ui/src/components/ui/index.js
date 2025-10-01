@@ -6,7 +6,10 @@
  * not specific to forms or fields.
  */
 
-export { Button } from './Button';
+// Button primitive system
+export * from './button';
+
+// Other UI components
 export { Card, CardRow } from './Card';
 export { default as Dropdown } from './Dropdown';
 export { default as HamburgerButton } from './HamburgerButton';

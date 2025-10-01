@@ -4,10 +4,10 @@ import { useTheme } from '../contexts/ThemeContext.jsx';
 import { useUIState } from '../contexts/UIStateContext.jsx';
 import useSearchPageDetection from '../hooks/useSearchPageDetection.js';
 import SearchInterface from './Search/SearchInterface.jsx';
-import { HamburgerButton } from './ui';
+import { HamburgerButton } from './ui/index.js';
 
 /**
- * PageHeader component for DAPS application - Phase 4D Context-Aware
+ * LayoutHeader component for DAPS application - Phase 4D Context-Aware
  *
  * Context-aware header that adapts interface based on current page type:
  *
@@ -30,7 +30,7 @@ import { HamburgerButton } from './ui';
  * - Touch-optimized buttons (44px minimum)
  * - Uses design tokens for styling
  */
-const PageHeader = React.memo(() => {
+const LayoutHeader = React.memo(() => {
     const { toggleTheme, isDarkTheme, isLightTheme, isSystemTheme, actualTheme } = useTheme();
     const { mobileMenuOpen, toggleMobileMenu } = useUIState();
 
@@ -163,6 +163,6 @@ const PageHeader = React.memo(() => {
     );
 });
 
-PageHeader.displayName = 'PageHeader';
+LayoutHeader.displayName = 'LayoutHeader';
 
-export default PageHeader;
+export default LayoutHeader;

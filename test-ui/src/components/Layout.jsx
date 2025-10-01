@@ -2,8 +2,8 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { FeatureErrorBoundary } from './error';
-import PageHeader from './PageHeader.jsx';
-import PageSidebar from './PageSidebar.jsx';
+import LayoutHeader from './LayoutHeader.jsx';
+import LayoutSidebar from './LayoutSidebar.jsx';
 import SearchToolbar from './Search/SearchToolbar.jsx';
 import useSearchPageDetection from '../hooks/useSearchPageDetection.js';
 import { useUIState } from '../contexts/UIStateContext.jsx';
@@ -40,7 +40,7 @@ const Layout = ({ children }) => {
                 featureDescription="Main navigation and header"
                 critical={true}
             >
-                <PageHeader />
+                <LayoutHeader />
             </FeatureErrorBoundary>
 
             {/* Mobile Menu Backdrop */}
@@ -59,7 +59,7 @@ const Layout = ({ children }) => {
                     featureDescription="Left navigation sidebar"
                     critical={true}
                 >
-                    <PageSidebar />
+                    <LayoutSidebar />
                 </FeatureErrorBoundary>
 
                 {/* Main Content Area - remaining width after sidebar */}

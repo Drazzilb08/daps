@@ -15,6 +15,7 @@ import SpinnerTestPage from './pages/dev/SpinnerTestPage.jsx';
 import SettingsMockPage from './pages/dev/SettingsMockPage.jsx';
 import ArrayObjectFieldPage from './pages/dev/ArrayObjectFieldPage.jsx';
 import AccordionTestPage from './pages/dev/AccordionTestPage.jsx';
+import StatsPrimitivesTestPage from './pages/dev/StatsPrimitivesTestPage.jsx';
 import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
 import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import UISettingsPage from './pages/settings/UISettingsPage.jsx';
@@ -376,6 +377,17 @@ const App = () => {
                                                         pageDescription="AccordionItem compound component validation and testing"
                                                     >
                                                         <AccordionTestPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/stats-primitives"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Statistics Primitives Test"
+                                                        pageDescription="Statistics System primitive composition and layout testing"
+                                                    >
+                                                        <StatsPrimitivesTestPage />
                                                     </PageErrorBoundary>
                                                 }
                                             />

@@ -14,3 +14,4 @@ export { default as Menu } from './Menu';
 export { default as MenuItem } from './MenuItem';
 export { PageHeader } from './PageHeader';
 export { default as Spinner } from './Spinner';
+export { StatCard } from './StatCard';

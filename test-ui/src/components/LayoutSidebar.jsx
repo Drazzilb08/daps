@@ -115,7 +115,7 @@ const NAVIGATION_STRUCTURE = [
     },
 ];
 
-const PageSidebar = React.memo(() => {
+const LayoutSidebar = React.memo(() => {
     const location = useLocation();
     const { mobileMenuOpen, closeMobileMenu, isMobile } = useUIState();
     const sidebarRef = useRef(null);
@@ -269,6 +269,6 @@ const PageSidebar = React.memo(() => {
     );
 });
 
-PageSidebar.displayName = 'PageSidebar';
+LayoutSidebar.displayName = 'LayoutSidebar';
 
-export default PageSidebar;
+export default LayoutSidebar;

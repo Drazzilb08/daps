@@ -14,6 +14,9 @@ import { ButtonBase, ButtonIcon, ButtonText, ButtonSpinner } from '../ui/button/
  * disabled state, and styling comes from ButtonBase primitive.
  * Only toolbar-specific layout is defined here.
  *
+ * Icon Size: Uses 'medium' (24px) following Material Design guidelines
+ * for toolbar icons - ensures good visibility and touch interaction.
+ *
  * @param {Object} props - Component props
  * @param {string} props.label - Button label text
  * @param {string} props.iconName - Material icon name
@@ -45,9 +48,9 @@ const Button = React.forwardRef(
                 {...otherProps}
             >
                 {isSpinning ? (
-                    <ButtonSpinner size="small" className="mb-1" />
+                    <ButtonSpinner size="medium" className="mb-1" />
                 ) : (
-                    <ButtonIcon icon={iconName} size="small" className="mb-1" />
+                    <ButtonIcon icon={iconName} size="medium" className="mb-1" />
                 )}
                 <ButtonText className="text-xs h-5">{label}</ButtonText>
             </ButtonBase>

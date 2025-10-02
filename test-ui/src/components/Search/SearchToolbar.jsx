@@ -1,14 +1,19 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { ToolBar, Section, Button, Separator } from '../ToolBar';
+import { ToolBar } from '../ToolBar';
 
 /**
- * Context-aware search toolbar with overflow management
+ * Context-aware search toolbar with compound pattern API
  *
  * Shows different tools based on search page type:
  * - Media pages: Refresh, Scan, Export
  * - Poster pages: Refresh, Upload, Download
  * - Poster + GDrive: Additional Sync tool
+ *
+ * Migrated from old pattern to compound API:
+ * - Section → ToolBar.Section
+ * - Button → ToolBar.Button
+ * - Separator → ToolBar.Separator
  *
  * @param {Object} props - Component props
  * @param {string} [props.searchPageType='media'] - Search page type ('media', 'posters')
@@ -135,9 +140,9 @@ const SearchToolbar = React.memo(
         return (
             <ToolBar>
                 {/* Left section: Dynamic context-aware tools with overflow */}
-                <Section alignContent="left" collapseButtons={true}>
+                <ToolBar.Section alignContent="left" collapseButtons={true}>
                     {dynamicTools.map(tool => (
-                        <Button
+                        <ToolBar.Button
                             key={tool.key}
                             iconName={tool.iconName}
                             label={tool.label}
@@ -145,13 +150,13 @@ const SearchToolbar = React.memo(
                             onPress={handleToolClick(tool.action)}
                         />
                     ))}
-                </Section>
+                </ToolBar.Section>
 
                 {/* Right section: Constant tools always visible with separator */}
-                <Section alignContent="right" collapseButtons={false}>
-                    <Separator />
+                <ToolBar.Section alignContent="right" collapseButtons={false}>
+                    <ToolBar.Separator />
                     {constantTools.map(tool => (
-                        <Button
+                        <ToolBar.Button
                             key={tool.key}
                             iconName={tool.iconName}
                             label={tool.label}
@@ -159,7 +164,7 @@ const SearchToolbar = React.memo(
                             onPress={handleToolClick(tool.action)}
                         />
                     ))}
-                </Section>
+                </ToolBar.Section>
             </ToolBar>
         );
     }

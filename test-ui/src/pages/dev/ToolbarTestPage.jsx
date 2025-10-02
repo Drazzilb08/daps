@@ -1,5 +1,5 @@
 import React from 'react';
-import { ToolBar, Section, Button, Separator } from '../../components/ToolBar';
+import { ToolBar } from '../../components/ToolBar';
 
 const ToolbarTestPage = () => {
     const handleButtonClick = buttonName => {
@@ -17,62 +17,62 @@ const ToolbarTestPage = () => {
 
             <div style={{ marginTop: '20px', border: '1px solid #ccc', borderRadius: '4px' }}>
                 <ToolBar>
-                    <Section alignContent="left">
-                        <Button
+                    <ToolBar.Section alignContent="left">
+                        <ToolBar.Button
                             label="Search"
                             iconName="search"
                             onPress={() => handleButtonClick('Search')}
                         />
-                        <Button
+                        <ToolBar.Button
                             label="Add"
                             iconName="add"
                             onPress={() => handleButtonClick('Add')}
                         />
-                        <Button
+                        <ToolBar.Button
                             label="Edit"
                             iconName="edit"
                             onPress={() => handleButtonClick('Edit')}
                         />
-                        <Separator />
-                        <Button
+                        <ToolBar.Separator />
+                        <ToolBar.Button
                             label="Delete"
                             iconName="delete"
                             onPress={() => handleButtonClick('Delete')}
                         />
-                        <Button
+                        <ToolBar.Button
                             label="Settings"
                             iconName="settings"
                             onPress={() => handleButtonClick('Settings')}
                         />
-                        <Button
+                        <ToolBar.Button
                             label="Refresh"
                             iconName="refresh"
                             onPress={() => handleButtonClick('Refresh')}
                         />
-                        <Button
+                        <ToolBar.Button
                             label="Download"
                             iconName="download"
                             onPress={() => handleButtonClick('Download')}
                         />
-                        <Button
+                        <ToolBar.Button
                             label="Upload"
                             iconName="upload"
                             onPress={() => handleButtonClick('Upload')}
                         />
-                    </Section>
+                    </ToolBar.Section>
 
-                    <Section alignContent="right">
-                        <Button
+                    <ToolBar.Section alignContent="right">
+                        <ToolBar.Button
                             label="Help"
                             iconName="help"
                             onPress={() => handleButtonClick('Help')}
                         />
-                        <Button
+                        <ToolBar.Button
                             label="Info"
                             iconName="info"
                             onPress={() => handleButtonClick('Info')}
                         />
-                    </Section>
+                    </ToolBar.Section>
                 </ToolBar>
             </div>
 

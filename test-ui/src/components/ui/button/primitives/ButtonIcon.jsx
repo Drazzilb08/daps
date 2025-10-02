@@ -11,6 +11,11 @@ import PropTypes from 'prop-types';
  * - ARIA hidden for decorative icons
  * - Theme-aware icon colors (inherits from button)
  *
+ * Size Scale Philosophy:
+ * - Meaningful differentiation between sizes (12-16px gaps)
+ * - Material Design guidelines: 24px minimum for toolbar icons
+ * - Accessibility: Larger sizes improve visibility for users with visual differences
+ *
  * @param {Object} props - Component props
  * @param {string} props.icon - Material Symbols icon name
  * @param {string} props.size - Icon size (small, medium, large)
@@ -21,10 +26,11 @@ import PropTypes from 'prop-types';
 export const ButtonIcon = React.memo(
     ({ icon, size = 'medium', className = '', 'aria-hidden': ariaHidden = true }) => {
         // Map size to text size utilities (Material Symbols uses font-size)
+        // Redesigned scale with meaningful differentiation for accessibility
         const sizeClasses = {
-            small: 'text-lg', // 1.125rem (18px)
-            medium: 'text-xl', // 1.25rem (20px)
-            large: 'text-2xl', // 1.5rem (24px)
+            small: 'text-xl', // 1.25rem (20px) - Minimum for inline/compact contexts
+            medium: 'text-2xl', // 1.5rem (24px) - Standard toolbar/button icons (Material Design)
+            large: 'text-4xl', // 2.25rem (36px) - Prominent actions/headers
         };
 
         // Build class names using utility classes only

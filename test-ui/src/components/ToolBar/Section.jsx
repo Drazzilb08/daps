@@ -1,14 +1,15 @@
-import React, { useMemo, useRef, useState, useLayoutEffect } from 'react';
+import React, { useMemo, useRef, useState, useLayoutEffect, useId } from 'react';
 import PropTypes from 'prop-types';
 import Button from './Button.jsx';
 import Dropdown from '../ui/Dropdown.jsx';
 import Menu from '../ui/Menu.jsx';
 import MenuItem from '../ui/MenuItem.jsx';
+import { useToolBar } from './ToolBarContext.jsx';
 
 /**
  * Responsive toolbar section component
  *
- * Calculates which buttons fit and moves overflow to menu.
+ * Uses ToolBarContext for overflow calculation instead of internal logic.
  *
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Toolbar buttons and separators
@@ -16,12 +17,14 @@ import MenuItem from '../ui/MenuItem.jsx';
  * @param {boolean} [props.collapseButtons=true] - Enable button collapse/overflow
  */
 const Section = ({ children, alignContent = 'left', collapseButtons = true }) => {
+    const sectionId = useId();
     const sectionRef = useRef(null);
     const moreButtonRef = useRef(null);
     const [sectionWidth, setSectionWidth] = useState(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const isMeasured = sectionWidth > 0;
+    // Get context for overflow calculation
+    const { calculateSectionOverflow } = useToolBar();
 
     const handleMenuToggle = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -52,133 +55,10 @@ const Section = ({ children, alignContent = 'left', collapseButtons = true }) =>
         }
     }, [children]);
 
-    // Constants for responsive calculation
-    const MIN_BUTTON_WIDTH = 72; // Estimated minimum button width (56px + padding + text)
-    const MORE_BUTTON_WIDTH = 64; // Width reserved for "More" button
-    const SEPARATOR_MARGIN = 4; // Separator margin
-    const SEPARATOR_WIDTH = 2 * SEPARATOR_MARGIN + 1; // Total separator width
-
+    // Calculate overflow using context (replaces 118 lines of internal logic)
     const { visibleButtons, overflowItems, buttonCount } = useMemo(() => {
-        if (!collapseButtons) {
-            const childArray = React.Children.toArray(children);
-            const buttonCount = childArray.filter(
-                child =>
-                    React.isValidElement(child) &&
-                    !(child.type === 'div' && child.props.className?.includes('separator')) &&
-                    Object.keys(child.props).length > 0
-            ).length;
-
-            return {
-                visibleButtons: childArray,
-                overflowItems: [],
-                buttonCount: buttonCount,
-            };
-        }
-
-        // If not measured yet, show all children initially (allows DOM to be created)
-        if (!isMeasured) {
-            const childArray = React.Children.toArray(children);
-            const buttonCount = childArray.filter(
-                child =>
-                    React.isValidElement(child) &&
-                    !(child.type === 'div' && child.props.className?.includes('separator')) &&
-                    Object.keys(child.props).length > 0
-            ).length;
-
-            return {
-                visibleButtons: childArray,
-                overflowItems: [],
-                buttonCount: buttonCount,
-            };
-        }
-
-        let buttonCount = 0;
-        let separatorCount = 0;
-        const validChildren = [];
-
-        React.Children.forEach(children, child => {
-            if (!child) {
-                return;
-            }
-
-            if (React.isValidElement(child)) {
-                const isSeparator =
-                    child.type === 'div' && child.props.className?.includes('separator');
-                if (isSeparator || Object.keys(child.props).length === 0) {
-                    separatorCount++;
-                } else {
-                    buttonCount++;
-                }
-                validChildren.push(child);
-            }
-        });
-
-        // Calculate total width needed with more realistic estimates
-        const buttonsWidth = buttonCount * MIN_BUTTON_WIDTH;
-        const separatorsWidth = separatorCount * SEPARATOR_WIDTH;
-        const totalWidth = buttonsWidth + separatorsWidth;
-
-        // If everything fits, return all children
-        if (totalWidth <= sectionWidth) {
-            return {
-                visibleButtons: validChildren,
-                overflowItems: [],
-                buttonCount: buttonCount,
-            };
-        }
-
-        // Calculate max buttons that can fit, accounting for "More" button
-        const availableWidth = sectionWidth - separatorsWidth - MORE_BUTTON_WIDTH;
-        const maxButtons = Math.max(Math.floor(availableWidth / MIN_BUTTON_WIDTH), 1);
-
-        if (buttonCount - 1 === maxButtons) {
-            const buttonsWithoutSeparators = validChildren.filter(child => {
-                const isSeparator =
-                    child.type === 'div' && child.props.className?.includes('separator');
-                return !isSeparator && Object.keys(child.props).length > 0;
-            });
-
-            return {
-                visibleButtons: buttonsWithoutSeparators,
-                overflowItems: [],
-                buttonCount: buttonCount,
-            };
-        }
-
-        // Split buttons between visible and overflow
-        const buttons = [];
-        const overflowItems = [];
-        let actualButtons = 0;
-
-        validChildren.forEach(child => {
-            const isSeparator =
-                child.type === 'div' && child.props.className?.includes('separator');
-            const isEmpty = Object.keys(child.props).length === 0;
-
-            if (actualButtons < maxButtons) {
-                if (!isSeparator && !isEmpty) {
-                    buttons.push(child);
-                    actualButtons++;
-                } else {
-                    // Always include separators in visible
-                    buttons.push(child);
-                }
-            } else {
-                // Move remaining buttons to overflow
-                if (!isSeparator && !isEmpty) {
-                    overflowItems.push(child.props);
-                }
-            }
-        });
-
-        return {
-            visibleButtons: buttons,
-            overflowItems: overflowItems,
-            buttonCount: buttonCount,
-        };
-    }, [children, isMeasured, sectionWidth, collapseButtons, SEPARATOR_WIDTH]);
-
-    // buttonCount is already available from the useMemo destructuring above
+        return calculateSectionOverflow(sectionId, children, sectionWidth, collapseButtons);
+    }, [calculateSectionOverflow, sectionId, children, sectionWidth, collapseButtons]);
 
     const getJustifyClass = () => {
         switch (alignContent) {

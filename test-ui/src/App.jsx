@@ -11,6 +11,7 @@ import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
 import FieldTestPage from './pages/dev/FieldTestPage.jsx';
 import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 import ToolbarTestPage from './pages/dev/ToolbarTestPage.jsx';
+import ToolbarCompoundTest from './pages/dev/ToolbarCompoundTest.jsx';
 import SpinnerTestPage from './pages/dev/SpinnerTestPage.jsx';
 import SettingsMockPage from './pages/dev/SettingsMockPage.jsx';
 import ArrayObjectFieldPage from './pages/dev/ArrayObjectFieldPage.jsx';
@@ -335,6 +336,17 @@ const App = () => {
                                                         pageDescription="Toolbar overflow testing"
                                                     >
                                                         <ToolbarTestPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/toolbar-compound"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Toolbar Compound Pattern Test"
+                                                        pageDescription="Toolbar compound component pattern testing"
+                                                    >
+                                                        <ToolbarCompoundTest />
                                                     </PageErrorBoundary>
                                                 }
                                             />

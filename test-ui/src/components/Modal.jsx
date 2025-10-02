@@ -97,17 +97,13 @@ export const Modal = ({
         full: 'max-w-7xl', // 80rem (1280px)
     };
 
-    // Theme colors via inline style (correct for theme integration)
-    const containerStyle = {
-        background: 'var(--surface)',
-        borderColor: 'var(--border)',
-    };
-
-    // All measurements via utility classes
+    // All styling via utility classes
     const containerClasses = `
         relative flex flex-col w-full mx-4
         max-h-[90vh] rounded-lg shadow-lg overflow-hidden border
+        bg-surface border-border
         transition-transform duration-200
+        z-modal
         ${isMobile ? 'max-w-full' : sizeClasses[size]}
         ${className}
     `
@@ -115,15 +111,10 @@ export const Modal = ({
         .replace(/\s+/g, ' ');
 
     // Backdrop styling
-    const backdropStyle = backdrop
-        ? {
-              background: 'var(--backdrop)',
-          }
-        : {};
-
     const backdropClasses = `
-        fixed inset-0 z-50
+        fixed inset-0 z-modal-backdrop
         flex items-center justify-center
+        ${backdrop ? 'bg-overlay-strong' : ''}
         transition-opacity duration-200
     `
         .trim()
@@ -146,11 +137,10 @@ export const Modal = ({
     // Portal content
     const modalContent = (
         <ModalContext.Provider value={{ isOpen, handleClose, closable }}>
-            <div className={backdropClasses} style={backdropStyle} onClick={handleBackdropClick}>
+            <div className={backdropClasses} onClick={handleBackdropClick}>
                 <div
                     ref={containerRef}
                     className={containerClasses}
-                    style={containerStyle}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="modal-title"
@@ -183,26 +173,22 @@ const ModalHeader = ({ children, className = '' }) => {
 
     const { handleClose, closable } = context;
 
-    const headerStyle = {
-        borderColor: 'var(--border)',
-    };
-
-    const headerClasses = `flex items-center justify-between p-4 border-b ${className}`
-        .trim()
-        .replace(/\s+/g, ' ');
+    const headerClasses =
+        `flex items-center justify-between p-4 border-b border-border ${className}`
+            .trim()
+            .replace(/\s+/g, ' ');
 
     return (
-        <div className={headerClasses} style={headerStyle}>
+        <div className={headerClasses}>
             <div className="flex-1" id="modal-title">
                 {children}
             </div>
             {closable && (
                 <button
                     onClick={handleClose}
-                    className="flex items-center justify-center min-w-11 min-h-11 ml-3 rounded hover:bg-surface-hover transition-colors"
+                    className="flex items-center justify-center min-w-11 min-h-11 ml-3 rounded hover:bg-surface-hover text-secondary transition-colors"
                     aria-label="Close modal"
                     type="button"
-                    style={{ color: 'var(--text-secondary)' }}
                 >
                     <span className="material-symbols-outlined text-2xl">close</span>
                 </button>
@@ -229,13 +215,11 @@ const ModalBody = ({ children, className = '' }) => {
         throw new Error('Modal.Body must be used within Modal');
     }
 
-    const bodyClasses = `p-6 overflow-y-auto ${className}`.trim().replace(/\s+/g, ' ');
+    const bodyClasses = `p-6 overflow-y-auto max-h-modal-body ${className}`
+        .trim()
+        .replace(/\s+/g, ' ');
 
-    return (
-        <div className={bodyClasses} style={{ maxHeight: '60vh' }}>
-            {children}
-        </div>
-    );
+    return <div className={bodyClasses}>{children}</div>;
 };
 
 ModalBody.displayName = 'Modal.Body';
@@ -257,10 +241,6 @@ const ModalFooter = ({ children, className = '', align = 'right' }) => {
         throw new Error('Modal.Footer must be used within Modal');
     }
 
-    const footerStyle = {
-        borderColor: 'var(--border)',
-    };
-
     // Alignment mapping
     const alignmentClasses = {
         left: 'justify-start',
@@ -269,15 +249,12 @@ const ModalFooter = ({ children, className = '', align = 'right' }) => {
         'space-between': 'justify-between',
     };
 
-    const footerClasses = `flex gap-3 p-4 border-t ${alignmentClasses[align]} ${className}`
-        .trim()
-        .replace(/\s+/g, ' ');
+    const footerClasses =
+        `flex gap-3 p-4 border-t border-border ${alignmentClasses[align]} ${className}`
+            .trim()
+            .replace(/\s+/g, ' ');
 
-    return (
-        <div className={footerClasses} style={footerStyle}>
-            {children}
-        </div>
-    );
+    return <div className={footerClasses}>{children}</div>;
 };
 
 ModalFooter.displayName = 'Modal.Footer';

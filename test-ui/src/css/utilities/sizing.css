@@ -562,6 +562,7 @@
 
     /* Layout maximum heights */
     .max-h-modal { max-height: 90vh; }
+    .max-h-modal-body { max-height: 60vh; }
     .max-h-dropdown { max-height: 300px; }
     .max-h-content { max-height: 80vh; }
 

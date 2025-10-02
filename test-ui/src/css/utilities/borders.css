@@ -64,6 +64,7 @@
     .border-primary\/25 { border-color: color-mix(in srgb, var(--primary) 25%, transparent); }
     .border-surface { border-color: var(--surface); }
     .border-default { border-color: var(--border); }
+    .border-border { border-color: var(--border); }
     .border-sidebar { border-color: var(--sidebar-border); }
 
     /* State border colors */

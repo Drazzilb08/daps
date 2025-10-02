@@ -20,6 +20,7 @@ import StatsPrimitivesTestPage from './pages/dev/StatsPrimitivesTestPage.jsx';
 import ButtonPrimitivesTestPage from './pages/dev/ButtonPrimitivesTestPage.jsx';
 import CardPrimitivesTestPage from './pages/dev/CardPrimitivesTestPage.jsx';
 import FormCompoundsTest from './pages/dev/FormCompoundsTest.jsx';
+import ModalsTestPage from './pages/dev/ModalsTestPage.jsx';
 import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
 import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import UISettingsPage from './pages/settings/UISettingsPage.jsx';
@@ -436,6 +437,17 @@ const App = () => {
                                                         pageDescription="Form System compound composition validation (Header, Section, Actions)"
                                                     >
                                                         <FormCompoundsTest />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/modals"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Modal Test"
+                                                        pageDescription="Modal System comprehensive testing and real-world examples"
+                                                    >
+                                                        <ModalsTestPage />
                                                     </PageErrorBoundary>
                                                 }
                                             />

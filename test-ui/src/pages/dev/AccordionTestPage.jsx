@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import AccordionItem from '../../components/AccordionItem';
 import { Accordion } from '../../components/Accordion';
+import { Modal } from '../../components/ui';
 
 /**
  * AccordionTestPage - Comprehensive testing page for AccordionItem compound component
@@ -10,6 +11,10 @@ import { Accordion } from '../../components/Accordion';
 const AccordionTestPage = () => {
     // State for controlled accordion test
     const [controlledExpanded, setControlledExpanded] = useState(false);
+
+    // State for modal tests
+    const [modalOpen, setModalOpen] = useState(false);
+    const [controlledModalOpen, setControlledModalOpen] = useState(false);
 
     return (
         <div className="p-6 max-w-4xl mx-auto">
@@ -507,6 +512,114 @@ const AccordionTestPage = () => {
                                     </AccordionItem.Body>
                                 </AccordionItem>
                             </Accordion>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Modal Tests - Phase 1 */}
+                <section>
+                    <h2 className="text-xl font-semibold mb-4 text-primary">
+                        Modal Component Tests (Phase 1)
+                    </h2>
+                    <p className="mb-4 text-secondary">
+                        Testing Modal compound component with controlled/uncontrolled modes
+                    </p>
+
+                    <div className="space-y-4">
+                        {/* Controlled Mode Test */}
+                        <div>
+                            <h3 className="text-lg font-medium mb-2 text-primary">
+                                Controlled Mode
+                            </h3>
+                            <button
+                                onClick={() => setControlledModalOpen(true)}
+                                className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-hover min-h-11"
+                            >
+                                Open Controlled Modal
+                            </button>
+                            <Modal
+                                isOpen={controlledModalOpen}
+                                onClose={() => setControlledModalOpen(false)}
+                                size="medium"
+                            >
+                                <Modal.Header>Controlled Modal</Modal.Header>
+                                <Modal.Body>
+                                    <p className="text-primary">
+                                        This is a controlled modal. Parent manages the state.
+                                    </p>
+                                    <p className="text-secondary mt-2">
+                                        Click backdrop, ESC key, or close button to close.
+                                    </p>
+                                </Modal.Body>
+                                <Modal.Footer align="right">
+                                    <button
+                                        onClick={() => setControlledModalOpen(false)}
+                                        className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary-hover min-h-11"
+                                    >
+                                        Close
+                                    </button>
+                                </Modal.Footer>
+                            </Modal>
+                        </div>
+
+                        {/* Size Variants Test */}
+                        <div>
+                            <h3 className="text-lg font-medium mb-2 text-primary">Size Variants</h3>
+                            <div className="flex gap-3 flex-wrap">
+                                {['small', 'medium', 'large', 'full'].map(size => (
+                                    <button
+                                        key={size}
+                                        onClick={() => {
+                                            setModalOpen(size);
+                                        }}
+                                        className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-hover min-h-11"
+                                    >
+                                        {size.charAt(0).toUpperCase() + size.slice(1)} Modal
+                                    </button>
+                                ))}
+                            </div>
+                            {modalOpen && (
+                                <Modal
+                                    isOpen={true}
+                                    onClose={() => setModalOpen(false)}
+                                    size={modalOpen}
+                                >
+                                    <Modal.Header>
+                                        {modalOpen.charAt(0).toUpperCase() + modalOpen.slice(1)}{' '}
+                                        Modal
+                                    </Modal.Header>
+                                    <Modal.Body>
+                                        <p className="text-primary">
+                                            This is a {modalOpen} modal demonstrating size variant.
+                                        </p>
+                                        <div className="mt-4 space-y-2">
+                                            <p className="text-secondary">
+                                                Sample content to show scrolling:
+                                            </p>
+                                            {Array.from({ length: 10 }, (_, i) => (
+                                                <p key={i} className="text-secondary">
+                                                    Line {i + 1}: Lorem ipsum dolor sit amet,
+                                                    consectetur adipiscing elit.
+                                                </p>
+                                            ))}
+                                        </div>
+                                    </Modal.Body>
+                                    <Modal.Footer align="space-between">
+                                        <button
+                                            onClick={() => setModalOpen(false)}
+                                            className="bg-secondary text-white px-4 py-2 rounded hover:bg-secondary-hover min-h-11"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={() => setModalOpen(false)}
+                                            className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-hover min-h-11"
+                                        >
+                                            Confirm
+                                        </button>
+                                    </Modal.Footer>
+                                </Modal>
+                            )}
                         </div>
                     </div>
                 </section>

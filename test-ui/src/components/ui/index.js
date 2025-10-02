@@ -18,6 +18,7 @@ export { default as Dropdown } from './Dropdown';
 export { default as HamburgerButton } from './HamburgerButton';
 export { default as Menu } from './Menu';
 export { default as MenuItem } from './MenuItem';
+export { Modal } from '../Modal';
 export { PageHeader } from './PageHeader';
 export { default as Spinner } from './Spinner';
 export { StatCard } from './StatCard';

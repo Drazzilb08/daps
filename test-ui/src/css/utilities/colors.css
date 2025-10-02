@@ -2,6 +2,7 @@
     /* Background colors */
     .bg-primary { background: var(--primary); }
     .bg-primary-hover { background: var(--focus); }
+    .bg-secondary { background: var(--surface-alt); }
     .bg-page { background: var(--bg); }
     .bg-surface { background: var(--surface); }
     .bg-surface-elevated { background: var(--surface-elevated); }
@@ -11,6 +12,7 @@
     .bg-success { background: var(--success); }
     .bg-warning { background: var(--warning); }
     .bg-error { background: var(--error); }
+    .bg-danger { background: var(--error); }
     .bg-info { background: var(--info); }
 
     /* Special backgrounds */
@@ -161,6 +163,12 @@
 
     /* Single-property color utilities for composition */
     .text-on-color { color: var(--on-color-text); }
+
+    /* Button variant text contrast colors */
+    .text-primary-contrast { color: var(--on-color-text); }
+    .text-secondary-contrast { color: var(--text-primary); }
+    .text-success-contrast { color: var(--on-color-text); }
+    .text-danger-contrast { color: var(--on-color-text); }
 
     /* ===========================================
      ACCESSIBILITY COLOR UTILITIES

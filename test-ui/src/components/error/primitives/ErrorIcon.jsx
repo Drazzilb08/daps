@@ -2,11 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * ErrorIcon - Visual error type indicator with exact styling from current implementation
+ * ErrorIcon - Visual error type indicator
  *
- * Uses Material Symbols icons with precise class names from:
- * - PageErrorBoundary.jsx line 184-186 (text-4xl)
- * - FeatureErrorBoundary.jsx line 315 (text-xl)
+ * Displays Material Symbols icons with size and color variants.
  *
  * @param {Object} props
  * @param {'error'|'warning'|'info'} props.type - Icon type (maps to Material Symbol)
@@ -14,15 +12,15 @@ import PropTypes from 'prop-types';
  */
 export const ErrorIcon = ({ type = 'error', size = 'lg' }) => {
     const iconMap = {
-        error: 'build', // PageErrorBoundary uses "build" icon
+        error: 'build',
         warning: 'warning',
         info: 'info',
     };
 
     const sizeClassMap = {
-        sm: 'text-xl', // FeatureErrorBoundary inline mode (line 315)
+        sm: 'text-xl',
         md: 'text-2xl',
-        lg: 'text-4xl', // PageErrorBoundary (line 184)
+        lg: 'text-4xl',
     };
 
     const colorClassMap = {
@@ -31,7 +29,6 @@ export const ErrorIcon = ({ type = 'error', size = 'lg' }) => {
         info: 'text-info',
     };
 
-    // Page mode icon styling (exact from PageErrorBoundary.jsx lines 183-186)
     if (size === 'lg') {
         return (
             <div className="text-center mb-8">
@@ -44,7 +41,6 @@ export const ErrorIcon = ({ type = 'error', size = 'lg' }) => {
         );
     }
 
-    // Inline mode icon styling (exact from FeatureErrorBoundary.jsx line 315)
     return (
         <span
             className={`material-symbols-outlined ${sizeClassMap[size]} shrink-0 mt-1 ${colorClassMap[type]}`}

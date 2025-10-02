@@ -5,18 +5,14 @@ import { useToast } from '../../contexts/ToastContext.jsx';
 import { ErrorContainer, ErrorIcon, ErrorActions } from './primitives';
 
 /**
- * PageErrorBoundary - Page-level error boundary with EXACT UI/UX preservation
+ * PageErrorBoundary - Page-level error boundary
  *
- * This boundary produces IDENTICAL visual output to current PageErrorBoundary.jsx (lines 180-348)
- * by composing error primitives with page-specific elements (help section, footer).
- *
- * Key features preserved:
- * - Full page error container (lines 181-182)
- * - Icon + Title + Description (lines 183-195)
- * - Error details box (lines 207-232)
- * - Complete button set (lines 234-314): Try Again, Home, Back, Copy, Refresh
- * - Help section (lines 316-337)
- * - Footer (lines 340-345)
+ * Displays full-page error state with:
+ * - Error icon and descriptive title
+ * - Error details (message, component stack, retry count, timestamp)
+ * - Action buttons (Try Again, Go Home, Go Back, Copy Error, Refresh)
+ * - Help section with recovery instructions
+ * - Support contact information
  */
 class PageErrorBoundaryBase extends Component {
     constructor(props) {
@@ -52,7 +48,6 @@ class PageErrorBoundaryBase extends Component {
         console.error('Error Info:', errorInfo);
         console.groupEnd();
 
-        // Report to GlobalErrorProvider if available
         if (reportError) {
             reportError(error, {
                 context: `Page: ${pageName}`,
@@ -180,13 +175,10 @@ class PageErrorBoundaryBase extends Component {
             { id: 'refresh', label: 'Refresh Page', variant: 'secondary', icon: 'refresh' },
         ];
 
-        // Compose primitives to match exact UI from PageErrorBoundary.jsx lines 180-348
         return (
             <ErrorContainer mode="page">
-                {/* Icon (lines 184-186) */}
                 <ErrorIcon type="error" size="lg" />
 
-                {/* Title + Description (lines 187-195) */}
                 <div className="text-center mb-8">
                     <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">
                         {pageName} Page Error
@@ -198,7 +190,6 @@ class PageErrorBoundaryBase extends Component {
                     </p>
                 </div>
 
-                {/* Optional description box (lines 198-205) */}
                 {pageDescription && (
                     <div className="bg-surface-alt rounded-md p-4 mb-6">
                         <p className="text-base leading-relaxed">
@@ -208,7 +199,6 @@ class PageErrorBoundaryBase extends Component {
                     </div>
                 )}
 
-                {/* Error details box (lines 207-232) */}
                 <div className="bg-surface-variant border border-border rounded-md p-4 mb-6">
                     <h3 className="text-primary text-xl font-semibold m-0 mb-3">Error Details</h3>
                     <div className="mb-2 text-sm font-mono break-words">
@@ -230,10 +220,8 @@ class PageErrorBoundaryBase extends Component {
                     </div>
                 </div>
 
-                {/* Action buttons (lines 234-314) */}
                 <ErrorActions actions={actions} onAction={this.handleAction} mode="page" />
 
-                {/* Help section (lines 316-337) */}
                 <div className="mt-6">
                     <div className="bg-surface-alt border border-border rounded-md p-4">
                         <h4 className="text-primary text-lg font-semibold m-0 mb-3">
@@ -254,7 +242,6 @@ class PageErrorBoundaryBase extends Component {
                     </div>
                 </div>
 
-                {/* Footer (lines 340-345) */}
                 <div className="mt-6 pt-4 border-t border-border text-center">
                     <p className="m-0 text-sm text-secondary leading-relaxed">
                         If this error continues to occur, please check the application logs or

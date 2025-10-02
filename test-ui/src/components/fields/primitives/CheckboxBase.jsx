@@ -49,32 +49,18 @@ export const CheckboxBase = React.memo(
             .filter(Boolean)
             .join(' ');
 
-        // ATOMIC UTILITY COMPOSITION - matching backup CSS exactly
         const indicatorClasses = [
-            // Base indicator styling - atomic utilities only
             'relative flex items-center justify-center',
-            'w-4 h-4', // 16px x 16px checkbox size
+            'w-4 h-4',
             'border rounded-sm',
             'transition-colors transition-fast',
             'cursor-pointer shrink-0',
-
-            // Background/border states matching backup CSS lines 136-138, 118
-            checked
-                ? 'bg-primary border-primary text-white' // :checked state from backup
-                : 'bg-white border-default', // Default white background using form control border
-
-            // Hover states matching backup CSS lines 127-129
+            checked ? 'bg-primary border-primary text-white' : 'bg-white border-default',
             !disabled && !checked && 'hover:border-primary',
             !disabled && checked && 'hover:bg-primary',
-
-            // Focus states matching backup CSS lines 131-134
             'focus-within:border-primary',
-
-            // Error states
             invalid && !checked && 'border-error',
             invalid && 'focus-within:border-error',
-
-            // Disabled states
             disabled && 'opacity-60 cursor-not-allowed pointer-events-none',
         ]
             .filter(Boolean)
@@ -90,22 +76,19 @@ export const CheckboxBase = React.memo(
                     onChange={handleChange}
                     disabled={disabled}
                     required={required}
-                    className="sr-only" // Atomic utility for screen reader only
+                    className="sr-only"
                     aria-describedby={ariaDescribedby}
                     aria-invalid={invalid}
                     {...rest}
                 />
 
-                {/* Checkbox indicator with atomic utility composition */}
                 <div className={indicatorClasses}>
                     <svg
                         className={[
-                            // Checkmark atomic utilities
-                            'w-3 h-3', // 12px x 12px
+                            'w-3 h-3',
                             'stroke-current stroke-2',
                             'fill-none',
                             'transition-all',
-                            // Visibility states using atomic utilities
                             checked ? 'opacity-100 scale-100' : 'opacity-0 scale-75',
                         ]
                             .filter(Boolean)

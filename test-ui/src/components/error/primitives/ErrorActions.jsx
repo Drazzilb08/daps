@@ -3,12 +3,9 @@ import PropTypes from 'prop-types';
 import { Button } from '../../ui/button/Button';
 
 /**
- * ErrorActions - Action button composition with exact styling from current implementation
+ * ErrorActions - Action button composition
  *
- * Integrates Phase 2 Button component while preserving exact visual output from:
- * - PageErrorBoundary.jsx lines 234-314 (primary/secondary buttons with icons)
- * - FeatureErrorBoundary.jsx lines 229-275 (modal buttons)
- * - FeatureErrorBoundary.jsx lines 342-407 (inline buttons)
+ * Renders a collection of action buttons with icons using the Button component.
  *
  * @param {Object} props
  * @param {Array} props.actions - Action button configurations
@@ -32,7 +29,9 @@ export const ErrorActions = ({ actions = [], onAction, mode = 'page' }) => {
                     className="gap-1"
                 >
                     {action.icon && (
-                        <span className="material-symbols-outlined text-base align-middle">{action.icon}</span>
+                        <span className="material-symbols-outlined text-base align-middle">
+                            {action.icon}
+                        </span>
                     )}
                     {action.label}
                 </Button>

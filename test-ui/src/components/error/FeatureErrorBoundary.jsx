@@ -5,18 +5,18 @@ import { useToast } from '../../contexts/ToastContext.jsx';
 import { ErrorContainer, ErrorActions } from './primitives';
 
 /**
- * FeatureErrorBoundary - Feature-level error boundary with EXACT UI/UX preservation
+ * FeatureErrorBoundary - Feature-level error boundary
  *
- * This boundary produces IDENTICAL visual output to current FeatureErrorBoundary.jsx:
- * - Critical mode (modal): lines 218-278
- * - Inline mode: lines 300-431
- * - Skipped mode: lines 176-199
+ * Displays feature-specific error states with three modes:
+ * - Critical: Modal overlay for essential features
+ * - Inline: Warning banner with error details and recovery actions
+ * - Skipped: Compact notification when feature is skipped due to error
  *
- * Key features preserved:
- * - Critical feature modal overlay with blur backdrop
- * - Inline feature error with warning banner
+ * Features:
  * - Skip functionality for non-critical features
- * - Copy error with state indicators (copying/success/error)
+ * - Retry with count tracking
+ * - Copy error details to clipboard
+ * - Automatic disable after 3 failed retries
  */
 class FeatureErrorBoundaryBase extends Component {
     constructor(props) {
@@ -54,7 +54,6 @@ class FeatureErrorBoundaryBase extends Component {
         console.error('Error Info:', errorInfo);
         console.groupEnd();
 
-        // Report to GlobalErrorProvider if available
         if (reportError) {
             reportError(error, {
                 context: `Feature: ${featureName}`,
@@ -79,12 +78,10 @@ class FeatureErrorBoundaryBase extends Component {
     handleSkip = () => {
         const { critical = false } = this.props;
 
-        // Critical features cannot be skipped
         if (critical) {
             return;
         }
 
-        // For non-critical features, clear error state and show skipped state
         this.setState({
             hasError: false,
             error: null,
@@ -166,7 +163,6 @@ class FeatureErrorBoundaryBase extends Component {
             fallback,
         } = this.props;
 
-        // Skipped state (exact from FeatureErrorBoundary.jsx lines 176-199)
         if (skipped) {
             return (
                 <div className="bg-surface-alt border border-warning rounded-md my-2 font-sans">
@@ -183,7 +179,9 @@ class FeatureErrorBoundaryBase extends Component {
                             type="button"
                             title="Try to load this feature again"
                         >
-                            <span className="material-symbols-outlined mr-1 align-middle">refresh</span>
+                            <span className="material-symbols-outlined mr-1 align-middle">
+                                refresh
+                            </span>
                             Retry
                         </button>
                     </div>
@@ -193,12 +191,10 @@ class FeatureErrorBoundaryBase extends Component {
 
         if (!hasError) return children;
 
-        // Use custom fallback if provided
         if (fallback) {
             return fallback({ error, retry: this.handleRetry });
         }
 
-        // Critical mode: Modal overlay (exact from FeatureErrorBoundary.jsx lines 218-278)
         if (critical) {
             const modalActions = [
                 { id: 'retry', label: 'Retry', variant: 'primary', icon: 'refresh' },
@@ -246,7 +242,6 @@ class FeatureErrorBoundaryBase extends Component {
             );
         }
 
-        // High retry count: Disabled state (exact from FeatureErrorBoundary.jsx lines 281-298)
         if (retryCount >= 3) {
             return (
                 <div
@@ -265,7 +260,6 @@ class FeatureErrorBoundaryBase extends Component {
             );
         }
 
-        // Inline mode: Feature error (exact from FeatureErrorBoundary.jsx lines 300-431)
         const inlineActions = [
             { id: 'retry', label: 'Retry', variant: 'primary', icon: 'refresh' },
             { id: 'skip', label: 'Skip', variant: 'secondary', icon: 'skip_next' },
@@ -297,17 +291,16 @@ class FeatureErrorBoundaryBase extends Component {
 
         return (
             <>
-                {/* Warning banner (lines 303-310) */}
                 <div className="bg-surface-alt border border-warning rounded-md my-2 mb-1 p-2 text-center text-xs text-warning font-medium font-sans">
                     <div className="m-0 p-0">
-                        <span className="material-symbols-outlined text-warning mr-1 align-middle">warning</span>
+                        <span className="material-symbols-outlined text-warning mr-1 align-middle">
+                            warning
+                        </span>
                         {featureName} temporarily unavailable
                     </div>
                 </div>
 
-                {/* Error container (lines 312-429) */}
                 <ErrorContainer mode="inline">
-                    {/* Icon + Title (lines 314-328) */}
                     <div className="mb-4 flex items-center gap-3">
                         <span className="material-symbols-outlined text-xl shrink-0 mt-1 text-warning">
                             warning
@@ -324,7 +317,6 @@ class FeatureErrorBoundaryBase extends Component {
                         </div>
                     </div>
 
-                    {/* Error message box (lines 330-340) */}
                     <div className="text-primary">
                         <div className="bg-surface-variant border border-error p-3 mb-4 text-sm break-words">
                             <strong>Error:</strong> {error?.message || 'Component failed to render'}
@@ -336,14 +328,12 @@ class FeatureErrorBoundaryBase extends Component {
                             )}
                         </div>
 
-                        {/* Action buttons (lines 342-407) */}
                         <ErrorActions
                             actions={inlineActions}
                             onAction={this.handleAction}
                             mode="inline"
                         />
 
-                        {/* Repeated errors warning (lines 409-426) */}
                         {retryCount >= 2 && (
                             <div className="mt-4">
                                 <div className="bg-surface-alt border border-error rounded-md p-3">

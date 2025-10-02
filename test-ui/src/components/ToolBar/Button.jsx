@@ -26,17 +26,7 @@ import { ButtonBase, ButtonIcon, ButtonText, ButtonSpinner } from '../ui/button/
  * @param {Function} [props.onPress] - Click handler
  */
 const Button = React.forwardRef(
-    (
-        {
-            label,
-            iconName,
-            isSpinning = false,
-            isDisabled = false,
-            onPress,
-            ...otherProps
-        },
-        ref
-    ) => {
+    ({ label, iconName, isSpinning = false, isDisabled = false, onPress, ...otherProps }, ref) => {
         return (
             <ButtonBase
                 ref={ref}

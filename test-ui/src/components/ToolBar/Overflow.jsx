@@ -77,10 +77,7 @@ const Overflow = ({
         if (!isMenuOpen && !mobileMenuOpen) return;
 
         const handleClickOutside = event => {
-            if (
-                overflowButtonRef.current &&
-                !overflowButtonRef.current.contains(event.target)
-            ) {
+            if (overflowButtonRef.current && !overflowButtonRef.current.contains(event.target)) {
                 handleMenuClose();
             }
         };

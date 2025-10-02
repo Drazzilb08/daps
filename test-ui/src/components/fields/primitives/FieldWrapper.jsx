@@ -24,7 +24,6 @@ export const FieldWrapper = ({
     variant = 'standard',
     className = '',
 }) => {
-    // Variant-specific utility classes - using atomic utilities
     const variantClasses = {
         standard: 'flex flex-col gap-1 mb-4 w-full',
         'form-section': 'flex flex-col gap-4 mb-4 w-full',

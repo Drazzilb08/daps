@@ -102,8 +102,8 @@ export const CardPrimitivesTestPage = () => {
                                 </li>
                             </ul>
                             <p className="pt-2">
-                                <strong>Compound Component Pattern:</strong> Card.Header,
-                                Card.Body, Card.Footer, Card.Image
+                                <strong>Compound Component Pattern:</strong> Card.Header, Card.Body,
+                                Card.Footer, Card.Image
                             </p>
                             <p>
                                 <strong>Preset Patterns:</strong> MediaCard (image + metadata),
@@ -495,7 +495,10 @@ export const CardPrimitivesTestPage = () => {
                         />
                         <Card.Header title="Product Name" subtitle="$99.99" />
                         <Card.Body>
-                            <p>High-quality product with excellent reviews. Free shipping on orders over $50.</p>
+                            <p>
+                                High-quality product with excellent reviews. Free shipping on orders
+                                over $50.
+                            </p>
                         </Card.Body>
                         <Card.Footer align="space-between">
                             <IconButton
@@ -514,9 +517,7 @@ export const CardPrimitivesTestPage = () => {
 
             {/* Preset Pattern: MediaCard */}
             <section className="flex flex-col gap-3">
-                <h2 className="text-xl font-semibold text-primary">
-                    MediaCard Preset Pattern
-                </h2>
+                <h2 className="text-xl font-semibold text-primary">MediaCard Preset Pattern</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <MediaCard
                         image="https://picsum.photos/800/533?random=3"
@@ -551,9 +552,7 @@ export const CardPrimitivesTestPage = () => {
 
             {/* Preset Pattern: ActionCard */}
             <section className="flex flex-col gap-3">
-                <h2 className="text-xl font-semibold text-primary">
-                    ActionCard Preset Pattern
-                </h2>
+                <h2 className="text-xl font-semibold text-primary">ActionCard Preset Pattern</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <ActionCard
                         title="Start Your Free Trial"
@@ -624,8 +623,8 @@ export const CardPrimitivesTestPage = () => {
                                 color
                             </p>
                             <p className="text-sm text-secondary">
-                                <strong>Keyboard Navigation:</strong> Tab to focus, Enter or Space to
-                                activate clickable cards
+                                <strong>Keyboard Navigation:</strong> Tab to focus, Enter or Space
+                                to activate clickable cards
                             </p>
                         </div>
                     </Card.Body>
@@ -638,7 +637,8 @@ export const CardPrimitivesTestPage = () => {
                 <Card.Body>
                     <div className="text-sm text-secondary space-y-2">
                         <p>
-                            <strong>Primitive Composition:</strong> Every card is built by composing:
+                            <strong>Primitive Composition:</strong> Every card is built by
+                            composing:
                         </p>
                         <ul className="list-disc pl-6 space-y-1">
                             <li>CardContainer primitive (base wrapper with states)</li>
@@ -656,12 +656,12 @@ export const CardPrimitivesTestPage = () => {
                             primitives
                         </p>
                         <p>
-                            <strong>Preset Patterns:</strong> MediaCard (image + metadata + actions),
-                            ActionCard (title + description + primary action)
+                            <strong>Preset Patterns:</strong> MediaCard (image + metadata +
+                            actions), ActionCard (title + description + primary action)
                         </p>
                         <p>
-                            <strong>Fully Reusable:</strong> Primitives can be used anywhere, not just
-                            in Card context
+                            <strong>Fully Reusable:</strong> Primitives can be used anywhere, not
+                            just in Card context
                         </p>
                         <p className="pt-2">
                             <strong>Accessibility:</strong> WCAG 2.1 AA compliant - keyboard

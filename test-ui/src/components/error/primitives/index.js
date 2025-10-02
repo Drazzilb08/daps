@@ -1,7 +1,7 @@
 /**
  * Error Primitives - Atomic building blocks for error displays
  *
- * These 4 primitives compose to produce IDENTICAL UI/UX to current implementation:
+ * Four primitives that compose to create consistent error UIs:
  * - ErrorContainer: Layout wrapper (modal/page/inline modes)
  * - ErrorIcon: Visual error indicator
  * - ErrorMessage: Formatted error content

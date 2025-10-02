@@ -41,8 +41,8 @@ const ToolbarCompoundTest = () => {
                 <section className="flex flex-col gap-3 p-4 border border-default rounded-lg bg-surface">
                     <h2 className="text-xl font-semibold">Test 1: Basic Compound Toolbar</h2>
                     <p className="text-secondary text-sm">
-                        Simple toolbar using compound pattern with ToolBar.Section, ToolBar.Button, and
-                        ToolBar.Separator.
+                        Simple toolbar using compound pattern with ToolBar.Section, ToolBar.Button,
+                        and ToolBar.Separator.
                     </p>
                     <div className="flex flex-col gap-3">
                         <ToolBar>
@@ -140,8 +140,8 @@ const ToolbarCompoundTest = () => {
                 <section className="flex flex-col gap-3 p-4 border border-default rounded-lg bg-surface">
                     <h2 className="text-xl font-semibold">Test 3: Overflow Menu</h2>
                     <p className="text-secondary text-sm">
-                        Toolbar with many buttons demonstrating overflow menu behavior (Section handles
-                        overflow internally).
+                        Toolbar with many buttons demonstrating overflow menu behavior (Section
+                        handles overflow internally).
                     </p>
                     <div className="flex flex-col gap-3">
                         <ToolBar>
@@ -182,7 +182,10 @@ const ToolbarCompoundTest = () => {
                     <div className="p-3 bg-bg-secondary rounded border border-default">
                         <strong>Expected behavior:</strong>
                         <ul>
-                            <li>At narrow widths, some buttons move to &quot;More&quot; overflow menu</li>
+                            <li>
+                                At narrow widths, some buttons move to &quot;More&quot; overflow
+                                menu
+                            </li>
                             <li>Overflow menu shows count of hidden buttons</li>
                             <li>Clicking overflow buttons closes menu and executes action</li>
                         </ul>
@@ -230,7 +233,9 @@ const ToolbarCompoundTest = () => {
                 {/* Test 5: Loading State */}
                 <section className="flex flex-col gap-3 p-4 border border-default rounded-lg bg-surface">
                     <h2 className="text-xl font-semibold">Test 5: Loading/Spinning State</h2>
-                    <p className="text-secondary text-sm">Testing button loading spinner integration.</p>
+                    <p className="text-secondary text-sm">
+                        Testing button loading spinner integration.
+                    </p>
                     <div className="flex flex-col gap-3">
                         <ToolBar>
                             <ToolBar.Section alignContent="left">
@@ -243,7 +248,9 @@ const ToolbarCompoundTest = () => {
                                     label="Loading"
                                     iconName="cloud_sync"
                                     isSpinning={true}
-                                    onPress={() => logAction('Loading clicked (disabled during spin)')}
+                                    onPress={() =>
+                                        logAction('Loading clicked (disabled during spin)')
+                                    }
                                 />
                                 <ToolBar.Button
                                     label="Normal"
@@ -363,7 +370,9 @@ const ToolbarCompoundTest = () => {
                             <li>Overflow button shows &quot;More (3)&quot; at desktop</li>
                             <li>Clicking overflow button opens dropdown menu</li>
                             <li>Menu closes on: item click, outside click, Escape key</li>
-                            <li>Mobile: Shows &quot;Menu&quot; label instead of &quot;More (3)&quot;</li>
+                            <li>
+                                Mobile: Shows &quot;Menu&quot; label instead of &quot;More (3)&quot;
+                            </li>
                             <li>Keyboard navigation: Escape closes menu</li>
                         </ul>
                     </div>
@@ -380,7 +389,10 @@ const ToolbarCompoundTest = () => {
                         ) : (
                             <ul className="flex flex-col gap-1">
                                 {actionLog.map((log, index) => (
-                                    <li key={index} className="text-sm font-mono p-2 bg-surface rounded border border-default">
+                                    <li
+                                        key={index}
+                                        className="text-sm font-mono p-2 bg-surface rounded border border-default"
+                                    >
                                         {log}
                                     </li>
                                 ))}
@@ -400,27 +412,38 @@ const ToolbarCompoundTest = () => {
                                 ToolBarContext
                             </li>
                             <li>
-                                <strong>Button primitive reuse:</strong> ToolBar.Button wraps Phase 2 Button
-                                primitives
+                                <strong>Button primitive reuse:</strong> ToolBar.Button wraps Phase
+                                2 Button primitives
                             </li>
                             <li>
-                                <strong>Automatic responsive:</strong> Separator hides on mobile via context
+                                <strong>Automatic responsive:</strong> Separator hides on mobile via
+                                context
                             </li>
                             <li>
-                                <strong>Overflow handling:</strong> Section component manages overflow internally
+                                <strong>Overflow handling:</strong> Section component manages
+                                overflow internally
                             </li>
                             <li>
-                                <strong>Zero duplication:</strong> Single source of truth for toolbar behavior
+                                <strong>Zero duplication:</strong> Single source of truth for
+                                toolbar behavior
                             </li>
                         </ul>
 
-                        <h3 className="text-lg font-semibold mb-2">Current Implementation Status</h3>
+                        <h3 className="text-lg font-semibold mb-2">
+                            Current Implementation Status
+                        </h3>
                         <ul className="list-disc pl-6 mb-4">
                             <li>✅ ToolBarContext provides responsive state</li>
-                            <li>✅ Compound pattern: ToolBar.Section, ToolBar.Button, ToolBar.Separator, ToolBar.Overflow</li>
+                            <li>
+                                ✅ Compound pattern: ToolBar.Section, ToolBar.Button,
+                                ToolBar.Separator, ToolBar.Overflow
+                            </li>
                             <li>✅ Button primitive integration complete</li>
                             <li>✅ Context-aware Separator (hides on mobile)</li>
-                            <li>✅ Overflow calculation moved to ToolBarContext (Section consumes context)</li>
+                            <li>
+                                ✅ Overflow calculation moved to ToolBarContext (Section consumes
+                                context)
+                            </li>
                             <li>✅ Keyboard navigation (Arrow Left/Right, Home/End, Escape)</li>
                             <li>✅ ToolBar.Overflow component with Escape key support</li>
                             <li>✅ SearchToolbar migrated to compound pattern</li>

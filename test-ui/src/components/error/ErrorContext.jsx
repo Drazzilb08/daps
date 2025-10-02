@@ -9,8 +9,6 @@ import PropTypes from 'prop-types';
  * - Error history tracking (last 10 errors)
  * - Context-based error filtering
  * - Error recovery hooks
- *
- * This replaces GlobalErrorContext.jsx with composition-focused architecture.
  */
 
 const ErrorContext = createContext(null);

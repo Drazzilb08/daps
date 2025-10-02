@@ -2,20 +2,19 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * ErrorContainer - Universal error layout wrapper with exact UI/UX preservation
+ * ErrorContainer - Universal error layout wrapper
  *
- * This primitive composes to produce IDENTICAL output to current implementation:
- * - Modal mode: Critical Feature Error (FeatureErrorBoundary lines 218-278)
- * - Page mode: Page Error (PageErrorBoundary lines 180-348)
- * - Inline mode: Feature Error (FeatureErrorBoundary lines 300-431)
+ * Provides consistent error display containers for three modes:
+ * - Modal: Fixed overlay with backdrop blur for critical errors
+ * - Page: Centered page-level error container
+ * - Inline: Inline feature-level error container
  *
  * @param {Object} props
- * @param {'modal'|'page'|'inline'} props.mode - Display mode with exact CSS from current implementation
+ * @param {'modal'|'page'|'inline'} props.mode - Display mode
  * @param {ReactNode} props.children - Error content to display
  * @param {string} props.className - Additional classes (optional)
  */
 export const ErrorContainer = ({ mode = 'page', children, className = '' }) => {
-    // Modal mode: Critical Feature Error overlay (exact from FeatureErrorBoundary.jsx lines 220-277)
     if (mode === 'modal') {
         return (
             <div className="fixed inset-0 z-modal-backdrop bg-overlay backdrop-blur-sm font-sans flex items-center justify-center p-4">
@@ -28,7 +27,6 @@ export const ErrorContainer = ({ mode = 'page', children, className = '' }) => {
         );
     }
 
-    // Page mode: Full page error container (exact from PageErrorBoundary.jsx lines 181-182)
     if (mode === 'page') {
         return (
             <div className="min-h-content p-4 font-sans">
@@ -41,7 +39,6 @@ export const ErrorContainer = ({ mode = 'page', children, className = '' }) => {
         );
     }
 
-    // Inline mode: Feature error container (exact from FeatureErrorBoundary.jsx lines 312-313)
     return (
         <div className={`bg-surface border border-error rounded-md my-2 font-sans ${className}`}>
             <div className="p-4">{children}</div>

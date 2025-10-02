@@ -55,7 +55,6 @@ const Section = ({ children, alignContent = 'left', collapseButtons = true }) =>
         }
     }, [children]);
 
-    // Calculate overflow using context (replaces 118 lines of internal logic)
     const { visibleButtons, overflowItems, buttonCount } = useMemo(() => {
         return calculateSectionOverflow(sectionId, children, sectionWidth, collapseButtons);
     }, [calculateSectionOverflow, sectionId, children, sectionWidth, collapseButtons]);

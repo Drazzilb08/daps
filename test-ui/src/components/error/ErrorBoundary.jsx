@@ -49,7 +49,6 @@ export class ErrorBoundary extends Component {
     handleAction = actionId => {
         const { onAction } = this.props;
 
-        // Standard recovery actions
         switch (actionId) {
             case 'retry':
                 this.setState({
@@ -123,15 +122,12 @@ export class ErrorBoundary extends Component {
 
         if (!hasError) return children;
 
-        // Custom fallback if provided
         if (fallback) {
             return fallback({ error, errorInfo, reset: () => this.handleAction('retry') });
         }
 
-        // Get default actions if not provided
         const errorActions = actions || this.getDefaultActions();
 
-        // Default primitive composition
         return (
             <ErrorContainer mode={mode || 'page'}>
                 <ErrorIcon type={variant || 'error'} size={mode === 'inline' ? 'sm' : 'lg'} />

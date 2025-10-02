@@ -2,11 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * ErrorMessage - Formatted error content display with exact styling from current implementation
+ * ErrorMessage - Formatted error content display
  *
- * Preserves exact UI/UX from:
- * - PageErrorBoundary.jsx lines 187-232 (title, description, error details box)
- * - FeatureErrorBoundary.jsx lines 319-340 (inline title, error box)
+ * Displays error information with two layout modes:
+ * - Page: Full error details with title, description, component stack, retry count, timestamp
+ * - Inline: Compact error message with retry attempt count
  *
  * @param {Object} props
  * @param {string} props.title - Error title
@@ -26,7 +26,6 @@ export const ErrorMessage = ({
     errorTimestamp,
     mode = 'page',
 }) => {
-    // Page mode: Full error display (exact from PageErrorBoundary.jsx lines 183-232)
     if (mode === 'page') {
         return (
             <>
@@ -70,7 +69,6 @@ export const ErrorMessage = ({
         );
     }
 
-    // Inline mode: Compact error display (exact from FeatureErrorBoundary.jsx lines 314-340)
     return (
         <>
             <div className="mb-4 flex items-center gap-3">

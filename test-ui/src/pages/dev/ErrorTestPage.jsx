@@ -6,13 +6,10 @@ import { PageErrorBoundary, FeatureErrorBoundary } from '../../components/error'
 /**
  * ErrorTestPage - Comprehensive error system validation
  *
- * Showcases all three error types with EXACT UI/UX from current implementation:
- * 1. Critical Feature Error (Modal overlay) - FeatureErrorBoundary.jsx lines 218-278
- * 2. Page Error (Full page display) - PageErrorBoundary.jsx lines 180-348
- * 3. Feature Error (Inline display) - FeatureErrorBoundary.jsx lines 300-431
- *
- * This page validates that the primitive composition architecture produces
- * IDENTICAL visual output to the original implementation.
+ * Demonstrates all three error boundary types:
+ * 1. Critical Feature Error - Modal overlay for essential features
+ * 2. Page Error - Full page error display
+ * 3. Feature Error - Inline feature-level errors
  */
 
 // Simple component that crashes when told to
@@ -140,12 +137,10 @@ const ErrorTestPage = () => {
 
             {/* Critical Feature Error (Full Screen Overlay) */}
             <section className="mb-6 md:mb-8 p-3 md:p-4 border rounded-md bg-surface">
-                <h2 className="text-lg font-semibold text-error mb-2">
-                    ⚠️ Critical Feature Error
-                </h2>
+                <h2 className="text-lg font-semibold text-error mb-2">⚠️ Critical Feature Error</h2>
                 <p className="text-secondary mb-2">
                     <strong className="text-primary font-medium">Expected output:</strong> Modal
-                    overlay matching FeatureErrorBoundary.jsx lines 218-278
+                    overlay with critical feature error
                 </p>
                 <p className="text-secondary mb-2">
                     <strong className="text-primary font-medium">Visual behavior:</strong>
@@ -154,7 +149,9 @@ const ErrorTestPage = () => {
                     <li>Dark overlay with backdrop blur</li>
                     <li>Centered modal with red border (border-2 border-error)</li>
                     <li>Title: &quot;Critical Feature Error&quot;</li>
-                    <li>Buttons: Retry (primary), Copy Error (info/success/error states), Reload App</li>
+                    <li>
+                        Buttons: Retry (primary), Copy Error (info/success/error states), Reload App
+                    </li>
                 </ul>
 
                 <button
@@ -184,12 +181,10 @@ const ErrorTestPage = () => {
 
             {/* Page Error (Full Page Replacement) */}
             <section className="mb-6 md:mb-8 p-3 md:p-4 border rounded-md bg-surface">
-                <h2 className="text-lg font-semibold text-warning mb-2">
-                    📄 Page Error
-                </h2>
+                <h2 className="text-lg font-semibold text-warning mb-2">📄 Page Error</h2>
                 <p className="text-secondary mb-2">
                     <strong className="text-primary font-medium">Expected output:</strong> Full page
-                    error matching PageErrorBoundary.jsx lines 180-348
+                    error display
                 </p>
                 <p className="text-secondary mb-2">
                     <strong className="text-primary font-medium">Visual behavior:</strong>
@@ -226,12 +221,10 @@ const ErrorTestPage = () => {
 
             {/* Feature Error (Inline Replacement) */}
             <section className="mb-6 md:mb-8 p-3 md:p-4 border rounded-md bg-surface">
-                <h2 className="text-lg font-semibold text-info mb-2">
-                    🛡️ Feature Error
-                </h2>
+                <h2 className="text-lg font-semibold text-info mb-2">🛡️ Feature Error</h2>
                 <p className="text-secondary mb-2">
                     <strong className="text-primary font-medium">Expected output:</strong> Inline
-                    error matching FeatureErrorBoundary.jsx lines 300-431
+                    feature error display
                 </p>
                 <p className="text-secondary mb-2">
                     <strong className="text-primary font-medium">Visual behavior:</strong>
@@ -241,7 +234,10 @@ const ErrorTestPage = () => {
                     <li>Inline container (border border-error rounded-md)</li>
                     <li>Warning icon (text-xl) with title</li>
                     <li>Error message box (bg-surface-variant border border-error)</li>
-                    <li>Buttons: Retry (primary), Skip, Copy Error (info/success/error states), Reload</li>
+                    <li>
+                        Buttons: Retry (primary), Skip, Copy Error (info/success/error states),
+                        Reload
+                    </li>
                 </ul>
 
                 <button
@@ -281,7 +277,9 @@ const ErrorTestPage = () => {
                     <li>Compare visual output against referenced line numbers</li>
                     <li>Verify all CSS classes match exactly</li>
                     <li>Test all action buttons (Retry, Home, Back, Copy, etc.)</li>
-                    <li>Confirm button variant colors match (primary=orange, secondary=gray, etc.)</li>
+                    <li>
+                        Confirm button variant colors match (primary=orange, secondary=gray, etc.)
+                    </li>
                     <li>Check Material Icons render correctly</li>
                     <li>Validate spacing, borders, backgrounds match screenshots</li>
                 </ol>

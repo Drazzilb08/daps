@@ -242,8 +242,8 @@ export default function ArrayObjectFieldPage() {
                         Unified ArrayObjectField Mockup
                     </h1>
                     <p className="text-secondary text-base leading-relaxed">
-                        This page demonstrates the unified ArrayObjectField component that replaces
-                        all *_custom fields. The accordion-style interface eliminates modal
+                        This page demonstrates the unified ArrayObjectField component for complex
+                        field configurations. The accordion-style interface eliminates modal
                         dependencies while providing a mobile-first experience.
                     </p>
                 </header>
@@ -369,7 +369,7 @@ export default function ArrayObjectFieldPage() {
                         <div>
                             <h4 className="font-medium text-primary mb-2">🎯 Single Component</h4>
                             <p className="text-sm text-secondary">
-                                One unified component replaces four separate implementations,
+                                One unified component handles all array-of-objects field types,
                                 reducing maintenance overhead.
                             </p>
                         </div>

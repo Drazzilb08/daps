@@ -7,6 +7,10 @@ import { ButtonBase, ButtonIcon } from './primitives';
  *
  * Composes: ButtonBase + ButtonIcon
  *
+ * CALLER-CONTROL: Callers specify complete styling via className
+ * Default: aspect-square (square button) when no className provided
+ * Override: Provide className for complete control (rectangular, etc.)
+ *
  * @param {Object} props - Component props
  * @param {string} props.icon - Material Symbols icon name
  * @param {Function} props.onClick - Click handler
@@ -14,7 +18,7 @@ import { ButtonBase, ButtonIcon } from './primitives';
  * @param {string} props.size - Button size
  * @param {boolean} props.disabled - Disabled state
  * @param {string} props['aria-label'] - Accessibility label (required for icon-only)
- * @param {string} props.className - Additional classes
+ * @param {string} props.className - Complete styling (overrides default aspect-square)
  * @returns {JSX.Element}
  */
 export const IconButton = React.memo(
@@ -35,7 +39,7 @@ export const IconButton = React.memo(
                 size={size}
                 disabled={disabled}
                 aria-label={ariaLabel}
-                className={`aspect-square ${className}`}
+                className={className || 'aspect-square'}
                 {...htmlButtonProps}
             >
                 <ButtonIcon icon={icon} size={size} aria-hidden="false" />

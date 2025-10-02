@@ -56,7 +56,6 @@ export const ButtonBase = React.memo(
             'inline-flex',
             'items-center',
             'justify-center',
-            'gap-2',
             'border-0',
             'font-medium',
             'cursor-pointer',

@@ -33,14 +33,14 @@ const Button = React.forwardRef(
                 onClick={onPress}
                 disabled={isDisabled || isSpinning}
                 variant="ghost"
-                className="flex-col min-w-14 py-1 px-2"
+                className="flex-col gap-0 min-w-14 py-0 px-2"
                 aria-label={label}
                 {...otherProps}
             >
                 {isSpinning ? (
-                    <ButtonSpinner size="medium" className="mb-1" />
+                    <ButtonSpinner size="medium" />
                 ) : (
-                    <ButtonIcon icon={iconName} size="medium" className="mb-1" />
+                    <ButtonIcon icon={iconName} size="medium" />
                 )}
                 <ButtonText className="text-xs h-5">{label}</ButtonText>
             </ButtonBase>

@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
 import { FieldButton } from '../features/shared';
+import { useOptionalFormField } from '../../forms/FormContext';
 
 export const PasswordField = React.memo(
     ({
@@ -10,14 +11,25 @@ export const PasswordField = React.memo(
         disabled = false,
         highlightInvalid = false,
         errorMessage = null,
+        onBlur,
     }) => {
+        // Optional FormContext integration
+        const formField = useOptionalFormField(field.key);
+
+        // Use FormContext if available, otherwise use props
+        const finalValue = formField?.value ?? value;
+        const finalOnChange = formField?.onChange ?? onChange;
+        const finalHighlightInvalid = formField?.highlightInvalid ?? highlightInvalid;
+        const finalErrorMessage = formField?.errorMessage ?? errorMessage;
+        const finalOnBlur = formField?.onBlur ?? onBlur;
+
         const [showPassword, setShowPassword] = useState(false);
 
         const handleChange = useCallback(
             e => {
-                onChange(e.target.value);
+                finalOnChange(e.target.value);
             },
-            [onChange]
+            [finalOnChange]
         );
 
         const togglePasswordVisibility = useCallback(() => {
@@ -25,10 +37,10 @@ export const PasswordField = React.memo(
         }, []);
 
         const inputId = field.id || `field-${field.key}`;
-        const inputValue = value || '';
+        const inputValue = finalValue || '';
 
         return (
-            <FieldWrapper invalid={highlightInvalid}>
+            <FieldWrapper invalid={finalHighlightInvalid}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
 
                 <div className="flex">
@@ -43,10 +55,11 @@ export const PasswordField = React.memo(
                         maxLength={field.maxLength}
                         minLength={field.minLength}
                         onChange={handleChange}
-                        invalid={highlightInvalid}
+                        onBlur={finalOnBlur}
+                        invalid={finalHighlightInvalid}
                         autoComplete="current-password"
                         aria-describedby={`${field.descId || `${inputId}-desc`} ${field.errorId || `${inputId}-error`}`.trim()}
-                        aria-invalid={highlightInvalid}
+                        aria-invalid={finalHighlightInvalid}
                         className="flex-1 border border-default bg-input rounded-l-md"
                     />
 
@@ -67,7 +80,7 @@ export const PasswordField = React.memo(
                     id={field.descId || `${inputId}-desc`}
                     description={field.description}
                 />
-                <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
+                <FieldError id={field.errorId || `${inputId}-error`} message={finalErrorMessage} />
             </FieldWrapper>
         );
     }

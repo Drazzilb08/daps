@@ -8,6 +8,7 @@
 import React, { useCallback } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
 import { FieldButton } from '../features/shared';
+import { useOptionalFormField } from '../../forms/FormContext';
 
 export const NumberField = React.memo(
     ({
@@ -17,8 +18,18 @@ export const NumberField = React.memo(
         disabled = false,
         highlightInvalid = false,
         errorMessage = null,
+        onBlur,
     }) => {
-        const numValue = value !== null && value !== undefined ? Number(value) : 0;
+        // Optional FormContext integration
+        const formField = useOptionalFormField(field.key);
+
+        // Use FormContext if available, otherwise use props
+        const finalValue = formField?.value ?? value;
+        const finalOnChange = formField?.onChange ?? onChange;
+        const finalHighlightInvalid = formField?.highlightInvalid ?? highlightInvalid;
+        const finalErrorMessage = formField?.errorMessage ?? errorMessage;
+        const finalOnBlur = formField?.onBlur ?? onBlur;
+        const numValue = finalValue !== null && finalValue !== undefined ? Number(finalValue) : 0;
         const step = field.step || 1;
         const min = field.min !== undefined ? Number(field.min) : undefined;
         const max = field.max !== undefined ? Number(field.max) : undefined;
@@ -34,36 +45,36 @@ export const NumberField = React.memo(
                         const newValue = Number(inputValue);
                         if (min !== undefined && newValue < min) return;
                         if (max !== undefined && newValue > max) return;
-                        onChange(newValue);
+                        finalOnChange(newValue);
                     } else if (inputValue === '') {
-                        onChange(null);
+                        finalOnChange(null);
                     } else {
                         // Allow partial input (like "-" or "1." while typing)
-                        onChange(inputValue);
+                        finalOnChange(inputValue);
                     }
                 }
             },
-            [min, max, onChange]
+            [min, max, finalOnChange]
         );
 
         const handleDecrement = useCallback(() => {
             const newValue = numValue - step;
             if (min !== undefined && newValue < min) return;
-            onChange(newValue);
-        }, [numValue, step, min, onChange]);
+            finalOnChange(newValue);
+        }, [numValue, step, min, finalOnChange]);
 
         const handleIncrement = useCallback(() => {
             const newValue = numValue + step;
             if (max !== undefined && newValue > max) return;
-            onChange(newValue);
-        }, [numValue, step, max, onChange]);
+            finalOnChange(newValue);
+        }, [numValue, step, max, finalOnChange]);
 
         const inputId = field.id || `field-${field.key}`;
         const decrementDisabled = disabled || (min !== undefined && numValue <= min);
         const incrementDisabled = disabled || (max !== undefined && numValue >= max);
 
         return (
-            <FieldWrapper invalid={highlightInvalid}>
+            <FieldWrapper invalid={finalHighlightInvalid}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
 
                 <div className="flex">
@@ -81,15 +92,16 @@ export const NumberField = React.memo(
                         id={inputId}
                         type="text"
                         name={field.key}
-                        value={typeof value === 'string' ? value : numValue || ''}
+                        value={typeof finalValue === 'string' ? finalValue : numValue || ''}
                         onChange={handleInputChange}
+                        onBlur={finalOnBlur}
                         disabled={disabled}
                         required={field.required}
                         placeholder={field.placeholder}
-                        invalid={highlightInvalid}
+                        invalid={finalHighlightInvalid}
                         className="flex-1 border-t border-b  border-default bg-input text-center"
                         aria-describedby={`${field.descId || `${inputId}-desc`} ${field.errorId || `${inputId}-error`}`.trim()}
-                        aria-invalid={highlightInvalid}
+                        aria-invalid={finalHighlightInvalid}
                     />
 
                     <FieldButton
@@ -107,7 +119,7 @@ export const NumberField = React.memo(
                     id={field.descId || `${inputId}-desc`}
                     description={field.description}
                 />
-                <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
+                <FieldError id={field.errorId || `${inputId}-error`} message={finalErrorMessage} />
             </FieldWrapper>
         );
     }

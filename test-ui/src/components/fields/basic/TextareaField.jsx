@@ -12,6 +12,7 @@ import {
     FieldDescription,
     TextareaBase,
 } from '../primitives';
+import { useOptionalFormField } from '../../forms/FormContext';
 
 export const TextareaField = React.memo(
     ({
@@ -21,23 +22,33 @@ export const TextareaField = React.memo(
         disabled = false,
         highlightInvalid = false,
         errorMessage = null,
+        onBlur,
     }) => {
+        // Optional FormContext integration
+        const formField = useOptionalFormField(field.key);
+
+        // Use FormContext if available, otherwise use props
+        const finalValue = formField?.value ?? value;
+        const finalOnChange = formField?.onChange ?? onChange;
+        const finalHighlightInvalid = formField?.highlightInvalid ?? highlightInvalid;
+        const finalErrorMessage = formField?.errorMessage ?? errorMessage;
+        const finalOnBlur = formField?.onBlur ?? onBlur;
         const handleChange = useCallback(
             e => {
-                onChange(e.target.value);
+                finalOnChange(e.target.value);
             },
-            [onChange]
+            [finalOnChange]
         );
 
         const inputId = field.id || `field-${field.key}`;
 
         return (
-            <FieldWrapper invalid={highlightInvalid}>
+            <FieldWrapper invalid={finalHighlightInvalid}>
                 <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
                 <TextareaBase
                     id={inputId}
                     name={field.key}
-                    value={value || ''}
+                    value={finalValue || ''}
                     placeholder={field.placeholder}
                     disabled={disabled}
                     required={field.required}
@@ -45,15 +56,16 @@ export const TextareaField = React.memo(
                     minLength={field.minLength}
                     rows={field.rows || 4}
                     onChange={handleChange}
-                    invalid={highlightInvalid}
+                    onBlur={finalOnBlur}
+                    invalid={finalHighlightInvalid}
                     aria-describedby={`${field.descId || `${inputId}-desc`} ${field.errorId || `${inputId}-error`}`.trim()}
-                    aria-invalid={highlightInvalid}
+                    aria-invalid={finalHighlightInvalid}
                 />
                 <FieldDescription
                     id={field.descId || `${inputId}-desc`}
                     description={field.description}
                 />
-                <FieldError id={field.errorId || `${inputId}-error`} message={errorMessage} />
+                <FieldError id={field.errorId || `${inputId}-error`} message={finalErrorMessage} />
             </FieldWrapper>
         );
     }

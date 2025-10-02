@@ -19,6 +19,7 @@ import AccordionTestPage from './pages/dev/AccordionTestPage.jsx';
 import StatsPrimitivesTestPage from './pages/dev/StatsPrimitivesTestPage.jsx';
 import ButtonPrimitivesTestPage from './pages/dev/ButtonPrimitivesTestPage.jsx';
 import CardPrimitivesTestPage from './pages/dev/CardPrimitivesTestPage.jsx';
+import FormCompoundsTest from './pages/dev/FormCompoundsTest.jsx';
 import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
 import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import UISettingsPage from './pages/settings/UISettingsPage.jsx';
@@ -424,6 +425,17 @@ const App = () => {
                                                         pageDescription="Card System primitive composition and variant testing"
                                                     >
                                                         <CardPrimitivesTestPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/form-compounds"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Form Compounds Test"
+                                                        pageDescription="Form System compound composition validation (Header, Section, Actions)"
+                                                    >
+                                                        <FormCompoundsTest />
                                                     </PageErrorBoundary>
                                                 }
                                             />

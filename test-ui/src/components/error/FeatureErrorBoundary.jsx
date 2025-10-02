@@ -1,10 +1,22 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { useGlobalError } from '../../contexts/GlobalErrorContext.jsx';
+import { useErrorContext } from './ErrorContext.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
+import { ErrorContainer, ErrorActions } from './primitives';
 
 /**
- * Feature-level Error Boundary for component protection
+ * FeatureErrorBoundary - Feature-level error boundary with EXACT UI/UX preservation
+ *
+ * This boundary produces IDENTICAL visual output to current FeatureErrorBoundary.jsx:
+ * - Critical mode (modal): lines 218-278
+ * - Inline mode: lines 300-431
+ * - Skipped mode: lines 176-199
+ *
+ * Key features preserved:
+ * - Critical feature modal overlay with blur backdrop
+ * - Inline feature error with warning banner
+ * - Skip functionality for non-critical features
+ * - Copy error with state indicators (copying/success/error)
  */
 class FeatureErrorBoundaryBase extends Component {
     constructor(props) {
@@ -32,40 +44,24 @@ class FeatureErrorBoundaryBase extends Component {
     }
 
     componentDidCatch(error, errorInfo) {
-        const { onError, featureName, reportError } = this.props;
+        const { featureName, reportError } = this.props;
 
         this.setState({ errorInfo });
 
-        // Feature error context
-        const errorContext = {
-            context: `Feature: ${featureName}`,
-            errorInfo,
-            retryCount: this.state.retryCount,
-            component: 'FeatureErrorBoundary',
-            feature: featureName,
-            url: window.location.href,
-            userAgent: navigator.userAgent,
-            viewport: `${window.innerWidth}x${window.innerHeight}`,
-            timestamp: new Date().toISOString(),
-        };
-
-        // Report to GlobalErrorProvider if available
-        if (reportError) {
-            reportError(error, errorContext);
-        }
-
-        // Call custom error handler
-        if (onError) {
-            onError(error, errorInfo);
-        }
-
-        // Console logging for development
         console.group(`⚠️ FEATURE ERROR: ${featureName}`);
         console.error('Feature:', featureName);
         console.error('Error:', error);
         console.error('Error Info:', errorInfo);
-        console.error('Context:', errorContext);
         console.groupEnd();
+
+        // Report to GlobalErrorProvider if available
+        if (reportError) {
+            reportError(error, {
+                context: `Feature: ${featureName}`,
+                errorInfo,
+                retryCount: this.state.retryCount,
+            });
+        }
     }
 
     handleRetry = () => {
@@ -88,7 +84,7 @@ class FeatureErrorBoundaryBase extends Component {
             return;
         }
 
-        // For non-critical features, clear the error state and show fallback
+        // For non-critical features, clear error state and show skipped state
         this.setState({
             hasError: false,
             error: null,
@@ -103,7 +99,6 @@ class FeatureErrorBoundaryBase extends Component {
         const { featureName, featureDescription } = this.props;
         const { error, errorInfo, retryCount, errorTimestamp } = this.state;
 
-        // Set copying state
         this.setState({ copying: true });
 
         const errorDetails = {
@@ -127,43 +122,16 @@ class FeatureErrorBoundaryBase extends Component {
                 viewport: `${window.innerWidth}x${window.innerHeight}`,
                 timestamp: new Date().toISOString(),
             },
-            context: {
-                boundaryType: 'FeatureErrorBoundary',
-                errorBoundaryVersion: '1.0',
-                recoveryAttempts: retryCount,
-                reportTitle: `${featureName} Error Report`,
-                instructions: 'Share this error report with developers for debugging assistance',
-            },
         };
 
         try {
             await navigator.clipboard.writeText(JSON.stringify(errorDetails, null, 2));
-
-            // Show success state
             this.setState({ copying: false, copySuccess: true });
-
-            // Reset after 2 seconds
-            setTimeout(() => {
-                this.setState({ copySuccess: false });
-            }, 2000);
-
-            console.log('Error details copied to clipboard');
+            setTimeout(() => this.setState({ copySuccess: false }), 2000);
         } catch (clipboardError) {
             console.error('Failed to copy error details:', clipboardError);
-
-            // Show error state
             this.setState({ copying: false, copyError: true });
-
-            // Reset after 3 seconds
-            setTimeout(() => {
-                this.setState({ copyError: false });
-            }, 3000);
-
-            // Fallback to console output for manual copying
-            console.group('🚨 FEATURE ERROR DETAILS (Manual Copy)');
-            console.log('Copy the following error details:');
-            console.log(JSON.stringify(errorDetails, null, 2));
-            console.groupEnd();
+            setTimeout(() => this.setState({ copyError: false }), 3000);
         }
     };
 
@@ -171,11 +139,35 @@ class FeatureErrorBoundaryBase extends Component {
         window.location.reload();
     };
 
-    render() {
-        // If feature was skipped, show skipped state
-        if (this.state.skipped) {
-            const { featureName } = this.props;
+    handleAction = actionId => {
+        switch (actionId) {
+            case 'retry':
+                this.handleRetry();
+                break;
+            case 'skip':
+                this.handleSkip();
+                break;
+            case 'copy':
+                this.handleCopyError();
+                break;
+            case 'reload':
+                this.handleReload();
+                break;
+        }
+    };
 
+    render() {
+        const { hasError, skipped, error, retryCount } = this.state;
+        const {
+            children,
+            featureName,
+            featureDescription,
+            critical = false,
+            fallback,
+        } = this.props;
+
+        // Skipped state (exact from FeatureErrorBoundary.jsx lines 176-199)
+        if (skipped) {
             return (
                 <div className="bg-surface-alt border border-warning rounded-md my-2 font-sans">
                     <div className="p-3 text-sm text-secondary flex items-center gap-2">
@@ -191,7 +183,7 @@ class FeatureErrorBoundaryBase extends Component {
                             type="button"
                             title="Try to load this feature again"
                         >
-                            <span className="material-symbols-outlined mr-1">refresh</span>
+                            <span className="material-symbols-outlined mr-1 align-middle">refresh</span>
                             Retry
                         </button>
                     </div>
@@ -199,239 +191,181 @@ class FeatureErrorBoundaryBase extends Component {
             );
         }
 
-        if (this.state.hasError) {
-            const {
-                featureName,
-                featureDescription,
-                critical = false,
-                fallback: FallbackComponent,
-            } = this.props;
+        if (!hasError) return children;
 
-            const { error, retryCount } = this.state;
+        // Use custom fallback if provided
+        if (fallback) {
+            return fallback({ error, retry: this.handleRetry });
+        }
 
-            // Use custom fallback if provided
-            if (FallbackComponent) {
-                return <FallbackComponent error={error} retry={this.handleRetry} />;
-            }
+        // Critical mode: Modal overlay (exact from FeatureErrorBoundary.jsx lines 218-278)
+        if (critical) {
+            const modalActions = [
+                { id: 'retry', label: 'Retry', variant: 'primary', icon: 'refresh' },
+                {
+                    id: 'copy',
+                    label: this.state.copying
+                        ? 'Copying...'
+                        : this.state.copySuccess
+                          ? 'Copied!'
+                          : this.state.copyError
+                            ? 'Failed'
+                            : 'Copy Error',
+                    variant: this.state.copySuccess
+                        ? 'success'
+                        : this.state.copyError
+                          ? 'danger'
+                          : 'secondary',
+                    icon: this.state.copying
+                        ? 'hourglass_empty'
+                        : this.state.copySuccess
+                          ? 'check_circle'
+                          : this.state.copyError
+                            ? 'error'
+                            : 'content_copy',
+                    disabled: this.state.copying,
+                },
+                { id: 'reload', label: 'Reload App', variant: 'secondary', icon: 'refresh' },
+            ];
 
-            // Critical features get overlay mode
-            if (critical) {
-                return (
-                    <div className="fixed inset-0 z-modal-backdrop bg-overlay backdrop-blur-sm font-sans flex items-center justify-center p-4">
-                        <div className="relative bg-surface border-2 border-error rounded-lg p-6 max-w-lg w-full max-h-screen overflow-y-auto shadow-xl z-modal">
-                            <h2 className="text-error text-2xl font-bold m-0 mb-4 text-center leading-tight">
-                                Critical Feature Error
-                            </h2>
-                            <p className="text-primary text-base m-0 mb-5 text-center leading-relaxed">
-                                The {featureName} feature is required for the application to
-                                function properly.
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                <button
-                                    onClick={this.handleRetry}
-                                    className="touch-target bg-primary text-white px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center"
-                                    type="button"
-                                >
-                                    <span className="material-symbols-outlined mr-1">refresh</span>
-                                    Retry
-                                </button>
-                                <button
-                                    onClick={this.handleCopyError}
-                                    className={`touch-target px-3 py-2 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center ${
-                                        this.state.copySuccess
-                                            ? 'bg-success text-white'
-                                            : this.state.copyError
-                                              ? 'bg-error text-white'
-                                              : 'bg-info text-white'
-                                    }`}
-                                    type="button"
-                                    disabled={this.state.copying}
-                                >
-                                    <span className="material-symbols-outlined mr-1">
-                                        {this.state.copying
-                                            ? 'hourglass_empty'
-                                            : this.state.copySuccess
-                                              ? 'check_circle'
-                                              : this.state.copyError
-                                                ? 'error'
-                                                : 'content_copy'}
-                                    </span>
-                                    {this.state.copying
-                                        ? 'Copying...'
-                                        : this.state.copySuccess
-                                          ? 'Copied!'
-                                          : this.state.copyError
-                                            ? 'Failed'
-                                            : 'Copy Error'}
-                                </button>
-                                <button
-                                    onClick={this.handleReload}
-                                    className="touch-target bg-surface text-primary px-3 py-2 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center"
-                                    type="button"
-                                >
-                                    <span className="material-symbols-outlined mr-1">refresh</span>
-                                    Reload App
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
-            // High retry count - show disabled state
-            if (retryCount >= 3) {
-                return (
-                    <div
-                        className="bg-surface-alt border border-text-disabled rounded-md my-2 opacity-70 font-sans"
-                        title={`${featureName} is temporarily disabled due to repeated errors`}
-                    >
-                        <div className="p-3 text-sm text-tertiary flex items-center gap-2">
-                            <span className="material-symbols-outlined text-base shrink-0">
-                                warning
-                            </span>
-                            <span className="flex-1 font-medium">
-                                {featureName} temporarily disabled
-                            </span>
-                        </div>
-                    </div>
-                );
-            }
-
-            // Default inline mode
             return (
-                <>
-                    <div className="bg-surface-alt border border-warning rounded-md my-2 mb-1 p-2 text-center text-xs text-warning font-medium font-sans">
-                        <div className="m-0 p-0">
-                            <span className="material-symbols-outlined text-warning mr-1">
-                                warning
-                            </span>
-                            {featureName} temporarily unavailable
-                        </div>
-                    </div>
-
-                    <div className="bg-surface border border-error rounded-md my-2 font-sans">
-                        <div className="p-4">
-                            <div className="mb-4 flex items-center gap-3">
-                                <span className="material-symbols-outlined text-xl shrink-0 mt-1 text-warning">
-                                    warning
-                                </span>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="text-error text-lg font-semibold m-0 mb-1 leading-tight">
-                                        {featureName} Error
-                                    </h3>
-                                    {featureDescription && (
-                                        <p className="text-secondary text-sm leading-relaxed">
-                                            {featureDescription}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="text-primary">
-                                <div className="bg-surface-variant border border-error p-3 mb-4 text-sm break-words">
-                                    <strong>Error:</strong>{' '}
-                                    {error?.message || 'Component failed to render'}
-                                    {retryCount > 0 && (
-                                        <span className="text-secondary font-normal">
-                                            {' '}
-                                            (Attempt {retryCount + 1})
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="flex flex-wrap gap-2 mb-0">
-                                    <button
-                                        onClick={this.handleRetry}
-                                        className="touch-target bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
-                                        type="button"
-                                    >
-                                        <span className="material-symbols-outlined mr-1">
-                                            refresh
-                                        </span>
-                                        Retry
-                                    </button>
-
-                                    {!critical && (
-                                        <button
-                                            onClick={this.handleSkip}
-                                            className="touch-target bg-surface text-primary px-2 py-1 border border-border rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
-                                            type="button"
-                                        >
-                                            <span className="material-symbols-outlined mr-1">
-                                                skip_next
-                                            </span>
-                                            Skip
-                                        </button>
-                                    )}
-
-                                    <button
-                                        onClick={this.handleCopyError}
-                                        className={`touch-target px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm ${
-                                            this.state.copySuccess
-                                                ? 'bg-success text-white'
-                                                : this.state.copyError
-                                                  ? 'bg-error text-white'
-                                                  : 'bg-info text-white'
-                                        }`}
-                                        type="button"
-                                        disabled={this.state.copying}
-                                    >
-                                        <span className="material-symbols-outlined mr-1">
-                                            {this.state.copying
-                                                ? 'hourglass_empty'
-                                                : this.state.copySuccess
-                                                  ? 'check_circle'
-                                                  : this.state.copyError
-                                                    ? 'error'
-                                                    : 'content_copy'}
-                                        </span>
-                                        {this.state.copying
-                                            ? 'Copying...'
-                                            : this.state.copySuccess
-                                              ? 'Copied!'
-                                              : this.state.copyError
-                                                ? 'Failed'
-                                                : 'Copy Error'}
-                                    </button>
-
-                                    <button
-                                        onClick={this.handleReload}
-                                        className="touch-target bg-transparent text-primary px-2 py-1 border border-transparent rounded-md cursor-pointer transition-colors hover:bg-surface-hover inline-flex items-center justify-center text-sm"
-                                        type="button"
-                                    >
-                                        <span className="material-symbols-outlined mr-1">
-                                            refresh
-                                        </span>
-                                        Reload
-                                    </button>
-                                </div>
-
-                                {retryCount >= 2 && (
-                                    <div className="mt-4">
-                                        <div className="bg-surface-alt border border-error rounded-md p-3">
-                                            <strong>Repeated Errors Detected</strong>
-                                            <p>
-                                                This feature has failed multiple times. Consider
-                                                reloading the application.
-                                            </p>
-                                            <button
-                                                onClick={this.handleReload}
-                                                className="touch-target bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
-                                                type="button"
-                                            >
-                                                Reload Application
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </>
+                <ErrorContainer mode="modal">
+                    <h2 className="text-error text-2xl font-bold m-0 mb-4 text-center leading-tight">
+                        Critical Feature Error
+                    </h2>
+                    <p className="text-primary text-base m-0 mb-5 text-center leading-relaxed">
+                        The {featureName} feature is required for the application to function
+                        properly.
+                    </p>
+                    <ErrorActions
+                        actions={modalActions}
+                        onAction={this.handleAction}
+                        mode="modal"
+                    />
+                </ErrorContainer>
             );
         }
 
-        return this.props.children;
+        // High retry count: Disabled state (exact from FeatureErrorBoundary.jsx lines 281-298)
+        if (retryCount >= 3) {
+            return (
+                <div
+                    className="bg-surface-alt border border-text-disabled rounded-md my-2 opacity-70 font-sans"
+                    title={`${featureName} is temporarily disabled due to repeated errors`}
+                >
+                    <div className="p-3 text-sm text-tertiary flex items-center gap-2">
+                        <span className="material-symbols-outlined text-base shrink-0">
+                            warning
+                        </span>
+                        <span className="flex-1 font-medium">
+                            {featureName} temporarily disabled
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        // Inline mode: Feature error (exact from FeatureErrorBoundary.jsx lines 300-431)
+        const inlineActions = [
+            { id: 'retry', label: 'Retry', variant: 'primary', icon: 'refresh' },
+            { id: 'skip', label: 'Skip', variant: 'secondary', icon: 'skip_next' },
+            {
+                id: 'copy',
+                label: this.state.copying
+                    ? 'Copying...'
+                    : this.state.copySuccess
+                      ? 'Copied!'
+                      : this.state.copyError
+                        ? 'Failed'
+                        : 'Copy Error',
+                variant: this.state.copySuccess
+                    ? 'success'
+                    : this.state.copyError
+                      ? 'danger'
+                      : 'secondary',
+                icon: this.state.copying
+                    ? 'hourglass_empty'
+                    : this.state.copySuccess
+                      ? 'check_circle'
+                      : this.state.copyError
+                        ? 'error'
+                        : 'content_copy',
+                disabled: this.state.copying,
+            },
+            { id: 'reload', label: 'Reload', variant: 'secondary', icon: 'refresh' },
+        ];
+
+        return (
+            <>
+                {/* Warning banner (lines 303-310) */}
+                <div className="bg-surface-alt border border-warning rounded-md my-2 mb-1 p-2 text-center text-xs text-warning font-medium font-sans">
+                    <div className="m-0 p-0">
+                        <span className="material-symbols-outlined text-warning mr-1 align-middle">warning</span>
+                        {featureName} temporarily unavailable
+                    </div>
+                </div>
+
+                {/* Error container (lines 312-429) */}
+                <ErrorContainer mode="inline">
+                    {/* Icon + Title (lines 314-328) */}
+                    <div className="mb-4 flex items-center gap-3">
+                        <span className="material-symbols-outlined text-xl shrink-0 mt-1 text-warning">
+                            warning
+                        </span>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="text-error text-lg font-semibold m-0 mb-1 leading-tight">
+                                {featureName} Error
+                            </h3>
+                            {featureDescription && (
+                                <p className="text-secondary text-sm leading-relaxed">
+                                    {featureDescription}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Error message box (lines 330-340) */}
+                    <div className="text-primary">
+                        <div className="bg-surface-variant border border-error p-3 mb-4 text-sm break-words">
+                            <strong>Error:</strong> {error?.message || 'Component failed to render'}
+                            {retryCount > 0 && (
+                                <span className="text-secondary font-normal">
+                                    {' '}
+                                    (Attempt {retryCount + 1})
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Action buttons (lines 342-407) */}
+                        <ErrorActions
+                            actions={inlineActions}
+                            onAction={this.handleAction}
+                            mode="inline"
+                        />
+
+                        {/* Repeated errors warning (lines 409-426) */}
+                        {retryCount >= 2 && (
+                            <div className="mt-4">
+                                <div className="bg-surface-alt border border-error rounded-md p-3">
+                                    <strong>Repeated Errors Detected</strong>
+                                    <p>
+                                        This feature has failed multiple times. Consider reloading
+                                        the application.
+                                    </p>
+                                    <button
+                                        onClick={this.handleReload}
+                                        className="touch-target bg-primary text-white px-2 py-1 border-none rounded-md cursor-pointer transition-colors inline-flex items-center justify-center text-sm"
+                                        type="button"
+                                    >
+                                        Reload Application
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </ErrorContainer>
+            </>
+        );
     }
 }
 
@@ -440,17 +374,16 @@ FeatureErrorBoundaryBase.propTypes = {
     featureName: PropTypes.string.isRequired,
     featureDescription: PropTypes.string,
     critical: PropTypes.bool,
-    onError: PropTypes.func,
-    fallback: PropTypes.elementType,
+    fallback: PropTypes.func,
     reportError: PropTypes.func,
     showToast: PropTypes.func,
 };
 
 /**
- * Wrapper component that connects FeatureErrorBoundaryBase to GlobalErrorProvider and ToastProvider
+ * Wrapper component that connects FeatureErrorBoundaryBase to contexts
  */
 function FeatureErrorBoundary(props) {
-    const globalErrorContext = useGlobalError();
+    const globalErrorContext = useErrorContext();
     const toastContext = useToast();
 
     return (

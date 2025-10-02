@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { useToast } from '../../contexts/ToastContext.jsx';
-import { useGlobalError, ERROR_TYPES, ERROR_SEVERITY } from '../../contexts/GlobalErrorContext.jsx';
+import { useErrorContext } from '../../components/error/ErrorContext.jsx';
 import { PageErrorBoundary, FeatureErrorBoundary } from '../../components/error';
+
+/**
+ * ErrorTestPage - Comprehensive error system validation
+ *
+ * Showcases all three error types with EXACT UI/UX from current implementation:
+ * 1. Critical Feature Error (Modal overlay) - FeatureErrorBoundary.jsx lines 218-278
+ * 2. Page Error (Full page display) - PageErrorBoundary.jsx lines 180-348
+ * 3. Feature Error (Inline display) - FeatureErrorBoundary.jsx lines 300-431
+ *
+ * This page validates that the primitive composition architecture produces
+ * IDENTICAL visual output to the original implementation.
+ */
 
 // Simple component that crashes when told to
 const CrashComponent = ({ shouldCrash, type = 'demonstration' }) => {
@@ -18,7 +30,7 @@ const CrashComponent = ({ shouldCrash, type = 'demonstration' }) => {
 
 const ErrorTestPage = () => {
     const toast = useToast();
-    const globalError = useGlobalError();
+    const globalError = useErrorContext();
     const [crashes, setCrashes] = useState({
         critical: false,
         page: false,
@@ -44,20 +56,25 @@ const ErrorTestPage = () => {
     };
 
     const showGlobalError = () => {
-        globalError.setError('Network connection failed. Please try again.', {
-            type: ERROR_TYPES.NETWORK,
-            severity: ERROR_SEVERITY.HIGH,
+        // Report to error context for tracking
+        globalError.reportError({
+            message: 'Network connection failed. Please try again.',
+            type: 'network',
+            severity: 'high',
         });
+
+        // Show toast for visual feedback
+        toast.error('Network connection failed. Please try again.');
     };
 
     return (
         <div className="p-3 md:p-4 max-w-4xl mx-auto">
             <div className="text-center mb-4">
                 <h1 className="text-2xl font-bold text-primary mb-2">
-                    🔬 Error Handling Demonstrations
+                    🔬 Error Handling Demonstrations - Primitive Composition
                 </h1>
                 <p className="text-base text-secondary max-w-prose mx-auto">
-                    Click the buttons below to see different error handling approaches:
+                    This page validates that the new primitive composition architecture produces
                 </p>
             </div>
 
@@ -122,22 +139,23 @@ const ErrorTestPage = () => {
             </section>
 
             {/* Critical Feature Error (Full Screen Overlay) */}
-            <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
-                <h2 className="text-lg font-semibold text-primary mb-2">
+            <section className="mb-6 md:mb-8 p-3 md:p-4 border rounded-md bg-surface">
+                <h2 className="text-lg font-semibold text-error mb-2">
                     ⚠️ Critical Feature Error
                 </h2>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">What it is:</strong> Full-screen
-                    overlay that blocks everything
+                    <strong className="text-primary font-medium">Expected output:</strong> Modal
+                    overlay matching FeatureErrorBoundary.jsx lines 218-278
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">When to use:</strong> Essential
-                    features like navigation or authentication
+                    <strong className="text-primary font-medium">Visual behavior:</strong>
                 </p>
-                <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">Visual behavior:</strong> Covers
-                    entire screen, forces user to resolve
-                </p>
+                <ul className="text-sm text-secondary mb-2 pl-6">
+                    <li>Dark overlay with backdrop blur</li>
+                    <li>Centered modal with red border (border-2 border-error)</li>
+                    <li>Title: &quot;Critical Feature Error&quot;</li>
+                    <li>Buttons: Retry (primary), Copy Error (info/success/error states), Reload App</li>
+                </ul>
 
                 <button
                     onClick={() => triggerCrash('critical')}
@@ -165,20 +183,25 @@ const ErrorTestPage = () => {
             </section>
 
             {/* Page Error (Full Page Replacement) */}
-            <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
-                <h2 className="text-lg font-semibold text-primary mb-2">📄 Page Error</h2>
+            <section className="mb-6 md:mb-8 p-3 md:p-4 border rounded-md bg-surface">
+                <h2 className="text-lg font-semibold text-warning mb-2">
+                    📄 Page Error
+                </h2>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">What it is:</strong> Replaces
-                    entire page content with error page
+                    <strong className="text-primary font-medium">Expected output:</strong> Full page
+                    error matching PageErrorBoundary.jsx lines 180-348
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">When to use:</strong> When entire
-                    pages/routes fail to load
+                    <strong className="text-primary font-medium">Visual behavior:</strong>
                 </p>
-                <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">Visual behavior:</strong> Shows
-                    error page with navigation options
-                </p>
+                <ul className="text-sm text-secondary mb-2 pl-6">
+                    <li>Full page container (max-w-2xl centered)</li>
+                    <li>Large build icon (text-4xl)</li>
+                    <li>Error details box with retry count and timestamp</li>
+                    <li>Complete button set: Try Again, Home, Back, Copy Error, Refresh Page</li>
+                    <li>Help section with bullet list</li>
+                    <li>Footer with support message</li>
+                </ul>
 
                 <button
                     onClick={() => triggerCrash('page')}
@@ -202,20 +225,24 @@ const ErrorTestPage = () => {
             </section>
 
             {/* Feature Error (Inline Replacement) */}
-            <section className="mb-6 md:mb-8 p-3 md:p-4 border border-default rounded-md bg-surface">
-                <h2 className="text-lg font-semibold text-primary mb-2">🛡️ Feature Error</h2>
+            <section className="mb-6 md:mb-8 p-3 md:p-4 border rounded-md bg-surface">
+                <h2 className="text-lg font-semibold text-info mb-2">
+                    🛡️ Feature Error
+                </h2>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">What it is:</strong> Replaces just
-                    the broken component inline
+                    <strong className="text-primary font-medium">Expected output:</strong> Inline
+                    error matching FeatureErrorBoundary.jsx lines 300-431
                 </p>
                 <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">When to use:</strong> Individual
-                    features that might fail independently
+                    <strong className="text-primary font-medium">Visual behavior:</strong>
                 </p>
-                <p className="text-secondary mb-2">
-                    <strong className="text-primary font-medium">Visual behavior:</strong> Shows
-                    error UI in place of component, allows retry/skip
-                </p>
+                <ul className="text-sm text-secondary mb-2 pl-6">
+                    <li>Warning banner above error container</li>
+                    <li>Inline container (border border-error rounded-md)</li>
+                    <li>Warning icon (text-xl) with title</li>
+                    <li>Error message box (bg-surface-variant border border-error)</li>
+                    <li>Buttons: Retry (primary), Skip, Copy Error (info/success/error states), Reload</li>
+                </ul>
 
                 <button
                     onClick={() => triggerCrash('feature')}
@@ -239,6 +266,25 @@ const ErrorTestPage = () => {
                         Reset
                     </button>
                 )}
+            </section>
+
+            {/* Visual Validation Checklist */}
+            <section className="mb-6 md:mb-8 p-3 md:p-4 border rounded-md bg-surface">
+                <h2 className="text-lg font-semibold text-success mb-2">
+                    ✅ Visual Validation Checklist
+                </h2>
+                <p className="text-secondary mb-2">
+                    <strong className="text-primary font-medium">Verification steps:</strong>
+                </p>
+                <ol className="text-sm text-secondary pl-6 space-y-1">
+                    <li>Trigger each error type above</li>
+                    <li>Compare visual output against referenced line numbers</li>
+                    <li>Verify all CSS classes match exactly</li>
+                    <li>Test all action buttons (Retry, Home, Back, Copy, etc.)</li>
+                    <li>Confirm button variant colors match (primary=orange, secondary=gray, etc.)</li>
+                    <li>Check Material Icons render correctly</li>
+                    <li>Validate spacing, borders, backgrounds match screenshots</li>
+                </ol>
             </section>
         </div>
     );

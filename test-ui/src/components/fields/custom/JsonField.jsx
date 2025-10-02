@@ -159,7 +159,7 @@ export const JsonField = ({
                     {jsonError && (
                         <div>
                             <span
-                                className="material-symbols-outlined text-error mr-1"
+                                className="material-symbols-outlined text-error mr-1 align-middle"
                                 aria-hidden="true"
                             >
                                 error
@@ -171,7 +171,7 @@ export const JsonField = ({
                     {!jsonError && textValue.trim() && (
                         <div>
                             <span
-                                className="material-symbols-outlined text-success mr-1"
+                                className="material-symbols-outlined text-success mr-1 align-middle"
                                 aria-hidden="true"
                             >
                                 check_circle

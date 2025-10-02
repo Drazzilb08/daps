@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './contexts/ToastContext.jsx';
 import { ThemeProvider } from './contexts/ThemeContext.jsx';
-import { GlobalErrorProvider } from './contexts/GlobalErrorContext.jsx';
+import { ErrorProvider } from './components/error/ErrorContext.jsx';
 import { UIStateProvider } from './contexts/UIStateContext.jsx';
 import { SearchCoordinatorProvider } from './contexts/SearchCoordinatorContext.jsx';
 import { PageErrorBoundary } from './components/error';
@@ -26,18 +26,18 @@ import { SchedulePage } from './pages/settings/SchedulePage.jsx';
 import { InstancesPage } from './pages/settings/InstancesPage.jsx';
 
 /**
- * DAPS Application Root - Phase 4 Ready
+ * DAPS Application Root - Phase 5 Complete
  *
- * Clean provider hierarchy without layout structure:
+ * Clean provider hierarchy with primitive composition error system:
  * 1. ToastProvider (outermost)
  * 2. ThemeProvider
- * 3. GlobalErrorProvider
+ * 3. ErrorProvider (new primitive composition system)
  * 4. UIStateProvider
  * 5. Router
  * 6. SearchCoordinatorProvider
  * 7. RouteErrorProvider (innermost)
  *
- * Layout structure removed for Phase 4 component integration.
+ * Error boundaries now use atomic primitive composition pattern.
  * All context providers maintained in exact order.
  */
 
@@ -58,22 +58,22 @@ const RouteErrorBoundary = ({ children }) => {
 };
 
 /**
- * Main Application Component - Phase 4 Ready
- * Clean provider hierarchy without layout wrapper
+ * Main Application Component - Phase 5 Complete
+ * Provider hierarchy with primitive composition error system
  */
 const App = () => {
     return (
         // Provider hierarchy - EXACT order as required:
         // 1. ToastProvider (outermost)
         // 2. ThemeProvider
-        // 3. GlobalErrorProvider
+        // 3. ErrorProvider (new primitive composition system)
         // 4. UIStateProvider
         // 5. Router
         // 6. SearchCoordinatorProvider
         // 7. RouteErrorProvider (innermost)
         <ToastProvider>
             <ThemeProvider>
-                <GlobalErrorProvider>
+                <ErrorProvider>
                     <UIStateProvider>
                         <BrowserRouter>
                             <SearchCoordinatorProvider>
@@ -340,7 +340,7 @@ const App = () => {
                                                 }
                                             />
                                             <Route
-                                                path="dev/toolbar-compound"
+                                                path="dev/toolbar"
                                                 element={
                                                     <PageErrorBoundary
                                                         pageName="Toolbar Compound Pattern Test"
@@ -395,7 +395,7 @@ const App = () => {
                                                 }
                                             />
                                             <Route
-                                                path="dev/stats-primitives"
+                                                path="dev/stats"
                                                 element={
                                                     <PageErrorBoundary
                                                         pageName="Statistics Primitives Test"
@@ -406,7 +406,7 @@ const App = () => {
                                                 }
                                             />
                                             <Route
-                                                path="dev/button-primitives"
+                                                path="dev/buttons"
                                                 element={
                                                     <PageErrorBoundary
                                                         pageName="Button Primitives Test"
@@ -417,7 +417,7 @@ const App = () => {
                                                 }
                                             />
                                             <Route
-                                                path="dev/card-primitives"
+                                                path="dev/card"
                                                 element={
                                                     <PageErrorBoundary
                                                         pageName="Card Primitives Test"
@@ -437,7 +437,7 @@ const App = () => {
                             </SearchCoordinatorProvider>
                         </BrowserRouter>
                     </UIStateProvider>
-                </GlobalErrorProvider>
+                </ErrorProvider>
             </ThemeProvider>
         </ToastProvider>
     );

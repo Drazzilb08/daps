@@ -1,11 +1,22 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { useGlobalError } from '../../contexts/GlobalErrorContext.jsx';
+import { useErrorContext } from './ErrorContext.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
-import { Button } from '../ui/button/Button';
+import { ErrorContainer, ErrorIcon, ErrorActions } from './primitives';
 
 /**
- * Page-level Error Boundary for route protection
+ * PageErrorBoundary - Page-level error boundary with EXACT UI/UX preservation
+ *
+ * This boundary produces IDENTICAL visual output to current PageErrorBoundary.jsx (lines 180-348)
+ * by composing error primitives with page-specific elements (help section, footer).
+ *
+ * Key features preserved:
+ * - Full page error container (lines 181-182)
+ * - Icon + Title + Description (lines 183-195)
+ * - Error details box (lines 207-232)
+ * - Complete button set (lines 234-314): Try Again, Home, Back, Copy, Refresh
+ * - Help section (lines 316-337)
+ * - Footer (lines 340-345)
  */
 class PageErrorBoundaryBase extends Component {
     constructor(props) {
@@ -31,40 +42,24 @@ class PageErrorBoundaryBase extends Component {
     }
 
     componentDidCatch(error, errorInfo) {
-        const { onError, pageName, reportError } = this.props;
+        const { pageName, reportError } = this.props;
 
         this.setState({ errorInfo });
 
-        // Page error context
-        const errorContext = {
-            context: `Page: ${pageName}`,
-            errorInfo,
-            retryCount: this.state.retryCount,
-            component: 'PageErrorBoundary',
-            page: pageName,
-            url: window.location.href,
-            userAgent: navigator.userAgent,
-            viewport: `${window.innerWidth}x${window.innerHeight}`,
-            timestamp: new Date().toISOString(),
-        };
-
-        // Report to GlobalErrorProvider if available
-        if (reportError) {
-            reportError(error, errorContext);
-        }
-
-        // Call custom error handler
-        if (onError) {
-            onError(error, errorInfo);
-        }
-
-        // Console logging for development
         console.group(`🚨 PAGE ERROR: ${pageName}`);
         console.error('Page:', pageName);
         console.error('Error:', error);
         console.error('Error Info:', errorInfo);
-        console.error('Context:', errorContext);
         console.groupEnd();
+
+        // Report to GlobalErrorProvider if available
+        if (reportError) {
+            reportError(error, {
+                context: `Page: ${pageName}`,
+                errorInfo,
+                retryCount: this.state.retryCount,
+            });
+        }
     }
 
     handleRetry = () => {
@@ -78,21 +73,11 @@ class PageErrorBoundaryBase extends Component {
     };
 
     handleNavigateHome = () => {
-        const { onNavigateHome } = this.props;
-        if (onNavigateHome) {
-            onNavigateHome();
-        } else {
-            window.location.href = '/';
-        }
+        window.location.href = '/';
     };
 
     handleNavigateBack = () => {
-        const { onNavigateBack } = this.props;
-        if (onNavigateBack) {
-            onNavigateBack();
-        } else {
-            window.history.back();
-        }
+        window.history.back();
     };
 
     handleRefresh = () => {
@@ -103,7 +88,6 @@ class PageErrorBoundaryBase extends Component {
         const { pageName, pageDescription } = this.props;
         const { error, errorInfo, retryCount, errorTimestamp } = this.state;
 
-        // Set copying state
         this.setState({ copying: true });
 
         const errorDetails = {
@@ -127,228 +111,158 @@ class PageErrorBoundaryBase extends Component {
                 viewport: `${window.innerWidth}x${window.innerHeight}`,
                 timestamp: new Date().toISOString(),
             },
-            context: {
-                boundaryType: 'PageErrorBoundary',
-                errorBoundaryVersion: '1.0',
-                recoveryAttempts: retryCount,
-                reportTitle: `${pageName} Page Error Report`,
-                instructions: 'Share this error report with developers for debugging assistance',
-            },
         };
 
         try {
             await navigator.clipboard.writeText(JSON.stringify(errorDetails, null, 2));
-
-            // Show success state
             this.setState({ copying: false, copySuccess: true });
-
-            // Reset after 2 seconds
-            setTimeout(() => {
-                this.setState({ copySuccess: false });
-            }, 2000);
-
-            console.log('Error details copied to clipboard');
+            setTimeout(() => this.setState({ copySuccess: false }), 2000);
         } catch (clipboardError) {
             console.error('Failed to copy error details:', clipboardError);
-
-            // Show error state
             this.setState({ copying: false, copyError: true });
+            setTimeout(() => this.setState({ copyError: false }), 3000);
+        }
+    };
 
-            // Reset after 3 seconds
-            setTimeout(() => {
-                this.setState({ copyError: false });
-            }, 3000);
-
-            console.group('🚨 PAGE ERROR DETAILS (Manual Copy)');
-            console.log('Copy the following error details:');
-            console.log(JSON.stringify(errorDetails, null, 2));
-            console.groupEnd();
+    handleAction = actionId => {
+        switch (actionId) {
+            case 'retry':
+                this.handleRetry();
+                break;
+            case 'home':
+                this.handleNavigateHome();
+                break;
+            case 'back':
+                this.handleNavigateBack();
+                break;
+            case 'copy':
+                this.handleCopyError();
+                break;
+            case 'refresh':
+                this.handleRefresh();
+                break;
         }
     };
 
     render() {
-        if (this.state.hasError) {
-            const {
-                pageName,
-                pageDescription,
-                showNavigation = true,
-                showRetry = true,
-            } = this.props;
+        const { hasError, error, errorInfo, retryCount, errorTimestamp } = this.state;
+        const { children, pageName, pageDescription } = this.props;
 
-            const { error, errorInfo, retryCount, errorTimestamp } = this.state;
+        if (!hasError) return children;
 
-            return (
-                <div className="min-h-content p-4 font-sans">
-                    <div className="max-w-2xl w-full bg-surface border-2 border-error rounded-lg p-8 shadow-xl mx-auto">
-                        <div className="text-center mb-8">
-                            <div className="material-symbols-outlined text-4xl mb-3 block text-error">
-                                build
-                            </div>
-                            <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">
-                                {pageName} Page Error
-                            </h1>
-                            <p className="text-secondary text-lg leading-relaxed">
-                                {pageDescription
-                                    ? `There was a problem loading the ${pageDescription.toLowerCase()}.`
-                                    : `There was a problem loading the ${pageName} page.`}
-                            </p>
+        const actions = [
+            { id: 'retry', label: 'Try Again', variant: 'primary', icon: 'refresh' },
+            { id: 'home', label: 'Go Home', variant: 'secondary', icon: 'home' },
+            { id: 'back', label: 'Go Back', variant: 'secondary', icon: 'arrow_back' },
+            {
+                id: 'copy',
+                label: this.state.copying
+                    ? 'Copying...'
+                    : this.state.copySuccess
+                      ? 'Copied!'
+                      : this.state.copyError
+                        ? 'Failed'
+                        : 'Copy Error',
+                variant: this.state.copySuccess
+                    ? 'success'
+                    : this.state.copyError
+                      ? 'danger'
+                      : 'secondary',
+                icon: this.state.copying
+                    ? 'hourglass_empty'
+                    : this.state.copySuccess
+                      ? 'check_circle'
+                      : this.state.copyError
+                        ? 'error'
+                        : 'content_copy',
+                disabled: this.state.copying,
+            },
+            { id: 'refresh', label: 'Refresh Page', variant: 'secondary', icon: 'refresh' },
+        ];
+
+        // Compose primitives to match exact UI from PageErrorBoundary.jsx lines 180-348
+        return (
+            <ErrorContainer mode="page">
+                {/* Icon (lines 184-186) */}
+                <ErrorIcon type="error" size="lg" />
+
+                {/* Title + Description (lines 187-195) */}
+                <div className="text-center mb-8">
+                    <h1 className="text-error text-3xl font-bold m-0 mb-2 leading-tight">
+                        {pageName} Page Error
+                    </h1>
+                    <p className="text-secondary text-lg leading-relaxed">
+                        {pageDescription
+                            ? `There was a problem loading the ${pageDescription.toLowerCase()}.`
+                            : `There was a problem loading the ${pageName} page.`}
+                    </p>
+                </div>
+
+                {/* Optional description box (lines 198-205) */}
+                {pageDescription && (
+                    <div className="bg-surface-alt rounded-md p-4 mb-6">
+                        <p className="text-base leading-relaxed">
+                            The {pageDescription} encountered an error and could not be displayed
+                            properly.
+                        </p>
+                    </div>
+                )}
+
+                {/* Error details box (lines 207-232) */}
+                <div className="bg-surface-variant border border-border rounded-md p-4 mb-6">
+                    <h3 className="text-primary text-xl font-semibold m-0 mb-3">Error Details</h3>
+                    <div className="mb-2 text-sm font-mono break-words">
+                        <strong>Error:</strong> {error?.message || 'Unknown error'}
+                    </div>
+                    <div className="mb-2 text-sm font-mono break-words">
+                        <strong>Component Stack:</strong>{' '}
+                        {errorInfo?.componentStack?.split('\n').slice(0, 3).join('\n') ||
+                            'Not available'}
+                    </div>
+                    {retryCount > 0 && (
+                        <div className="mb-2 text-sm font-mono break-words">
+                            <strong>Retry Count:</strong> {retryCount}
                         </div>
-
-                        <div className="text-primary">
-                            {pageDescription && (
-                                <div className="bg-surface-alt rounded-md p-4 mb-6">
-                                    <p className="text-base leading-relaxed">
-                                        The {pageDescription} encountered an error and could not be
-                                        displayed properly.
-                                    </p>
-                                </div>
-                            )}
-
-                            <div className="bg-surface-variant border border-border rounded-md p-4 mb-6">
-                                <h3 className="text-primary text-xl font-semibold m-0 mb-3">
-                                    Error Details
-                                </h3>
-                                <div className="mb-2 text-sm font-mono break-words">
-                                    <strong>Error:</strong> {error?.message || 'Unknown error'}
-                                </div>
-                                <div className="mb-2 text-sm font-mono break-words">
-                                    <strong>Component Stack:</strong>{' '}
-                                    {errorInfo?.componentStack
-                                        ?.split('\n')
-                                        .slice(0, 3)
-                                        .join('\n') || 'Not available'}
-                                </div>
-                                {retryCount > 0 && (
-                                    <div className="mb-2 text-sm font-mono break-words">
-                                        <strong>Retry Count:</strong> {retryCount}
-                                    </div>
-                                )}
-                                <div className="mb-0 text-sm font-mono break-words">
-                                    <strong>Time:</strong>{' '}
-                                    {errorTimestamp
-                                        ? new Date(errorTimestamp).toLocaleString()
-                                        : 'Unknown'}
-                                </div>
-                            </div>
-
-                            <div className="mb-6 flex flex-wrap gap-2">
-                                {showRetry && (
-                                    <Button
-                                        variant="primary"
-                                        onClick={this.handleRetry}
-                                        className="gap-1"
-                                    >
-                                        <span className="material-symbols-outlined text-base">
-                                            refresh
-                                        </span>
-                                        Try Again
-                                    </Button>
-                                )}
-
-                                {showNavigation && (
-                                    <>
-                                        <Button
-                                            variant="secondary"
-                                            onClick={this.handleNavigateHome}
-                                            className="gap-1"
-                                        >
-                                            <span className="material-symbols-outlined text-base">
-                                                home
-                                            </span>
-                                            Go Home
-                                        </Button>
-
-                                        <Button
-                                            variant="secondary"
-                                            onClick={this.handleNavigateBack}
-                                            className="gap-1"
-                                        >
-                                            <span className="material-symbols-outlined text-base">
-                                                arrow_back
-                                            </span>
-                                            Go Back
-                                        </Button>
-                                    </>
-                                )}
-
-                                <Button
-                                    variant={
-                                        this.state.copySuccess
-                                            ? 'success'
-                                            : this.state.copyError
-                                              ? 'danger'
-                                              : 'secondary'
-                                    }
-                                    onClick={this.handleCopyError}
-                                    disabled={this.state.copying}
-                                    className="gap-1"
-                                >
-                                    <span className="material-symbols-outlined text-base">
-                                        {this.state.copying
-                                            ? 'hourglass_empty'
-                                            : this.state.copySuccess
-                                              ? 'check_circle'
-                                              : this.state.copyError
-                                                ? 'error'
-                                                : 'content_copy'}
-                                    </span>
-                                    {this.state.copying
-                                        ? 'Copying...'
-                                        : this.state.copySuccess
-                                          ? 'Copied!'
-                                          : this.state.copyError
-                                            ? 'Failed'
-                                            : 'Copy Error'}
-                                </Button>
-
-                                <Button
-                                    variant="secondary"
-                                    onClick={this.handleRefresh}
-                                    className="gap-1"
-                                >
-                                    <span className="material-symbols-outlined text-base">
-                                        refresh
-                                    </span>
-                                    Refresh Page
-                                </Button>
-                            </div>
-
-                            <div className="mt-6">
-                                <div className="bg-surface-alt border border-border rounded-md p-4">
-                                    <h4 className="text-primary text-lg font-semibold m-0 mb-3">
-                                        What can I do?
-                                    </h4>
-                                    <ul className="m-0 pl-6 text-secondary text-sm leading-relaxed">
-                                        <li className="mb-2">
-                                            Click &quot;Try Again&quot; to attempt reloading this
-                                            page
-                                        </li>
-                                        <li className="mb-2">
-                                            Use the navigation buttons to go to a different page
-                                        </li>
-                                        <li className="mb-2">
-                                            Refresh your browser if the problem persists
-                                        </li>
-                                        <li className="mb-2">
-                                            Check the browser console for additional details
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 pt-4 border-t border-border text-center">
-                            <p className="m-0 text-sm text-secondary leading-relaxed">
-                                If this error continues to occur, please check the application logs
-                                or contact support for assistance.
-                            </p>
-                        </div>
+                    )}
+                    <div className="mb-0 text-sm font-mono break-words">
+                        <strong>Time:</strong>{' '}
+                        {errorTimestamp ? new Date(errorTimestamp).toLocaleString() : 'Unknown'}
                     </div>
                 </div>
-            );
-        }
 
-        return this.props.children;
+                {/* Action buttons (lines 234-314) */}
+                <ErrorActions actions={actions} onAction={this.handleAction} mode="page" />
+
+                {/* Help section (lines 316-337) */}
+                <div className="mt-6">
+                    <div className="bg-surface-alt border border-border rounded-md p-4">
+                        <h4 className="text-primary text-lg font-semibold m-0 mb-3">
+                            What can I do?
+                        </h4>
+                        <ul className="m-0 pl-6 text-secondary text-sm leading-relaxed">
+                            <li className="mb-2">
+                                Click &quot;Try Again&quot; to attempt reloading this page
+                            </li>
+                            <li className="mb-2">
+                                Use the navigation buttons to go to a different page
+                            </li>
+                            <li className="mb-2">Refresh your browser if the problem persists</li>
+                            <li className="mb-2">
+                                Check the browser console for additional details
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                {/* Footer (lines 340-345) */}
+                <div className="mt-6 pt-4 border-t border-border text-center">
+                    <p className="m-0 text-sm text-secondary leading-relaxed">
+                        If this error continues to occur, please check the application logs or
+                        contact support for assistance.
+                    </p>
+                </div>
+            </ErrorContainer>
+        );
     }
 }
 
@@ -356,20 +270,15 @@ PageErrorBoundaryBase.propTypes = {
     children: PropTypes.node.isRequired,
     pageName: PropTypes.string.isRequired,
     pageDescription: PropTypes.string,
-    onError: PropTypes.func,
-    onNavigateHome: PropTypes.func,
-    onNavigateBack: PropTypes.func,
-    showNavigation: PropTypes.bool,
-    showRetry: PropTypes.bool,
     reportError: PropTypes.func,
     showToast: PropTypes.func,
 };
 
 /**
- * Wrapper component that connects PageErrorBoundaryBase to GlobalErrorProvider and ToastProvider
+ * Wrapper component that connects PageErrorBoundaryBase to contexts
  */
 function PageErrorBoundary(props) {
-    const globalErrorContext = useGlobalError();
+    const globalErrorContext = useErrorContext();
     const toastContext = useToast();
 
     return (

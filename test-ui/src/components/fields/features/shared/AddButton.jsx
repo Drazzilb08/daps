@@ -86,7 +86,7 @@ export const AddButton = React.memo(
                 {...ariaProps}
                 {...domProps}
             >
-                <span className="material-symbols-outlined mr-1" aria-hidden="true">
+                <span className="material-symbols-outlined mr-1 align-middle" aria-hidden="true">
                     {icon}
                 </span>
                 <span className="inline-block">{text}</span>

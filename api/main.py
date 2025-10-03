@@ -23,6 +23,7 @@ from api import (
     modules as modules_router,
     notifications as notifications_router,
     posters as posters_router,
+    schedule as schedule_router,
     system as system_router,
     webhooks as webhooks_router,
 )
@@ -188,6 +189,10 @@ app = FastAPI(
             "name": "Service Instances",
             "description": "Plex, Radarr, and Sonarr instance management",
         },
+        {
+            "name": "Schedule Management",
+            "description": "Module scheduling configuration",
+        },
         {"name": "Jobs", "description": "Background job queue management"},
         {"name": "Modules", "description": "Module execution and orchestration"},
         {"name": "Logs", "description": "Log file access and management"},
@@ -270,6 +275,7 @@ async def handle_validation_exception(
 app.include_router(system_router.router)
 app.include_router(config_router.router)
 app.include_router(instances_router.router)
+app.include_router(schedule_router.router)
 app.include_router(jobs_router.router)
 app.include_router(modules_router.router)
 app.include_router(logs_router.router)

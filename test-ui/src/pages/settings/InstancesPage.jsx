@@ -26,7 +26,7 @@ export const InstancesPage = () => {
     });
 
     // Toast notifications
-    const { toast } = useToast();
+    const toast = useToast();
 
     // Connection testing state
     const [testingInstances, setTestingInstances] = useState(new Set());
@@ -223,27 +223,44 @@ export const InstancesPage = () => {
                 if (testResult) {
                     setIsSaving(true);
 
-                    // TODO: Call actual save endpoint when backend implements it
-                    // For now, just simulate success after testing
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    try {
+                        const instanceData = {
+                            service: modalServiceType,
+                            name: formData.name,
+                            url: formData.url,
+                            api: formData.api,
+                        };
 
-                    toast.success(
-                        `Instance ${isEdit ? 'updated' : 'added'} successfully: ${formData.name}`
-                    );
-                    setIsSaving(false);
+                        if (isEdit) {
+                            // Update existing instance
+                            await instancesAPI.updateInstance(modalInstanceData.name, instanceData);
+                        } else {
+                            // Create new instance
+                            await instancesAPI.createInstance(instanceData);
+                        }
 
-                    // Close modal and refresh
-                    setAddModalOpen(false);
-                    setEditModalOpen(false);
-                    refreshInstances();
+                        toast.success(
+                            `Instance ${isEdit ? 'updated' : 'added'} successfully: ${formData.name}`
+                        );
+                        setIsSaving(false);
+
+                        // Close modal and refresh (bypass cache to show updated data)
+                        setAddModalOpen(false);
+                        setEditModalOpen(false);
+                        refreshInstances({ useCache: false });
+                    } catch (saveError) {
+                        setIsSaving(false);
+                        console.error('Instance save error:', saveError);
+                        toast.error(
+                            saveError.message || `Failed to ${isEdit ? 'update' : 'add'} instance`
+                        );
+                    }
                 }
             } catch (error) {
                 setIsTesting(false);
                 setIsSaving(false);
                 console.error('Instance save error:', error);
-                toast.error(
-                    error.message || `Failed to ${isEdit ? 'update' : 'add'} instance`
-                );
+                toast.error(error.message || `Failed to ${isEdit ? 'update' : 'add'} instance`);
             }
         },
         [validateForm, modalServiceType, formData, toast, refreshInstances]
@@ -256,20 +273,19 @@ export const InstancesPage = () => {
         setIsSaving(true);
 
         try {
-            // TODO: Call actual delete endpoint when backend implements it
-            // For now, just simulate success
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Call actual delete endpoint
+            await instancesAPI.deleteInstance(modalInstanceData.name, modalServiceType);
 
             toast.success(`Instance deleted successfully: ${modalInstanceData.name}`);
             setIsSaving(false);
             setDeleteModalOpen(false);
-            refreshInstances();
+            refreshInstances({ useCache: false });
         } catch (error) {
             setIsSaving(false);
             console.error('Instance delete error:', error);
             toast.error(error.message || 'Failed to delete instance');
         }
-    }, [modalInstanceData, toast, refreshInstances]);
+    }, [modalInstanceData, modalServiceType, toast, refreshInstances]);
 
     /**
      * Handle field change
@@ -492,11 +508,7 @@ export const InstancesPage = () => {
             ))}
 
             {/* Add Instance Modal */}
-            <Modal
-                isOpen={addModalOpen}
-                onClose={() => setAddModalOpen(false)}
-                size="medium"
-            >
+            <Modal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} size="medium">
                 <Modal.Header>
                     Add {modalServiceType?.charAt(0).toUpperCase() + modalServiceType?.slice(1)}{' '}
                     Instance
@@ -537,11 +549,7 @@ export const InstancesPage = () => {
             </Modal>
 
             {/* Edit Instance Modal */}
-            <Modal
-                isOpen={editModalOpen}
-                onClose={() => setEditModalOpen(false)}
-                size="medium"
-            >
+            <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} size="medium">
                 <Modal.Header>
                     Edit {modalServiceType?.charAt(0).toUpperCase() + modalServiceType?.slice(1)}{' '}
                     Instance
@@ -583,17 +591,11 @@ export const InstancesPage = () => {
             </Modal>
 
             {/* Delete Instance Modal */}
-            <Modal
-                isOpen={deleteModalOpen}
-                onClose={() => setDeleteModalOpen(false)}
-                size="small"
-            >
+            <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} size="small">
                 <Modal.Header>Confirm Delete</Modal.Header>
                 <Modal.Body>
                     <div className="flex flex-col gap-4">
-                        <p className="text-base">
-                            Are you sure you want to delete this instance?
-                        </p>
+                        <p className="text-base">Are you sure you want to delete this instance?</p>
                         <div className="p-4 bg-surface-alt rounded-md border border-border">
                             <div className="flex flex-col gap-2 text-sm">
                                 <div>
@@ -613,9 +615,7 @@ export const InstancesPage = () => {
                                 </div>
                             </div>
                         </div>
-                        <p className="text-sm text-warning">
-                            ⚠️ This action cannot be undone.
-                        </p>
+                        <p className="text-sm text-warning">⚠️ This action cannot be undone.</p>
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
@@ -626,11 +626,7 @@ export const InstancesPage = () => {
                     >
                         Cancel
                     </Button>
-                    <Button
-                        variant="danger"
-                        onClick={handleConfirmDelete}
-                        disabled={isSaving}
-                    >
+                    <Button variant="danger" onClick={handleConfirmDelete} disabled={isSaving}>
                         {isSaving ? 'Deleting...' : 'Delete Instance'}
                     </Button>
                 </Modal.Footer>

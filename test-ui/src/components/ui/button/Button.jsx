@@ -7,11 +7,19 @@ import { ButtonBase, ButtonIcon, ButtonText } from './primitives';
  *
  * Composes: ButtonBase + ButtonIcon (optional) + ButtonText
  *
+ * Supports all ButtonBase variants and utility overrides:
+ * - Variants: primary, secondary, success, danger, ghost, warning, info, muted, surface
+ * - Overrides: bgClass, textClass, sizeClass, hoverClass (for edge cases)
+ *
  * @param {Object} props - Component props
  * @param {string} props.children - Button label text
  * @param {Function} props.onClick - Click handler
- * @param {string} props.variant - Button variant
- * @param {string} props.size - Button size
+ * @param {string} props.variant - Button variant (see ButtonBase for full list)
+ * @param {string} props.size - Button size (small, medium, large)
+ * @param {string} props.bgClass - Background utility override (passed to ButtonBase)
+ * @param {string} props.textClass - Text color utility override (passed to ButtonBase)
+ * @param {string} props.sizeClass - Size utility override (passed to ButtonBase)
+ * @param {string} props.hoverClass - Hover state utility override (passed to ButtonBase)
  * @param {boolean} props.disabled - Disabled state
  * @param {boolean} props.fullWidth - Full width button
  * @param {string} props.icon - Optional Material Symbols icon
@@ -26,6 +34,10 @@ export const Button = React.memo(
         onClick,
         variant = 'primary',
         size = 'medium',
+        bgClass = '',
+        textClass = '',
+        sizeClass = '',
+        hoverClass = '',
         disabled = false,
         fullWidth = false,
         icon = null,
@@ -39,6 +51,10 @@ export const Button = React.memo(
                 onClick={onClick}
                 variant={variant}
                 size={size}
+                bgClass={bgClass}
+                textClass={textClass}
+                sizeClass={sizeClass}
+                hoverClass={hoverClass}
                 disabled={disabled}
                 fullWidth={fullWidth}
                 type={type}
@@ -58,8 +74,22 @@ Button.displayName = 'Button';
 Button.propTypes = {
     children: PropTypes.node.isRequired,
     onClick: PropTypes.func,
-    variant: PropTypes.oneOf(['primary', 'secondary', 'success', 'danger', 'ghost']),
+    variant: PropTypes.oneOf([
+        'primary',
+        'secondary',
+        'success',
+        'danger',
+        'ghost',
+        'warning',
+        'info',
+        'muted',
+        'surface',
+    ]),
     size: PropTypes.oneOf(['small', 'medium', 'large']),
+    bgClass: PropTypes.string,
+    textClass: PropTypes.string,
+    sizeClass: PropTypes.string,
+    hoverClass: PropTypes.string,
     disabled: PropTypes.bool,
     fullWidth: PropTypes.bool,
     icon: PropTypes.string,

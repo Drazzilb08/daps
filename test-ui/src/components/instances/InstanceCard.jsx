@@ -67,7 +67,7 @@ export const InstanceCard = ({
                         {isTesting ? 'Testing...' : 'Test'}
                     </Button>
                     {/* Edit button - Secondary variant (neutral action) */}
-                    <Button variant="secondary" onClick={onEdit}>
+                    <Button variant="warning" onClick={onEdit}>
                         Edit
                     </Button>
                     {/* Delete button - Danger variant (destructive action) */}

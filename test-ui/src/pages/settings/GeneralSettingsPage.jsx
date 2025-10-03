@@ -10,6 +10,9 @@ import { GENERAL_SETTINGS_SCHEMA } from '../../utils/constants/general_settings_
 import { FieldRegistry } from '../../components/fields/FieldRegistry.jsx';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Button } from '../../components/ui/button/Button';
+import { useApiData } from '../../hooks/useApiData';
+import { configAPI } from '../../utils/api/config';
+import { useToast } from '../../contexts/ToastContext';
 
 /**
  * Memoized field component for better performance
@@ -46,26 +49,40 @@ MemoizedFieldComponent.displayName = 'MemoizedFieldComponent';
  * @returns {JSX.Element} General settings page component
  */
 export const GeneralSettingsPage = () => {
-    // Mock data - in real app this would come from API
-    const [formData, setFormData] = useState({
-        general: {
-            log_level: 'info',
-            max_logs: 9,
-            update_notifications: true,
-        },
+    const toast = useToast();
+
+    // Load config from backend
+    const {
+        data: configData,
+        isLoading,
+        error: loadError,
+        execute: refreshConfig,
+    } = useApiData({
+        apiFunction: configAPI.fetchConfig,
     });
+
+    const [formData, setFormData] = useState({});
     const [lastSaved, setLastSaved] = useState('{}');
     const [isDirty, setIsDirty] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState(null);
-    const [saveSuccess, setSaveSuccess] = useState(false);
 
-    // Initialize form data
+    // Initialize form data when config loads
     useEffect(() => {
-        setLastSaved(JSON.stringify(formData));
-        setIsDirty(false);
-        setSaveError(null);
-    }, [formData]);
+        if (configData?.data) {
+            const initialData = {
+                general: configData.data.general || {
+                    log_level: 'info',
+                    max_logs: 5,
+                    update_notifications: false,
+                },
+            };
+            setFormData(initialData);
+            setLastSaved(JSON.stringify(initialData));
+            setIsDirty(false);
+            setSaveError(null);
+        }
+    }, [configData]);
 
     // Handle field changes
     const handleFieldChange = useCallback((moduleKey, fieldKey, value) => {
@@ -87,20 +104,26 @@ export const GeneralSettingsPage = () => {
             setIsSaving(true);
             setSaveError(null);
 
-            // Mock API call - replace with actual API call
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Save to backend
+            await configAPI.updateConfig(formData);
+
+            // Refresh config with cache bypass
+            await refreshConfig({ useCache: false });
 
             // Update tracking after successful save
             setLastSaved(JSON.stringify(formData));
             setIsDirty(false);
-            setSaveSuccess(true);
+
+            toast.success('General settings saved successfully');
         } catch (error) {
             console.error('Save failed:', error);
-            setSaveError(error.message || 'Failed to save configuration');
+            const errorMessage = error.message || 'Failed to save configuration';
+            setSaveError(errorMessage);
+            toast.error(`Failed to save settings: ${errorMessage}`);
         } finally {
             setIsSaving(false);
         }
-    }, [isDirty, isSaving, formData]);
+    }, [isDirty, isSaving, formData, refreshConfig, toast]);
 
     // Reset to last saved state
     const handleReset = useCallback(() => {
@@ -116,14 +139,6 @@ export const GeneralSettingsPage = () => {
             setIsDirty(currentData !== lastSaved);
         }
     }, [formData, lastSaved]);
-
-    // Clear success message after delay
-    useEffect(() => {
-        if (saveSuccess) {
-            const timer = setTimeout(() => setSaveSuccess(false), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [saveSuccess]);
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -149,6 +164,26 @@ export const GeneralSettingsPage = () => {
         return () => window.removeEventListener('keydown', handleKeyboard);
     }, [isDirty, isSaving, handleSave, handleReset]);
 
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center min-h-64">
+                <div className="text-primary text-lg">Loading general settings...</div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (loadError) {
+        return (
+            <div className="flex justify-center items-center min-h-64">
+                <div className="text-error text-lg">
+                    Error loading settings: {loadError.message}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="p-4 md:p-6 max-w-4xl mx-auto">
             {/* Header with save controls */}
@@ -163,16 +198,6 @@ export const GeneralSettingsPage = () => {
                                 <span className="material-symbols-outlined text-sm">edit</span>
                                 <span className="hidden sm:inline">Unsaved changes</span>
                                 <span className="sm:hidden">Unsaved</span>
-                            </span>
-                        )}
-
-                        {saveSuccess && (
-                            <span className="text-sm text-success flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">
-                                    check_circle
-                                </span>
-                                <span className="hidden sm:inline">Saved successfully</span>
-                                <span className="sm:hidden">Saved</span>
                             </span>
                         )}
 

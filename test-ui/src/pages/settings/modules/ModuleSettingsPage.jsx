@@ -6,7 +6,8 @@ import { Accordion } from '../../../components/Accordion.jsx';
 import { AccordionItem } from '../../../components/AccordionItem.jsx';
 import { ConfigProvider, useConfig } from '../../../contexts/ConfigContext.jsx';
 import { PageHeader } from '../../../components/ui/PageHeader';
-import { Button } from '../../../components/ui/button/Button';
+import { ToolBar } from '../../../components/ToolBar';
+import { useToolbar } from '../../../contexts/ToolbarContext';
 
 /**
  * Memoized field component for better performance
@@ -44,6 +45,7 @@ MemoizedFieldComponent.displayName = 'MemoizedFieldComponent';
  */
 const ModuleSettingsContent = () => {
     const config = useConfig(); // Clean access to configuration data
+    const { registerToolbar, clearToolbar } = useToolbar();
 
     // Simplified state management for the UI
     const [expandedModules, setExpandedModules] = useState([]);
@@ -143,6 +145,34 @@ const ModuleSettingsContent = () => {
         setSaveError(null);
     }, []);
 
+    // Register toolbar with Save/Reset buttons
+    useEffect(() => {
+        const toolbarContent = (
+            <ToolBar>
+                <ToolBar.Section alignContent="right">
+                    <ToolBar.Button
+                        label="Reset"
+                        iconName="restore"
+                        isDisabled={!isDirty || isSaving}
+                        onPress={handleReset}
+                    />
+                    <ToolBar.Button
+                        label="Save"
+                        iconName="save"
+                        isDisabled={!isDirty || isSaving}
+                        isSpinning={isSaving}
+                        onPress={handleSave}
+                    />
+                </ToolBar.Section>
+            </ToolBar>
+        );
+
+        registerToolbar(toolbarContent);
+
+        // Cleanup on unmount
+        return () => clearToolbar();
+    }, [isDirty, isSaving, handleSave, handleReset, registerToolbar, clearToolbar]);
+
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyboard = e => {
@@ -182,66 +212,10 @@ const ModuleSettingsContent = () => {
 
     return (
         <div className="p-4 md:p-6 max-w-4xl mx-auto">
-            {/* Header with save controls */}
+            {/* Header */}
             <PageHeader
                 title="Module Settings"
                 description="Configure DAPS module settings"
-                actions={
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        {/* Status indicators - responsive text */}
-                        {isDirty && (
-                            <span className="text-sm text-warning flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">edit</span>
-                                <span className="hidden sm:inline">Unsaved changes</span>
-                                <span className="sm:hidden">Unsaved</span>
-                            </span>
-                        )}
-
-                        {saveSuccess && (
-                            <span className="text-sm text-success flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">
-                                    check_circle
-                                </span>
-                                <span className="hidden sm:inline">Saved successfully</span>
-                                <span className="sm:hidden">Saved</span>
-                            </span>
-                        )}
-
-                        {/* Mobile-optimized buttons */}
-                        <div className="flex gap-2">
-                            <Button
-                                variant="secondary"
-                                onClick={handleReset}
-                                disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none"
-                            >
-                                Reset
-                            </Button>
-
-                            <Button
-                                variant="primary"
-                                onClick={handleSave}
-                                disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none"
-                            >
-                                {isSaving ? (
-                                    <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                        <span className="hidden sm:inline">Saving...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="material-symbols-outlined text-sm">
-                                            save
-                                        </span>
-                                        <span className="hidden sm:inline">Save Changes</span>
-                                        <span className="sm:hidden">Save</span>
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                }
             />
 
             {/* Error display */}

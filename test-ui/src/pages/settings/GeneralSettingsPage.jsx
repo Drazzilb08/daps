@@ -9,10 +9,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { GENERAL_SETTINGS_SCHEMA } from '../../utils/constants/general_settings_schema.js';
 import { FieldRegistry } from '../../components/fields/FieldRegistry.jsx';
 import { PageHeader } from '../../components/ui/PageHeader';
-import { Button } from '../../components/ui/button/Button';
+import { ToolBar } from '../../components/ToolBar';
 import { useApiData } from '../../hooks/useApiData';
 import { configAPI } from '../../utils/api/config';
 import { useToast } from '../../contexts/ToastContext';
+import { useToolbar } from '../../contexts/ToolbarContext';
 
 /**
  * Memoized field component for better performance
@@ -50,6 +51,7 @@ MemoizedFieldComponent.displayName = 'MemoizedFieldComponent';
  */
 export const GeneralSettingsPage = () => {
     const toast = useToast();
+    const { registerToolbar, clearToolbar } = useToolbar();
 
     // Load config from backend
     const {
@@ -140,6 +142,34 @@ export const GeneralSettingsPage = () => {
         }
     }, [formData, lastSaved]);
 
+    // Register toolbar with Save/Reset buttons
+    useEffect(() => {
+        const toolbarContent = (
+            <ToolBar>
+                <ToolBar.Section alignContent="right">
+                    <ToolBar.Button
+                        label="Reset"
+                        iconName="restore"
+                        isDisabled={!isDirty || isSaving}
+                        onPress={handleReset}
+                    />
+                    <ToolBar.Button
+                        label="Save"
+                        iconName="save"
+                        isDisabled={!isDirty || isSaving}
+                        isSpinning={isSaving}
+                        onPress={handleSave}
+                    />
+                </ToolBar.Section>
+            </ToolBar>
+        );
+
+        registerToolbar(toolbarContent);
+
+        // Cleanup on unmount
+        return () => clearToolbar();
+    }, [isDirty, isSaving, handleSave, handleReset, registerToolbar, clearToolbar]);
+
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyboard = e => {
@@ -186,56 +216,10 @@ export const GeneralSettingsPage = () => {
 
     return (
         <div className="p-4 md:p-6 max-w-4xl mx-auto">
-            {/* Header with save controls */}
+            {/* Header */}
             <PageHeader
                 title="General Settings"
                 description="Configure general DAPS application settings"
-                actions={
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        {/* Status indicators - responsive text */}
-                        {isDirty && (
-                            <span className="text-sm text-warning flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">edit</span>
-                                <span className="hidden sm:inline">Unsaved changes</span>
-                                <span className="sm:hidden">Unsaved</span>
-                            </span>
-                        )}
-
-                        {/* Mobile-optimized buttons */}
-                        <div className="flex gap-2">
-                            <Button
-                                variant="secondary"
-                                onClick={handleReset}
-                                disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none"
-                            >
-                                Reset
-                            </Button>
-
-                            <Button
-                                variant="primary"
-                                onClick={handleSave}
-                                disabled={!isDirty || isSaving}
-                                className="flex-1 sm:flex-none"
-                            >
-                                {isSaving ? (
-                                    <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                        <span className="hidden sm:inline">Saving...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="material-symbols-outlined text-sm">
-                                            save
-                                        </span>
-                                        <span className="hidden sm:inline">Save Changes</span>
-                                        <span className="sm:hidden">Save</span>
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </div>
-                }
             />
 
             {/* Error display */}

@@ -26,6 +26,7 @@ import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import UISettingsPage from './pages/settings/UISettingsPage.jsx';
 import { SchedulePage } from './pages/settings/SchedulePage.jsx';
 import { InstancesPage } from './pages/settings/InstancesPage.jsx';
+import { NotificationsPage } from './pages/settings/NotificationsPage.jsx';
 
 /**
  * DAPS Application Root - Phase 5 Complete
@@ -262,24 +263,9 @@ const App = () => {
                                             <Route
                                                 path="settings/notifications"
                                                 element={
-                                                    <div className="p-4 md:p-6 max-w-4xl mx-auto">
-                                                        <h1 className="text-xl md:text-2xl font-semibold mb-2 text-primary">
-                                                            Notification Settings
-                                                        </h1>
-                                                        <p className="text-sm md:text-base text-secondary mb-6">
-                                                            Configure notification providers and
-                                                            alerts
-                                                        </p>
-                                                        <div className="text-center py-8 text-tertiary">
-                                                            <span className="material-symbols-outlined text-4xl mb-2 block">
-                                                                notifications
-                                                            </span>
-                                                            <p>
-                                                                Notification configuration coming
-                                                                soon
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                    <PageErrorBoundary routeName="Notification Settings">
+                                                        <NotificationsPage />
+                                                    </PageErrorBoundary>
                                                 }
                                             />
                                             {/* Logs Route */}

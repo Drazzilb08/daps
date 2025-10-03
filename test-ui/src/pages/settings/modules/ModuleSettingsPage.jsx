@@ -213,10 +213,7 @@ const ModuleSettingsContent = () => {
     return (
         <div className="p-4 md:p-6 max-w-4xl mx-auto">
             {/* Header */}
-            <PageHeader
-                title="Module Settings"
-                description="Configure DAPS module settings"
-            />
+            <PageHeader title="Module Settings" description="Configure DAPS module settings" />
 
             {/* Error display */}
             {saveError && (

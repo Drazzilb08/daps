@@ -20,5 +20,6 @@ export { default as Menu } from './Menu';
 export { default as MenuItem } from './MenuItem';
 export { Modal } from '../Modal';
 export { PageHeader } from './PageHeader';
+export { ServiceIcon } from './ServiceIcon';
 export { default as Spinner } from './Spinner';
 export { StatCard } from './StatCard';

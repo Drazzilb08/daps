@@ -158,9 +158,12 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
     );
 
     // Manual execution function
-    const execute = useCallback((executeOptions = {}) => {
-        return executeRequest(0, executeOptions);
-    }, [executeRequest]);
+    const execute = useCallback(
+        (executeOptions = {}) => {
+            return executeRequest(0, executeOptions);
+        },
+        [executeRequest]
+    );
 
     // Retry function
     const retry = useCallback(() => {

@@ -19,59 +19,59 @@ const Layout = ({ children }) => {
                     Skip to main content
                 </a>
 
-            {/* Fixed Header - full width */}
-            <FeatureErrorBoundary
-                featureName="Page Header"
-                featureDescription="Main navigation and header"
-                critical={true}
-            >
-                <LayoutHeader />
-            </FeatureErrorBoundary>
-
-            {/* Mobile Menu Backdrop */}
-            {isMobile && mobileMenuOpen && (
-                <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-40"
-                    onClick={closeMobileMenu}
-                    aria-hidden="true"
-                />
-            )}
-
-            {/* Content Area - remaining height after header */}
-            <div className="flex flex-1 overflow-hidden">
+                {/* Fixed Header - full width */}
                 <FeatureErrorBoundary
-                    featureName="Sidebar Navigation"
-                    featureDescription="Left navigation sidebar"
+                    featureName="Page Header"
+                    featureDescription="Main navigation and header"
                     critical={true}
                 >
-                    <LayoutSidebar />
+                    <LayoutHeader />
                 </FeatureErrorBoundary>
 
-                {/* Main Content Area - remaining width after sidebar */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                    {/* Generic toolbar - renders any registered content */}
+                {/* Mobile Menu Backdrop */}
+                {isMobile && mobileMenuOpen && (
+                    <div
+                        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+                        onClick={closeMobileMenu}
+                        aria-hidden="true"
+                    />
+                )}
+
+                {/* Content Area - remaining height after header */}
+                <div className="flex flex-1 overflow-hidden">
                     <FeatureErrorBoundary
-                        featureName="Page Toolbar"
-                        featureDescription="Page toolbar with actions"
-                        critical={false}
+                        featureName="Sidebar Navigation"
+                        featureDescription="Left navigation sidebar"
+                        critical={true}
                     >
-                        <PageToolbar />
+                        <LayoutSidebar />
                     </FeatureErrorBoundary>
 
-                    <main
-                        id="main-content"
-                        className="flex-1 overflow-y-auto p-4 px-3 md:p-6 md:px-4 bg-bg"
-                    >
+                    {/* Main Content Area - remaining width after sidebar */}
+                    <div className="flex-1 flex flex-col overflow-hidden">
+                        {/* Generic toolbar - renders any registered content */}
                         <FeatureErrorBoundary
-                            featureName="Page Content"
-                            featureDescription="Main page content area"
+                            featureName="Page Toolbar"
+                            featureDescription="Page toolbar with actions"
                             critical={false}
                         >
-                            {children || <Outlet />}
+                            <PageToolbar />
                         </FeatureErrorBoundary>
-                    </main>
+
+                        <main
+                            id="main-content"
+                            className="flex-1 overflow-y-auto p-4 px-3 md:p-6 md:px-4 bg-bg"
+                        >
+                            <FeatureErrorBoundary
+                                featureName="Page Content"
+                                featureDescription="Main page content area"
+                                critical={false}
+                            >
+                                {children || <Outlet />}
+                            </FeatureErrorBoundary>
+                        </main>
+                    </div>
                 </div>
-            </div>
             </div>
         </ToolbarProvider>
     );

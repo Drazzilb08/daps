@@ -3,7 +3,7 @@ import { moduleList } from '../../utils/constants/constants.js';
 import { humanize } from '../../utils/tools.js';
 import { useModuleExecution } from '../../hooks/useModuleExecution.js';
 import { useApiData } from '../../hooks/useApiData';
-import { configAPI } from '../../utils/api/config';
+import { scheduleAPI } from '../../utils/api/schedule';
 import { useToast } from '../../contexts/ToastContext';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatGrid } from '../../components/statistics';
@@ -21,21 +21,24 @@ export const SchedulePage = () => {
     const [scheduleValue, setScheduleValue] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
-    // API Data - Configuration
+    // API Data - Schedule
     const {
-        data: configData,
-        isLoading: isLoadingConfig,
-        error: configError,
-        execute: refetchConfig,
+        data: scheduleData,
+        isLoading: isLoadingSchedule,
+        error: scheduleError,
+        execute: refetchSchedules,
     } = useApiData({
-        apiFunction: configAPI.fetchConfig,
+        apiFunction: scheduleAPI.fetchSchedules,
     });
 
     // Module Execution Hook
     const { executeModule, isRunning } = useModuleExecution();
 
     // Derive data
-    const schedules = useMemo(() => configData?.data?.schedule || {}, [configData?.data?.schedule]);
+    const schedules = useMemo(
+        () => scheduleData?.data?.schedule || {},
+        [scheduleData?.data?.schedule]
+    );
     const availableModules = useMemo(
         () =>
             moduleList.map(moduleKey => ({
@@ -118,19 +121,14 @@ export const SchedulePage = () => {
         setIsSaving(true);
 
         try {
-            // Prepare updated schedule config
-            const updatedSchedules = {
-                ...schedules,
-                [editingModule.key]: scheduleValue,
-            };
-
-            // Call API to update config
-            await configAPI.updateConfig({
-                schedule: updatedSchedules,
+            // Call dedicated schedule API
+            await scheduleAPI.updateSchedule({
+                module: editingModule.key,
+                schedule: scheduleValue,
             });
 
-            // Refresh config data
-            await refetchConfig();
+            // Refresh schedule data (bypass cache to show updated data)
+            await refetchSchedules({ useCache: false });
 
             // Show success toast
             toast.success(
@@ -144,7 +142,7 @@ export const SchedulePage = () => {
             toast.error(`Failed to save schedule: ${error.message || 'Unknown error'}`);
             setIsSaving(false);
         }
-    }, [editingModule, scheduleValue, schedules, refetchConfig, toast, handleModalClose, isSaving]);
+    }, [editingModule, scheduleValue, toast, refetchSchedules, handleModalClose, isSaving]);
 
     const handleRemove = useCallback(async () => {
         if (!editingModule || isSaving) return;
@@ -152,19 +150,11 @@ export const SchedulePage = () => {
         setIsSaving(true);
 
         try {
-            // Prepare updated schedule config with empty string to remove schedule
-            const updatedSchedules = {
-                ...schedules,
-                [editingModule.key]: '',
-            };
+            // Call dedicated delete endpoint
+            await scheduleAPI.deleteSchedule(editingModule.key);
 
-            // Call API to update config
-            await configAPI.updateConfig({
-                schedule: updatedSchedules,
-            });
-
-            // Refresh config data
-            await refetchConfig();
+            // Refresh schedule data (bypass cache to show updated data)
+            await refetchSchedules({ useCache: false });
 
             // Show success toast
             toast.success(`Schedule removed for ${editingModule.label}`);
@@ -176,10 +166,10 @@ export const SchedulePage = () => {
             toast.error(`Failed to remove schedule: ${error.message || 'Unknown error'}`);
             setIsSaving(false);
         }
-    }, [editingModule, schedules, refetchConfig, toast, handleModalClose, isSaving]);
+    }, [editingModule, toast, refetchSchedules, handleModalClose, isSaving]);
 
     // Loading state
-    if (isLoadingConfig) {
+    if (isLoadingSchedule) {
         return (
             <div className="flex justify-center items-center min-h-64">
                 <div className="text-primary text-lg">Loading module schedules...</div>
@@ -188,11 +178,11 @@ export const SchedulePage = () => {
     }
 
     // Error state
-    if (configError) {
+    if (scheduleError) {
         return (
             <div className="flex justify-center items-center min-h-64">
                 <div className="text-error text-lg">
-                    Error loading schedules: {configError.message}
+                    Error loading schedules: {scheduleError.message}
                 </div>
             </div>
         );

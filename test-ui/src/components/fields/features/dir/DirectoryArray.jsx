@@ -346,15 +346,96 @@ export const DirectoryArray = React.memo(
                     aria-label={`${label} list`}
                     {...props}
                 >
-                {/* Directory Items */}
-                <div className="flex flex-col gap-4">
-                    {directories.length === 0 ? (
-                        <EmptyState
-                            message={emptyMessage}
-                            secondaryMessage={emptySecondaryMessage}
-                            variant="subtle"
-                            size="small"
-                        >
+                    {/* Directory Items */}
+                    <div className="flex flex-col gap-4">
+                        {directories.length === 0 ? (
+                            <EmptyState
+                                message={emptyMessage}
+                                secondaryMessage={emptySecondaryMessage}
+                                variant="subtle"
+                                size="small"
+                            >
+                                <AddButton
+                                    onClick={handleAddDirectory}
+                                    disabled={!canAddDirectory}
+                                    text={addButtonText}
+                                    itemType="directory"
+                                    disabledReason="Field is disabled"
+                                />
+                            </EmptyState>
+                        ) : (
+                            directories.map((directory, index) => {
+                                const itemId = `${baseId}-dir-${index}`;
+                                const isLastItem = directories.length === 1;
+
+                                const canMoveUp = enableReordering && index > 0 && !disabled;
+                                const canMoveDown =
+                                    enableReordering && index < directories.length - 1 && !disabled;
+
+                                // Get mode for this directory index
+                                const itemMode = modes[index] || '';
+
+                                // Use SortableDirectoryItem for drag and drop, regular DirectoryItem otherwise
+                                if (enableReordering) {
+                                    return (
+                                        <SortableDirectoryItem
+                                            key={index}
+                                            id={index.toString()}
+                                            index={index}
+                                            directory={directory}
+                                            isLastItem={isLastItem}
+                                            itemId={itemId}
+                                            canMoveUp={canMoveUp}
+                                            canMoveDown={canMoveDown}
+                                            canRemoveDirectory={canRemoveDirectory(index)}
+                                            enableReordering={enableReordering}
+                                            onMoveUp={onMoveUp}
+                                            onMoveDown={onMoveDown}
+                                            onRemove={handleRemoveDirectory}
+                                            onClick={handleDirectoryClick}
+                                            disabled={disabled}
+                                            invalid={invalid}
+                                            placeholder={placeholder}
+                                            label={label}
+                                            baseId={baseId}
+                                            removeButtonText={removeButtonText}
+                                            // Mode selection props
+                                            mode={itemMode}
+                                            modeOptions={modeOptions}
+                                            onModeChange={onModeChange}
+                                        />
+                                    );
+                                } else {
+                                    return (
+                                        <DirectoryItem
+                                            key={index}
+                                            index={index}
+                                            directory={directory}
+                                            isLastItem={isLastItem}
+                                            itemId={itemId}
+                                            canRemoveDirectory={canRemoveDirectory(index)}
+                                            onRemove={handleRemoveDirectory}
+                                            onClick={handleDirectoryClick}
+                                            disabled={disabled}
+                                            invalid={invalid}
+                                            placeholder={placeholder}
+                                            label={label}
+                                            baseId={baseId}
+                                            removeButtonText={removeButtonText}
+                                            // Mode selection props
+                                            mode={itemMode}
+                                            modeOptions={modeOptions}
+                                            onModeChange={onModeChange}
+                                        />
+                                    );
+                                }
+                            })
+                        )}
+                    </div>
+
+                    {/* Add Button & Counter (only show if we have items or can add) */}
+                    {directories.length > 0 && (
+                        <div className="flex items-center gap-3">
                             <AddButton
                                 onClick={handleAddDirectory}
                                 disabled={!canAddDirectory}
@@ -362,120 +443,39 @@ export const DirectoryArray = React.memo(
                                 itemType="directory"
                                 disabledReason="Field is disabled"
                             />
-                        </EmptyState>
-                    ) : (
-                        directories.map((directory, index) => {
-                            const itemId = `${baseId}-dir-${index}`;
-                            const isLastItem = directories.length === 1;
-
-                            const canMoveUp = enableReordering && index > 0 && !disabled;
-                            const canMoveDown =
-                                enableReordering && index < directories.length - 1 && !disabled;
-
-                            // Get mode for this directory index
-                            const itemMode = modes[index] || '';
-
-                            // Use SortableDirectoryItem for drag and drop, regular DirectoryItem otherwise
-                            if (enableReordering) {
-                                return (
-                                    <SortableDirectoryItem
-                                        key={index}
-                                        id={index.toString()}
-                                        index={index}
-                                        directory={directory}
-                                        isLastItem={isLastItem}
-                                        itemId={itemId}
-                                        canMoveUp={canMoveUp}
-                                        canMoveDown={canMoveDown}
-                                        canRemoveDirectory={canRemoveDirectory(index)}
-                                        enableReordering={enableReordering}
-                                        onMoveUp={onMoveUp}
-                                        onMoveDown={onMoveDown}
-                                        onRemove={handleRemoveDirectory}
-                                        onClick={handleDirectoryClick}
-                                        disabled={disabled}
-                                        invalid={invalid}
-                                        placeholder={placeholder}
-                                        label={label}
-                                        baseId={baseId}
-                                        removeButtonText={removeButtonText}
-                                        // Mode selection props
-                                        mode={itemMode}
-                                        modeOptions={modeOptions}
-                                        onModeChange={onModeChange}
-                                    />
-                                );
-                            } else {
-                                return (
-                                    <DirectoryItem
-                                        key={index}
-                                        index={index}
-                                        directory={directory}
-                                        isLastItem={isLastItem}
-                                        itemId={itemId}
-                                        canRemoveDirectory={canRemoveDirectory(index)}
-                                        onRemove={handleRemoveDirectory}
-                                        onClick={handleDirectoryClick}
-                                        disabled={disabled}
-                                        invalid={invalid}
-                                        placeholder={placeholder}
-                                        label={label}
-                                        baseId={baseId}
-                                        removeButtonText={removeButtonText}
-                                        // Mode selection props
-                                        mode={itemMode}
-                                        modeOptions={modeOptions}
-                                        onModeChange={onModeChange}
-                                    />
-                                );
-                            }
-                        })
+                        </div>
                     )}
                 </div>
 
-                {/* Add Button & Counter (only show if we have items or can add) */}
-                {directories.length > 0 && (
-                    <div className="flex items-center gap-3">
-                        <AddButton
-                            onClick={handleAddDirectory}
-                            disabled={!canAddDirectory}
-                            text={addButtonText}
-                            itemType="directory"
-                            disabledReason="Field is disabled"
-                        />
-                    </div>
-                )}
-            </div>
-
-            {/* Directory Browser Modal */}
-            <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} size="large">
-                <Modal.Header>Select Directory</Modal.Header>
-                <Modal.Body>
-                    <div className="flex flex-col gap-4">
-                        {DirPickerField && (
-                            <DirPickerField
-                                field={{
-                                    key: 'directory_browser',
-                                    label: 'Directory Browser',
-                                    type: 'dir_picker',
-                                    description: 'Browse and select a directory',
-                                }}
-                                value={currentValue}
-                                onChange={() => {}}
-                            />
-                        )}
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        onClick={() => setModalOpen(false)}
-                        className="px-4 py-2 bg-surface-alt text-primary rounded-md hover:bg-surface-hover transition-colors min-h-11"
-                    >
-                        Close
-                    </button>
-                </Modal.Footer>
-            </Modal>
-        </>
+                {/* Directory Browser Modal */}
+                <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} size="large">
+                    <Modal.Header>Select Directory</Modal.Header>
+                    <Modal.Body>
+                        <div className="flex flex-col gap-4">
+                            {DirPickerField && (
+                                <DirPickerField
+                                    field={{
+                                        key: 'directory_browser',
+                                        label: 'Directory Browser',
+                                        type: 'dir_picker',
+                                        description: 'Browse and select a directory',
+                                    }}
+                                    value={currentValue}
+                                    onChange={() => {}}
+                                />
+                            )}
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button
+                            onClick={() => setModalOpen(false)}
+                            className="px-4 py-2 bg-surface-alt text-primary rounded-md hover:bg-surface-hover transition-colors min-h-11"
+                        >
+                            Close
+                        </button>
+                    </Modal.Footer>
+                </Modal>
+            </>
         );
     }
 );

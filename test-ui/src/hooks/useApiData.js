@@ -66,7 +66,7 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
 
     // Execute API function with error handling
     const executeRequest = useCallback(
-        async (retryAttempt = 0) => {
+        async (retryAttempt = 0, executeOptions = {}) => {
             // Clean up previous request
             cleanup();
 
@@ -86,7 +86,7 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
                     throw new Error('API function is required');
                 }
 
-                const result = await apiFunction();
+                const result = await apiFunction(executeOptions);
 
                 if (!isMountedRef.current) {
                     return;
@@ -118,7 +118,7 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
                 if (shouldAttemptRetry(err, retryAttempt)) {
                     retryTimeoutRef.current = setTimeout(() => {
                         if (isMountedRef.current) {
-                            executeRequest(retryAttempt + 1);
+                            executeRequest(retryAttempt + 1, executeOptions);
                         }
                     }, retryDelay);
                     return;
@@ -158,8 +158,8 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
     );
 
     // Manual execution function
-    const execute = useCallback(() => {
-        return executeRequest(0);
+    const execute = useCallback((executeOptions = {}) => {
+        return executeRequest(0, executeOptions);
     }, [executeRequest]);
 
     // Retry function

@@ -17,12 +17,14 @@
  * - Each primitive is reusable across different contexts
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { InputBase, SelectBase } from '../../primitives';
 import { AddButton, RemoveButton, EmptyState, FieldButton } from '../shared';
 import { useTouchDevice } from '../../../../utils/touchDetection';
+import { Modal } from '../../../ui';
+import { FieldRegistry } from '../../FieldRegistry';
 
 /**
  * SortableDirectoryItem - Directory item with drag and drop support
@@ -293,6 +295,9 @@ export const DirectoryArray = React.memo(
         onModeChange = null,
         ...props
     }) => {
+        const [modalOpen, setModalOpen] = useState(false);
+        const [selectedIndex, setSelectedIndex] = useState(null);
+
         // Handle adding a new directory
         const handleAddDirectory = useCallback(() => {
             const newDirectories = [...directories, ''];
@@ -321,23 +326,26 @@ export const DirectoryArray = React.memo(
         // );
 
         // Handle clicking on directory input to open modal
-        const handleDirectoryClick = useCallback(() => {
-            // Placeholder functionality - show info about future modal implementation
-            alert(
-                '🚧 Directory Browser Modal\n\nThis will open a modal to browse and select a directory when the modal system is implemented.'
-            );
+        const handleDirectoryClick = useCallback(index => {
+            setSelectedIndex(index);
+            setModalOpen(true);
         }, []);
 
         const canAddDirectory = !disabled;
         const canRemoveDirectory = () => directories.length > minDirectories && !disabled;
 
+        // Get dir_picker placeholder field component
+        const DirPickerField = FieldRegistry.getField('dir_picker');
+        const currentValue = selectedIndex !== null ? directories[selectedIndex] : '';
+
         return (
-            <div
-                className={`flex flex-col gap-3 ${className}`.trim()}
-                role="group"
-                aria-label={`${label} list`}
-                {...props}
-            >
+            <>
+                <div
+                    className={`flex flex-col gap-3 ${className}`.trim()}
+                    role="group"
+                    aria-label={`${label} list`}
+                    {...props}
+                >
                 {/* Directory Items */}
                 <div className="flex flex-col gap-4">
                     {directories.length === 0 ? (
@@ -438,6 +446,36 @@ export const DirectoryArray = React.memo(
                     </div>
                 )}
             </div>
+
+            {/* Directory Browser Modal */}
+            <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} size="large">
+                <Modal.Header>Select Directory</Modal.Header>
+                <Modal.Body>
+                    <div className="flex flex-col gap-4">
+                        {DirPickerField && (
+                            <DirPickerField
+                                field={{
+                                    key: 'directory_browser',
+                                    label: 'Directory Browser',
+                                    type: 'dir_picker',
+                                    description: 'Browse and select a directory',
+                                }}
+                                value={currentValue}
+                                onChange={() => {}}
+                            />
+                        )}
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <button
+                        onClick={() => setModalOpen(false)}
+                        className="px-4 py-2 bg-surface-alt text-primary rounded-md hover:bg-surface-hover transition-colors min-h-11"
+                    >
+                        Close
+                    </button>
+                </Modal.Footer>
+            </Modal>
+        </>
         );
     }
 );

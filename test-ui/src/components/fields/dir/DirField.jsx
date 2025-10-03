@@ -6,8 +6,10 @@
  * Supports placeholder text, validation states, and accessibility features.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
+import { Modal } from '../../ui';
+import { FieldRegistry } from '../FieldRegistry';
 
 /**
  * DirField component for directory path input
@@ -22,40 +24,73 @@ import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } fro
  */
 export const DirField = React.memo(
     ({ field, value, disabled = false, highlightInvalid = false, errorMessage = null }) => {
+        const [modalOpen, setModalOpen] = useState(false);
+
         const handleInputClick = useCallback(() => {
             if (!disabled) {
-                // Placeholder functionality - show info about future modal implementation
-                alert(
-                    '🚧 Directory Browser Modal\n\nThis will open a modal to browse and select a directory when the modal system is implemented.'
-                );
+                setModalOpen(true);
             }
         }, [disabled]);
 
         const inputId = `field-${field.key}`;
 
+        // Get dir_picker placeholder field component
+        const DirPickerField = FieldRegistry.getField('dir_picker');
+
         return (
-            <FieldWrapper invalid={highlightInvalid}>
-                <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
+            <>
+                <FieldWrapper invalid={highlightInvalid}>
+                    <FieldLabel htmlFor={inputId} label={field.label} required={field.required} />
 
-                <InputBase
-                    id={inputId}
-                    type="text"
-                    name={field.key}
-                    value={value || ''}
-                    placeholder={field.placeholder || 'Click to select directory...'}
-                    disabled={disabled}
-                    required={field.required}
-                    readOnly={true}
-                    onClick={handleInputClick}
-                    invalid={highlightInvalid}
-                    aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
-                    aria-invalid={highlightInvalid}
-                    className={disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
-                />
+                    <InputBase
+                        id={inputId}
+                        type="text"
+                        name={field.key}
+                        value={value || ''}
+                        placeholder={field.placeholder || 'Click to select directory...'}
+                        disabled={disabled}
+                        required={field.required}
+                        readOnly={true}
+                        onClick={handleInputClick}
+                        invalid={highlightInvalid}
+                        aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+                        aria-invalid={highlightInvalid}
+                        className={disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+                    />
 
-                <FieldDescription id={`${inputId}-desc`} description={field.description} />
-                <FieldError id={`${inputId}-error`} message={errorMessage} />
-            </FieldWrapper>
+                    <FieldDescription id={`${inputId}-desc`} description={field.description} />
+                    <FieldError id={`${inputId}-error`} message={errorMessage} />
+                </FieldWrapper>
+
+                {/* Directory Browser Modal */}
+                <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} size="large">
+                    <Modal.Header>Select Directory</Modal.Header>
+                    <Modal.Body>
+                        <div className="flex flex-col gap-4">
+                            {DirPickerField && (
+                                <DirPickerField
+                                    field={{
+                                        key: 'directory_browser',
+                                        label: 'Directory Browser',
+                                        type: 'dir_picker',
+                                        description: 'Browse and select a directory',
+                                    }}
+                                    value={value}
+                                    onChange={() => {}}
+                                />
+                            )}
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <button
+                            onClick={() => setModalOpen(false)}
+                            className="px-4 py-2 bg-surface-alt text-primary rounded-md hover:bg-surface-hover transition-colors min-h-11"
+                        >
+                            Close
+                        </button>
+                    </Modal.Footer>
+                </Modal>
+            </>
         );
     }
 );

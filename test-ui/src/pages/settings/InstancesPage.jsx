@@ -4,9 +4,12 @@ import { StatGrid } from '../../components/statistics';
 import { StatCard } from '../../components/ui';
 import { InstanceCard } from '../../components/instances/InstanceCard';
 import { Button } from '../../components/ui/button/Button';
+import { Modal } from '../../components/ui';
+import { FieldRegistry } from '../../components/fields/FieldRegistry';
 import { useApiData } from '../../hooks/useApiData';
 import { useToast } from '../../contexts/ToastContext';
 import { instancesAPI } from '../../utils/api/instances';
+import { INSTANCE_SCHEMA } from '../../utils/constants/instance_schema';
 
 /**
  * Instances Management page
@@ -31,6 +34,17 @@ export const InstancesPage = () => {
 
     // Track if bulk testing has been performed for this page load
     const bulkTestingCompletedRef = useRef(false);
+
+    // Modal state
+    const [addModalOpen, setAddModalOpen] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [modalServiceType, setModalServiceType] = useState(null);
+    const [modalInstanceData, setModalInstanceData] = useState(null);
+    const [formData, setFormData] = useState({});
+    const [formErrors, setFormErrors] = useState({});
+    const [isTesting, setIsTesting] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Calculate statistics
     const statistics = useMemo(() => {
@@ -122,58 +136,152 @@ export const InstancesPage = () => {
         []
     );
 
-    // Placeholder handlers (Phase 4)
     /**
-     * Handle add instance action (placeholder)
+     * Handle add instance action
      * @param {string} serviceType - Service type (radarr|sonarr|plex)
      */
     const handleAdd = useCallback(serviceType => {
-        const serviceLabel = serviceType.charAt(0).toUpperCase() + serviceType.slice(1);
-
-        alert(
-            `🚧 Add ${serviceLabel} Instance\n\n` +
-                `Service: ${serviceType}\n` +
-                `Action: Add new instance configuration\n\n` +
-                `This will open a modal to configure the instance when the modal system is implemented.`
-        );
+        setModalServiceType(serviceType);
+        setFormData({});
+        setFormErrors({});
+        setAddModalOpen(true);
     }, []);
 
     /**
-     * Handle edit instance action (placeholder)
+     * Handle edit instance action
      * @param {string} serviceType - Service type (radarr|sonarr|plex)
      * @param {string} instanceName - Instance name
      * @param {string} instanceUrl - Instance URL
      */
-    const handleEdit = useCallback((serviceType, instanceName, instanceUrl) => {
-        const serviceLabel = serviceType.charAt(0).toUpperCase() + serviceType.slice(1);
-
-        alert(
-            `🚧 Edit Instance Configuration\n\n` +
-                `Service: ${serviceLabel}\n` +
-                `Instance: ${instanceName}\n` +
-                `Current URL: ${instanceUrl}\n` +
-                `Action: Edit instance configuration\n\n` +
-                `This will open a modal to configure the instance when the modal system is implemented.`
-        );
-    }, []);
+    const handleEdit = useCallback(
+        (serviceType, instanceName, instanceUrl) => {
+            const instanceConfig = instances?.[serviceType]?.[instanceName];
+            setModalServiceType(serviceType);
+            setModalInstanceData({ name: instanceName, url: instanceUrl });
+            setFormData({
+                name: instanceName,
+                url: instanceUrl,
+                api: instanceConfig?.api || '',
+            });
+            setFormErrors({});
+            setEditModalOpen(true);
+        },
+        [instances]
+    );
 
     /**
-     * Handle delete instance action (placeholder)
+     * Handle delete instance action
      * @param {string} serviceType - Service type (radarr|sonarr|plex)
      * @param {string} instanceName - Instance name
      * @param {string} instanceUrl - Instance URL
      */
     const handleDelete = useCallback((serviceType, instanceName, instanceUrl) => {
-        const serviceLabel = serviceType.charAt(0).toUpperCase() + serviceType.slice(1);
+        setModalServiceType(serviceType);
+        setModalInstanceData({ name: instanceName, url: instanceUrl });
+        setDeleteModalOpen(true);
+    }, []);
 
-        alert(
-            `🚧 Delete Instance Confirmation\n\n` +
-                `⚠️ Warning: This will delete the instance\n\n` +
-                `Service: ${serviceLabel}\n` +
-                `Instance: ${instanceName}\n` +
-                `URL: ${instanceUrl}\n\n` +
-                `This will open a confirmation modal when the modal system is implemented.`
-        );
+    /**
+     * Validate form data
+     * @returns {boolean} True if valid
+     */
+    const validateForm = useCallback(() => {
+        const errors = {};
+        INSTANCE_SCHEMA.forEach(field => {
+            if (field.required && !formData[field.key]) {
+                errors[field.key] = `${field.label} is required`;
+            }
+        });
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    }, [formData]);
+
+    /**
+     * Handle form submission for Add/Edit
+     */
+    const handleFormSubmit = useCallback(
+        async isEdit => {
+            if (!validateForm()) {
+                toast.error('Please fill in all required fields');
+                return;
+            }
+
+            setIsTesting(true);
+
+            try {
+                // Test connection first
+                const testResult = await instancesAPI.testInstanceConfig({
+                    service: modalServiceType,
+                    name: formData.name,
+                    url: formData.url,
+                    api: formData.api,
+                });
+
+                setIsTesting(false);
+
+                // If test passed, save the configuration
+                if (testResult) {
+                    setIsSaving(true);
+
+                    // TODO: Call actual save endpoint when backend implements it
+                    // For now, just simulate success after testing
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    toast.success(
+                        `Instance ${isEdit ? 'updated' : 'added'} successfully: ${formData.name}`
+                    );
+                    setIsSaving(false);
+
+                    // Close modal and refresh
+                    setAddModalOpen(false);
+                    setEditModalOpen(false);
+                    refreshInstances();
+                }
+            } catch (error) {
+                setIsTesting(false);
+                setIsSaving(false);
+                console.error('Instance save error:', error);
+                toast.error(
+                    error.message || `Failed to ${isEdit ? 'update' : 'add'} instance`
+                );
+            }
+        },
+        [validateForm, modalServiceType, formData, toast, refreshInstances]
+    );
+
+    /**
+     * Handle delete confirmation
+     */
+    const handleConfirmDelete = useCallback(async () => {
+        setIsSaving(true);
+
+        try {
+            // TODO: Call actual delete endpoint when backend implements it
+            // For now, just simulate success
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            toast.success(`Instance deleted successfully: ${modalInstanceData.name}`);
+            setIsSaving(false);
+            setDeleteModalOpen(false);
+            refreshInstances();
+        } catch (error) {
+            setIsSaving(false);
+            console.error('Instance delete error:', error);
+            toast.error(error.message || 'Failed to delete instance');
+        }
+    }, [modalInstanceData, toast, refreshInstances]);
+
+    /**
+     * Handle field change
+     */
+    const handleFieldChange = useCallback((fieldKey, value) => {
+        setFormData(prev => ({ ...prev, [fieldKey]: value }));
+        // Clear error for this field
+        setFormErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[fieldKey];
+            return newErrors;
+        });
     }, []);
 
     /**
@@ -382,6 +490,151 @@ export const InstancesPage = () => {
                     )}
                 </div>
             ))}
+
+            {/* Add Instance Modal */}
+            <Modal
+                isOpen={addModalOpen}
+                onClose={() => setAddModalOpen(false)}
+                size="medium"
+            >
+                <Modal.Header>
+                    Add {modalServiceType?.charAt(0).toUpperCase() + modalServiceType?.slice(1)}{' '}
+                    Instance
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="flex flex-col gap-4">
+                        {INSTANCE_SCHEMA.map(field => {
+                            const FieldComponent = FieldRegistry.getField(field.type);
+                            return (
+                                <FieldComponent
+                                    key={field.key}
+                                    field={field}
+                                    value={formData[field.key] || ''}
+                                    onChange={value => handleFieldChange(field.key, value)}
+                                    errorMessage={formErrors[field.key]}
+                                    highlightInvalid={!!formErrors[field.key]}
+                                />
+                            );
+                        })}
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setAddModalOpen(false)}
+                        disabled={isTesting || isSaving}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={() => handleFormSubmit(false)}
+                        disabled={isTesting || isSaving}
+                    >
+                        {isTesting ? 'Testing...' : isSaving ? 'Saving...' : 'Add Instance'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Edit Instance Modal */}
+            <Modal
+                isOpen={editModalOpen}
+                onClose={() => setEditModalOpen(false)}
+                size="medium"
+            >
+                <Modal.Header>
+                    Edit {modalServiceType?.charAt(0).toUpperCase() + modalServiceType?.slice(1)}{' '}
+                    Instance
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="flex flex-col gap-4">
+                        {INSTANCE_SCHEMA.map(field => {
+                            const FieldComponent = FieldRegistry.getField(field.type);
+                            return (
+                                <FieldComponent
+                                    key={field.key}
+                                    field={field}
+                                    value={formData[field.key] || ''}
+                                    onChange={value => handleFieldChange(field.key, value)}
+                                    errorMessage={formErrors[field.key]}
+                                    highlightInvalid={!!formErrors[field.key]}
+                                    disabled={field.key === 'name'} // Disable name field in edit mode
+                                />
+                            );
+                        })}
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setEditModalOpen(false)}
+                        disabled={isTesting || isSaving}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={() => handleFormSubmit(true)}
+                        disabled={isTesting || isSaving}
+                    >
+                        {isTesting ? 'Testing...' : isSaving ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Delete Instance Modal */}
+            <Modal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                size="small"
+            >
+                <Modal.Header>Confirm Delete</Modal.Header>
+                <Modal.Body>
+                    <div className="flex flex-col gap-4">
+                        <p className="text-base">
+                            Are you sure you want to delete this instance?
+                        </p>
+                        <div className="p-4 bg-surface-alt rounded-md border border-border">
+                            <div className="flex flex-col gap-2 text-sm">
+                                <div>
+                                    <span className="text-secondary">Service:</span>{' '}
+                                    <span className="font-medium">
+                                        {modalServiceType?.charAt(0).toUpperCase() +
+                                            modalServiceType?.slice(1)}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span className="text-secondary">Instance:</span>{' '}
+                                    <span className="font-medium">{modalInstanceData?.name}</span>
+                                </div>
+                                <div>
+                                    <span className="text-secondary">URL:</span>{' '}
+                                    <span className="font-medium">{modalInstanceData?.url}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-sm text-warning">
+                            ⚠️ This action cannot be undone.
+                        </p>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setDeleteModalOpen(false)}
+                        disabled={isSaving}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="danger"
+                        onClick={handleConfirmDelete}
+                        disabled={isSaving}
+                    >
+                        {isSaving ? 'Deleting...' : 'Delete Instance'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

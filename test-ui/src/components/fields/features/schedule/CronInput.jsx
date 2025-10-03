@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { isValidCron } from 'cron-validator';
 import cronstrue from 'cronstrue';
 
@@ -15,6 +15,7 @@ export const CronInput = React.memo(
         const [isValid, setIsValid] = useState(true);
         const [explanation, setExplanation] = useState('');
         const [validationError, setValidationError] = useState('');
+        const previousValidityRef = useRef(true);
 
         // Validate and explain cron expression
         const validateCron = useCallback(cronExpression => {
@@ -53,11 +54,17 @@ export const CronInput = React.memo(
             }
         }, []);
 
-        // Validate when value changes
+        // Validate when value changes (only call onValidityChange when validity actually changes)
         useEffect(() => {
             const valid = validateCron(value);
-            if (onValidityChange) {
-                onValidityChange(valid);
+
+            // Only call onValidityChange if validity actually changed
+            // This prevents infinite loops from validation-only updates
+            if (valid !== previousValidityRef.current) {
+                previousValidityRef.current = valid;
+                if (onValidityChange) {
+                    onValidityChange(valid);
+                }
             }
         }, [value, validateCron, onValidityChange]);
 
@@ -81,7 +88,7 @@ export const CronInput = React.memo(
                     placeholder="0 9 * * 1-5  (9 AM on weekdays)"
                     className={`
                     w-full px-3 py-2 border rounded-md min-h-11
-                    bg-surface text-primary font-mono text-sm
+                    bg-input text-primary font-mono text-sm
                     transition-colors duration-200
                     ${
                         disabled

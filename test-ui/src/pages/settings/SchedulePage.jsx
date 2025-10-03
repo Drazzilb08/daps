@@ -1,20 +1,32 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { moduleList } from '../../utils/constants/constants.js';
 import { humanize } from '../../utils/tools.js';
 import { useModuleExecution } from '../../hooks/useModuleExecution.js';
 import { useApiData } from '../../hooks/useApiData';
 import { configAPI } from '../../utils/api/config';
+import { useToast } from '../../contexts/ToastContext';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatGrid } from '../../components/statistics';
-import { StatCard } from '../../components/ui';
+import { StatCard, Button, Modal } from '../../components/ui';
 import { ScheduleCard } from '../../components/modules/ScheduleCard';
+import { ScheduleField } from '../../components/fields/custom/ScheduleField';
 
 export const SchedulePage = () => {
+    // Toast for notifications
+    const toast = useToast();
+
+    // Modal state
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingModule, setEditingModule] = useState(null);
+    const [scheduleValue, setScheduleValue] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
     // API Data - Configuration
     const {
         data: configData,
         isLoading: isLoadingConfig,
         error: configError,
+        execute: refetchConfig,
     } = useApiData({
         apiFunction: configAPI.fetchConfig,
     });
@@ -23,7 +35,7 @@ export const SchedulePage = () => {
     const { executeModule, isRunning } = useModuleExecution();
 
     // Derive data
-    const schedules = useMemo(() => configData?.schedule || {}, [configData?.schedule]);
+    const schedules = useMemo(() => configData?.data?.schedule || {}, [configData?.data?.schedule]);
     const availableModules = useMemo(
         () =>
             moduleList.map(moduleKey => ({
@@ -34,16 +46,22 @@ export const SchedulePage = () => {
     );
 
     // Statistics
-    const statistics = useMemo(
-        () => [
+    const statistics = useMemo(() => {
+        // Only count schedules for modules that are in the available modules list
+        const scheduledCount = availableModules.filter(
+            module => schedules[module.key] && schedules[module.key] !== null
+        ).length;
+        const unscheduledCount = availableModules.length - scheduledCount;
+
+        return [
             {
                 label: 'Scheduled Modules',
-                value: Object.keys(schedules).length,
+                value: scheduledCount,
                 colorClass: 'text-success',
             },
             {
                 label: 'Unscheduled Modules',
-                value: availableModules.length - Object.keys(schedules).length,
+                value: unscheduledCount,
                 colorClass: 'text-warning',
             },
             {
@@ -51,9 +69,8 @@ export const SchedulePage = () => {
                 value: availableModules.length,
                 colorClass: 'text-brand-primary',
             },
-        ],
-        [schedules, availableModules]
-    );
+        ];
+    }, [schedules, availableModules]);
 
     // Handlers
     const handleModuleRun = useCallback(
@@ -68,24 +85,66 @@ export const SchedulePage = () => {
     );
 
     const handleScheduleEdit = useCallback(
-        (moduleKey, isEdit = false) => {
+        moduleKey => {
             const module = availableModules.find(m => m.key === moduleKey);
             if (!module) return;
 
             const currentSchedule = schedules[moduleKey] || '';
-            const action = isEdit ? 'Edit' : 'Add';
 
-            // PLACEHOLDER ALERT: Following DirField pattern exactly
-            alert(
-                `🚧 Schedule Configuration Modal\n\n` +
-                    `Module: ${module.label}\n` +
-                    `Action: ${action} schedule configuration\n` +
-                    `Current Schedule: ${currentSchedule || 'None'}\n\n` +
-                    `This will open a modal to configure the module schedule when the modal system is implemented.`
-            );
+            // Set modal state and open
+            setEditingModule(module);
+            setScheduleValue(currentSchedule);
+            setIsModalOpen(true);
         },
         [availableModules, schedules]
     );
+
+    const handleModalClose = useCallback(() => {
+        if (isSaving) return; // Prevent closing while saving
+
+        setIsModalOpen(false);
+        setEditingModule(null);
+        setScheduleValue('');
+        setIsSaving(false);
+    }, [isSaving]);
+
+    const handleScheduleChange = useCallback(newValue => {
+        setScheduleValue(newValue);
+    }, []);
+
+    const handleSave = useCallback(async () => {
+        if (!editingModule || isSaving) return;
+
+        setIsSaving(true);
+
+        try {
+            // Prepare updated schedule config
+            const updatedSchedules = {
+                ...schedules,
+                [editingModule.key]: scheduleValue,
+            };
+
+            // Call API to update config
+            await configAPI.updateConfig({
+                schedule: updatedSchedules,
+            });
+
+            // Refresh config data
+            await refetchConfig();
+
+            // Show success toast
+            toast.success(
+                `Schedule ${scheduleValue ? 'updated' : 'removed'} for ${editingModule.label}`
+            );
+
+            // Close modal
+            handleModalClose();
+        } catch (error) {
+            console.error('Failed to save schedule:', error);
+            toast.error(`Failed to save schedule: ${error.message || 'Unknown error'}`);
+            setIsSaving(false);
+        }
+    }, [editingModule, scheduleValue, schedules, refetchConfig, toast, handleModalClose, isSaving]);
 
     // Loading state
     if (isLoadingConfig) {
@@ -151,6 +210,39 @@ export const SchedulePage = () => {
                     <p className="text-lg">No modules available for scheduling</p>
                 </div>
             )}
+
+            {/* Schedule Configuration Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={handleModalClose}
+                size="medium"
+                closable={!isSaving}
+            >
+                <Modal.Header>Configure Schedule - {editingModule?.label || 'Module'}</Modal.Header>
+                <Modal.Body>
+                    {editingModule && (
+                        <ScheduleField
+                            field={{
+                                key: 'schedule',
+                                label: 'Schedule Configuration',
+                                description: 'Configure when this module should run automatically',
+                                required: false,
+                            }}
+                            value={scheduleValue}
+                            onChange={handleScheduleChange}
+                            disabled={isSaving}
+                        />
+                    )}
+                </Modal.Body>
+                <Modal.Footer align="right">
+                    <Button onClick={handleModalClose} variant="secondary" disabled={isSaving}>
+                        Cancel
+                    </Button>
+                    <Button onClick={handleSave} variant="primary" disabled={isSaving}>
+                        {isSaving ? 'Saving...' : 'Save Schedule'}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

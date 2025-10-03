@@ -65,7 +65,7 @@ export const TimeInput = React.memo(
                 placeholder={placeholder}
                 className={`
                 px-3 py-2 border border-border rounded-md
-                min-h-11 bg-surface text-primary
+                min-h-11 bg-input text-primary
                 transition-colors duration-200
                 ${
                     disabled

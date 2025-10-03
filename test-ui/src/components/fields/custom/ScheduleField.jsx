@@ -11,6 +11,27 @@ const SCHEDULE_TYPES = [
     { type: 'cron', label: 'Cron' },
 ];
 
+// Weekday mapping: backend format <-> frontend format
+const DAY_ABBR_TO_KEY = {
+    Sun: 'sunday',
+    Mon: 'monday',
+    Tue: 'tuesday',
+    Wed: 'wednesday',
+    Thu: 'thursday',
+    Fri: 'friday',
+    Sat: 'saturday',
+};
+
+const DAY_KEY_TO_ABBR = {
+    sunday: 'Sun',
+    monday: 'Mon',
+    tuesday: 'Tue',
+    wednesday: 'Wed',
+    thursday: 'Thu',
+    friday: 'Fri',
+    saturday: 'Sat',
+};
+
 /**
  * Main schedule input component using atomic primitives
  * @param {Object} field - Field configuration
@@ -60,10 +81,14 @@ export const ScheduleField = React.memo(
                     }
 
                     case 'weekly': {
-                        // Format: "monday@14:00" or "monday,friday@09:00"
+                        // Format: "Sun@14:00" or "Mon,Fri@09:00" (backend) or "monday@14:00" (legacy)
                         const parts = dataStr.split('@');
                         if (parts.length === 2) {
-                            const days = parts[0].split(',').filter(Boolean);
+                            const rawDays = parts[0].split(',').filter(Boolean);
+                            // Convert abbreviated names (Sun, Mon) to lowercase keys (sunday, monday)
+                            const days = rawDays.map(
+                                day => DAY_ABBR_TO_KEY[day] || day.toLowerCase()
+                            );
                             const time = parts[1];
                             return { type, data: { days, time } };
                         }
@@ -120,7 +145,9 @@ export const ScheduleField = React.memo(
                         const days = data.days || [];
                         const time = data.time || '09:00';
                         if (days.length === 0) return '';
-                        return `weekly(${days.join(',')}@${time})`;
+                        // Convert lowercase keys (sunday, monday) to abbreviated names (Sun, Mon) for backend
+                        const abbrDays = days.map(day => DAY_KEY_TO_ABBR[day] || day);
+                        return `weekly(${abbrDays.join(',')}@${time})`;
                     }
 
                     case 'monthly': {
@@ -145,12 +172,17 @@ export const ScheduleField = React.memo(
             }
         };
 
-        // Initialize from incoming value
+        // Initialize from incoming value (only when fundamentally different)
         useEffect(() => {
             const parsed = parseScheduleValue(value);
-            setScheduleType(parsed.type);
-            setScheduleData(parsed.data);
-        }, [value, parseScheduleValue]);
+
+            // Only update if the schedule type changed to prevent infinite loops
+            // Data changes within the same type should not trigger re-initialization
+            if (parsed.type !== scheduleType) {
+                setScheduleType(parsed.type);
+                setScheduleData(parsed.data);
+            }
+        }, [value, parseScheduleValue, scheduleType]);
 
         // Handle schedule type change
         const handleTypeChange = useCallback(
@@ -192,37 +224,31 @@ export const ScheduleField = React.memo(
         // Handle schedule data change
         const handleDataChange = useCallback(
             newDataOrUpdater => {
-                if (typeof newDataOrUpdater === 'function') {
-                    // Use functional update with state setter callback
-                    setScheduleData(prevData => {
-                        const updatedData = newDataOrUpdater(prevData);
-
-                        // Update validity for cron expressions
-                        if (scheduleType === 'cron') {
-                            setIsValid(updatedData.isValid !== false);
-                        }
-
-                        // Compose and emit new value asynchronously to avoid render cycle
-                        setTimeout(() => {
-                            const newValue = composeScheduleString(scheduleType, updatedData);
-                            onChange(newValue);
-                        }, 0);
-
-                        return updatedData;
-                    });
-                } else {
-                    // Direct data update
-                    setScheduleData(newDataOrUpdater);
+                // Always use functional update to avoid stale closure issues
+                setScheduleData(prevData => {
+                    const updatedData =
+                        typeof newDataOrUpdater === 'function'
+                            ? newDataOrUpdater(prevData)
+                            : newDataOrUpdater;
 
                     // Update validity for cron expressions
                     if (scheduleType === 'cron') {
-                        setIsValid(newDataOrUpdater.isValid !== false);
+                        setIsValid(updatedData.isValid !== false);
                     }
 
-                    // Compose and emit new value
-                    const newValue = composeScheduleString(scheduleType, newDataOrUpdater);
-                    onChange(newValue);
-                }
+                    // Compose new value
+                    const prevValue = composeScheduleString(scheduleType, prevData);
+                    const newValue = composeScheduleString(scheduleType, updatedData);
+
+                    // Only emit onChange if the value actually changed
+                    // This prevents infinite loops from validation-only updates
+                    if (newValue !== prevValue) {
+                        // Use setTimeout to break out of the current render cycle
+                        setTimeout(() => onChange(newValue), 0);
+                    }
+
+                    return updatedData;
+                });
             },
             [scheduleType, onChange]
         );

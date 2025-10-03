@@ -39,7 +39,7 @@ export const ScheduleTypePanel = React.memo(
                             updateScheduleData({ minute: parseInt(e.target.value) || 0 })
                         }
                         disabled={disabled}
-                        className="w-20 px-3 py-2 border border-border rounded-md min-h-11 bg-surface"
+                        className="w-20 px-3 py-2 border border-border rounded-md min-h-11 bg-input"
                     />
                     <div className="text-xs text-tertiary mt-1">
                         Run at this minute past every hour
@@ -78,7 +78,7 @@ export const ScheduleTypePanel = React.memo(
                                 type="button"
                                 onClick={addTime}
                                 disabled={disabled || times.length >= 8}
-                                className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="px-3 py-1 text-sm bg-surface-elevated text-primary border border-border rounded hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed min-h-11"
                             >
                                 Add Time
                             </button>

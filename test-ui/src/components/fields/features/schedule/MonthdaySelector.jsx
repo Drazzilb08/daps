@@ -47,7 +47,7 @@ export const MonthdaySelector = React.memo(
                                 ${
                                     isSelected
                                         ? 'bg-primary text-white border border-primary shadow-sm'
-                                        : 'bg-surface text-primary border border-border hover:bg-primary hover:border-border-light'
+                                        : 'bg-surface-elevated text-primary border border-border hover:bg-primary hover:border-border-light'
                                 }
                             `}
                             >

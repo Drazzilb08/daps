@@ -568,10 +568,7 @@ const ModalsTestPage = () => {
                                 <Modal.Header>Settings</Modal.Header>
                                 <Modal.Body>
                                     <div className="space-y-3">
-                                        <AccordionItem
-                                            defaultExpanded={true}
-                                            className="border border-border-subtle rounded-lg overflow-hidden"
-                                        >
+                                        <AccordionItem defaultExpanded={true}>
                                             <AccordionItem.Header className="list-none">
                                                 <div className="w-full px-4 py-3 bg-surface hover:bg-surface-hover flex items-center justify-between min-h-11">
                                                     <span className="font-medium text-primary">
@@ -591,7 +588,7 @@ const ModalsTestPage = () => {
                                             </AccordionItem.Body>
                                         </AccordionItem>
 
-                                        <AccordionItem className="border border-border-subtle rounded-lg overflow-hidden">
+                                        <AccordionItem>
                                             <AccordionItem.Header className="list-none">
                                                 <div className="w-full px-4 py-3 bg-surface hover:bg-surface-hover flex items-center justify-between min-h-11">
                                                     <span className="font-medium text-primary">
@@ -611,7 +608,7 @@ const ModalsTestPage = () => {
                                             </AccordionItem.Body>
                                         </AccordionItem>
 
-                                        <AccordionItem className="border border-border-subtle rounded-lg overflow-hidden">
+                                        <AccordionItem>
                                             <AccordionItem.Header className="list-none">
                                                 <div className="w-full px-4 py-3 bg-surface hover:bg-surface-hover flex items-center justify-between min-h-11">
                                                     <span className="font-medium text-primary">

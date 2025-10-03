@@ -146,6 +146,38 @@ export const SchedulePage = () => {
         }
     }, [editingModule, scheduleValue, schedules, refetchConfig, toast, handleModalClose, isSaving]);
 
+    const handleRemove = useCallback(async () => {
+        if (!editingModule || isSaving) return;
+
+        setIsSaving(true);
+
+        try {
+            // Prepare updated schedule config with empty string to remove schedule
+            const updatedSchedules = {
+                ...schedules,
+                [editingModule.key]: '',
+            };
+
+            // Call API to update config
+            await configAPI.updateConfig({
+                schedule: updatedSchedules,
+            });
+
+            // Refresh config data
+            await refetchConfig();
+
+            // Show success toast
+            toast.success(`Schedule removed for ${editingModule.label}`);
+
+            // Close modal
+            handleModalClose();
+        } catch (error) {
+            console.error('Failed to remove schedule:', error);
+            toast.error(`Failed to remove schedule: ${error.message || 'Unknown error'}`);
+            setIsSaving(false);
+        }
+    }, [editingModule, schedules, refetchConfig, toast, handleModalClose, isSaving]);
+
     // Loading state
     if (isLoadingConfig) {
         return (
@@ -234,13 +266,24 @@ export const SchedulePage = () => {
                         />
                     )}
                 </Modal.Body>
-                <Modal.Footer align="right">
-                    <Button onClick={handleModalClose} variant="secondary" disabled={isSaving}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSave} variant="primary" disabled={isSaving}>
-                        {isSaving ? 'Saving...' : 'Save Schedule'}
-                    </Button>
+                <Modal.Footer>
+                    <div className="flex justify-between items-center w-full">
+                        <Button onClick={handleRemove} variant="danger" disabled={isSaving}>
+                            Remove Schedule
+                        </Button>
+                        <div className="flex gap-3">
+                            <Button
+                                onClick={handleModalClose}
+                                variant="secondary"
+                                disabled={isSaving}
+                            >
+                                Cancel
+                            </Button>
+                            <Button onClick={handleSave} variant="primary" disabled={isSaving}>
+                                {isSaving ? 'Saving...' : 'Save Schedule'}
+                            </Button>
+                        </div>
+                    </div>
                 </Modal.Footer>
             </Modal>
         </div>

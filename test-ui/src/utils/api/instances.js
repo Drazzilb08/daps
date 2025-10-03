@@ -76,10 +76,11 @@ export const instancesAPI = {
     /**
      * Delete instance configuration
      * @param {string} instanceId - Instance identifier
+     * @param {string} serviceType - Service type (radarr, sonarr, or plex)
      * @returns {Promise<Object>} Deletion response
      */
-    deleteInstance: instanceId => {
-        return apiCore.delete(`/instances/${instanceId}`);
+    deleteInstance: (instanceId, serviceType) => {
+        return apiCore.delete(`/instances/${instanceId}?service=${serviceType}`);
     },
 
     /**

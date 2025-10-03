@@ -15,6 +15,7 @@ import { mediaAPI } from './media.js';
 import { postersAPI } from './posters.js';
 import { logsAPI } from './logs.js';
 import { systemAPI } from './system.js';
+import { scheduleAPI } from './schedule.js';
 
 // Re-export everything
 export { apiCore, APIError };
@@ -26,6 +27,7 @@ export { mediaAPI };
 export { postersAPI };
 export { logsAPI };
 export { systemAPI };
+export { scheduleAPI };
 
 /**
  * Consolidated API client for convenience
@@ -41,6 +43,7 @@ export const api = {
     posters: postersAPI,
     logs: logsAPI,
     system: systemAPI,
+    schedule: scheduleAPI,
 };
 
 /**

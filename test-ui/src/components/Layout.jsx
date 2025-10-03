@@ -4,35 +4,20 @@ import PropTypes from 'prop-types';
 import { FeatureErrorBoundary } from './error';
 import LayoutHeader from './LayoutHeader.jsx';
 import LayoutSidebar from './LayoutSidebar.jsx';
-import SearchToolbar from './Search/SearchToolbar.jsx';
-import useSearchPageDetection from '../hooks/useSearchPageDetection.js';
+import PageToolbar from './PageToolbar.jsx';
+import { ToolbarProvider } from '../contexts/ToolbarContext.jsx';
 import { useUIState } from '../contexts/UIStateContext.jsx';
 
 const Layout = ({ children }) => {
-    // Detect if we're on a search page to show toolbar
-    const { isSearchPage, searchPageType, searchSubtype } = useSearchPageDetection();
     const { mobileMenuOpen, closeMobileMenu, isMobile } = useUIState();
 
-    /**
-     * Handle toolbar actions (refresh, scan, export, etc.)
-     *
-     * @param {string} action - The action type
-     * @param {Object} tool - Tool data
-     * @param {Event} _event - DOM event (unused)
-     */
-    const handleToolAction = React.useCallback(
-        (action, tool) => {
-            console.log('Toolbar action:', { action, tool, searchPageType, searchSubtype });
-        },
-        [searchPageType, searchSubtype]
-    );
-
     return (
-        <div className="h-screen flex flex-col">
-            {/* Skip link for keyboard navigation - WCAG 2.1 AA requirement */}
-            <a href="#main-content" className="skip-link">
-                Skip to main content
-            </a>
+        <ToolbarProvider>
+            <div className="h-screen flex flex-col">
+                {/* Skip link for keyboard navigation - WCAG 2.1 AA requirement */}
+                <a href="#main-content" className="skip-link">
+                    Skip to main content
+                </a>
 
             {/* Fixed Header - full width */}
             <FeatureErrorBoundary
@@ -64,20 +49,14 @@ const Layout = ({ children }) => {
 
                 {/* Main Content Area - remaining width after sidebar */}
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    {/* Toolbar only shows on search pages */}
-                    {isSearchPage && (
-                        <FeatureErrorBoundary
-                            featureName="Search Toolbar"
-                            featureDescription="Search page toolbar with actions"
-                            critical={false}
-                        >
-                            <SearchToolbar
-                                searchPageType={searchPageType}
-                                searchSubtype={searchSubtype}
-                                onToolAction={handleToolAction}
-                            />
-                        </FeatureErrorBoundary>
-                    )}
+                    {/* Generic toolbar - renders any registered content */}
+                    <FeatureErrorBoundary
+                        featureName="Page Toolbar"
+                        featureDescription="Page toolbar with actions"
+                        critical={false}
+                    >
+                        <PageToolbar />
+                    </FeatureErrorBoundary>
 
                     <main
                         id="main-content"
@@ -93,7 +72,8 @@ const Layout = ({ children }) => {
                     </main>
                 </div>
             </div>
-        </div>
+            </div>
+        </ToolbarProvider>
     );
 };
 

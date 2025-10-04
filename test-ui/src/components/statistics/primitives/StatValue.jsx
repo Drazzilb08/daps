@@ -53,7 +53,6 @@ export const StatValue = React.memo(
             .filter(Boolean)
             .join(' ');
 
-        // Apply custom formatting if provided
         const displayValue = format ? format(children) : children;
 
         return <span className={valueClasses}>{displayValue}</span>;

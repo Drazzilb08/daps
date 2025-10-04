@@ -20,18 +20,15 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
 
     const toast = useToast();
 
-    // State management
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(immediate);
     const [error, setError] = useState(null);
     const [retryCount, setRetryCount] = useState(0);
 
-    // Refs for cleanup and cancellation
     const abortControllerRef = useRef(null);
     const retryTimeoutRef = useRef(null);
     const isMountedRef = useRef(true);
 
-    // Cleanup function
     const cleanup = useCallback(() => {
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
@@ -67,10 +64,8 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
     // Execute API function with error handling
     const executeRequest = useCallback(
         async (retryAttempt = 0, executeOptions = {}) => {
-            // Clean up previous request
             cleanup();
 
-            // Create new abort controller
             abortControllerRef.current = new AbortController();
 
             try {
@@ -81,7 +76,6 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
                     setRetryCount(retryAttempt);
                 }
 
-                // Execute API function
                 if (!apiFunction) {
                     throw new Error('API function is required');
                 }
@@ -92,7 +86,6 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
                     return;
                 }
 
-                // Transform data if transformer provided
                 const finalData = transform ? transform(result) : result;
 
                 setData(finalData);
@@ -107,7 +100,6 @@ export const useApiData = ({ apiFunction, options = {}, dependencies = [] }) => 
                     return;
                 }
 
-                // Handle aborted requests
                 if (err.name === 'AbortError') {
                     return;
                 }

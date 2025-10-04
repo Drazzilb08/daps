@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { SETTINGS_SCHEMA } from '../../utils/constants/settings_schema.js';
-import { AccordionItem } from '../../components/AccordionItem';
+import { AccordionItem } from '../../components/ui/AccordionItem.jsx';
 
 /**
  * Settings Mock Page - Layout prototype for schema-driven accordion interface

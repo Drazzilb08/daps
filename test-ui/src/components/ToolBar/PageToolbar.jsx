@@ -1,4 +1,4 @@
-import { useToolbar } from '../contexts/ToolbarContext';
+import { useToolbar } from '../../contexts/ToolbarContext';
 
 /**
  * PageToolbar - Generic toolbar that renders registered content

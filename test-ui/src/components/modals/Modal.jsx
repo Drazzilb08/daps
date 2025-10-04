@@ -1,9 +1,9 @@
 import { useState, useContext, createContext, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useUIState } from '../contexts/UIStateContext';
-import { useFocusTrap } from '../hooks/useFocusTrap';
-import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
-import { useEscapeKey } from '../hooks/useEscapeKey';
+import { useUIState } from '../../contexts/UIStateContext';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 /**
  * Context for sharing modal state between Modal and subcomponents

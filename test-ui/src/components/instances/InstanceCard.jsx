@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card } from '../ui/card/Card';
 import { Button } from '../ui/button/Button';
+import { humanize } from '../../utils/tools';
 
 /**
  * Instance card component that composes Card primitive for instance display
@@ -27,9 +28,8 @@ export const InstanceCard = ({
     onEdit,
     onDelete,
 }) => {
-    // Build display data for Card primitive
     const cardData = {
-        name: instance.name,
+        name: humanize(instance.name),
         url: instance.url,
         status: getStatusDisplay(connectionStatus, isTesting),
         lastTested: connectionStatus?.timestamp

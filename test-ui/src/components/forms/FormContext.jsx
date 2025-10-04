@@ -19,11 +19,9 @@ const FormContext = createContext(null);
  * @param {Object} props.validation - Validation rules
  */
 export const FormProvider = ({ children, initialData = {}, onSubmit, validation = {} }) => {
-    // Form data state
     const [formData, setFormData] = useState(initialData);
     const [isDirty, setIsDirty] = useState(false);
 
-    // Submit state
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState(null);
 

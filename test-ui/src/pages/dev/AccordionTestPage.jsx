@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import AccordionItem from '../../components/AccordionItem';
-import { Accordion } from '../../components/Accordion';
+import AccordionItem from '../../components/ui/AccordionItem';
+import { Accordion } from '../../components/ui/Accordion';
 import { Modal } from '../../components/ui';
 
 /**

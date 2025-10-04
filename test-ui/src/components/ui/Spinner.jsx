@@ -12,7 +12,6 @@
  * @returns {JSX.Element} Spinner component
  */
 const Spinner = ({ size = 'medium', text, className = '', center = false }) => {
-    // Size mappings to utility classes
     const sizeMap = {
         small: 'w-4 h-4',
         medium: 'w-6 h-6',
@@ -29,7 +28,6 @@ const Spinner = ({ size = 'medium', text, className = '', center = false }) => {
         </div>
     );
 
-    // If center is true, wrap in centered container (for Suspense fallbacks)
     if (center) {
         return (
             <div className="flex items-center justify-center p-4 min-h-content">
@@ -41,7 +39,6 @@ const Spinner = ({ size = 'medium', text, className = '', center = false }) => {
         );
     }
 
-    // Simple inline spinner (for buttons, forms, etc)
     return (
         <>
             {spinnerElement}

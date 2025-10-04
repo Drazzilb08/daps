@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Modal } from '../../components/ui';
 import { Button } from '../../components/ui';
 import FieldRegistry from '../../components/fields/FieldRegistry';
-import AccordionItem from '../../components/AccordionItem';
+import AccordionItem from '../../components/ui/AccordionItem';
 
 /**
  * ModalsTestPage - Comprehensive testing page for Modal compound component

@@ -43,7 +43,6 @@ export const NotificationCard = ({
                 </div>
                 <div className="flex-1">
                     <h3 className="text-lg font-semibold text-primary">{labels[serviceType]}</h3>
-                    <p className="text-sm text-secondary">{moduleName}</p>
                 </div>
             </div>
 
@@ -64,7 +63,6 @@ export const NotificationCard = ({
             <div className="flex gap-2">
                 <Button
                     variant="secondary"
-                    size="small"
                     onClick={() => onTest(moduleName, serviceType, config)}
                     disabled={isTesting}
                     className="flex-1"
@@ -73,7 +71,6 @@ export const NotificationCard = ({
                 </Button>
                 <Button
                     variant="secondary"
-                    size="small"
                     onClick={() => onEdit(moduleName, serviceType, config)}
                     className="flex-1"
                 >
@@ -81,7 +78,6 @@ export const NotificationCard = ({
                 </Button>
                 <Button
                     variant="danger"
-                    size="small"
                     onClick={() => onDelete(moduleName, serviceType)}
                     className="flex-1"
                 >

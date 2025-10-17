@@ -32,7 +32,10 @@ export const NotificationCard = ({
         <div className="bg-surface border border-border-subtle rounded-lg p-4">
             {/* Service Header */}
             <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center" style={{ width: '48px', height: '48px' }}>
+                <div
+                    className="flex items-center justify-center"
+                    style={{ width: '48px', height: '48px' }}
+                >
                     {serviceType === 'email' ? (
                         <span className="material-symbols-rounded" style={{ fontSize: '48px' }}>
                             mail

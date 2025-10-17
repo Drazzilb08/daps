@@ -1,7 +1,6 @@
 # util/database/worker.py
 import datetime
 import json
-import signal
 import threading
 import time
 from dataclasses import dataclass
@@ -72,24 +71,8 @@ class DBWorker(DatabaseBase):
 
         # Simple signal handling
         if threading.current_thread() is threading.main_thread():
-            if not hasattr(DBWorker, "_signal_handlers_set"):
-                self._setup_signal_handlers()
-                DBWorker._signal_handlers_set = True
-
-    def _setup_signal_handlers(self):
-        """Simple signal handling"""
-
-        def signal_handler(signum, frame):
-            log = self.logger.get_adapter("SIGNAL")
-            log.info(f"Received signal {signum}, shutting down...")
-            self._shutdown_requested = True
-            self._shutdown_event.set()
-            self.stop()
-
-        try:
-            signal.signal(signal.SIGINT, signal_handler)
-            signal.signal(signal.SIGTERM, signal_handler)
-        except ValueError:
+            # Signal handling is managed by the main application (main.py)
+            # Workers respond to shutdown via the shutdown_event, not direct signal handling
             pass
 
     def _calculate_retry_delay(self, attempt: int) -> int:

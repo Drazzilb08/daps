@@ -1,0 +1,168 @@
+@layer utilities {
+    /* ===========================================
+     OBJECT-FIT UTILITIES
+     =========================================== */
+
+    .object-contain { object-fit: contain; }
+    .object-cover { object-fit: cover; }
+    .object-fill { object-fit: fill; }
+    .object-none { object-fit: none; }
+    .object-scale-down { object-fit: scale-down; }
+
+    /* ===========================================
+     OBJECT-POSITION UTILITIES
+     =========================================== */
+
+    .object-bottom { object-position: bottom; }
+    .object-center { object-position: center; }
+    .object-left { object-position: left; }
+    .object-left-bottom { object-position: left bottom; }
+    .object-left-top { object-position: left top; }
+    .object-right { object-position: right; }
+    .object-right-bottom { object-position: right bottom; }
+    .object-right-top { object-position: right top; }
+    .object-top { object-position: top; }
+
+    /* ===========================================
+     RESPONSIVE IMAGE UTILITIES
+     =========================================== */
+
+    .img-responsive {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .img-fluid {
+        max-width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
+
+    /* ===========================================
+     IMAGE EFFECTS
+     =========================================== */
+
+    .img-shadow {
+        box-shadow:
+            0 4px 6px -1px rgb(0 0 0 / 10%),
+            0 2px 4px -2px rgb(0 0 0 / 10%);
+    }
+
+    .img-hover-scale { transition: transform 150ms ease-in-out; }
+    .img-hover-scale:hover { transform: scale(1.02); }
+    .img-shadow-hover { transition: box-shadow 150ms ease-in-out; }
+
+    .img-shadow-hover:hover {
+        box-shadow:
+            0 10px 15px -3px rgb(0 0 0 / 10%),
+            0 4px 6px -4px rgb(0 0 0 / 10%);
+    }
+
+    /* ===========================================
+     IMAGE STATES
+     =========================================== */
+
+    .img-placeholder {
+        background: var(--surface-alt);
+        border: 2px dashed var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-tertiary);
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    .img-loading {
+        background: var(--surface-alt);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .img-loading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, var(--surface-elevated), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    /* Shimmer animation for loading states */
+    @keyframes shimmer {
+        0% {
+            left: -100%;
+        }
+
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* ===========================================
+     ASPECT RATIO UTILITIES
+     =========================================== */
+
+    .aspect-square { aspect-ratio: 1 / 1; } /* 1:1 - Square */
+    .aspect-video { aspect-ratio: 16 / 9; } /* 16:9 - Video */
+    .aspect-4-3 { aspect-ratio: 4 / 3; } /* 4:3 - Traditional TV */
+    .aspect-poster { aspect-ratio: 2 / 3; } /* 2:3 - Movie poster */
+    .aspect-21-9 { aspect-ratio: 21 / 9; } /* 21:9 - Ultrawide */
+
+    /* ===========================================
+     POSTER SIZING UTILITIES - STANDARD SCALE
+     =========================================== */
+
+    .w-poster-sm { width: 8rem; } /* 128px */
+    .w-poster-md { width: 10rem; } /* 160px */
+    .w-poster-lg { width: 12rem; } /* 192px */
+
+    /* ===========================================
+     RESPONSIVE POSTER UTILITIES
+     =========================================== */
+
+    @media (width <= 480px) {
+        .poster-responsive {
+            width: 8rem; /* 128px */
+            height: calc(8rem * 1.5); /* 192px - aspect 2:3 */
+        }
+    }
+
+    @media (width >= 481px) and (width <= 768px) {
+        .poster-responsive {
+            width: 10rem; /* 160px */
+            height: calc(10rem * 1.5); /* 240px - aspect 2:3 */
+        }
+    }
+
+    @media (width >= 769px) {
+        .poster-responsive {
+            width: 12rem; /* 192px */
+            height: calc(12rem * 1.5); /* 288px - aspect 2:3 */
+        }
+    }
+
+    /* ===========================================
+     ACCESSIBILITY CONSIDERATIONS
+     =========================================== */
+
+    @media (prefers-reduced-motion: reduce) {
+        .img-hover-scale:hover,
+        .img-shadow-hover:hover {
+            transform: none;
+            box-shadow:
+                0 4px 6px -1px rgb(0 0 0 / 10%),
+                0 2px 4px -2px rgb(0 0 0 / 10%);
+        }
+        .img-loading::after { animation: none; }
+    }
+
+    @media (prefers-contrast: more) {
+        .img-placeholder {
+            border-width: 3px;
+            border-style: solid;
+        }
+    }
+}

@@ -1,0 +1,366 @@
+@layer utilities {
+    /* Background colors */
+    .bg-primary { background: var(--primary); }
+    .bg-primary-hover { background: var(--focus); }
+    .bg-secondary { background: var(--surface-alt); }
+    .bg-page { background: var(--bg); }
+    .bg-surface { background: var(--surface); }
+    .bg-surface-elevated { background: var(--surface-elevated); }
+    .bg-surface-alt { background: var(--surface-alt); }
+    .bg-accent { background: var(--accent); }
+
+    .bg-success { background: var(--success); }
+    .bg-warning { background: var(--warning); }
+    .bg-error { background: var(--error); }
+    .bg-danger { background: var(--error); }
+    .bg-info { background: var(--info); }
+
+    /* Special backgrounds */
+    .bg-transparent { background: transparent; }
+    .bg-white { background: #fff; }
+    .bg-black { background: #000; }
+
+    /* State-specific background patterns for compatibility */
+    .bg-warning-bg { background: color-mix(in srgb, var(--warning) 10%, transparent); }
+    .bg-error-bg { background: color-mix(in srgb, var(--error) 10%, transparent); }
+    .bg-surface-hover { background: var(--surface-alt); }
+
+    /* Layout-specific backgrounds */
+    .bg-header-bg { background: var(--header-bg); }
+    .bg-sidebar-bg { background: var(--sidebar-bg); }
+    .bg-sidebar-hover { background: var(--sidebar-hover); }
+
+    /* Text color backgrounds (for separators and borders) */
+    .bg-text-secondary { background: var(--text-secondary); }
+
+    /* Focus and overlay backgrounds */
+    .bg-focus { background: var(--focus); }
+    .bg-overlay { background: var(--overlay); }
+    .bg-overlay-strong { background: var(--overlay-strong); }
+    .bg-backdrop { background: rgb(0 0 0 / 30%); }
+
+    /* Form input backgrounds - using specific form control tokens */
+    .bg-input { background: var(--input-bg); }
+    .bg-input-hover { background: var(--input-bg-hover); }
+    .bg-input-disabled { background: var(--input-bg-disabled); }
+    .bg-input-readonly { background: var(--input-bg-readonly); }
+
+    /* ===========================================
+     GRADIENT BACKGROUND UTILITIES - COMPLETE SYSTEM
+     =========================================== */
+
+    /* Single-color gradients (subtle depth) */
+    .bg-gradient-primary {
+        background: linear-gradient(
+            135deg,
+            var(--primary),
+            color-mix(in srgb, var(--primary) 80%, #000)
+        );
+    }
+
+    .bg-gradient-success {
+        background: linear-gradient(
+            135deg,
+            var(--success),
+            color-mix(in srgb, var(--success) 80%, #000)
+        );
+    }
+
+    .bg-gradient-warning {
+        background: linear-gradient(
+            135deg,
+            var(--warning),
+            color-mix(in srgb, var(--warning) 80%, #000)
+        );
+    }
+
+    .bg-gradient-error {
+        background: linear-gradient(
+            135deg,
+            var(--error),
+            color-mix(in srgb, var(--error) 80%, #000)
+        );
+    }
+
+    .bg-gradient-info { background: linear-gradient(135deg, var(--info), color-mix(in srgb, var(--info) 80%, #000)); }
+
+    /* Surface gradients (elevation depth) */
+    .bg-gradient-surface { background: linear-gradient(135deg, var(--surface), var(--surface-elevated)); }
+
+    .bg-gradient-surface-subtle { background: linear-gradient(180deg, var(--surface), var(--surface-alt)); }
+
+    /* Direction variants */
+    .bg-gradient-to-b { background: linear-gradient(180deg, var(--primary), transparent); }
+
+    .bg-gradient-to-t { background: linear-gradient(0deg, var(--primary), transparent); }
+
+    .bg-gradient-to-r { background: linear-gradient(90deg, var(--primary), transparent); }
+
+    .bg-gradient-to-l { background: linear-gradient(270deg, var(--primary), transparent); }
+
+    /* Radial gradients for spotlights/focus areas */
+    .bg-gradient-radial { background: radial-gradient(circle, var(--primary), transparent); }
+
+    .bg-gradient-radial-surface { background: radial-gradient(circle at center, var(--surface-elevated), var(--surface)); }
+
+    /* ===========================================
+     TEXT COLOR UTILITIES - THEME AWARE
+     =========================================== */
+
+    /* Primary text colors from theme */
+    .text-primary { color: var(--text-primary); }
+    .text-secondary { color: var(--text-secondary); }
+    .text-tertiary { color: var(--text-tertiary); }
+    .text-brand-primary { color: var(--primary); }
+    .text-accent { color: var(--accent); }
+    .text-sidebar-secondary { color: var(--sidebar-text-secondary); }
+
+    /* State text colors */
+    .text-success { color: var(--success); }
+    .text-warning { color: var(--warning); }
+    .text-error { color: var(--error); }
+    .text-info { color: var(--info); }
+
+    /* Special text colors */
+    .text-inherit { color: inherit; }
+    .text-current { color: currentcolor; }
+    .text-transparent { color: transparent; }
+    .text-white { color: #fff; }
+    .text-black { color: #000; }
+
+    /* Focus and interactive text colors */
+    .text-focus { color: var(--focus); }
+    .text-link { color: var(--accent); }
+    .text-link-hover { color: var(--link-hover); }
+    .text-link-visited { color: var(--link-visited); }
+
+    /* Muted text variants for hierarchy - single opacity method */
+    .text-muted { color: var(--text-secondary); }
+
+    .text-subtle { color: var(--text-tertiary); }
+
+    /* ===========================================
+     FILL COLOR UTILITIES - SVG ICONS
+     =========================================== */
+
+    /* Primary fill colors for SVG icons */
+    .fill-primary { fill: var(--primary); }
+    .fill-text { fill: var(--text-primary); }
+    .fill-text-secondary { fill: var(--text-secondary); }
+    .fill-text-tertiary { fill: var(--text-tertiary); }
+
+    /* State fill colors */
+    .fill-success { fill: var(--success); }
+    .fill-warning { fill: var(--warning); }
+    .fill-error { fill: var(--error); }
+    .fill-info { fill: var(--info); }
+
+    /* Special fill colors */
+    .fill-current { fill: currentcolor; }
+    .fill-none { fill: none; }
+    .fill-white { fill: #fff; }
+    .fill-black { fill: #000; }
+
+    /* Single-property color utilities for composition */
+    .text-on-color { color: var(--on-color-text); }
+
+    /* Button variant text contrast colors */
+    .text-primary-contrast { color: var(--on-color-text); }
+    .text-secondary-contrast { color: var(--text-primary); }
+    .text-success-contrast { color: var(--on-color-text); }
+    .text-danger-contrast { color: var(--on-color-text); }
+
+    /* ===========================================
+     ACCESSIBILITY COLOR UTILITIES
+     =========================================== */
+
+    /* High contrast mode adjustments */
+    @media (prefers-contrast: more) {
+        .text-primary,
+        .text-secondary,
+        .text-tertiary { color: var(--text-primary); }
+
+        .border-primary,
+        .border-focus,
+        .focus\:border-primary:focus,
+        .focus\:border-focus:focus { border-width: 2px; }
+    }
+
+    /* High contrast mode text hierarchy maintained */
+    @media (prefers-contrast: more) {
+        .text-muted { color: var(--text-primary); }
+
+        .text-subtle { color: var(--text-secondary); }
+    }
+
+    /* ===========================================
+     MODERN COLOR SPACES - WIDE GAMUT DISPLAY SUPPORT (P3)
+     =========================================== */
+
+    /* Display P3 color space utilities with sRGB fallback for wide gamut displays */
+    .bg-primary-p3 {
+        background: var(--primary); /* Fallback for browsers without P3 support */
+        background: color(display-p3 1 0.45 0); /* P3 wide gamut orange */
+    }
+
+    .text-primary-p3 {
+        color: var(--primary); /* Fallback */
+        color: color(display-p3 1 0.45 0); /* P3 wide gamut orange */
+    }
+
+    .border-primary-p3 {
+        border-color: var(--primary); /* Fallback */
+        border-color: color(display-p3 1 0.45 0); /* P3 wide gamut orange */
+    }
+
+    /* ===========================================
+     PRINT COLOR UTILITIES - COMPREHENSIVE SYSTEM
+     =========================================== */
+
+    @media print {
+        /* Core print colors */
+        .print\:text-black { color: #000 !important; }
+        .print\:text-primary { color: var(--text-primary) !important; }
+        .print\:bg-white { background: #fff !important; }
+        .print\:bg-surface { background: var(--surface) !important; }
+        .print\:border-black { border-color: #000 !important; }
+
+        /* Print state colors for emphasis */
+        .print\:text-success { color: var(--success) !important; }
+        .print\:text-warning { color: var(--warning) !important; }
+        .print\:text-error { color: var(--error) !important; }
+        .print\:text-info { color: var(--info) !important; }
+
+        /* Print visibility utilities */
+        .print\:hidden { display: none !important; }
+        .print\:block { display: block !important; }
+        .print\:text-sm { font-size: 12px !important; }
+
+        /* Remove backgrounds for print efficiency */
+        .print\:bg-none { background: none !important; }
+    }
+
+    /* ===========================================
+     COLOR OPACITY UTILITIES - COMPLETE SYSTEM
+     =========================================== */
+
+    /* Background opacity - primary and brand colors */
+    .bg-primary\/5 { background: color-mix(in srgb, var(--primary) 5%, transparent); }
+    .bg-primary\/10 { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+    .bg-primary\/20 { background: color-mix(in srgb, var(--primary) 20%, transparent); }
+    .bg-primary\/30 { background: color-mix(in srgb, var(--primary) 30%, transparent); }
+    .bg-primary\/40 { background: color-mix(in srgb, var(--primary) 40%, transparent); }
+    .bg-primary\/50 { background: color-mix(in srgb, var(--primary) 50%, transparent); }
+    .bg-primary\/60 { background: color-mix(in srgb, var(--primary) 60%, transparent); }
+    .bg-primary\/70 { background: color-mix(in srgb, var(--primary) 70%, transparent); }
+    .bg-primary\/80 { background: color-mix(in srgb, var(--primary) 80%, transparent); }
+    .bg-primary\/90 { background: color-mix(in srgb, var(--primary) 90%, transparent); }
+
+    /* Background opacity - success state */
+    .bg-success\/5 { background: color-mix(in srgb, var(--success) 5%, transparent); }
+    .bg-success\/10 { background: color-mix(in srgb, var(--success) 10%, transparent); }
+    .bg-success\/20 { background: color-mix(in srgb, var(--success) 20%, transparent); }
+    .bg-success\/30 { background: color-mix(in srgb, var(--success) 30%, transparent); }
+    .bg-success\/40 { background: color-mix(in srgb, var(--success) 40%, transparent); }
+    .bg-success\/50 { background: color-mix(in srgb, var(--success) 50%, transparent); }
+    .bg-success\/60 { background: color-mix(in srgb, var(--success) 60%, transparent); }
+    .bg-success\/70 { background: color-mix(in srgb, var(--success) 70%, transparent); }
+    .bg-success\/80 { background: color-mix(in srgb, var(--success) 80%, transparent); }
+    .bg-success\/90 { background: color-mix(in srgb, var(--success) 90%, transparent); }
+
+    /* Background opacity - warning state */
+    .bg-warning\/5 { background: color-mix(in srgb, var(--warning) 5%, transparent); }
+    .bg-warning\/10 { background: color-mix(in srgb, var(--warning) 10%, transparent); }
+    .bg-warning\/20 { background: color-mix(in srgb, var(--warning) 20%, transparent); }
+    .bg-warning\/30 { background: color-mix(in srgb, var(--warning) 30%, transparent); }
+    .bg-warning\/40 { background: color-mix(in srgb, var(--warning) 40%, transparent); }
+    .bg-warning\/50 { background: color-mix(in srgb, var(--warning) 50%, transparent); }
+    .bg-warning\/60 { background: color-mix(in srgb, var(--warning) 60%, transparent); }
+    .bg-warning\/70 { background: color-mix(in srgb, var(--warning) 70%, transparent); }
+    .bg-warning\/80 { background: color-mix(in srgb, var(--warning) 80%, transparent); }
+    .bg-warning\/90 { background: color-mix(in srgb, var(--warning) 90%, transparent); }
+
+    /* Background opacity - error state */
+    .bg-error\/5 { background: color-mix(in srgb, var(--error) 5%, transparent); }
+    .bg-error\/10 { background: color-mix(in srgb, var(--error) 10%, transparent); }
+    .bg-error\/20 { background: color-mix(in srgb, var(--error) 20%, transparent); }
+    .bg-error\/30 { background: color-mix(in srgb, var(--error) 30%, transparent); }
+    .bg-error\/40 { background: color-mix(in srgb, var(--error) 40%, transparent); }
+    .bg-error\/50 { background: color-mix(in srgb, var(--error) 50%, transparent); }
+    .bg-error\/60 { background: color-mix(in srgb, var(--error) 60%, transparent); }
+    .bg-error\/70 { background: color-mix(in srgb, var(--error) 70%, transparent); }
+    .bg-error\/80 { background: color-mix(in srgb, var(--error) 80%, transparent); }
+    .bg-error\/90 { background: color-mix(in srgb, var(--error) 90%, transparent); }
+
+    /* Background opacity - info state */
+    .bg-info\/5 { background: color-mix(in srgb, var(--info) 5%, transparent); }
+    .bg-info\/10 { background: color-mix(in srgb, var(--info) 10%, transparent); }
+    .bg-info\/20 { background: color-mix(in srgb, var(--info) 20%, transparent); }
+    .bg-info\/30 { background: color-mix(in srgb, var(--info) 30%, transparent); }
+    .bg-info\/40 { background: color-mix(in srgb, var(--info) 40%, transparent); }
+    .bg-info\/50 { background: color-mix(in srgb, var(--info) 50%, transparent); }
+    .bg-info\/60 { background: color-mix(in srgb, var(--info) 60%, transparent); }
+    .bg-info\/70 { background: color-mix(in srgb, var(--info) 70%, transparent); }
+    .bg-info\/80 { background: color-mix(in srgb, var(--info) 80%, transparent); }
+    .bg-info\/90 { background: color-mix(in srgb, var(--info) 90%, transparent); }
+
+    /* Background opacity - special colors */
+    .bg-black\/5 { background: color-mix(in srgb, #000 5%, transparent); }
+    .bg-black\/10 { background: color-mix(in srgb, #000 10%, transparent); }
+    .bg-black\/20 { background: color-mix(in srgb, #000 20%, transparent); }
+    .bg-black\/30 { background: color-mix(in srgb, #000 30%, transparent); }
+    .bg-black\/40 { background: color-mix(in srgb, #000 40%, transparent); }
+    .bg-black\/50 { background: color-mix(in srgb, #000 50%, transparent); }
+
+    .bg-white\/5 { background: color-mix(in srgb, #fff 5%, transparent); }
+    .bg-white\/10 { background: color-mix(in srgb, #fff 10%, transparent); }
+    .bg-white\/20 { background: color-mix(in srgb, #fff 20%, transparent); }
+    .bg-white\/30 { background: color-mix(in srgb, #fff 30%, transparent); }
+    .bg-white\/40 { background: color-mix(in srgb, #fff 40%, transparent); }
+    .bg-white\/50 { background: color-mix(in srgb, #fff 50%, transparent); }
+
+    /* Text opacity - complete system for all colors */
+    .text-primary\/10 { color: color-mix(in srgb, var(--text-primary) 10%, transparent); }
+    .text-primary\/20 { color: color-mix(in srgb, var(--text-primary) 20%, transparent); }
+    .text-primary\/30 { color: color-mix(in srgb, var(--text-primary) 30%, transparent); }
+    .text-primary\/40 { color: color-mix(in srgb, var(--text-primary) 40%, transparent); }
+    .text-primary\/50 { color: color-mix(in srgb, var(--text-primary) 50%, transparent); }
+    .text-primary\/60 { color: color-mix(in srgb, var(--text-primary) 60%, transparent); }
+    .text-primary\/70 { color: color-mix(in srgb, var(--text-primary) 70%, transparent); }
+    .text-primary\/80 { color: color-mix(in srgb, var(--text-primary) 80%, transparent); }
+    .text-primary\/90 { color: color-mix(in srgb, var(--text-primary) 90%, transparent); }
+
+    .text-secondary\/50 { color: color-mix(in srgb, var(--text-secondary) 50%, transparent); }
+    .text-secondary\/70 { color: color-mix(in srgb, var(--text-secondary) 70%, transparent); }
+    .text-secondary\/80 { color: color-mix(in srgb, var(--text-secondary) 80%, transparent); }
+
+    .text-brand-primary\/50 { color: color-mix(in srgb, var(--primary) 50%, transparent); }
+    .text-brand-primary\/70 { color: color-mix(in srgb, var(--primary) 70%, transparent); }
+    .text-brand-primary\/80 { color: color-mix(in srgb, var(--primary) 80%, transparent); }
+
+    .text-success\/70 { color: color-mix(in srgb, var(--success) 70%, transparent); }
+    .text-success\/80 { color: color-mix(in srgb, var(--success) 80%, transparent); }
+
+    .text-warning\/70 { color: color-mix(in srgb, var(--warning) 70%, transparent); }
+    .text-warning\/80 { color: color-mix(in srgb, var(--warning) 80%, transparent); }
+
+    .text-error\/70 { color: color-mix(in srgb, var(--error) 70%, transparent); }
+    .text-error\/80 { color: color-mix(in srgb, var(--error) 80%, transparent); }
+
+    .text-info\/70 { color: color-mix(in srgb, var(--info) 70%, transparent); }
+    .text-info\/80 { color: color-mix(in srgb, var(--info) 80%, transparent); }
+
+    /* ===========================================
+     DYNAMIC COLOR UTILITIES
+     =========================================== */
+
+    /* Contextual colors that adapt based on parent background */
+    .text-adaptive { color: var(--text-primary); }
+
+    .border-adaptive { border-color: var(--border); }
+
+    /* Inverse colors for overlays and contrasts */
+    .text-inverse { color: var(--bg); }
+
+    .bg-inverse { background: var(--text-primary); }
+}

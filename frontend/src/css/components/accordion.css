@@ -1,0 +1,56 @@
+@layer components {
+    .accordion-header {
+        list-style: none;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .accordion-header::-webkit-details-marker {
+        display: none;
+    }
+
+    .accordion-header::marker {
+        content: '';
+    }
+
+    @supports (interpolate-size: allow-keywords) {
+        .accordion-item {
+            interpolate-size: allow-keywords;
+            transition: height 300ms ease-out;
+        }
+    }
+
+    @supports not (interpolate-size: allow-keywords) {
+        .accordion-content {
+            display: grid;
+            grid-template-rows: 1fr;
+            transition: grid-template-rows 300ms ease-out;
+        }
+
+        .accordion-item:not([open]) .accordion-content {
+            grid-template-rows: 0fr;
+            overflow: hidden;
+        }
+
+        .accordion-content > div {
+            overflow: hidden;
+        }
+    }
+
+    .accordion-header:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: -2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .accordion-item,
+        .accordion-content {
+            transition: none;
+        }
+    }
+
+    .accordion-item {
+        position: relative;
+        z-index: 1;
+    }
+}

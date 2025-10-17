@@ -23,6 +23,7 @@ from api import (
     modules as modules_router,
     notifications as notifications_router,
     posters as posters_router,
+    schedule as schedule_router,
     system as system_router,
     webhooks as webhooks_router,
 )
@@ -85,15 +86,20 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         if log:
             log.debug("Starting database workers...")
 
-        # FIXED: Use unified process_job function with consistent signature
+        # Create wrapper function that passes shared database context
+        def shared_db_process_job(job, logger):
+            """Wrapper that passes shared database context to process_job"""
+            return process_job(job, logger, app.state.db)
+
+        # FIXED: Use wrapper function that passes shared database context
         app.state.webhook_worker.start(
             table_name="jobs",
-            process_fn=process_job,
+            process_fn=shared_db_process_job,
             job_type_filter="webhook_process",
         )
 
         app.state.background_worker.start(
-            table_name="jobs", process_fn=process_job, job_type_filter=None
+            table_name="jobs", process_fn=shared_db_process_job, job_type_filter=None
         )
 
         if log:
@@ -183,6 +189,10 @@ app = FastAPI(
             "name": "Service Instances",
             "description": "Plex, Radarr, and Sonarr instance management",
         },
+        {
+            "name": "Schedule Management",
+            "description": "Module scheduling configuration",
+        },
         {"name": "Jobs", "description": "Background job queue management"},
         {"name": "Modules", "description": "Module execution and orchestration"},
         {"name": "Logs", "description": "Log file access and management"},
@@ -265,6 +275,7 @@ async def handle_validation_exception(
 app.include_router(system_router.router)
 app.include_router(config_router.router)
 app.include_router(instances_router.router)
+app.include_router(schedule_router.router)
 app.include_router(jobs_router.router)
 app.include_router(modules_router.router)
 app.include_router(logs_router.router)

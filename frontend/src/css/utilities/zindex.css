@@ -1,0 +1,93 @@
+/**
+ * Z-Index Utilities - SINGLE SOURCE OF TRUTH
+ * Complete z-index system with logical stacking order for UI layers.
+ * Consolidates all z-index utilities to eliminate duplication.
+ */
+
+@layer utilities {
+    /* ===========================================
+     BASE Z-INDEX VALUES - ATOMIC UTILITIES
+     =========================================== */
+
+    .z-0 { z-index: 0; }
+    .z-10 { z-index: 10; }
+    .z-20 { z-index: 20; }
+    .z-30 { z-index: 30; }
+    .z-40 { z-index: 40; }
+    .z-50 { z-index: 50; }
+    .z-auto { z-index: auto; }
+    .z-negative { z-index: -1; }
+
+    /* ===========================================
+     SEMANTIC Z-INDEX LAYERS - LOGICAL STACKING ORDER
+     =========================================== */
+
+    /* UI Layer Stack (bottom to top): */
+    .z-dropdown { z-index: 100; } /* Dropdown menus - above base content */
+    .z-banner { z-index: 150; } /* Banners - between dropdown and sticky */
+    .z-sticky { z-index: 200; } /* Sticky navigation - above dropdowns */
+    .z-fixed { z-index: 300; } /* Fixed positioning - above sticky */
+    .z-sidebar { z-index: 350; } /* Sidebar overlays - between fixed and modal backdrop */
+    .z-modal-backdrop { z-index: 400; } /* Modal backdrop - below modal content */
+    .z-drawer { z-index: 450; } /* Drawer components - between backdrop and modal */
+    .z-modal { z-index: 500; } /* Modal dialogs - above backdrop */
+    .z-popover { z-index: 600; } /* Popovers - above modals */
+    .z-notification { z-index: 700; } /* Notifications - above popovers */
+    .z-tooltip { z-index: 800; } /* Tooltips - above everything except max */
+    .z-overlay { z-index: 900; } /* Full-screen overlays - above tooltips */
+    .z-max { z-index: 999; } /* Maximum z-index for emergency use */
+
+    /* ===========================================
+     RESPONSIVE Z-INDEX UTILITIES
+     =========================================== */
+
+    /* Tablet and up: 768px */
+    @media (width >= 768px) {
+        .md\:z-auto { z-index: auto; }
+        .md\:z-negative { z-index: -1; }
+        .md\:z-0 { z-index: 0; }
+        .md\:z-10 { z-index: 10; }
+        .md\:z-20 { z-index: 20; }
+        .md\:z-30 { z-index: 30; }
+        .md\:z-40 { z-index: 40; }
+        .md\:z-50 { z-index: 50; }
+        .md\:z-dropdown { z-index: 100; }
+        .md\:z-banner { z-index: 150; }
+        .md\:z-sticky { z-index: 200; }
+        .md\:z-fixed { z-index: 300; }
+        .md\:z-sidebar { z-index: 350; }
+        .md\:z-modal-backdrop { z-index: 400; }
+        .md\:z-drawer { z-index: 450; }
+        .md\:z-modal { z-index: 500; }
+        .md\:z-popover { z-index: 600; }
+        .md\:z-notification { z-index: 700; }
+        .md\:z-tooltip { z-index: 800; }
+        .md\:z-overlay { z-index: 900; }
+        .md\:z-max { z-index: 999; }
+    }
+
+    /* Desktop: 1024px */
+    @media (width >= 1024px) {
+        .lg\:z-auto { z-index: auto; }
+        .lg\:z-negative { z-index: -1; }
+        .lg\:z-0 { z-index: 0; }
+        .lg\:z-10 { z-index: 10; }
+        .lg\:z-20 { z-index: 20; }
+        .lg\:z-30 { z-index: 30; }
+        .lg\:z-40 { z-index: 40; }
+        .lg\:z-50 { z-index: 50; }
+        .lg\:z-dropdown { z-index: 100; }
+        .lg\:z-banner { z-index: 150; }
+        .lg\:z-sticky { z-index: 200; }
+        .lg\:z-fixed { z-index: 300; }
+        .lg\:z-sidebar { z-index: 350; }
+        .lg\:z-modal-backdrop { z-index: 400; }
+        .lg\:z-drawer { z-index: 450; }
+        .lg\:z-modal { z-index: 500; }
+        .lg\:z-popover { z-index: 600; }
+        .lg\:z-notification { z-index: 700; }
+        .lg\:z-tooltip { z-index: 800; }
+        .lg\:z-overlay { z-index: 900; }
+        .lg\:z-max { z-index: 999; }
+    }
+}

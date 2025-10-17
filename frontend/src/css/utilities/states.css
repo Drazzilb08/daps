@@ -1,0 +1,108 @@
+@layer utilities {
+    .disabled-input {
+        background: var(--input-bg-disabled);
+        color: var(--text-tertiary);
+        border-color: var(--input-border-disabled);
+    }
+
+    .state-hover-dim { transition: opacity 150ms ease-in-out; }
+
+    .state-hover-dim:hover:not(:disabled) {
+        opacity: 0.9;
+    }
+
+    .state-active:active:not(:disabled) {
+        transform: scale(0.98);
+        transition: transform 150ms ease-in-out;
+    }
+
+    /* Protection for touch devices - prevent sticky hover states */
+    @media (hover: none) and (pointer: coarse) {
+        .state-hover-dim:hover {
+            opacity: 1; /* Disable hover on touch devices */
+        }
+
+        .hover\:bg-surface-hover:hover {
+            background: inherit; /* Prevent sticky hover states */
+        }
+    }
+
+    /* ===========================================
+     HOVER STATE UTILITIES
+     =========================================== */
+
+    .hover\:bg-surface-hover:hover { background: var(--surface-alt); }
+
+    /* ===========================================
+     FOCUS STATE UTILITIES
+     =========================================== */
+
+    .outline-none { outline: none; }
+    .focus\:border-primary:focus { border-color: var(--primary); }
+    .focus-within\:border-primary:focus-within { border-color: var(--primary); }
+
+    /* ===========================================
+     VALIDATION STATE UTILITIES
+     =========================================== */
+
+    .state-invalid { border-color: var(--error); }
+
+    .state-invalid:focus,
+    .state-invalid:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent); }
+
+    .state-valid { border-color: var(--success); }
+
+    .state-valid:focus,
+    .state-valid:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent); }
+
+    /* ===========================================
+     LOADING STATE UTILITIES
+     =========================================== */
+
+    .state-loading {
+        pointer-events: none;
+        opacity: 0.7;
+        cursor: wait;
+    }
+
+    .state-loading::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgb(255 255 255 / 10%);
+        z-index: 1;
+    }
+
+    /* ===========================================
+     SELECTION STATE UTILITIES
+     =========================================== */
+
+    .state-selected {
+        background: var(--primary);
+        color: var(--primary-text);
+    }
+
+    .state-selected:hover { background: var(--focus); }
+
+    /* ===========================================
+     ERROR STATE UTILITIES
+     =========================================== */
+
+    .state-error {
+        background: color-mix(in srgb, var(--error) 10%, transparent);
+        border-color: var(--error);
+        color: var(--error-text);
+    }
+
+    .state-success {
+        background: color-mix(in srgb, var(--success) 20%, transparent);
+        border-color: var(--success);
+        color: var(--success-text);
+    }
+
+    .state-warning {
+        background: color-mix(in srgb, var(--warning) 20%, transparent);
+        border-color: var(--warning);
+        color: var(--warning-text);
+    }
+}

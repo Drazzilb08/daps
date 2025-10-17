@@ -1,0 +1,34 @@
+/**
+ * Utility System Index - Optimized Architecture
+ *
+ * Foundation-first approach with proper cascade ordering
+ * and minimal duplication across 17 utility modules.
+ */
+
+/* Foundation Utilities - Core System */
+@import url('./accessibility.css'); /* WCAG 2.1 AA compliance, screen reader support */
+@import url('./spacing.css'); /* Margin, padding, gap utilities */
+@import url('./typography.css'); /* Text utilities and font properties */
+@import url('./colors.css'); /* Theme-aware color utilities */
+
+/* Layout Utilities - Structure */
+@import url('./layout.css'); /* Display, flexbox, grid, positioning */
+@import url('./sizing.css'); /* Width, height, dimensions */
+
+/* Visual Utilities - Appearance */
+@import url('./borders.css'); /* Border styling and radius */
+@import url('./effects.css'); /* Shadows, opacity, filters */
+@import url('./transforms.css'); /* Motion and transitions */
+@import url('./animations.css'); /* Consolidated animation system */
+@import url('./zindex.css'); /* Semantic z-index system */
+
+/* Interaction Utilities - User Interface */
+@import url('./interactions.css'); /* Cursors, pointer events */
+@import url('./states.css'); /* Validation, hover, focus states */
+
+/* Content Utilities - Media */
+@import url('./icons.css'); /* Icon sizing and display */
+@import url('./images.css'); /* Responsive images, object utilities */
+
+/* Development Utilities */
+@import url('./debug.css'); /* Development debugging aids */

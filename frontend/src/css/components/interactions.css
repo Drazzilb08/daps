@@ -1,0 +1,240 @@
+@layer components {
+    /* ===========================================
+     COMPLEX DISABLED STATE PATTERNS
+     =========================================== */
+
+    /* ===========================================
+     COMPLEX HOVER PATTERNS
+     =========================================== */
+
+    /* Hover with loading state prevention */
+    .state-hover-loading {
+        transition: all 150ms ease-in-out;
+    }
+
+    .state-hover-loading:hover:not([aria-busy='true'], .loading) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
+    }
+
+    /* ===========================================
+     COMPLEX FOCUS RING PATTERNS
+     =========================================== */
+
+    /* Focus with validation states */
+    .state-focus-ring-validation:focus:invalid {
+        border-color: var(--error);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
+    }
+
+    .state-focus-ring-validation:focus:valid {
+        border-color: var(--success);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent);
+    }
+
+    /* ===========================================
+     COMPLEX LOADING PATTERNS
+     =========================================== */
+
+    /* Complex loading state with overlay */
+    .state-loading-overlay {
+        position: relative;
+        pointer-events: none;
+        opacity: 0.7;
+        cursor: wait;
+    }
+
+    .state-loading-overlay::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgb(255 255 255 / 10%);
+        z-index: 1;
+        backdrop-filter: blur(1px);
+    }
+
+    /* Loading with spinner integration */
+    .state-loading-spinner {
+        position: relative;
+    }
+
+    .state-loading-spinner::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid transparent;
+        border-top: 2px solid var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        z-index: 2;
+    }
+
+    /* ===========================================
+     COMPLEX ACCESSIBILITY PATTERNS
+     =========================================== */
+
+    /* Complex field group pattern - nested label relationships */
+    .field-group {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .field-group .field-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .field-group .field-label[data-required='true']::after {
+        content: ' *';
+        color: var(--error);
+    }
+
+    /* Accessible field pattern with proper state management */
+    .accessible-field {
+        position: relative;
+    }
+
+    .accessible-field[aria-invalid='true'] {
+        border-color: var(--error);
+    }
+
+    /* Lower specificity selector must come first */
+    .accessible-field + .field-error {
+        display: none;
+    }
+
+    /* Higher specificity selector comes after */
+    .accessible-field[aria-invalid='true'] + .field-error {
+        display: block;
+        color: var(--error);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    /* ===========================================
+     COMPLEX SELECTION PATTERNS
+     =========================================== */
+
+    /* Multi-select pattern with check indicators */
+    .state-selectable-item {
+        position: relative;
+        cursor: pointer;
+        transition: all 150ms ease-in-out;
+        border: 2px solid transparent;
+    }
+
+    .state-selectable-item:hover {
+        background: var(--surface-alt);
+        border-color: var(--border-color);
+    }
+
+    .state-selectable-item[aria-selected='true'] {
+        background: color-mix(in srgb, var(--primary) 10%, transparent);
+        border-color: var(--primary);
+    }
+
+    .state-selectable-item[aria-selected='true']::after {
+        content: '✓';
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        color: var(--primary);
+        font-weight: bold;
+    }
+
+    /* ===========================================
+     COMPLEX VALIDATION PATTERNS
+     =========================================== */
+
+    /* Dynamic validation state with multiple indicators */
+    .state-dynamic-validation {
+        transition: all 150ms ease-in-out;
+    }
+
+    .state-dynamic-validation:invalid:not(:placeholder-shown) {
+        border-color: var(--error);
+        background: color-mix(in srgb, var(--error) 5%, transparent);
+    }
+
+    .state-dynamic-validation:valid:not(:placeholder-shown) {
+        border-color: var(--success);
+        background: color-mix(in srgb, var(--success) 5%, transparent);
+    }
+
+    /* Password strength indicator pattern */
+    .state-password-strength[data-strength='weak'] {
+        border-color: var(--error);
+    }
+
+    .state-password-strength[data-strength='medium'] {
+        border-color: var(--warning);
+    }
+
+    .state-password-strength[data-strength='strong'] {
+        border-color: var(--success);
+    }
+
+    /* ===========================================
+     COMPLEX ANIMATION PATTERNS
+     =========================================== */
+
+    /* Staggered animation pattern for lists */
+    .state-stagger-in {
+        animation: stagger-fade-in 300ms ease-out forwards;
+    }
+
+    .state-stagger-in:nth-child(1) {
+        animation-delay: 0ms;
+    }
+
+    .state-stagger-in:nth-child(2) {
+        animation-delay: 50ms;
+    }
+
+    .state-stagger-in:nth-child(3) {
+        animation-delay: 100ms;
+    }
+
+    .state-stagger-in:nth-child(4) {
+        animation-delay: 150ms;
+    }
+
+    .state-stagger-in:nth-child(5) {
+        animation-delay: 200ms;
+    }
+
+    @keyframes stagger-fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Modal entrance animation */
+    .state-modal-enter {
+        animation: modal-slide-up 200ms ease-out;
+    }
+
+    @keyframes modal-slide-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+}

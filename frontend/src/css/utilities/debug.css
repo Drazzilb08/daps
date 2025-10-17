@@ -1,0 +1,183 @@
+@layer utilities {
+    .debug-grid {
+        background-image:
+            linear-gradient(rgb(255 0 0 / 10%) 1px, transparent 1px),
+            linear-gradient(90deg, rgb(255 0 0 / 10%) 1px, transparent 1px);
+        background-size: 0.5rem 0.5rem;
+    }
+
+    .debug-layout * {
+        outline: 1px solid rgb(255 0 0 / 20%);
+    }
+
+    /* ===========================================
+     VISUAL DEBUG INDICATORS
+     =========================================== */
+
+    .debug-outline {
+        outline: 2px solid red;
+        outline-offset: 2px;
+    }
+
+    .debug-border { border: 2px solid lime; }
+
+    .debug-bg { background: rgb(255 0 0 / 10%); }
+
+    /* ===========================================
+     ACCESSIBILITY DEBUG UTILITIES
+     =========================================== */
+
+    .debug-touch-targets *[role='button'],
+    .debug-touch-targets button,
+    .debug-touch-targets input,
+    .debug-touch-targets select,
+    .debug-touch-targets textarea,
+    .debug-touch-targets a {
+        position: relative;
+    }
+
+    .debug-touch-targets *[role='button']::before,
+    .debug-touch-targets button::before,
+    .debug-touch-targets input::before,
+    .debug-touch-targets select::before,
+    .debug-touch-targets textarea::before,
+    .debug-touch-targets a::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        min-width: 44px;
+        min-height: 44px;
+        border: 1px dashed orange;
+        pointer-events: none;
+        z-index: var(--z-max);
+    }
+
+    /* ===========================================
+     RESPONSIVE DEBUG UTILITIES - STANDARD BREAKPOINTS
+     =========================================== */
+
+    .debug-breakpoint::before {
+        content: 'mobile';
+        position: fixed;
+        top: 0;
+        right: 0;
+        padding: 4px 8px;
+        background: red;
+        color: white;
+        font-size: 12px;
+        z-index: var(--z-max);
+    }
+
+    @media (width >= 768px) {
+        .debug-breakpoint::before {
+            content: 'md (768px)';
+            background: orange;
+        }
+    }
+
+    @media (width >= 1024px) {
+        .debug-breakpoint::before {
+            content: 'lg (1024px)';
+            background: yellow;
+            color: black;
+        }
+    }
+
+    @media (width >= 1440px) {
+        .debug-breakpoint::before {
+            content: 'xl (1440px)';
+            background: green;
+        }
+    }
+
+    /* ===========================================
+     COLOR CONTRAST DEBUG
+     =========================================== */
+
+    .debug-contrast {
+        background: yellow;
+        color: black;
+        border: 2px solid red;
+    }
+
+    .debug-contrast-fail {
+        background: red;
+        color: white;
+        font-weight: bold;
+    }
+
+    /* ===========================================
+     DEVELOPMENT ONLY UTILITIES
+     =========================================== */
+
+    .dev-only { position: relative; }
+
+    .dev-only::after {
+        content: 'DEV';
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        padding: 2px 4px;
+        background: red;
+        color: white;
+        font-size: 10px;
+        font-weight: bold;
+        border-radius: 2px;
+        z-index: var(--z-max);
+    }
+
+    /* Hide dev utilities in production */
+    .production .dev-only::after {
+        display: none;
+    }
+
+    /* ===========================================
+     FLEXBOX DEBUG UTILITIES
+     =========================================== */
+
+    .debug-flex * {
+        outline: 1px solid rgb(255 165 0 / 50%);
+    }
+
+    .debug-flex-item {
+        outline: 2px solid rgb(255 165 0);
+        outline-offset: -2px;
+    }
+
+    /* ===========================================
+     GRID DEBUG UTILITIES
+     =========================================== */
+
+    .debug-grid-container {
+        outline: 2px solid rgb(0 255 0 / 50%);
+        outline-offset: -2px;
+    }
+
+    .debug-grid-item {
+        outline: 1px solid rgb(0 255 0);
+        background: rgb(0 255 0 / 10%);
+    }
+
+    /* ===========================================
+     SPACING DEBUG UTILITIES
+     =========================================== */
+
+    .debug-spacing * {
+        background: rgb(255 0 0 / 5%);
+    }
+
+    .debug-spacing-item {
+        background: rgb(255 0 0 / 15%);
+        outline: 1px dashed rgb(255 0 0 / 50%);
+    }
+
+    /* ===========================================
+     FOCUS DEBUG - HIGHER SPECIFICITY
+     =========================================== */
+
+    /* Higher specificity selector - must come after .debug-flex * and .debug-spacing * */
+    .debug-focus *:focus {
+        outline: 2px solid red;
+        outline-offset: 2px;
+    }
+}

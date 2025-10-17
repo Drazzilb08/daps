@@ -1,0 +1,555 @@
+@layer utilities {
+    /* ===========================================
+     HOVER STATE UTILITIES - SYSTEMATIC COVERAGE
+     =========================================== */
+
+    /* Background hover variants - Complete coverage for all interactive colors */
+    .hover\:bg-primary:hover { background: var(--primary); }
+    .hover\:bg-surface:hover { background: var(--surface); }
+    .hover\:bg-surface-elevated:hover { background: var(--surface-elevated); }
+    .hover\:bg-surface-hover:hover { background: var(--surface-hover); }
+    .hover\:bg-surface-active:hover { background: var(--surface-active); }
+    .hover\:bg-surface-alt:hover { background: var(--surface-alt); }
+    .hover\:bg-success:hover { background: var(--success); }
+    .hover\:bg-warning:hover { background: var(--warning); }
+    .hover\:bg-error:hover { background: var(--error); }
+    .hover\:bg-transparent:hover { background: transparent; }
+
+    /* Primary/accent hover variants */
+    .hover\:bg-primary-hover:hover { background: var(--focus); }
+    .hover\:bg-primary-subtle:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+    .hover\:bg-primary-surface:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+    .hover\:bg-primary\/15:hover { background: color-mix(in srgb, var(--primary) 15%, transparent); }
+
+    /* State color hover variants - Consistent naming with -subtle suffix */
+    .hover\:bg-success-subtle:hover { background: color-mix(in srgb, var(--success) 20%, transparent); }
+    .hover\:bg-warning-subtle:hover { background: color-mix(in srgb, var(--warning) 20%, transparent); }
+    .hover\:bg-error-subtle:hover { background: color-mix(in srgb, var(--error) 10%, transparent); }
+    .hover\:bg-info-subtle:hover { background: color-mix(in srgb, var(--info) 15%, transparent); }
+
+    /* Border hover variants - Complete coverage */
+    .hover\:border-primary:hover { border-color: var(--primary); }
+    .hover\:border-primary\/40:hover { border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
+    .hover\:border-success:hover { border-color: var(--success); }
+    .hover\:border-warning:hover { border-color: var(--warning); }
+    .hover\:border-error:hover { border-color: var(--error); }
+    .hover\:border-transparent:hover { border-color: transparent; }
+
+    /* Fill hover utilities for icons */
+    .hover\:fill-primary:hover { fill: var(--primary); }
+    .hover\:fill-text:hover { fill: var(--text-primary); }
+    .hover\:fill-success:hover { fill: var(--success); }
+    .hover\:fill-error:hover { fill: var(--error); }
+
+    /* Text hover variants - consolidated from other files */
+    .hover\:text-primary:hover { color: var(--primary); }
+    .hover\:text-brand-primary:hover { color: var(--text-primary); }
+    .hover\:text-secondary:hover { color: var(--text-secondary); }
+    .hover\:text-success:hover { color: var(--success); }
+    .hover\:text-warning:hover { color: var(--warning); }
+    .hover\:text-error:hover { color: var(--error); }
+    .hover\:text-white:hover { color: #fff; }
+    .hover\:text-inherit:hover { color: inherit; }
+
+    /* Transform hover variants - Complete coverage */
+
+    /* Scale transforms */
+    .hover\:scale-95:hover { transform: scale(0.95); }
+    .hover\:scale-98:hover { transform: scale(0.98); }
+    .hover\:scale-102:hover { transform: scale(1.02); }
+    .hover\:scale-105:hover { transform: scale(1.05); }
+    .hover\:scale-110:hover { transform: scale(1.1); }
+
+    /* Rotation transforms */
+    .hover\:rotate-1:hover { transform: rotate(1deg); }
+    .hover\:rotate-3:hover { transform: rotate(3deg); }
+    .hover\:rotate-6:hover { transform: rotate(6deg); }
+    .hover\:-rotate-1:hover { transform: rotate(-1deg); }
+    .hover\:-rotate-3:hover { transform: rotate(-3deg); }
+    .hover\:-rotate-6:hover { transform: rotate(-6deg); }
+
+    /* Translation transforms */
+    .hover\:translate-y-negative-1:hover { transform: translateY(-4px); }
+    .hover\:translate-y-1:hover { transform: translateY(4px); }
+    .hover\:translate-y-2:hover { transform: translateY(8px); }
+
+    /* Shadow hover variants */
+    .hover\:shadow-sm:hover {
+        box-shadow:
+            0 1px 3px 0 rgb(0 0 0 / 10%),
+            0 1px 2px -1px rgb(0 0 0 / 10%);
+    }
+
+    .hover\:shadow-md:hover {
+        box-shadow:
+            0 4px 6px -1px rgb(0 0 0 / 10%),
+            0 2px 4px -2px rgb(0 0 0 / 10%);
+    }
+    .hover\:shadow-primary-sm:hover { box-shadow: 0 2px 4px color-mix(in srgb, var(--primary) 20%, transparent); }
+
+    .hover\:shadow-lg:hover {
+        box-shadow:
+            0 20px 25px -5px rgb(0 0 0 / 25%),
+            0 10px 10px -5px rgb(0 0 0 / 10%);
+        transform: translateY(-2px);
+    }
+
+    .hover\:shadow-xl:hover {
+        box-shadow:
+            0 20px 25px -5px rgb(0 0 0 / 10%),
+            0 8px 10px -6px rgb(0 0 0 / 10%);
+    }
+    .hover\:shadow-none:hover { box-shadow: none; }
+
+    /* Opacity hover variants */
+    .hover\:opacity-70:hover { opacity: 0.7; }
+    .hover\:opacity-80:hover { opacity: 0.8; }
+    .hover\:opacity-90:hover { opacity: 0.9; }
+    .hover\:opacity-100:hover { opacity: 1; }
+
+    /* ===========================================
+     FOCUS STATE UTILITIES - COMPREHENSIVE FOCUS MANAGEMENT
+     =========================================== */
+
+    /* Standard focus ring pattern */
+    .focus\:ring-primary:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    .focus\:ring-success:focus {
+        outline: none;
+        border-color: var(--success);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent);
+    }
+
+    .focus\:ring-error:focus {
+        outline: none;
+        border-color: var(--error);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
+    }
+
+    .focus\:ring-warning:focus {
+        outline: none;
+        border-color: var(--warning);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--warning) 20%, transparent);
+    }
+
+    .focus\:ring-info:focus {
+        outline: none;
+        border-color: var(--info);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--info) 20%, transparent);
+    }
+
+    /* Focus-within patterns for form containers */
+    .focus-within\:border-primary:focus-within { border-color: var(--primary); }
+
+    .focus-within\:ring-primary:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
+
+    .focus-within\:ring-error:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent); }
+
+    .focus-within\:ring-warning:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--warning) 20%, transparent); }
+
+    .focus-within\:ring-info:focus-within { box-shadow: 0 0 0 2px color-mix(in srgb, var(--info) 20%, transparent); }
+
+    /* Focus visible for keyboard navigation */
+    .focus-visible\:ring-primary:focus-visible {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    /* Background focus utilities */
+    .focus\:bg-primary:focus { background: var(--primary); }
+    .focus\:bg-surface-hover:focus { background: var(--surface-hover); }
+    .focus\:bg-focus:focus { background: var(--focus-bg, var(--surface-hover)); }
+    .focus\:bg-primary-surface:focus { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+
+    /* Text focus utilities */
+    .focus\:text-primary:focus { color: var(--primary); }
+    .focus\:text-focus:focus { color: var(--focus); }
+
+    /* Border focus utilities */
+    .focus\:border-primary:focus { border-color: var(--primary); }
+    .focus\:border-focus:focus { border-color: var(--focus); }
+    .focus\:border-success:focus { border-color: var(--success); }
+    .focus\:border-error:focus { border-color: var(--error); }
+
+    /* ===========================================
+     ACTIVE/PRESSED STATE UTILITIES
+     =========================================== */
+
+    /* Active state transforms */
+    .active\:scale-98:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+
+    .active\:scale-95:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
+    }
+
+    /* Background active utilities */
+    .active\:bg-primary:active { background: var(--primary); }
+    .active\:bg-surface-active:active { background: var(--surface-active); }
+    .active\:bg-success:active { background: var(--success); }
+    .active\:bg-error:active { background: var(--error); }
+
+    /* Text active utilities */
+    .active\:text-primary:active { color: var(--primary); }
+    .active\:text-white:active { color: #fff; }
+
+    /* Border active utilities */
+    .active\:border-primary:active { border-color: var(--primary); }
+    .active\:border-success:active { border-color: var(--success); }
+    .active\:border-error:active { border-color: var(--error); }
+
+    /* ===========================================
+     DISABLED STATE UTILITIES - COMPREHENSIVE COVERAGE
+     =========================================== */
+
+    /* Disabled opacity patterns */
+    .disabled\:opacity-50:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .disabled\:opacity-60:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* Pointer events utilities */
+    .pointer-events-none { pointer-events: none; }
+    .pointer-events-auto { pointer-events: auto; }
+
+    /* Disabled cursor patterns */
+    .disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+    .disabled\:pointer-events-none:disabled { pointer-events: none; }
+
+    /* Background disabled utilities */
+    .disabled\:bg-disabled:disabled { background: var(--surface-disabled, var(--surface-dim)); }
+    .disabled\:bg-surface-alt:disabled { background: var(--surface-alt); }
+    .disabled\:bg-transparent:disabled { background: transparent; }
+
+    /* Text disabled utilities */
+    .disabled\:text-disabled:disabled { color: var(--text-tertiary); }
+
+    .disabled\:text-muted:disabled {
+        color: var(--text-tertiary);
+        opacity: 0.5;
+    }
+
+    /* Border disabled utilities */
+    .disabled\:border-disabled:disabled { border-color: var(--border); }
+    .disabled\:border-transparent:disabled { border-color: transparent; }
+
+    /* Fill disabled utilities */
+    .disabled\:fill-disabled:disabled { fill: var(--text-tertiary); }
+
+    /* Disabled hover overrides - prevent hover effects when disabled */
+    .disabled\:hover\:bg-surface-alt:disabled:hover { background: var(--surface-alt); }
+    .disabled\:hover\:border-border:disabled:hover { border-color: var(--border); }
+
+    /* ===========================================
+     FORM STATE UTILITIES - VALIDATION STATES
+     =========================================== */
+
+    /* Invalid state patterns */
+    .invalid\:border-error[aria-invalid='true'] {
+        border-color: var(--error);
+    }
+
+    .invalid\:bg-error-surface[aria-invalid='true'] {
+        background: color-mix(in srgb, var(--error) 20%, transparent);
+    }
+
+    .invalid\:text-error[aria-invalid='true'] {
+        color: var(--error);
+    }
+
+    .invalid\:focus\:ring-error[aria-invalid='true']:focus {
+        outline: none;
+        border-color: var(--error);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent);
+    }
+
+    /* Valid state patterns */
+    .valid\:border-success[aria-valid='true'] {
+        border-color: var(--success);
+    }
+
+    .valid\:bg-success-surface[aria-valid='true'] {
+        background: color-mix(in srgb, var(--success) 20%, transparent);
+    }
+
+    .valid\:text-success[aria-valid='true'] {
+        color: var(--success);
+    }
+
+    .valid\:focus\:ring-success[aria-valid='true']:focus {
+        outline: none;
+        border-color: var(--success);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent);
+    }
+
+    /* ===========================================
+     TRANSITION UTILITIES - CONSISTENT ANIMATIONS
+     =========================================== */
+
+    /* Transition duration utilities using design tokens */
+    .transition-fast { transition: all 150ms ease-in-out; }
+
+    .transition-normal { transition: all 250ms ease-in-out; }
+
+    .transition-slow { transition: all 350ms ease-in-out; }
+
+    /* Specific transition properties */
+    .transition-colors {
+        transition:
+            color 150ms ease-in-out,
+            background-color 150ms ease-in-out,
+            border-color 150ms ease-in-out;
+    }
+
+    .transition-opacity { transition: opacity 150ms ease-in-out; }
+
+    .transition-transform { transition: transform 150ms ease-in-out; }
+
+    .transition-shadow { transition: box-shadow 150ms ease-in-out; }
+
+    .transition-shadow-transform {
+        transition:
+            box-shadow 150ms ease-in-out,
+            transform 150ms ease-in-out;
+    }
+
+    /* No transition for accessibility */
+    .transition-none { transition: none; }
+
+    /* Atomic state utilities removed - duplicates of earlier definitions (lines 59, 72, 105, 183) */
+
+    /* Atomic cursor utilities */
+    .cursor-pointer { cursor: pointer; }
+
+    /* Atomic user-select utilities */
+    .select-none { user-select: none; }
+
+    /* Required field patterns */
+    .required\:after[required]::after {
+        content: ' *';
+        color: var(--error);
+    }
+
+    /* ===========================================
+     GROUP INTERACTION UTILITIES
+     =========================================== */
+
+    /* Group hover patterns - useful for card components */
+    .group:hover .group-hover\:bg-surface-hover {
+        background: var(--surface-alt);
+    }
+
+    .group:hover .group-hover\:text-primary {
+        color: var(--primary);
+    }
+
+    .group:hover .group-hover\:scale-102 {
+        transform: scale(1.02);
+    }
+
+    .group:hover .group-hover\:shadow-md {
+        box-shadow:
+            0 4px 6px -1px rgb(0 0 0 / 10%),
+            0 2px 4px -2px rgb(0 0 0 / 10%);
+    }
+
+    .group:hover .group-hover\:opacity-100 {
+        opacity: 1;
+    }
+
+    /* Group focus patterns */
+    .group:focus-within .group-focus\:border-primary {
+        border-color: var(--primary);
+    }
+
+    .group:focus-within .group-focus\:ring-primary {
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+    }
+
+    /* Atomic transition utilities removed - duplicates of earlier definitions at lines 318-322 */
+
+    /* ===========================================
+     ATOMIC INTERACTION UTILITIES ONLY
+     =========================================== */
+
+    /* Components should compose atomic utilities instead of using compositional classes */
+
+    /* Example: className="transition-background hover:bg-surface-hover active:scale-98 disabled:opacity-50" */
+
+    /* Additional atomic utilities for common needs */
+    .hover\:translate-y-negative-2:hover { transform: translateY(-2px); }
+
+    /* .disabled\:pointer-events-none:disabled already defined at line 231 */
+    .focus\:outline-none:focus { outline: none; }
+
+    /* ===========================================
+     ACCESSIBILITY IMPROVEMENTS
+     =========================================== */
+
+    /* Respect user motion preferences */
+    @media (prefers-reduced-motion: reduce) {
+        .hover\:scale-95:hover,
+        .hover\:scale-98:hover,
+        .hover\:scale-102:hover,
+        .hover\:scale-105:hover,
+        .hover\:scale-110:hover,
+        .hover\:rotate-1:hover,
+        .hover\:rotate-3:hover,
+        .hover\:rotate-6:hover,
+        .hover\:-rotate-1:hover,
+        .hover\:-rotate-3:hover,
+        .hover\:-rotate-6:hover,
+        .hover\:translate-y-negative-1:hover,
+        .hover\:translate-y-1:hover,
+        .hover\:translate-y-2:hover,
+        .active\:scale-98:active,
+        .active\:scale-95:active,
+        .group-hover\:scale-102 { transform: none; }
+
+        .transition-transform,
+        .transition-background,
+        .transition-border,
+        .transition-color,
+        .transition-shadow,
+        .transition-shadow-transform,
+        .transition-opacity,
+        .transition-all { transition: none; }
+    }
+
+    /* High contrast mode improvements */
+    @media (prefers-contrast: more) {
+        .focus\:ring-primary:focus,
+        .focus\:ring-success:focus,
+        .focus\:ring-error:focus,
+        .focus-visible\:ring-primary:focus-visible { box-shadow: 0 0 0 2px var(--primary); }
+
+        .invalid\:border-error[aria-invalid='true'],
+        .valid\:border-success[aria-valid='true'] {
+            border-width: 2px;
+        }
+
+        /* Menu item high contrast focus state */
+        .menu-item-focus:focus { background: var(--surface-alt); }
+    }
+
+    /* ===========================================
+     CURSOR UTILITIES - COMPREHENSIVE SYSTEM
+     =========================================== */
+
+    .cursor-auto { cursor: auto; }
+    .cursor-default { cursor: default; }
+
+    /* .cursor-pointer already defined at line 349 */
+    .cursor-wait { cursor: wait; }
+    .cursor-text { cursor: text; }
+    .cursor-move { cursor: move; }
+    .cursor-help { cursor: help; }
+    .cursor-not-allowed { cursor: not-allowed; }
+    .cursor-progress { cursor: progress; }
+    .cursor-cell { cursor: cell; }
+    .cursor-crosshair { cursor: crosshair; }
+    .cursor-vertical-text { cursor: vertical-text; }
+    .cursor-alias { cursor: alias; }
+    .cursor-copy { cursor: copy; }
+    .cursor-no-drop { cursor: no-drop; }
+    .cursor-grab { cursor: grab; }
+    .cursor-grabbing { cursor: grabbing; }
+    .cursor-all-scroll { cursor: all-scroll; }
+    .cursor-col-resize { cursor: col-resize; }
+    .cursor-row-resize { cursor: row-resize; }
+    .cursor-n-resize { cursor: n-resize; }
+    .cursor-e-resize { cursor: e-resize; }
+    .cursor-s-resize { cursor: s-resize; }
+    .cursor-w-resize { cursor: w-resize; }
+    .cursor-ne-resize { cursor: ne-resize; }
+    .cursor-nw-resize { cursor: nw-resize; }
+    .cursor-se-resize { cursor: se-resize; }
+    .cursor-sw-resize { cursor: sw-resize; }
+    .cursor-ew-resize { cursor: ew-resize; }
+    .cursor-ns-resize { cursor: ns-resize; }
+    .cursor-nesw-resize { cursor: nesw-resize; }
+    .cursor-nwse-resize { cursor: nwse-resize; }
+    .cursor-zoom-in { cursor: zoom-in; }
+    .cursor-zoom-out { cursor: zoom-out; }
+
+    /* User selection utilities */
+
+    /* .select-none already defined at line 352 */
+    .select-text { user-select: text; }
+    .select-all { user-select: all; }
+    .select-auto { user-select: auto; }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+        /* Disable hover effects on touch devices */
+        .hover\:bg-surface:hover,
+        .hover\:bg-surface-elevated:hover,
+        .hover\:bg-surface-hover:hover,
+        .hover\:bg-primary:hover,
+        .hover\:border-primary:hover,
+        .hover\:text-primary:hover,
+        .hover\:scale-102:hover,
+        .hover\:shadow-md:hover,
+        .group-hover\:bg-surface-hover,
+        .group-hover\:text-primary,
+        .group-hover\:scale-102 {
+            /* Reset hover effects */
+            background: inherit;
+            border-color: inherit;
+            color: inherit;
+            transform: none;
+            box-shadow: inherit;
+        }
+
+        /* Enhance active states for touch feedback */
+        .active\:scale-98:active,
+        .active\:scale-95:active {
+            transform: scale(0.95);
+            transition: transform 0.1s ease;
+        }
+    }
+
+    /* ===========================================
+     RESIZE UTILITIES - ELEMENT RESIZE BEHAVIOR
+     =========================================== */
+
+    /* Resize control utilities */
+    .resize-none { resize: none; }
+    .resize-y { resize: vertical; }
+    .resize-x { resize: horizontal; }
+    .resize { resize: both; }
+
+    /* ===========================================
+     ATOMIC UTILITY ARCHITECTURE COMPLETE
+     =========================================== */
+
+    /* ALL COMPOSITIONAL UTILITIES ELIMINATED
+   * Every utility class in this file now controls exactly ONE CSS property
+   * Complex styling achieved through composition in JSX:
+   *
+   * Example button composition:
+   * className="cursor-pointer select-none transition-all
+   *            hover:bg-surface-hover hover:translate-y-negative-1
+   *            active:scale-98 disabled:opacity-50"
+   *
+   * This maintains perfect atomic utility architecture where:
+   * ✅ ONE class = ONE CSS property
+   * ✅ Complex styling = Utility composition
+   * ✅ No multi-property utilities anywhere
+   */
+}

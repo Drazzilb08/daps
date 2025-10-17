@@ -1,0 +1,228 @@
+@layer utilities {
+    /* Shadows */
+
+    /* ===========================================
+     SHADOW UTILITIES
+     =========================================== */
+
+    .shadow-xs { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 5%); }
+
+    .shadow-sm {
+        box-shadow:
+            0 1px 3px 0 rgb(0 0 0 / 10%),
+            0 1px 2px -1px rgb(0 0 0 / 10%);
+    }
+
+    .shadow-md {
+        box-shadow:
+            0 4px 6px -1px rgb(0 0 0 / 10%),
+            0 2px 4px -2px rgb(0 0 0 / 10%);
+    }
+
+    .shadow-lg {
+        box-shadow:
+            0 10px 15px -3px rgb(0 0 0 / 10%),
+            0 4px 6px -4px rgb(0 0 0 / 10%);
+    }
+
+    .shadow-xl {
+        box-shadow:
+            0 20px 25px -5px rgb(0 0 0 / 10%),
+            0 8px 10px -6px rgb(0 0 0 / 10%);
+    }
+    .shadow-2xl { box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%); }
+    .shadow-none { box-shadow: none; }
+
+    /* ===========================================
+     OPACITY UTILITIES
+     =========================================== */
+
+    .opacity-0 { opacity: 0; }
+    .opacity-5 { opacity: 0.05; }
+    .opacity-10 { opacity: 0.1; }
+    .opacity-20 { opacity: 0.2; }
+    .opacity-25 { opacity: 0.25; }
+    .opacity-30 { opacity: 0.3; }
+    .opacity-40 { opacity: 0.4; }
+    .opacity-50 { opacity: 0.5; }
+    .opacity-60 { opacity: 0.6; }
+    .opacity-70 { opacity: 0.7; }
+    .opacity-80 { opacity: 0.8; }
+    .opacity-90 { opacity: 0.9; }
+    .opacity-95 { opacity: 0.95; }
+    .opacity-100 { opacity: 1; }
+
+    /* ===========================================
+     BACKDROP UTILITIES - COMPREHENSIVE SYSTEM
+     =========================================== */
+
+    .backdrop-filter-none { backdrop-filter: none; }
+
+    /* Backdrop blur utilities */
+    .backdrop-blur { backdrop-filter: blur(4px); }
+    .backdrop-blur-sm { backdrop-filter: blur(2px); }
+    .backdrop-blur-lg { backdrop-filter: blur(8px); }
+
+    /* Backdrop brightness utilities */
+    .backdrop-brightness-50 { backdrop-filter: brightness(0.5); }
+
+    .backdrop-brightness-150 { backdrop-filter: brightness(1.5); }
+
+    /* Backdrop contrast utilities */
+    .backdrop-contrast-50 { backdrop-filter: contrast(0.5); }
+
+    .backdrop-contrast-150 { backdrop-filter: contrast(1.5); }
+
+    /* Backdrop saturate utilities */
+    .backdrop-saturate-0 { backdrop-filter: saturate(0); }
+
+    .backdrop-saturate-150 { backdrop-filter: saturate(1.5); }
+
+    .backdrop-saturate-200 { backdrop-filter: saturate(2); }
+
+    /* Backdrop effect utilities */
+    .backdrop-grayscale { backdrop-filter: grayscale(100%); }
+
+    .backdrop-invert { backdrop-filter: invert(100%); }
+
+    .backdrop-sepia { backdrop-filter: sepia(100%); }
+
+    /* ===========================================
+     FILTER UTILITIES
+     =========================================== */
+
+    .filter-none { filter: none; }
+    .blur { filter: blur(4px); }
+    .blur-sm { filter: blur(2px); }
+    .blur-lg { filter: blur(8px); }
+    .brightness-50 { filter: brightness(0.5); }
+    .brightness-75 { filter: brightness(0.75); }
+    .brightness-100 { filter: brightness(1); }
+    .brightness-125 { filter: brightness(1.25); }
+
+    /* ===========================================
+     SVG STROKE UTILITIES
+     =========================================== */
+
+    .stroke-current { stroke: currentcolor; }
+    .stroke-1 { stroke-width: 1; }
+    .stroke-2 { stroke-width: 2; }
+    .stroke-3 { stroke-width: 3; }
+
+    /* ===========================================
+     SVG FILL UTILITIES
+     =========================================== */
+
+    .fill-none { fill: none; }
+    .fill-current { fill: currentcolor; }
+
+    /* ===========================================
+     RING UTILITIES (FOCUS RINGS)
+     =========================================== */
+
+    .ring-0 { box-shadow: 0 0 0 0 rgb(0 0 0 / 0%); }
+    .ring-1 { box-shadow: 0 0 0 1px rgb(0 0 0 / 10%); }
+    .ring-2 { box-shadow: 0 0 0 2px rgb(0 0 0 / 10%); }
+    .ring-4 { box-shadow: 0 0 0 4px rgb(0 0 0 / 10%); }
+
+    /* Themed ring colors - atomic utilities */
+    .ring-primary { box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
+    .ring-error { box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent); }
+    .ring-success { box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent); }
+
+    /* Focus shadow utilities for state management */
+    .focus\:shadow-focus:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
+    .focus\:shadow-error:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 20%, transparent); }
+    .focus\:shadow-success:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 20%, transparent); }
+
+    /* ===========================================
+     FILTER UTILITIES - EXTENDED
+     =========================================== */
+
+    .contrast-50 { filter: contrast(0.5); }
+    .contrast-75 { filter: contrast(0.75); }
+    .contrast-100 { filter: contrast(1); }
+    .contrast-125 { filter: contrast(1.25); }
+    .contrast-150 { filter: contrast(1.5); }
+
+    .saturate-0 { filter: saturate(0); }
+    .saturate-50 { filter: saturate(0.5); }
+    .saturate-100 { filter: saturate(1); }
+    .saturate-150 { filter: saturate(1.5); }
+    .saturate-200 { filter: saturate(2); }
+
+    .hue-rotate-0 { filter: hue-rotate(0deg); }
+    .hue-rotate-15 { filter: hue-rotate(15deg); }
+    .hue-rotate-30 { filter: hue-rotate(30deg); }
+    .hue-rotate-60 { filter: hue-rotate(60deg); }
+    .hue-rotate-90 { filter: hue-rotate(90deg); }
+    .hue-rotate-180 { filter: hue-rotate(180deg); }
+
+    .grayscale { filter: grayscale(100%); }
+    .grayscale-0 { filter: grayscale(0%); }
+    .invert { filter: invert(100%); }
+    .invert-0 { filter: invert(0%); }
+    .sepia { filter: sepia(100%); }
+    .sepia-0 { filter: sepia(0%); }
+
+    /* ===========================================
+     OVERFLOW UTILITIES
+     =========================================== */
+
+    .overflow-auto { overflow: auto; }
+    .overflow-hidden { overflow: hidden; }
+    .overflow-visible { overflow: visible; }
+    .overflow-scroll { overflow: scroll; }
+    .overflow-x-auto { overflow-x: auto; }
+    .overflow-y-auto { overflow-y: auto; }
+    .overflow-x-hidden { overflow-x: hidden; }
+    .overflow-y-hidden { overflow-y: hidden; }
+    .overflow-x-scroll { overflow-x: scroll; }
+    .overflow-y-scroll { overflow-y: scroll; }
+
+    /* ===========================================
+     SCROLLBAR UTILITIES
+     =========================================== */
+
+    /* Hide scrollbar but keep functionality */
+    .scrollbar-hidden {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
+
+    .scrollbar-hidden::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+
+    /* ===========================================
+     TEXT OVERFLOW UTILITIES
+     =========================================== */
+
+    .whitespace-normal { white-space: normal; }
+    .whitespace-nowrap { white-space: nowrap; }
+    .whitespace-pre { white-space: pre; }
+    .whitespace-pre-line { white-space: pre-line; }
+    .whitespace-pre-wrap { white-space: pre-wrap; }
+
+    .break-normal {
+        word-break: normal;
+        overflow-wrap: normal;
+    }
+    .break-words { overflow-wrap: break-word; }
+    .break-all { word-break: break-all; }
+
+    .text-ellipsis {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .text-clip { text-overflow: clip; }
+
+    /* ===========================================
+     APPEARANCE UTILITIES
+     =========================================== */
+
+    .appearance-none { appearance: none; }
+    .appearance-auto { appearance: auto; }
+}

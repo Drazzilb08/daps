@@ -1,0 +1,500 @@
+@layer utilities {
+    /* Font sizes */
+    .text-xs { font-size: 0.75rem; }
+    .text-sm { font-size: 0.875rem; }
+    .text-base { font-size: 1rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .text-3xl { font-size: 1.875rem; } /* 30px */
+    .text-4xl { font-size: 2.25rem; } /* 36px */
+    .text-5xl { font-size: 3rem; } /* 48px */
+    .text-6xl { font-size: 3.75rem; } /* 60px */
+
+    /* ===========================================
+     FONT WEIGHT UTILITIES - DESIGN TOKEN BASED
+     =========================================== */
+
+    .font-thin { font-weight: 100; }
+    .font-extralight { font-weight: 200; }
+    .font-light { font-weight: 300; }
+    .font-normal { font-weight: 400; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .font-extrabold { font-weight: 800; }
+    .font-black { font-weight: 900; }
+
+    /* ===========================================
+     FONT FAMILY UTILITIES - COMPREHENSIVE SYSTEM
+     =========================================== */
+
+    .font-sans { font-family: Roboto, 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .font-serif { font-family: georgia, 'Times New Roman', serif; }
+    .font-mono { font-family: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', consolas, monospace; }
+
+    /* System font stacks for performance */
+    .font-system {
+        font-family:
+            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+            'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    .font-system-mono {
+        font-family:
+            'SF Mono', Monaco, Inconsolata, 'Roboto Mono', 'Source Code Pro', Menlo, Consolas,
+            'DejaVu Sans Mono', monospace;
+    }
+
+    /* Additional system font options */
+    .font-system-serif {
+        font-family:
+            'New York', 'Iowan Old Style', 'Apple Garamond', Baskerville, 'Times New Roman',
+            'Droid Serif', Times, serif;
+    }
+
+    .font-system-ui {
+        font-family:
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            'Segoe UI',
+            sans-serif;
+    }
+
+    /* ===========================================
+     LINE HEIGHT UTILITIES
+     =========================================== */
+
+    .leading-none { line-height: 1; }
+    .leading-tight { line-height: 1.25; }
+    .leading-snug { line-height: 1.375; }
+    .leading-normal { line-height: 1.5; }
+    .leading-relaxed { line-height: 1.625; }
+    .leading-loose { line-height: 2; }
+
+    /* Numeric line heights for precise control */
+    .leading-3 { line-height: 0.75rem; }
+    .leading-4 { line-height: 1rem; }
+    .leading-5 { line-height: 1.25rem; }
+    .leading-6 { line-height: 1.5rem; }
+    .leading-7 { line-height: 1.75rem; }
+    .leading-8 { line-height: 2rem; }
+    .leading-9 { line-height: 2.25rem; }
+    .leading-10 { line-height: 2.5rem; }
+
+    /* ===========================================
+     TEXT ALIGNMENT UTILITIES
+     =========================================== */
+
+    .text-left { text-align: left; }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .text-justify { text-align: justify; }
+    .text-start { text-align: start; }
+    .text-end { text-align: end; }
+
+    /* ===========================================
+     VERTICAL ALIGNMENT UTILITIES
+     =========================================== */
+
+    .align-baseline { vertical-align: baseline; }
+    .align-top { vertical-align: top; }
+    .align-middle { vertical-align: middle; }
+    .align-bottom { vertical-align: bottom; }
+    .align-text-top { vertical-align: text-top; }
+    .align-text-bottom { vertical-align: text-bottom; }
+    .align-sub { vertical-align: sub; }
+    .align-super { vertical-align: super; }
+
+    /* ===========================================
+     TEXT DECORATION UTILITIES
+     =========================================== */
+
+    .underline { text-decoration-line: underline; }
+    .overline { text-decoration-line: overline; }
+    .line-through { text-decoration-line: line-through; }
+    .no-underline { text-decoration-line: none; }
+
+    /* Text decoration style */
+    .decoration-solid { text-decoration-style: solid; }
+    .decoration-double { text-decoration-style: double; }
+    .decoration-dotted { text-decoration-style: dotted; }
+    .decoration-dashed { text-decoration-style: dashed; }
+    .decoration-wavy { text-decoration-style: wavy; }
+
+    /* Text decoration thickness */
+    .decoration-auto { text-decoration-thickness: auto; }
+    .decoration-from-font { text-decoration-thickness: from-font; }
+    .decoration-0 { text-decoration-thickness: 0; }
+    .decoration-1 { text-decoration-thickness: 1px; }
+    .decoration-2 { text-decoration-thickness: 2px; }
+    .decoration-4 { text-decoration-thickness: 4px; }
+    .decoration-8 { text-decoration-thickness: 8px; }
+
+    /* Text underline offset */
+    .underline-offset-auto { text-underline-offset: auto; }
+    .underline-offset-0 { text-underline-offset: 0; }
+    .underline-offset-1 { text-underline-offset: 1px; }
+    .underline-offset-2 { text-underline-offset: 2px; }
+    .underline-offset-4 { text-underline-offset: 4px; }
+    .underline-offset-8 { text-underline-offset: 8px; }
+
+    /* ===========================================
+     TEXT TRANSFORMATION UTILITIES
+     =========================================== */
+
+    .uppercase { text-transform: uppercase; }
+    .lowercase { text-transform: lowercase; }
+    .capitalize { text-transform: capitalize; }
+    .normal-case { text-transform: none; }
+
+    /* ===========================================
+     TEXT OVERFLOW UTILITIES
+     =========================================== */
+
+    .truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .text-clip { text-overflow: clip; }
+
+    /* Multi-line truncation utilities */
+    .line-clamp-1 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+    }
+
+    .line-clamp-2 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .line-clamp-3 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+    }
+
+    .line-clamp-4 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+    }
+
+    .line-clamp-5 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 5;
+    }
+
+    .line-clamp-6 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 6;
+    }
+
+    .line-clamp-none {
+        overflow: visible;
+        display: block;
+        -webkit-box-orient: horizontal; /* stylelint-disable-line property-no-deprecated */
+        -webkit-line-clamp: none;
+    }
+
+    /* ===========================================
+     WHITE SPACE UTILITIES
+     =========================================== */
+
+    .whitespace-normal { white-space: normal; }
+    .whitespace-nowrap { white-space: nowrap; }
+    .whitespace-pre { white-space: pre; }
+    .whitespace-pre-line { white-space: pre-line; }
+    .whitespace-pre-wrap { white-space: pre-wrap; }
+    .whitespace-break-spaces { white-space: break-spaces; }
+
+    /* ===========================================
+     WORD BREAK UTILITIES
+     =========================================== */
+
+    .break-normal {
+        overflow-wrap: normal;
+        word-break: normal;
+    }
+
+    .break-words { overflow-wrap: break-word; }
+    .break-all { word-break: break-all; }
+    .break-keep { word-break: keep-all; }
+
+    /* ===========================================
+     HYPHENS UTILITIES
+     =========================================== */
+
+    .hyphens-none { hyphens: none; }
+    .hyphens-manual { hyphens: manual; }
+    .hyphens-auto { hyphens: auto; }
+
+    /* ===========================================
+     LETTER SPACING UTILITIES
+     =========================================== */
+
+    .tracking-tighter { letter-spacing: -0.05em; }
+    .tracking-tight { letter-spacing: -0.025em; }
+    .tracking-normal { letter-spacing: 0; }
+    .tracking-wide { letter-spacing: 0.025em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .tracking-widest { letter-spacing: 0.1em; }
+
+    /* Numeric letter spacing */
+    .tracking-px { letter-spacing: 1px; }
+    .tracking-0 { letter-spacing: 0; }
+
+    .tracking-0\.5 {
+        letter-spacing: 0.125rem;
+    }
+    .tracking-1 { letter-spacing: 0.25rem; }
+
+    /* ===========================================
+     TEXT INDENT UTILITIES
+     =========================================== */
+
+    .indent-0 { text-indent: 0; }
+    .indent-px { text-indent: 1px; }
+
+    .indent-0\.5 {
+        text-indent: 0.125rem;
+    }
+    .indent-1 { text-indent: 0.25rem; }
+    .indent-2 { text-indent: 0.5rem; }
+    .indent-3 { text-indent: 0.75rem; }
+    .indent-4 { text-indent: 1rem; }
+    .indent-5 { text-indent: 1.25rem; }
+    .indent-6 { text-indent: 1.5rem; }
+    .indent-8 { text-indent: 2rem; }
+
+    /* ===========================================
+     LIST STYLE UTILITIES
+     =========================================== */
+
+    .list-none { list-style-type: none; }
+    .list-disc { list-style-type: disc; }
+    .list-decimal { list-style-type: decimal; }
+    .list-square { list-style-type: square; }
+    .list-circle { list-style-type: circle; }
+    .list-lower-latin { list-style-type: lower-latin; }
+    .list-upper-latin { list-style-type: upper-latin; }
+    .list-lower-roman { list-style-type: lower-roman; }
+    .list-upper-roman { list-style-type: upper-roman; }
+
+    .list-inside { list-style-position: inside; }
+    .list-outside { list-style-position: outside; }
+
+    /* ===========================================
+     FONT VARIANT UTILITIES - COMPREHENSIVE OPENTYPE FEATURES
+     =========================================== */
+
+    /* Numeric variants */
+    .normal-nums { font-variant-numeric: normal; }
+    .ordinal { font-variant-numeric: ordinal; }
+    .slashed-zero { font-variant-numeric: slashed-zero; }
+    .lining-nums { font-variant-numeric: lining-nums; }
+    .oldstyle-nums { font-variant-numeric: oldstyle-nums; }
+    .proportional-nums { font-variant-numeric: proportional-nums; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+    .diagonal-fractions { font-variant-numeric: diagonal-fractions; }
+    .stacked-fractions { font-variant-numeric: stacked-fractions; }
+
+    /* Modern font feature utilities */
+    .font-variant-numeric {
+        font-variant-numeric: lining-nums tabular-nums; /* Enable numeric features */
+    }
+
+    .font-feature-tabular-nums {
+        font-variant-numeric: tabular-nums; /* Monospace numbers */
+        font-feature-settings: 'tnum';
+    }
+
+    .font-feature-slashed-zero {
+        font-variant-numeric: slashed-zero; /* Slashed zero glyph */
+        font-feature-settings: 'zero';
+    }
+
+    .font-feature-oldstyle-nums {
+        font-variant-numeric: oldstyle-nums; /* Old-style numerals */
+        font-feature-settings: 'onum';
+    }
+
+    /* Font optical sizing utilities */
+    .font-optical-auto {
+        font-optical-sizing: auto; /* Enable optical sizing for better readability */
+    }
+
+    .font-optical-none {
+        font-optical-sizing: none; /* Disable optical sizing */
+    }
+
+    /* ===========================================
+     TYPOGRAPHY UTILITIES - ATOMIC ONLY
+     =========================================== */
+
+    /* Atomic utilities for common typography combinations */
+    .heading-base { line-height: 1.25; }
+    .body-base { line-height: 1.75; }
+    .caption-base { line-height: 1.5; }
+
+    /* ===========================================
+     RESPONSIVE TYPOGRAPHY UTILITIES
+     =========================================== */
+
+    /* Mobile-first responsive text sizes */
+    @media (width >= 768px) {
+        .md\:text-xs { font-size: 0.75rem; }
+        .md\:text-sm { font-size: 0.875rem; }
+        .md\:text-base { font-size: 1rem; }
+        .md\:text-lg { font-size: 1.125rem; }
+        .md\:text-xl { font-size: 1.25rem; }
+        .md\:text-2xl { font-size: 1.5rem; }
+        .md\:text-3xl { font-size: 1.875rem; }
+        .md\:text-4xl { font-size: 2.25rem; }
+        .md\:text-5xl { font-size: 3rem; }
+
+        .md\:text-left { text-align: left; }
+        .md\:text-center { text-align: center; }
+        .md\:text-right { text-align: right; }
+
+        .md\:leading-tight { line-height: 1.25; }
+        .md\:leading-normal { line-height: 1.5; }
+        .md\:leading-relaxed { line-height: 1.75; }
+    }
+
+    @media (width >= 1024px) {
+        .lg\:text-xs { font-size: 0.75rem; }
+        .lg\:text-sm { font-size: 0.875rem; }
+        .lg\:text-base { font-size: 1rem; }
+        .lg\:text-lg { font-size: 1.125rem; }
+        .lg\:text-xl { font-size: 1.25rem; }
+        .lg\:text-2xl { font-size: 1.5rem; }
+        .lg\:text-3xl { font-size: 1.875rem; }
+        .lg\:text-4xl { font-size: 2.25rem; }
+        .lg\:text-5xl { font-size: 3rem; }
+        .lg\:text-6xl { font-size: 3.75rem; }
+
+        .lg\:text-left { text-align: left; }
+        .lg\:text-center { text-align: center; }
+        .lg\:text-right { text-align: right; }
+    }
+
+    /* ===========================================
+     ACCESSIBILITY TYPOGRAPHY UTILITIES
+     =========================================== */
+
+    /* Minimum text size for accessibility */
+    .text-accessible {
+        font-size: max(1rem, 16px); /* Ensure minimum 16px */
+    }
+
+    /* High contrast adjustments */
+    @media (prefers-contrast: more) {
+        .text-readable {
+            font-weight: 500;
+            letter-spacing: 0.025em;
+        }
+
+        /* Heading classes moved to components/typography.css */
+    }
+
+    /* Reduced motion adjustments */
+    @media (prefers-reduced-motion: reduce) {
+        .animate-text {
+            animation: none;
+            transition: none;
+        }
+    }
+
+    /* User font size preference */
+    @media (prefers-reduced-data: reduce) {
+        .font-system { font-family: system-ui, sans-serif; }
+    }
+
+    /* ===========================================
+     PRINT TYPOGRAPHY UTILITIES
+     =========================================== */
+
+    @media print {
+        .print\:text-black { color: #000 !important; }
+        .print\:text-sm { font-size: 12px !important; }
+        .print\:text-base { font-size: 14px !important; }
+        .print\:text-lg { font-size: 16px !important; }
+
+        .print\:font-normal { font-weight: 400 !important; }
+        .print\:font-bold { font-weight: 700 !important; }
+
+        .print\:leading-tight { line-height: 1.25 !important; }
+        .print\:leading-normal { line-height: 1.4 !important; }
+
+        /* Remove text shadows and decorations for print clarity */
+        .print\:no-decoration {
+            text-decoration: none !important;
+            text-shadow: none !important;
+        }
+    }
+
+    /* ===========================================
+     FOCUS STATE TYPOGRAPHY UTILITIES
+     =========================================== */
+
+    /* Focus improvements for better readability */
+    .focus\:text-enhanced:focus {
+        font-weight: 500;
+        letter-spacing: 0.025em;
+    }
+
+    .focus\:underline:focus {
+        text-decoration-line: underline;
+        text-decoration-thickness: 2px;
+        text-underline-offset: 2px;
+    }
+
+    /* ===========================================
+     FONT VARIANT UTILITIES
+     =========================================== */
+
+    .font-numeric-tabular { font-variant-numeric: tabular-nums; }
+    .font-numeric-normal { font-variant-numeric: normal; }
+    .font-numeric-lining { font-variant-numeric: lining-nums; }
+    .font-numeric-oldstyle { font-variant-numeric: oldstyle-nums; }
+
+    /* ===========================================
+     DARK MODE TYPOGRAPHY ADJUSTMENTS
+     =========================================== */
+
+    /* Subtle adjustments for dark theme readability */
+    @media (prefers-color-scheme: dark) {
+        .dark\:font-light { font-weight: 300; }
+        .dark\:tracking-wide { letter-spacing: 0.025em; }
+
+        .dark\:text-enhanced {
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+    }
+
+    /* ===========================================
+     PLACEHOLDER UTILITIES - THEME AWARE
+     =========================================== */
+
+    .placeholder-text-primary::placeholder { color: var(--text-primary); }
+    .placeholder-text-secondary::placeholder { color: var(--text-secondary); }
+    .placeholder-text-tertiary::placeholder { color: var(--text-tertiary); }
+    .placeholder-text-muted::placeholder { color: var(--text-muted, var(--text-secondary)); }
+    .placeholder-transparent::placeholder { color: transparent; }
+}

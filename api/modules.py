@@ -2,7 +2,7 @@
 Module execution API endpoints for DAPS.
 
 Provides module orchestration functionality including execution,
-status monitoring, cancellation, and run state management.
+status monitoring, and run state management.
 """
 
 from typing import Any
@@ -17,12 +17,6 @@ from util.database import DapsDB
 
 class RunRequest(BaseModel):
     """Request model for running a module."""
-
-    module: str
-
-
-class CancelRequest(BaseModel):
-    """Request model for canceling a module."""
 
     module: str
 
@@ -176,72 +170,6 @@ async def module_status(
         return error(
             f"Error getting module status: {str(e)}",
             code="MODULE_STATUS_ERROR",
-            status_code=500,
-        )
-
-
-@router.post(
-    "/modules/cancel",
-    summary="Cancel module execution",
-    description="Cancel a currently running module and terminate its execution.",
-    responses={
-        200: {
-            "description": "Module cancelled successfully",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "success": True,
-                        "message": "Module sync_gdrive cancelled successfully",
-                        "data": {"module": "sync_gdrive", "status": "cancelled"},
-                    }
-                }
-            },
-        },
-        400: {"description": "Module not running or cannot be cancelled"},
-    },
-)
-async def cancel_module(
-    request: Request,
-    data: CancelRequest,
-    logger: Any = Depends(get_logger),
-    orchestrator: Any = Depends(get_module_orchestrator),
-) -> JSONResponse:
-    """
-    Cancel a currently running module.
-
-    Attempts to gracefully terminate a running module execution.
-    The module will be marked as cancelled and any cleanup
-    operations will be performed.
-
-    Args:
-        data: Request containing the module name to cancel
-
-    Returns:
-        Cancellation confirmation with updated module status
-    """
-    module = data.module
-
-    try:
-        result = orchestrator.cancel_module(module)
-
-        if result["success"]:
-            logger.info(f"Successfully cancelled module: {module}")
-            return ok(
-                result["message"],
-                data=result.get("data", {"module": module, "status": "cancelled"}),
-            )
-        else:
-            return error(
-                result["message"],
-                code=result.get("error_code", "MODULE_CANCEL_FAILED"),
-                status_code=400,
-            )
-
-    except Exception as e:
-        logger.error(f"Error cancelling module {module}: {e}")
-        return error(
-            f"Error cancelling module: {str(e)}",
-            code="MODULE_CANCEL_ERROR",
             status_code=500,
         )
 

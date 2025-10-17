@@ -1,0 +1,42 @@
+{
+  "name": "daps-test-ui",
+  "version": "1.0.0",
+  "description": "DAPS Test UI - React 19 Frontend Recreation",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.jsx",
+    "format": "prettier --write \"src/**/*.{js,jsx,css,json,md}\" && npm run format:utilities",
+    "format:utilities": "node scripts/format-utilities.js",
+    "stylelint": "stylelint 'src/**/*.css' --fix"
+  },
+  "dependencies": {
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "cron-validator": "^1.4.0",
+    "cronstrue": "^3.3.0",
+    "prop-types": "15.8.1",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "react-router-dom": "7.7.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.32.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "stylelint": "^16.23.0",
+    "stylelint-config-standard": "^39.0.0",
+    "stylelint-selector-bem-pattern": "^4.0.1",
+    "vite": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

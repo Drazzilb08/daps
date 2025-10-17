@@ -1,0 +1,198 @@
+/* Border utilities */
+
+@layer utilities {
+    /* ===========================================
+     BORDER WIDTH UTILITIES
+     =========================================== */
+
+    .border { border: 1px solid var(--border); }
+    .border-2 { border: 2px solid var(--border); }
+    .border-none { border: none; }
+    .border-0 { border: 0; }
+
+    /* Individual border sides */
+    .border-t { border-top: 1px solid var(--border); }
+    .border-r { border-right: 1px solid var(--border); }
+    .border-b { border-bottom: 1px solid var(--border); }
+    .border-l { border-left: 1px solid var(--border); }
+
+    /* Zero width border sides */
+    .border-t-0 { border-top: 0; }
+    .border-r-0 { border-right: 0; }
+    .border-b-0 { border-bottom: 0; }
+    .border-l-0 { border-left: 0; }
+
+    /* ===========================================
+     DIRECTIONAL BORDER WIDTH UTILITIES
+     =========================================== */
+
+    /* Left border widths */
+    .border-l-1 { border-left: 1px solid var(--border); }
+    .border-l-2 { border-left: 2px solid var(--border); }
+    .border-l-3 { border-left: 3px solid var(--border); }
+    .border-l-4 { border-left: 4px solid var(--border); }
+
+    /* Right border widths */
+    .border-r-1 { border-right: 1px solid var(--border); }
+    .border-r-2 { border-right: 2px solid var(--border); }
+    .border-r-3 { border-right: 3px solid var(--border); }
+    .border-r-4 { border-right: 4px solid var(--border); }
+
+    /* Top border widths */
+    .border-t-1 { border-top: 1px solid var(--border); }
+    .border-t-2 { border-top: 2px solid var(--border); }
+    .border-t-3 { border-top: 3px solid var(--border); }
+    .border-t-4 { border-top: 4px solid var(--border); }
+
+    /* Bottom border widths */
+    .border-b-1 { border-bottom: 1px solid var(--border); }
+    .border-b-2 { border-bottom: 2px solid var(--border); }
+    .border-b-3 { border-bottom: 3px solid var(--border); }
+    .border-b-4 { border-bottom: 4px solid var(--border); }
+
+    /* Border styles */
+    .border-solid { border-style: solid; }
+    .border-dashed { border-style: dashed; }
+    .border-dotted { border-style: dotted; }
+
+    /* ===========================================
+     BORDER COLOR UTILITIES - COMPLETE SYSTEM
+     =========================================== */
+
+    /* Primary border colors - all from colors.css consolidated here */
+    .border-primary { border-color: var(--primary); }
+    .border-primary\/25 { border-color: color-mix(in srgb, var(--primary) 25%, transparent); }
+    .border-surface { border-color: var(--surface); }
+    .border-default { border-color: var(--border); }
+    .border-border { border-color: var(--border); }
+    .border-sidebar { border-color: var(--sidebar-border); }
+
+    /* State border colors */
+    .border-success { border-color: var(--success); }
+    .border-warning { border-color: var(--warning); }
+    .border-error { border-color: var(--error); }
+    .border-info { border-color: var(--info); }
+
+    /* Special border colors */
+    .border-transparent { border-color: transparent; }
+    .border-current { border-color: currentcolor; }
+    .border-white { border-color: #fff; }
+    .border-black { border-color: #000; }
+
+    /* Focus and interactive border colors */
+    .border-focus { border-color: var(--focus); }
+
+    /* Form input border utilities - complete system */
+    .border-input { border: 1px solid var(--border); }
+    .border-input-disabled { border-color: var(--input-border-disabled); }
+    .border-input-focus { border-color: var(--focus); }
+    .border-input-error { border-color: var(--error); }
+    .border-input-success { border-color: var(--success); }
+
+    /* High contrast border enhancement for dropdowns */
+    @media (prefers-contrast: more) {
+        .border-dropdown { border-width: 2px; }
+    }
+
+    /* Directional border color utilities */
+    .border-t-primary { border-top-color: var(--primary); }
+    .border-r-primary { border-right-color: var(--primary); }
+    .border-b-primary { border-bottom-color: var(--primary); }
+    .border-l-primary { border-left-color: var(--primary); }
+
+    /* Compatibility border classes for AccordionItem migration */
+    .border-border-subtle { border-color: var(--border-light); }
+    .border-error-border { border-color: var(--error); }
+
+    .border-l-success { border-left-color: var(--success); }
+    .border-l-warning { border-left-color: var(--warning); }
+    .border-l-error { border-left-color: var(--error); }
+    .border-l-info { border-left-color: var(--accent); }
+
+    /* Border color opacity utilities */
+    .border-primary\/10 { border-color: color-mix(in srgb, var(--primary) 10%, transparent); }
+    .border-primary\/20 { border-color: color-mix(in srgb, var(--primary) 20%, transparent); }
+    .border-primary\/30 { border-color: color-mix(in srgb, var(--primary) 30%, transparent); }
+    .border-primary\/40 { border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
+    .border-primary\/50 { border-color: color-mix(in srgb, var(--primary) 50%, transparent); }
+
+    .border-success\/20 { border-color: color-mix(in srgb, var(--success) 20%, transparent); }
+    .border-warning\/20 { border-color: color-mix(in srgb, var(--warning) 20%, transparent); }
+    .border-error\/20 { border-color: color-mix(in srgb, var(--error) 20%, transparent); }
+    .border-info\/20 { border-color: color-mix(in srgb, var(--info) 20%, transparent); }
+
+    /* ===========================================
+     BORDER RADIUS UTILITIES
+     =========================================== */
+
+    .rounded-none { border-radius: 0; }
+    .rounded-xs { border-radius: 0.125rem; } /* 2px - smaller than sm for fine details */
+    .rounded-sm { border-radius: 0.25rem; } /* 4px */
+    .rounded { border-radius: 0.5rem; } /* 8px - base */
+    .rounded-md { border-radius: 0.5rem; } /* 8px - alias for .rounded */
+    .rounded-lg { border-radius: 0.75rem; } /* 12px */
+    .rounded-xl { border-radius: 1rem; } /* 16px */
+    .rounded-2xl { border-radius: 1.25rem; } /* 20px */
+    .rounded-3xl { border-radius: 1.5rem; } /* 24px */
+    .rounded-full { border-radius: 9999px; } /* Full circle/pill */
+
+    /* ===========================================
+     DIRECTIONAL BORDER RADIUS
+     =========================================== */
+
+    .rounded-t-none {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .rounded-t {
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+
+    .rounded-b-none {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .rounded-b {
+        border-bottom-left-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+    }
+
+    .rounded-l-none {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    .rounded-l {
+        border-top-left-radius: 0.5rem;
+        border-bottom-left-radius: 0.5rem;
+    }
+
+    .rounded-l-md {
+        border-top-left-radius: 0.375rem;
+        border-bottom-left-radius: 0.375rem;
+    }
+
+    .rounded-r-none {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .rounded-r {
+        border-top-right-radius: 0.5rem;
+        border-bottom-right-radius: 0.5rem;
+    }
+
+    .rounded-r-md {
+        border-top-right-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+    }
+
+    /* ===========================================
+     HOVER UTILITIES
+     =========================================== */
+
+    .hover\:border-primary:hover { border-color: var(--primary); }
+}

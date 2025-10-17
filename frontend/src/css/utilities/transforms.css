@@ -1,0 +1,183 @@
+@layer utilities {
+    /* ===========================================
+     TRANSFORM BASE
+     =========================================== */
+
+    .transform { transform: none; }
+    .transform-none { transform: none; }
+
+    /* ===========================================
+     SCALE TRANSFORMS
+     =========================================== */
+
+    .scale-0 { transform: scale(0); }
+    .scale-50 { transform: scale(0.5); }
+    .scale-75 { transform: scale(0.75); }
+    .scale-90 { transform: scale(0.9); }
+    .scale-95 { transform: scale(0.95); }
+    .scale-98 { transform: scale(0.98); }
+    .scale-100 { transform: scale(1); }
+    .scale-105 { transform: scale(1.05); }
+    .scale-110 { transform: scale(1.1); }
+    .scale-125 { transform: scale(1.25); }
+    .scale-150 { transform: scale(1.5); }
+
+    /* ===========================================
+     TRANSLATE TRANSFORMS - PERCENTAGE
+     =========================================== */
+
+    .translate-x-full { transform: translateX(100%); }
+    .-translate-x-full { transform: translateX(-100%); }
+    .translate-x-0 { transform: translateX(0); }
+    .translate-y-full { transform: translateY(100%); }
+    .translate-y-0 { transform: translateY(0); }
+    .-translate-y-1\/2 { transform: translateY(-50%); }
+
+    /* ===========================================
+     TRANSLATE TRANSFORMS - REM-BASED
+     =========================================== */
+
+    .translate-x-1 { transform: translateX(0.25rem); }
+    .translate-x-2 { transform: translateX(0.5rem); }
+    .translate-x-3 { transform: translateX(0.75rem); }
+    .translate-x-4 { transform: translateX(1rem); }
+    .translate-x-6 { transform: translateX(1.5rem); }
+    .translate-x-8 { transform: translateX(2rem); }
+
+    .-translate-x-1 { transform: translateX(-0.25rem); }
+    .-translate-x-2 { transform: translateX(-0.5rem); }
+    .-translate-x-3 { transform: translateX(-0.75rem); }
+    .-translate-x-4 { transform: translateX(-1rem); }
+    .-translate-x-6 { transform: translateX(-1.5rem); }
+    .-translate-x-8 { transform: translateX(-2rem); }
+
+    .translate-y-1 { transform: translateY(0.25rem); }
+    .translate-y-2 { transform: translateY(0.5rem); }
+    .translate-y-3 { transform: translateY(0.75rem); }
+    .translate-y-4 { transform: translateY(1rem); }
+    .translate-y-6 { transform: translateY(1.5rem); }
+    .translate-y-8 { transform: translateY(2rem); }
+
+    .-translate-y-1 { transform: translateY(-0.25rem); }
+    .-translate-y-2 { transform: translateY(-0.5rem); }
+    .-translate-y-3 { transform: translateY(-0.75rem); }
+    .-translate-y-4 { transform: translateY(-1rem); }
+    .-translate-y-6 { transform: translateY(-1.5rem); }
+    .-translate-y-8 { transform: translateY(-2rem); }
+
+    /* ===========================================
+     ROTATE TRANSFORMS
+     =========================================== */
+
+    .rotate-0 { transform: rotate(0deg); }
+    .rotate-1 { transform: rotate(1deg); }
+    .rotate-2 { transform: rotate(2deg); }
+    .rotate-3 { transform: rotate(3deg); }
+    .rotate-6 { transform: rotate(6deg); }
+    .rotate-12 { transform: rotate(12deg); }
+    .rotate-45 { transform: rotate(45deg); }
+    .rotate-90 { transform: rotate(90deg); }
+    .rotate-180 { transform: rotate(180deg); }
+    .rotate-270 { transform: rotate(270deg); }
+    .-rotate-90 { transform: rotate(-90deg); }
+    .-rotate-180 { transform: rotate(-180deg); }
+
+    /* ===========================================
+     TRANSITION UTILITIES - MOVED TO ANIMATIONS.CSS
+     =========================================== */
+
+    /* ===========================================
+     ANIMATION UTILITIES - MOVED TO ANIMATIONS.CSS
+     =========================================== */
+
+    /* ===========================================
+     RESPONSIVE TRANSFORM UTILITIES
+     =========================================== */
+
+    /* Small screens and up: 640px */
+    @media (width >= 640px) {
+        .sm\:translate-x-0 { transform: translateX(0); }
+        .sm\:translate-x-full { transform: translateX(100%); }
+        .sm\:-translate-x-full { transform: translateX(-100%); }
+        .sm\:translate-y-0 { transform: translateY(0); }
+    }
+
+    /* Tablet and up: 768px */
+    @media (width >= 768px) {
+        .md\:translate-x-0 { transform: translateX(0); }
+        .md\:translate-x-full { transform: translateX(100%); }
+        .md\:-translate-x-full { transform: translateX(-100%); }
+        .md\:translate-y-0 { transform: translateY(0); }
+    }
+
+    /* Desktop and up: 1024px */
+    @media (width >= 1024px) {
+        .lg\:translate-x-0 { transform: translateX(0); }
+        .lg\:translate-x-full { transform: translateX(100%); }
+        .lg\:-translate-x-full { transform: translateX(-100%); }
+        .lg\:translate-y-0 { transform: translateY(0); }
+    }
+
+    /* ===========================================
+     ACCESSIBILITY CONSIDERATIONS
+     =========================================== */
+
+    /* Reduced motion support - disable transforms for accessibility */
+    @media (prefers-reduced-motion: reduce) {
+        .scale-0,
+        .scale-50,
+        .scale-75,
+        .scale-90,
+        .scale-95,
+        .scale-98,
+        .scale-100,
+        .scale-105,
+        .scale-110,
+        .scale-125,
+        .scale-150 { transform: none; }
+
+        .translate-x-full,
+        .-translate-x-full,
+        .translate-x-0,
+        .translate-y-full,
+        .translate-y-0,
+        .-translate-y-1\/2,
+        .translate-x-1,
+        .translate-x-2,
+        .translate-x-3,
+        .translate-x-4,
+        .translate-x-6,
+        .translate-x-8,
+        .-translate-x-1,
+        .-translate-x-2,
+        .-translate-x-3,
+        .-translate-x-4,
+        .-translate-x-6,
+        .-translate-x-8,
+        .translate-y-1,
+        .translate-y-2,
+        .translate-y-3,
+        .translate-y-4,
+        .translate-y-6,
+        .translate-y-8,
+        .-translate-y-1,
+        .-translate-y-2,
+        .-translate-y-3,
+        .-translate-y-4,
+        .-translate-y-6,
+        .-translate-y-8 { transform: none; }
+
+        .rotate-0,
+        .rotate-1,
+        .rotate-2,
+        .rotate-3,
+        .rotate-6,
+        .rotate-12,
+        .rotate-45,
+        .rotate-90,
+        .rotate-180,
+        .rotate-270,
+        .-rotate-90,
+        .-rotate-180 { transform: none; }
+    }
+}

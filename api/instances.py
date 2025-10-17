@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from api.utils import error, get_logger, ok
-from util.config import DapsConfig, load_config
+from util.config import DapsConfig, InstanceDetail, load_config, save_config
 
 router = APIRouter(
     prefix="/api",
@@ -32,6 +32,24 @@ class TestInstanceRequest(BaseModel):
     name: str
     url: str
     api: Optional[str] = None
+
+
+class CreateInstanceRequest(BaseModel):
+    """Request schema for creating a service instance."""
+
+    service: str
+    name: str
+    url: str
+    api: str
+
+
+class UpdateInstanceRequest(BaseModel):
+    """Request schema for updating a service instance."""
+
+    service: str
+    name: str
+    url: str
+    api: str
 
 
 def get_config() -> DapsConfig:
@@ -312,5 +330,283 @@ async def test_instance(
         return error(
             f"Connection test error: {str(e)}",
             code="CONNECTION_TEST_ERROR",
+            status_code=500,
+        )
+
+
+@router.post(
+    "/instances",
+    summary="Create service instance",
+    description="Create a new Plex, Radarr, or Sonarr service instance in configuration.",
+    responses={
+        200: {
+            "description": "Instance created successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Instance 'radarr_hd' created successfully",
+                        "data": {"service": "radarr", "name": "radarr_hd"},
+                    }
+                }
+            },
+        },
+        400: {"description": "Invalid service type or instance already exists"},
+        500: {"description": "Configuration save failed"},
+    },
+)
+async def create_instance(
+    data: CreateInstanceRequest, logger: Any = Depends(get_logger)
+) -> JSONResponse:
+    """
+    Create a new service instance in configuration.
+
+    Validates the service type, ensures the instance name doesn't already exist,
+    and persists the new instance to config.yml.
+
+    Args:
+        data: Instance details (service type, name, URL, API key)
+
+    Returns:
+        Success confirmation with created instance details
+    """
+    try:
+        service = data.service.lower()
+        name = data.name
+        url = data.url.rstrip("/")
+        api_key = data.api
+
+        logger.info(f"Creating new {service} instance: {name}")
+
+        # Validate service type
+        if service not in ["plex", "radarr", "sonarr"]:
+            return error(
+                f"Invalid service type: {service}. Must be plex, radarr, or sonarr",
+                code="INVALID_SERVICE_TYPE",
+                status_code=400,
+            )
+
+        # Load current config
+        config = load_config()
+
+        # Check if instance already exists
+        service_instances = getattr(config.instances, service)
+        if name in service_instances:
+            return error(
+                f"Instance '{name}' already exists for service '{service}'",
+                code="INSTANCE_ALREADY_EXISTS",
+                status_code=400,
+            )
+
+        # Create new instance detail
+        new_instance = InstanceDetail(url=url, api=api_key)
+
+        # Add to appropriate service section
+        service_instances[name] = new_instance
+
+        # Save updated configuration
+        save_config(config)
+
+        logger.info(f"Successfully created {service} instance: {name}")
+        return ok(
+            f"Instance '{name}' created successfully",
+            {"service": service, "name": name},
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to create instance {data.name}: {e}")
+        return error(
+            f"Failed to create instance: {str(e)}",
+            code="INSTANCE_CREATE_ERROR",
+            status_code=500,
+        )
+
+
+@router.put(
+    "/instances/{instance_id}",
+    summary="Update service instance",
+    description="Update an existing Plex, Radarr, or Sonarr service instance configuration.",
+    responses={
+        200: {
+            "description": "Instance updated successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Instance 'radarr_hd' updated successfully",
+                        "data": {"service": "radarr", "name": "radarr_hd"},
+                    }
+                }
+            },
+        },
+        404: {"description": "Instance not found"},
+        400: {"description": "Invalid service type"},
+        500: {"description": "Configuration save failed"},
+    },
+)
+async def update_instance(
+    instance_id: str, data: UpdateInstanceRequest, logger: Any = Depends(get_logger)
+) -> JSONResponse:
+    """
+    Update an existing service instance configuration.
+
+    Validates the service type, ensures the instance exists, and updates
+    the URL and API key in config.yml. Supports renaming instances.
+
+    Args:
+        instance_id: Current instance name (from URL path)
+        data: Updated instance details (service type, name, URL, API key)
+
+    Returns:
+        Success confirmation with updated instance details
+    """
+    try:
+        service = data.service.lower()
+        new_name = data.name
+        url = data.url.rstrip("/")
+        api_key = data.api
+
+        logger.info(f"Updating {service} instance: {instance_id}")
+
+        # Validate service type
+        if service not in ["plex", "radarr", "sonarr"]:
+            return error(
+                f"Invalid service type: {service}. Must be plex, radarr, or sonarr",
+                code="INVALID_SERVICE_TYPE",
+                status_code=400,
+            )
+
+        # Load current config
+        config = load_config()
+
+        # Get service instances
+        service_instances = getattr(config.instances, service)
+
+        # Check if instance exists
+        if instance_id not in service_instances:
+            return error(
+                f"Instance '{instance_id}' not found for service '{service}'",
+                code="INSTANCE_NOT_FOUND",
+                status_code=404,
+            )
+
+        # Handle renaming: if new name differs from instance_id
+        if new_name != instance_id:
+            # Check if new name already exists
+            if new_name in service_instances:
+                return error(
+                    f"Instance '{new_name}' already exists for service '{service}'",
+                    code="INSTANCE_NAME_CONFLICT",
+                    status_code=400,
+                )
+
+            # Remove old instance
+            del service_instances[instance_id]
+            logger.info(f"Renaming instance from '{instance_id}' to '{new_name}'")
+
+        # Create/update instance with new values
+        updated_instance = InstanceDetail(url=url, api=api_key)
+        service_instances[new_name] = updated_instance
+
+        # Save updated configuration
+        save_config(config)
+
+        logger.info(f"Successfully updated {service} instance: {new_name}")
+        return ok(
+            f"Instance '{new_name}' updated successfully",
+            {"service": service, "name": new_name},
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to update instance {instance_id}: {e}")
+        return error(
+            f"Failed to update instance: {str(e)}",
+            code="INSTANCE_UPDATE_ERROR",
+            status_code=500,
+        )
+
+
+@router.delete(
+    "/instances/{instance_id}",
+    summary="Delete service instance",
+    description="Remove a Plex, Radarr, or Sonarr service instance from configuration.",
+    responses={
+        200: {
+            "description": "Instance deleted successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Instance 'radarr_hd' deleted successfully",
+                        "data": {"name": "radarr_hd"},
+                    }
+                }
+            },
+        },
+        404: {"description": "Instance not found"},
+        400: {"description": "Service type required in query parameter"},
+        500: {"description": "Configuration save failed"},
+    },
+)
+async def delete_instance(
+    instance_id: str, service: str, logger: Any = Depends(get_logger)
+) -> JSONResponse:
+    """
+    Delete a service instance from configuration.
+
+    Removes the specified instance from the appropriate service section
+    in config.yml. This operation is permanent.
+
+    Args:
+        instance_id: Instance name to delete
+        service: Service type (plex, radarr, or sonarr) as query parameter
+
+    Returns:
+        Success confirmation with deleted instance name
+    """
+    try:
+        service = service.lower()
+
+        logger.info(f"Deleting {service} instance: {instance_id}")
+
+        # Validate service type
+        if service not in ["plex", "radarr", "sonarr"]:
+            return error(
+                f"Invalid service type: {service}. Must be plex, radarr, or sonarr",
+                code="INVALID_SERVICE_TYPE",
+                status_code=400,
+            )
+
+        # Load current config
+        config = load_config()
+
+        # Get service instances
+        service_instances = getattr(config.instances, service)
+
+        # Check if instance exists
+        if instance_id not in service_instances:
+            return error(
+                f"Instance '{instance_id}' not found for service '{service}'",
+                code="INSTANCE_NOT_FOUND",
+                status_code=404,
+            )
+
+        # Delete the instance
+        del service_instances[instance_id]
+
+        # Save updated configuration
+        save_config(config)
+
+        logger.info(f"Successfully deleted {service} instance: {instance_id}")
+        return ok(
+            f"Instance '{instance_id}' deleted successfully",
+            {"name": instance_id},
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to delete instance {instance_id}: {e}")
+        return error(
+            f"Failed to delete instance: {str(e)}",
+            code="INSTANCE_DELETE_ERROR",
             status_code=500,
         )

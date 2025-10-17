@@ -1,0 +1,92 @@
+@layer components {
+    .hamburger:hover {
+        background: var(--surface-alt);
+    }
+
+    .hamburger:active {
+        background: var(--surface-active);
+    }
+
+    .hamburger:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
+    .hamburger:disabled:hover {
+        background: none;
+    }
+
+    .hamburger svg {
+        overflow: visible;
+        pointer-events: none;
+    }
+
+    /* Hamburger animation lines - core animation logic */
+    .line {
+        fill: none;
+        stroke: var(--primary);
+        stroke-width: 6;
+        transition:
+            stroke-dasharray 500ms cubic-bezier(0.4, 0, 0.2, 1),
+            stroke-dashoffset 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .line1 {
+        stroke-dasharray: 60 207;
+    }
+
+    .line2 {
+        stroke-dasharray: 60 60;
+    }
+
+    .line3 {
+        stroke-dasharray: 60 207;
+    }
+
+    /* Opened state animations - complex SVG path animations */
+    .hamburger.hamburger-menu.opened .line1 {
+        stroke-dasharray: 90 207;
+        stroke-dashoffset: -134;
+    }
+
+    .hamburger.hamburger-menu.opened .line2 {
+        stroke-dasharray: 1 60;
+        stroke-dashoffset: -30;
+    }
+
+    .hamburger.hamburger-menu.opened .line3 {
+        stroke-dasharray: 90 207;
+        stroke-dashoffset: -134;
+    }
+
+    /* Disabled state - color override */
+    .hamburger.disabled .line {
+        stroke: var(--text-tertiary);
+    }
+
+    /* Mobile display - responsive behavior (no utility alternative) */
+    @media (width <= 768px) {
+        .hamburger {
+            display: flex !important; /* Override utility's hidden */
+        }
+    }
+
+    /* Reduced motion support - accessibility requirement */
+    @media (prefers-reduced-motion: reduce) {
+        .line {
+            transition: none;
+        }
+    }
+
+    /* High contrast mode support - accessibility requirement */
+    @media (prefers-contrast: more) {
+        .hamburger {
+            border: 1px solid var(--border);
+        }
+
+        .line {
+            stroke-width: 8;
+            stroke: var(--text-primary);
+        }
+    }
+}

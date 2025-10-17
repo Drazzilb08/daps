@@ -1,0 +1,75 @@
+/**
+ * DAPS Dark Theme
+ *
+ * WCAG AA contrast compliant dark theme optimized for comfortable viewing
+ * in low-light environments. Provides enhanced visual hierarchy and reduced
+ * eye strain for extended usage sessions.
+ *
+ * Theme Application: Applied via data-theme="dark" attribute on <html> element
+ * Color Strategy: Carefully calibrated contrast ratios for accessibility compliance
+ * Usage: Components reference these theme variables for consistent theming
+ */
+
+:root,
+[data-theme='dark'] {
+    /* Brand & Semantic Colors */
+    --primary: #ff7300; /* Primary brand orange - consistent across themes */
+    --accent: #3e7bfa; /* Secondary brand blue for links and accents */
+    --success: #32d74b; /* Success state green for positive feedback */
+    --warning: #ff9f0a; /* Warning state yellow for caution messages */
+    --error: #ff375f; /* Error state red for negative feedback */
+    --info: #4a9eff; /* Info state blue for informational messages */
+    --focus: #ff9500; /* Focus indicator - brighter orange for visibility */
+
+    /* Surface & Background Colors - Simplified */
+    --bg: #23272b; /* Main background - deepest surface level */
+    --surface: #262a30; /* Primary surface - cards, panels, dialogs */
+    --surface-alt: #2a2e34; /* Alternative surface - hover states, secondary areas */
+    --surface-elevated: #2c3037; /* Elevated surface - modals, dropdowns, tooltips */
+
+    /* Border & Separation Colors */
+    --border: #292c30; /* Standard border - form fields, cards */
+    --border-light: #2a2e34; /* Lighter border - hover states, focus rings */
+
+    /* Text & Content Colors */
+    --text-primary: #e3e3e3; /* Primary text - headings, main content */
+    --text-secondary: #b5b5b5; /* Secondary text - labels, descriptions */
+    --text-tertiary: #a9a9a9; /* Tertiary text - placeholders, help text, disabled states */
+
+    /* Layout Specific Colors */
+    --sidebar-bg: #191b1f; /* Sidebar background - darker for visual separation */
+    --sidebar-hover: #262a30; /* Sidebar item hover - subtle interaction feedback */
+    --sidebar-border: #292c30; /* Sidebar border - gentle separation */
+    --sidebar-text-secondary: #737378; /* Subdued sidebar text */
+    --header-bg: #191b1f; /* Header background - matches sidebar for unity */
+
+    /* Overlay & Modal Colors */
+    --overlay: rgb(24 25 31 / 64%); /* Standard overlay - modals, dropdowns */
+    --overlay-strong: rgb(0 0 0 / 80%); /* Strong overlay - important modals, alerts */
+
+    /* Text-on-Color Utilities */
+    --on-color-text: #fff; /* White text on all colored backgrounds */
+
+    /* Link state colors */
+    --link-hover: #5a96ff; /* Lighter blue for hover state */
+    --link-visited: #5a96ff; /* Consistent visited link color */
+
+    /* Form Control Colors */
+    --input-bg: #1a1d22; /* Primary input background */
+    --input-bg-hover: #252830; /* Input hover background */
+    --input-bg-disabled: #21242a; /* Disabled input background */
+    --input-bg-readonly: #23262c; /* Readonly input background */
+    --input-border-disabled: #202328; /* Subtle disabled border */
+    --checkbox-indicator-bg: #fff; /* White checkbox indicator */
+}
+
+/* High Contrast Mode Support */
+
+@media (prefers-contrast: more) {
+    :root,
+    [data-theme='dark'] {
+        --border: #fff; /* Pure white border for maximum contrast */
+        --text-primary: #fff; /* Pure white text for maximum contrast */
+        --bg: #000; /* Pure black background for maximum contrast */
+    }
+}

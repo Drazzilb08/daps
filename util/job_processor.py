@@ -7,13 +7,14 @@ from typing import Any, Dict
 from util.database import DapsDB
 
 
-def process_job(job: Dict[str, Any], logger) -> Dict[str, Any]:
+def process_job(job: Dict[str, Any], logger, db: DapsDB = None) -> Dict[str, Any]:
     """
     Route jobs to appropriate handlers.
 
     Args:
         job: Job data from the database
         logger: Logger instance
+        db: Shared database context (optional, creates new if not provided)
 
     Returns:
         dict: Job processing result
@@ -29,19 +30,19 @@ def process_job(job: Dict[str, Any], logger) -> Dict[str, Any]:
 
     try:
         if job_type == "webhook":
-            return _process_webhook_job(payload, logger, job_id)
+            return _process_webhook_job(payload, logger, job_id, db)
         elif job_type == "poster_rename":
-            return _process_poster_rename_job(payload, logger, job_id)
+            return _process_poster_rename_job(payload, logger, job_id, db)
         elif job_type == "sync_gdrive":
-            return _process_sync_gdrive_job(payload, logger, job_id)
+            return _process_sync_gdrive_job(payload, logger, job_id, db)
         elif job_type == "upload_posters":
-            return _process_upload_posters_job(payload, logger, job_id)
+            return _process_upload_posters_job(payload, logger, job_id, db)
         elif job_type == "module_run":
-            return _process_module_run_job(payload, logger, job_id)
+            return _process_module_run_job(payload, logger, job_id, db)
         elif job_type == "cache_refresh":
-            return _process_cache_refresh_job(payload, logger, job_id)
+            return _process_cache_refresh_job(payload, logger, job_id, db)
         elif job_type == "labelarr_sync":
-            return _process_labelarr_sync_job(payload, logger, job_id)
+            return _process_labelarr_sync_job(payload, logger, job_id, db)
         else:
             return {
                 "status": 400,
@@ -64,7 +65,7 @@ def process_job(job: Dict[str, Any], logger) -> Dict[str, Any]:
 
 
 def _process_webhook_job(
-    payload: Dict[str, Any], logger, job_id: int
+    payload: Dict[str, Any], logger, job_id: int, db: DapsDB = None
 ) -> Dict[str, Any]:
     """
     Process webhook job by fetching ONLY the specific media item and updating it.
@@ -73,6 +74,7 @@ def _process_webhook_job(
         payload: Job payload containing webhook data
         logger: Logger instance
         job_id: Job ID for tracking
+        db: Shared database context (creates new if not provided)
 
     Returns:
         dict: Processing result
@@ -100,8 +102,8 @@ def _process_webhook_job(
         instance_info = validation_result["instance_info"]
         media_id = validation_result["media_id"]
 
-        # Connect directly to ARR and fetch ONLY the specific item
-        with DapsDB(logger=logger) as db:
+        # Helper function to process the media item
+        def _process_media_item(db_context):
             arr_logger = logger.get_adapter(
                 f"{instance_info['type']}:{instance_info['name']}"
             )
@@ -143,11 +145,11 @@ def _process_webhook_job(
 
                 # Update only this specific media item in the database
                 _update_media_record(
-                    db, instance_info, asset_type, processed_media, log
+                    db_context, instance_info, asset_type, processed_media, log
                 )
 
                 # Get stored media records for poster processing
-                stored_media = db.media.get_by_title_year_instance(
+                stored_media = db_context.media.get_by_title_year_instance(
                     media["title"], media.get("year"), instance_info["name"]
                 )
 
@@ -158,10 +160,27 @@ def _process_webhook_job(
                         "error_code": "MEDIA_RETRIEVAL_FAILED",
                     }
 
+                return {"success": True, "media": media, "stored_media": stored_media}
+
             finally:
                 # Clean up the ARR client connection
                 if hasattr(client, "session") and client.session:
                     client.session.close()
+
+        # Use shared database context or create new one if not provided
+        if db is not None:
+            # Use the shared database context
+            process_result = _process_media_item(db)
+        else:
+            # Fallback: create new context if none provided (for backward compatibility)
+            with DapsDB(logger=logger, quiet=True) as temp_db:
+                process_result = _process_media_item(temp_db)
+
+        if not process_result["success"]:
+            return process_result
+
+        media = process_result["media"]
+        stored_media = process_result["stored_media"]
 
         # Run poster rename on the stored media
         media_items = stored_media if isinstance(stored_media, list) else [stored_media]
@@ -468,7 +487,7 @@ def _check_plex_upload_enabled(config) -> bool:
 
 
 def _process_module_run_job(
-    payload: Dict[str, Any], logger, job_id: int
+    payload: Dict[str, Any], logger, job_id: int, db: DapsDB = None
 ) -> Dict[str, Any]:
     """
     Process module run job - executes a DAPS module.
@@ -477,6 +496,7 @@ def _process_module_run_job(
         payload: Job payload containing module info
         logger: Logger instance
         job_id: Job ID for tracking
+        db: Shared database context (creates new if not provided)
 
     Returns:
         dict: Processing result
@@ -514,21 +534,21 @@ def _process_module_run_job(
         # Create module instance with fresh logger
         module_instance = module_class(logger=logger)
 
-        # Record run start in database
-        with DapsDB(logger=logger) as db:
-            db.run_state.record_run_start(module_name, run_by=origin)
+        # Helper function to execute module with database context
+        def _execute_module_with_db(db_context):
+            # Record run start in database
+            db_context.run_state.record_run_start(module_name, run_by=origin)
 
-        start_time = time.time()
+            start_time = time.time()
 
-        try:
-            # Execute the module
-            module_instance.run()
+            try:
+                # Execute the module
+                module_instance.run()
 
-            duration = int(time.time() - start_time)
+                duration = int(time.time() - start_time)
 
-            # Record successful completion
-            with DapsDB(logger=logger) as db:
-                db.run_state.record_run_finish(
+                # Record successful completion
+                db_context.run_state.record_run_finish(
                     module_name,
                     success=True,
                     status="success",
@@ -537,24 +557,27 @@ def _process_module_run_job(
                     run_by=origin,
                 )
 
-            log.info(
-                f"[JOB:{job_id}] Module {module_name} completed successfully in {duration}s"
-            )
+                log.info(
+                    f"[JOB:{job_id}] Module {module_name} completed successfully in {duration}s"
+                )
 
-            return {
-                "status": 200,
-                "success": True,
-                "message": f"Module {module_name} completed successfully",
-                "data": {"module": module_name, "duration": duration, "origin": origin},
-            }
+                return {
+                    "status": 200,
+                    "success": True,
+                    "message": f"Module {module_name} completed successfully",
+                    "data": {
+                        "module": module_name,
+                        "duration": duration,
+                        "origin": origin,
+                    },
+                }
 
-        except Exception as e:
-            duration = int(time.time() - start_time)
-            error_msg = str(e)
+            except Exception as e:
+                duration = int(time.time() - start_time)
+                error_msg = str(e)
 
-            # Record failure
-            with DapsDB(logger=logger) as db:
-                db.run_state.record_run_finish(
+                # Record failure
+                db_context.run_state.record_run_finish(
                     module_name,
                     success=False,
                     status="error",
@@ -563,20 +586,29 @@ def _process_module_run_job(
                     run_by=origin,
                 )
 
-            log.error(f"[JOB:{job_id}] Module {module_name} failed: {error_msg}")
+                log.error(f"[JOB:{job_id}] Module {module_name} failed: {error_msg}")
 
-            return {
-                "status": 500,
-                "success": False,
-                "message": f"Module {module_name} failed: {error_msg}",
-                "error_code": "MODULE_EXECUTION_FAILED",
-                "data": {
-                    "module": module_name,
-                    "duration": duration,
-                    "origin": origin,
-                    "error": error_msg,
-                },
-            }
+                return {
+                    "status": 500,
+                    "success": False,
+                    "message": f"Module {module_name} failed: {error_msg}",
+                    "error_code": "MODULE_EXECUTION_FAILED",
+                    "data": {
+                        "module": module_name,
+                        "duration": duration,
+                        "origin": origin,
+                        "error": error_msg,
+                    },
+                }
+
+        # Use shared database context or create new one if not provided
+        if db is not None:
+            # Use the shared database context
+            return _execute_module_with_db(db)
+        else:
+            # Fallback: create new context if none provided (for backward compatibility)
+            with DapsDB(logger=logger, quiet=True) as temp_db:
+                return _execute_module_with_db(temp_db)
 
     except Exception as e:
         log.error(f"[JOB:{job_id}] Exception in module run job: {e}", exc_info=True)

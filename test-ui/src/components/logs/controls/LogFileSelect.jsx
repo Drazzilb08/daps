@@ -1,3 +1,4 @@
+import React from 'react';
 import { useLogControls } from '../context/LogControlsContext';
 import { SelectBase } from '../../fields/primitives';
 

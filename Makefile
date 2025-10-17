@@ -6,7 +6,7 @@ SHELL := /bin/bash
 ROOT := $(shell pwd)
 VENV := $(ROOT)/.venv
 PY := python3
-UI := $(ROOT)/ui
+UI := $(ROOT)/frontend
 NPM := npm
 
 

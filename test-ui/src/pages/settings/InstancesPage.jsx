@@ -557,7 +557,9 @@ export const InstancesPage = () => {
                                 </div>
                                 <div>
                                     <span className="text-secondary">Instance:</span>{' '}
-                                    <span className="font-medium">{humanize(modalInstanceData?.name)}</span>
+                                    <span className="font-medium">
+                                        {humanize(modalInstanceData?.name)}
+                                    </span>
                                 </div>
                                 <div>
                                     <span className="text-secondary">URL:</span>{' '}

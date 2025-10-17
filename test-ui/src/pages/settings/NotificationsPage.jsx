@@ -453,7 +453,10 @@ export const NotificationsPage = () => {
                                                         mail
                                                     </span>
                                                 ) : (
-                                                    <ServiceIcon service={service.type} size="medium" />
+                                                    <ServiceIcon
+                                                        service={service.type}
+                                                        size="medium"
+                                                    />
                                                 )}
                                             </div>
 
@@ -497,8 +500,7 @@ export const NotificationsPage = () => {
                     size="medium"
                 >
                     <Modal.Header>
-                        Add{' '}
-                        {NOTIFICATIONS_SCHEMA.find(s => s.type === selectedServiceType)?.label}{' '}
+                        Add {NOTIFICATIONS_SCHEMA.find(s => s.type === selectedServiceType)?.label}{' '}
                         Notification
                     </Modal.Header>
                     <Modal.Body>
@@ -509,20 +511,21 @@ export const NotificationsPage = () => {
                             </p>
                         </div>
                         <div className="flex flex-col gap-4">
-                            {NOTIFICATIONS_SCHEMA.find(s => s.type === selectedServiceType)
-                                ?.fields.map(field => {
-                                    const FieldComponent = FieldRegistry.getField(field.type);
-                                    return (
-                                        <FieldComponent
-                                            key={field.key}
-                                            field={field}
-                                            value={formData[field.key] || ''}
-                                            onChange={value => handleFieldChange(field.key, value)}
-                                            errorMessage={formErrors[field.key]}
-                                            highlightInvalid={!!formErrors[field.key]}
-                                        />
-                                    );
-                                })}
+                            {NOTIFICATIONS_SCHEMA.find(
+                                s => s.type === selectedServiceType
+                            )?.fields.map(field => {
+                                const FieldComponent = FieldRegistry.getField(field.type);
+                                return (
+                                    <FieldComponent
+                                        key={field.key}
+                                        field={field}
+                                        value={formData[field.key] || ''}
+                                        onChange={value => handleFieldChange(field.key, value)}
+                                        errorMessage={formErrors[field.key]}
+                                        highlightInvalid={!!formErrors[field.key]}
+                                    />
+                                );
+                            })}
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
@@ -573,26 +576,30 @@ export const NotificationsPage = () => {
                             <p className="text-sm text-secondary">
                                 Service:{' '}
                                 <span className="font-medium text-primary">
-                                    {NOTIFICATIONS_SCHEMA.find(s => s.type === selectedServiceType)?.label}
+                                    {
+                                        NOTIFICATIONS_SCHEMA.find(
+                                            s => s.type === selectedServiceType
+                                        )?.label
+                                    }
                                 </span>
                             </p>
                         </div>
                         <div className="flex flex-col gap-4">
-                            {NOTIFICATIONS_SCHEMA.find(s => s.type === selectedServiceType)?.fields.map(
-                                field => {
-                                    const FieldComponent = FieldRegistry.getField(field.type);
-                                    return (
-                                        <FieldComponent
-                                            key={field.key}
-                                            field={field}
-                                            value={formData[field.key] || ''}
-                                            onChange={value => handleFieldChange(field.key, value)}
-                                            errorMessage={formErrors[field.key]}
-                                            highlightInvalid={!!formErrors[field.key]}
-                                        />
-                                    );
-                                }
-                            )}
+                            {NOTIFICATIONS_SCHEMA.find(
+                                s => s.type === selectedServiceType
+                            )?.fields.map(field => {
+                                const FieldComponent = FieldRegistry.getField(field.type);
+                                return (
+                                    <FieldComponent
+                                        key={field.key}
+                                        field={field}
+                                        value={formData[field.key] || ''}
+                                        onChange={value => handleFieldChange(field.key, value)}
+                                        errorMessage={formErrors[field.key]}
+                                        highlightInvalid={!!formErrors[field.key]}
+                                    />
+                                );
+                            })}
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
@@ -606,7 +613,11 @@ export const NotificationsPage = () => {
                         >
                             Cancel
                         </Button>
-                        <Button variant="primary" onClick={() => handleEditSubmit()} disabled={isSaving}>
+                        <Button
+                            variant="primary"
+                            onClick={() => handleEditSubmit()}
+                            disabled={isSaving}
+                        >
                             {isSaving ? 'Saving...' : 'Save Changes'}
                         </Button>
                     </Modal.Footer>
@@ -615,11 +626,7 @@ export const NotificationsPage = () => {
 
             {/* Delete Notification Modal */}
             {deleteModalOpen && moduleToDelete && serviceToDelete && (
-                <Modal
-                    isOpen={true}
-                    onClose={() => setDeleteModalOpen(false)}
-                    size="small"
-                >
+                <Modal isOpen={true} onClose={() => setDeleteModalOpen(false)} size="small">
                     <Modal.Header>Confirm Delete</Modal.Header>
                     <Modal.Body>
                         <div className="flex flex-col gap-4">
@@ -635,14 +642,16 @@ export const NotificationsPage = () => {
                                     <div>
                                         <span className="text-secondary">Service:</span>{' '}
                                         <span className="font-medium">
-                                            {NOTIFICATIONS_SCHEMA.find(s => s.type === serviceToDelete)?.label}
+                                            {
+                                                NOTIFICATIONS_SCHEMA.find(
+                                                    s => s.type === serviceToDelete
+                                                )?.label
+                                            }
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                            <p className="text-sm text-warning">
-                                ⚠️ This action cannot be undone.
-                            </p>
+                            <p className="text-sm text-warning">⚠️ This action cannot be undone.</p>
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
@@ -653,11 +662,7 @@ export const NotificationsPage = () => {
                         >
                             Cancel
                         </Button>
-                        <Button
-                            variant="danger"
-                            onClick={handleConfirmDelete}
-                            disabled={isSaving}
-                        >
+                        <Button variant="danger" onClick={handleConfirmDelete} disabled={isSaving}>
                             {isSaving ? 'Deleting...' : 'Delete Notification'}
                         </Button>
                     </Modal.Footer>

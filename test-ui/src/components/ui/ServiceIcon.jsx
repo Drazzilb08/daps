@@ -19,8 +19,7 @@ export const ServiceIcon = React.memo(({ service, size = 'medium', className = '
     // Only homarr-labs CDN services (NO Material Symbols like email)
     const iconMap = {
         discord: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/discord.svg',
-        notifiarr:
-            'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/notifiarr.svg',
+        notifiarr: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/notifiarr.svg',
         radarr: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/radarr.svg',
         sonarr: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/sonarr.svg',
         plex: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/plex.svg',

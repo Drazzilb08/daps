@@ -4,6 +4,10 @@
  * Base select element with standardized styling and behavior.
  * Used by ALL selection-based field types for consistency.
  *
+ * Supports two usage patterns:
+ * 1. Options array: <SelectBase options={[{value, label}]} />
+ * 2. Children: <SelectBase><option>...</option></SelectBase>
+ *
  * @param {Object} props - Component props
  * @param {string} props.id - Input ID for accessibility
  * @param {string} props.name - Input name attribute
@@ -12,7 +16,8 @@
  * @param {boolean} [props.disabled=false] - Disabled state
  * @param {boolean} [props.required=false] - Required field
  * @param {boolean} [props.invalid=false] - Invalid/error state
- * @param {Array} props.options - Array of option objects {value, label, disabled?}
+ * @param {Array} [props.options] - Array of option objects {value, label, disabled?}
+ * @param {React.ReactNode} [props.children] - Option elements as children
  * @param {string} [props.placeholder] - Placeholder text
  * @param {string} [props.className=""] - Additional CSS classes
  * @param {string} [props.ariaDescribedby] - ARIA described by
@@ -28,7 +33,8 @@ export const SelectBase = React.memo(
         disabled = false,
         required = false,
         invalid = false,
-        options = [],
+        options,
+        children,
         placeholder,
         className = '',
         ariaDescribedby,
@@ -78,15 +84,18 @@ export const SelectBase = React.memo(
                             {placeholder}
                         </option>
                     )}
-                    {options.map((option, index) => (
-                        <option
-                            key={option.value || index}
-                            value={option.value}
-                            disabled={option.disabled}
-                        >
-                            {option.label || option.value}
-                        </option>
-                    ))}
+                    {/* Support both options array and children patterns */}
+                    {options
+                        ? options.map((option, index) => (
+                              <option
+                                  key={option.value || index}
+                                  value={option.value}
+                                  disabled={option.disabled}
+                              >
+                                  {option.label || option.value}
+                              </option>
+                          ))
+                        : children}
                 </select>
                 <span
                     className={`material-symbols-outlined absolute top-1/2 right-3 pointer-events-none transition-colors -translate-y-1/2 text-brand-primary leading-none ${disabled ? 'text-tertiary' : 'text-secondary'}`}

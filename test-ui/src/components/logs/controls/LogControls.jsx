@@ -1,3 +1,4 @@
+import React from 'react';
 import { LogControlsProvider } from '../context/LogControlsContext';
 import { CollapseButton } from './CollapseButton';
 import { ModuleSelect } from './ModuleSelect';

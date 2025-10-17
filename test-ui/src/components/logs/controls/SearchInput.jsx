@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useLogControls } from '../context/LogControlsContext';
+import { InputBase } from '../../fields/primitives';
 
 /**
  * SearchInput - Search input with clear functionality
  *
  * Provides search input with Material Icons clear button.
  * Consumes LogControlsContext for state and actions.
+ * Uses InputBase primitive for consistent styling and behavior.
  *
  * @returns {JSX.Element}
  */
@@ -26,12 +28,12 @@ export const SearchInput = () => {
 
     return (
         <div className="relative flex-1 min-w-0">
-            <input
+            <InputBase
                 type="text"
                 value={searchValue}
                 onChange={handleChange}
                 placeholder="Search logs..."
-                className="w-full px-3 py-2 pr-10 rounded-md border border-divider bg-input text-primary min-h-11"
+                className="w-full pr-10"
                 aria-label="Search logs"
             />
             {searchValue && (

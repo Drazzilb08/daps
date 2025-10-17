@@ -1,11 +1,11 @@
 import { useLogControls } from '../context/LogControlsContext';
 
 /**
- * CollapseButton - Mobile collapse toggle button
+ * CollapseButton - Collapse toggle button
  *
- * Toggles visibility of control toolbar on mobile devices.
+ * Toggles visibility of control toolbar.
  * Shows expand/collapse icon and text based on current state.
- * Only visible on mobile (≤1024px).
+ * Visibility controlled by parent component based on layout mode.
  *
  * @returns {JSX.Element}
  */
@@ -16,7 +16,7 @@ export const CollapseButton = () => {
         <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="flex items-center gap-2 px-3 py-2 rounded-md border border-divider bg-input text-primary hover:bg-surface-alt transition-colors min-h-11 max-lg:block hidden"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-primary text-primary-text hover:bg-primary-hover transition-colors min-h-11 font-medium"
             aria-expanded={!isCollapsed}
             aria-controls="log-controls-content"
         >

@@ -1,4 +1,5 @@
 import { useLogControls } from '../context/LogControlsContext';
+import { SelectBase } from '../../fields/primitives';
 
 /**
  * LogFileSelect - Log file selection dropdown
@@ -6,6 +7,7 @@ import { useLogControls } from '../context/LogControlsContext';
  * Renders dropdown of available log files for selected module.
  * Disabled when no log files available.
  * Consumes LogControlsContext for state and actions.
+ * Uses SelectBase primitive for consistent styling and behavior.
  *
  * @returns {JSX.Element}
  */
@@ -13,8 +15,7 @@ export const LogFileSelect = () => {
     const { logFiles, onLogFileChange } = useLogControls();
 
     return (
-        <select
-            className="px-3 py-2 rounded-md border border-divider bg-input text-primary min-h-11 disabled:opacity-50 disabled:cursor-not-allowed"
+        <SelectBase
             disabled={!logFiles || logFiles.length === 0}
             onChange={e => onLogFileChange(e.target.value)}
             aria-label="Select log file"
@@ -26,6 +27,6 @@ export const LogFileSelect = () => {
                         {file}
                     </option>
                 ))}
-        </select>
+        </SelectBase>
     );
 };

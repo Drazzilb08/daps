@@ -20,14 +20,14 @@ export const LogOutput = React.memo(({ logText, searchTerm }) => {
     // Empty state
     if (filteredBlocks.length === 0) {
         return (
-            <div className="flex-1 overflow-y-auto font-mono text-sm p-3 border border-default bg-input rounded">
+            <div className="flex-1 overflow-y-auto font-mono text-sm p-3 border border-divider bg-input rounded scrollbar-hidden">
                 <div className="text-secondary">No logs available</div>
             </div>
         );
     }
 
     return (
-        <div className="flex-1 overflow-y-auto font-mono text-sm p-3 border border-defaul bg-input rounded">
+        <div className="flex-1 overflow-y-auto font-mono text-sm p-3 border border-divider bg-input rounded scrollbar-hidden">
             {filteredBlocks.map((block, idx) => (
                 <LogBlock
                     key={idx}

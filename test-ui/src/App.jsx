@@ -21,12 +21,14 @@ import ButtonPrimitivesTestPage from './pages/dev/ButtonPrimitivesTestPage.jsx';
 import CardPrimitivesTestPage from './pages/dev/CardPrimitivesTestPage.jsx';
 import FormCompoundsTest from './pages/dev/FormCompoundsTest.jsx';
 import ModalsTestPage from './pages/dev/ModalsTestPage.jsx';
+import LogPerformance from './pages/dev/LogPerformance.jsx';
 import ModuleSettingsPage from './pages/settings/modules/ModuleSettingsPage.jsx';
 import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import UISettingsPage from './pages/settings/UISettingsPage.jsx';
 import { SchedulePage } from './pages/settings/SchedulePage.jsx';
 import { InstancesPage } from './pages/settings/InstancesPage.jsx';
 import { NotificationsPage } from './pages/settings/NotificationsPage.jsx';
+import Logs from './pages/Logs.jsx';
 
 /**
  * DAPS Application Root - Phase 5 Complete
@@ -272,13 +274,12 @@ const App = () => {
                                             <Route
                                                 path="logs"
                                                 element={
-                                                    <div className="grid gap-12 max-w-full">
-                                                        <h1>System Logs</h1>
-                                                        <p>
-                                                            View system logs and debugging
-                                                            information
-                                                        </p>
-                                                    </div>
+                                                    <PageErrorBoundary
+                                                        pageName="System Logs"
+                                                        pageDescription="Real-time log viewer with search and download"
+                                                    >
+                                                        <Logs />
+                                                    </PageErrorBoundary>
                                                 }
                                             />
 
@@ -434,6 +435,17 @@ const App = () => {
                                                         pageDescription="Modal System comprehensive testing and real-world examples"
                                                     >
                                                         <ModalsTestPage />
+                                                    </PageErrorBoundary>
+                                                }
+                                            />
+                                            <Route
+                                                path="dev/log-performance"
+                                                element={
+                                                    <PageErrorBoundary
+                                                        pageName="Log Performance Test"
+                                                        pageDescription="Phase 2 Log Output component performance validation"
+                                                    >
+                                                        <LogPerformance />
                                                     </PageErrorBoundary>
                                                 }
                                             />

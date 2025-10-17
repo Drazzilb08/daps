@@ -1,3 +1,4 @@
+import React from 'react';
 import { useLogControls } from '../context/LogControlsContext';
 import { useUploadState } from '../hooks/useUploadState';
 import Spinner from '../../ui/Spinner';

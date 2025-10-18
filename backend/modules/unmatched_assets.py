@@ -338,7 +338,7 @@ class UnmatchedAssets(DapsModule):
 
     def print_stats(self, db: DapsDB) -> None:
         try:
-            from util.helper import create_table
+            from backend.util.helper import create_table
 
             stats = self.get_stats(db)
             unmatched = stats["unmatched"]

@@ -98,7 +98,7 @@ def print_settings(logger: Any, module_config: Any) -> None:
             if hasattr(logger, "redact_sensitive_info"):
                 return logger.redact_sensitive_info(obj)
             try:
-                from util.logger import Logger
+                from backend.util.logger import Logger
 
                 return Logger.redact_sensitive_info(obj)
             except Exception:

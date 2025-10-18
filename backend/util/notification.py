@@ -156,7 +156,7 @@ class NotificationManager:
             )
             return success, msg
 
-        from util.notification_formatting import format_for_discord
+        from backend.util.notification_formatting import format_for_discord
 
         data, _ = format_for_discord(self.config, output)
         parts: List[Dict[str, Any]] = []
@@ -222,7 +222,7 @@ class NotificationManager:
     ) -> Tuple[bool, str]:
         from datetime import datetime
 
-        from util.notification_formatting import format_for_discord
+        from backend.util.notification_formatting import format_for_discord
 
         data, _ = format_for_discord(self.config, output)
         timestamp = datetime.utcnow().isoformat()
@@ -272,7 +272,7 @@ class NotificationManager:
         module_title: str,
         output: Any,
     ) -> Tuple[bool, str]:
-        from util.notification_formatting import format_for_email
+        from backend.util.notification_formatting import format_for_email
 
         try:
             body, success = format_for_email(self.config, output)

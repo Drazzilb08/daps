@@ -690,7 +690,7 @@ class Connector:
 
     def _find_plex_match(self, media_item, plex_items):
         """Simple direct table-to-table matching: media_cache → plex_media_cache"""
-        from util.normalization import normalize_titles
+        from backend.util.normalization import normalize_titles
 
         # Extract media item data
         media_tmdb = self._get_clean_id(media_item.get("tmdb_id"))

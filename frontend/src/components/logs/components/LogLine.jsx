@@ -6,6 +6,8 @@ import {
     LogNumber,
     LogQuoted,
     LogHighlight,
+    LogUrl,
+    LogFileRef,
 } from '../primitives';
 
 // Pre-compiled regex patterns (outside component for performance)
@@ -13,10 +15,12 @@ const PATTERNS = {
     htmlEscape: /[&<>]/g,
     quotedString: /(['"])(.*?)\1/g,
     combined:
-        /\b\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (?:AM|PM)\b|\b(CRITICAL|ERROR|WARNING|INFO|DEBUG)\b|\b[\w_]+(\.[\w_]+)+\b|\b\d+(\.\d+)?\b|__QUOTED_PLACEHOLDER_\d+__/g,
+        /\b\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (?:AM|PM)\b|\b(CRITICAL|ERROR|WARNING|INFO|DEBUG)\b|https?:\/\/[^\s<>"{}|\\^`\]]+|\[[^\]]+\.(py|js|jsx|ts|tsx|json|yml|yaml|md|txt|log)\]|\b[\w_]+(\.[\w_]+)+\b|\b\d+(\.\d+)?\b|__QUOTED_PLACEHOLDER_\d+__/g,
     datetime: /^\d{2}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2} (?:AM|PM)$/,
     level: /^(CRITICAL|ERROR|WARNING|INFO|DEBUG)$/,
     placeholder: /^__QUOTED_PLACEHOLDER_(\d+)__$/,
+    url: /^https?:\/\//,
+    fileref: /^\[[^\]]+\.(py|js|jsx|ts|tsx|json|yml|yaml|md|txt|log)\]$/,
     filepath: /^[\w_]+(\.[\w_]+)+$/,
     number: /^\d+(\.\d+)?$/,
 };
@@ -64,11 +68,15 @@ export const LogLine = React.memo(
 
                 const matchedText = match[0];
 
-                // Determine type using pre-compiled patterns
+                // Determine type using pre-compiled patterns (order matters for specificity)
                 if (PATTERNS.datetime.test(matchedText)) {
                     result.push({ type: 'datetime', content: matchedText });
                 } else if (PATTERNS.level.test(matchedText)) {
                     result.push({ type: 'level', content: matchedText });
+                } else if (PATTERNS.url.test(matchedText)) {
+                    result.push({ type: 'url', content: matchedText });
+                } else if (PATTERNS.fileref.test(matchedText)) {
+                    result.push({ type: 'fileref', content: matchedText });
                 } else if (PATTERNS.placeholder.test(matchedText)) {
                     const placeholderMatch = matchedText.match(PATTERNS.placeholder);
                     const idx = parseInt(placeholderMatch[1], 10);
@@ -112,7 +120,17 @@ export const LogLine = React.memo(
                         element = <LogDateTime key={key}>{content}</LogDateTime>;
                         break;
                     case 'level':
-                        element = <LogLevel key={key}>{content}</LogLevel>;
+                        element = (
+                            <LogLevel key={key} level={content}>
+                                {content}
+                            </LogLevel>
+                        );
+                        break;
+                    case 'url':
+                        element = <LogUrl key={key}>{content}</LogUrl>;
+                        break;
+                    case 'fileref':
+                        element = <LogFileRef key={key}>{content}</LogFileRef>;
                         break;
                     case 'filepath':
                         element = <LogFilePath key={key}>{content}</LogFilePath>;

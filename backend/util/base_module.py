@@ -48,7 +48,7 @@ class DapsModule(ABC):
             LookupError: if this class is not registered in the MODULES mapping.
             TypeError: if the MODULES registry is not a dict-like mapping.
         """
-        from modules import MODULES
+        from backend.modules import MODULES
 
         # Validate registry is dict-like
         try:

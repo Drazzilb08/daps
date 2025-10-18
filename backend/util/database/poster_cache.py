@@ -137,7 +137,7 @@ class PosterCache(DatabaseBase):
         Propagate IDs (tmdb_id, tvdb_id, imdb_id) to all rows with the same normalized_title/year,
         for all season_numbers (including NULL).
         """
-        from util.helper import normalize_titles
+        from backend.util.helper import normalize_titles
 
         normalized_title = normalize_titles(title)
         sql = """

@@ -44,7 +44,7 @@ class PosterRenamerr(DapsModule):
     def sync_posters(self):
         if self.config.sync_posters:
             self.logger.info("Running sync_gdrive")
-            from modules.sync_gdrive import SyncGDrive
+            from backend.modules.sync_gdrive import SyncGDrive
 
             SyncGDrive(logger=self.logger).run()
             self.logger.info("Finished running sync_gdrive")
@@ -537,7 +537,7 @@ class PosterRenamerr(DapsModule):
         logger.debug(f"Merge run time: {formatted_duration}")
 
     def run_border_replacerr(self, manifest: dict):
-        from modules.border_replacerr import BorderReplacerr
+        from backend.modules.border_replacerr import BorderReplacerr
 
         self.logger.debug(
             "\nRunning border replacerr:\n"
@@ -674,7 +674,7 @@ class PosterRenamerr(DapsModule):
                 output, manifest = self.rename_files(db)
 
                 if self.config.report_unmatched_assets:
-                    from modules.unmatched_assets import UnmatchedAssets
+                    from backend.modules.unmatched_assets import UnmatchedAssets
 
                     unmatched_reporter = UnmatchedAssets(logger=self.logger)
                     with DapsDB(logger=self.logger) as unmatched_db:

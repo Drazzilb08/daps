@@ -495,7 +495,7 @@ class Labelarr(DapsModule):
                     plex_item = db.plex.get_by_id(plex_mapping_id)
                 else:
                     # Use existing connector mapping logic
-                    from util.connector import Connector
+                    from backend.util.connector import Connector
 
                     # Validate plex_instance and create minimal instance map for this operation
                     if not plex_instance or plex_instance in ("undefined", "null", ""):

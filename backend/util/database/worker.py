@@ -291,10 +291,10 @@ class DBWorker(DatabaseBase):
 
         # FIXED: Use the dedicated job processor if no process_fn provided
         if process_fn is None:
-            from util.job_processor import process_job
+            from backend.util.job_processor import process_job
 
             process_fn = process_job
-            log.debug("Using dedicated job processor from util.job_processor")
+            log.debug("Using dedicated job processor from backend.util.job_processor")
 
         # Reset any stuck running jobs
         reset = self.execute_query(

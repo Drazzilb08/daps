@@ -83,9 +83,9 @@ def _process_webhook_job(
     log.info(f"[JOB:{job_id}] Starting webhook processing")
 
     try:
-        from modules.poster_renamerr import PosterRenamerr
-        from util.arr import create_arr_client
-        from util.webhook_processor import WebhookProcessor
+        from backend.modules.poster_renamerr import PosterRenamerr
+        from backend.util.arr import create_arr_client
+        from backend.util.webhook_processor import WebhookProcessor
 
         webhook_data = payload.get("webhook_data", {})
         client_info = payload.get("client_info")
@@ -303,7 +303,7 @@ def _process_poster_rename_job(
     Returns:
         dict: Processing result
     """
-    from modules.poster_renamerr import PosterRenamerr
+    from backend.modules.poster_renamerr import PosterRenamerr
 
     media_items = payload.get("media_items", [])
     if not media_items:
@@ -337,7 +337,7 @@ def _process_sync_gdrive_job(
     Returns:
         dict: Processing result
     """
-    from modules.sync_gdrive import SyncGDrive
+    from backend.modules.sync_gdrive import SyncGDrive
 
     gdrive_name = payload.get("gdrive_name")
     if not gdrive_name:
@@ -386,7 +386,7 @@ def _process_upload_posters_job(
     Returns:
         dict: Processing result
     """
-    from util.upload_posters import PosterUploader
+    from backend.util.upload_posters import PosterUploader
 
     manifest = payload.get("manifest")
     if not manifest:
@@ -436,7 +436,7 @@ def _handle_post_rename_actions(
 
         # Send notifications if there are results
         if any(output.values()):
-            from util.notification import NotificationManager
+            from backend.util.notification import NotificationManager
 
             manager = NotificationManager(
                 renamer.config, logger, module_name="poster_renamerr"
@@ -519,7 +519,7 @@ def _process_module_run_job(
     log.info(f"[JOB:{job_id}] Running module {module_name} (origin={origin})")
 
     try:
-        from modules import MODULES
+        from backend.modules import MODULES
 
         if module_name not in MODULES:
             return {
@@ -665,7 +665,7 @@ def simple_job_processor(job: Dict[str, Any], logger) -> Dict[str, Any]:
     payload = json.loads(job.get("payload", "{}"))
 
     if job_type == "sync_gdrive":
-        from modules.sync_gdrive import SyncGDrive
+        from backend.modules.sync_gdrive import SyncGDrive
 
         gdrive_name = payload.get("gdrive_name")
         if not gdrive_name:
@@ -677,7 +677,7 @@ def simple_job_processor(job: Dict[str, Any], logger) -> Dict[str, Any]:
         return {"success": success, "message": f"Sync completed for {gdrive_name}"}
 
     elif job_type == "poster_rename":
-        from modules.poster_renamerr import PosterRenamerr
+        from backend.modules.poster_renamerr import PosterRenamerr
 
         media_items = payload.get("media_items", [])
         if not media_items:
@@ -712,7 +712,7 @@ def _process_labelarr_sync_job(
     log.info(f"[JOB:{job_id}] Starting labelarr sync")
 
     try:
-        from modules.labelarr import Labelarr
+        from backend.modules.labelarr import Labelarr
 
         # Extract sync parameters from payload
         source_instance = payload.get("source_instance")
@@ -798,7 +798,7 @@ def _process_cache_refresh_job(
     log.info(f"[JOB:{job_id}] Starting cache refresh")
 
     try:
-        from util.connector import Connector
+        from backend.util.connector import Connector
 
         # Extract refresh configuration from payload
         arr_instances = payload.get("arr_instances", [])

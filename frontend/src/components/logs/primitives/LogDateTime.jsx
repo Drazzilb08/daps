@@ -7,7 +7,7 @@ import React from 'react';
  * @returns {JSX.Element} Styled datetime span
  */
 export const LogDateTime = React.memo(({ children }) => {
-    return <span className="text-info">{children}</span>;
+    return <span className="text-success">{children}</span>;
 });
 
 LogDateTime.displayName = 'LogDateTime';

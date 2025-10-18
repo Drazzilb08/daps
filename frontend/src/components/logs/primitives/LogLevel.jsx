@@ -5,8 +5,8 @@ const LEVEL_COLORS = {
     CRITICAL: 'text-error',
     ERROR: 'text-error',
     WARNING: 'text-warning',
-    INFO: 'text-success',
-    DEBUG: 'text-info',
+    INFO: 'text-info',
+    DEBUG: 'text-secondary',
 };
 
 /**

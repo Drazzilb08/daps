@@ -7,11 +7,11 @@ import sys
 import threading
 from typing import Any, List, Optional
 
-from util.config import DapsConfig, load_config
-from util.logger import Logger
-from util.module_orchestrator import ModuleOrchestrator
-from util.scheduler import DapsScheduler
-from util.version import get_version
+from backend.util.config import DapsConfig, load_config
+from backend.util.logger import Logger
+from backend.util.module_orchestrator import ModuleOrchestrator
+from backend.util.scheduler import DapsScheduler
+from backend.util.version import get_version
 
 SHUTDOWN_POLL_SECONDS = 60.0  # Interval for main thread to poll for shutdown
 
@@ -209,7 +209,7 @@ class DapsApplication:
 
     def start_web_server(self) -> None:
         try:
-            from api.server import start_web_server
+            from backend.api.server import start_web_server
 
             start_web_server(
                 logger=self.logger, module_orchestrator=self.module_orchestrator

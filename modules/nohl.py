@@ -55,7 +55,7 @@ def find_nohl_files(
         if item.startswith("."):
             continue
         # Remove year from directory name for title
-try:
+        try:
             year_match = year_regex.search(item)
             year = int(year_match.group(1))
             

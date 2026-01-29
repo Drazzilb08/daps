@@ -54,12 +54,20 @@ def find_nohl_files(
     ):
         if item.startswith("."):
             continue
-        # Remove year from directory name for title
-        title = re.sub(year_regex, "", item)
-        try:
-            year = int(year_regex.search(item).group(1))
-        except AttributeError:
+        # Find and remove year from directory name for title
+        year_match = re.search(r"(?:^|[. (_-])((?:19|20)\d{2})(?:$|[. )_-])", item)
+
+        if year_match:
+            try:
+                year = int(year_match.group(1))
+                
+                title = item[:year_match.start(1)].rstrip(" .-_()")
+            except ValueError:
+                year = 0
+                title = item
+        else:
             year = 0
+            title = item
         asset_list: Dict[str, Any] = {
             "title": title,
             "year": year,

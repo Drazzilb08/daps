@@ -244,6 +244,19 @@ def main(config: SimpleNamespace) -> None:
                                 include_smart=True,
                                 collections_only=True,
                             )
+                            
+                            # Filter out ignored collections
+                            ignore_collections = getattr(config, 'ignore_collections', [])
+                            if ignore_collections:
+                                logger.info(f"Filtering {len(ignore_collections)} ignored collections...")
+                                filtered_results = []
+                                for collection in results:
+                                    if collection['title'] not in ignore_collections:
+                                        filtered_results.append(collection)
+                                    else:
+                                        logger.debug(f"Ignoring collection: {collection['title']}")
+                                results = filtered_results
+                            
                             media_dict["collections"].extend(results)
                         else:
                             logger.warning(
